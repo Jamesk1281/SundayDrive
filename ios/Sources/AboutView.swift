@@ -70,6 +70,33 @@ enum DataSources {
 
     static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, appleMaps]
 
+    /// The route-guidance notice, **verbatim and non-negotiable**.
+    ///
+    /// Apple Developer Program License Agreement §3.3.15: "For Applications that
+    /// use location-based APIs for real-time navigation (including, but not
+    /// limited to, turn-by-turn route guidance and other routing that is enabled
+    /// through the use of a sensor), You must have an end-user license agreement
+    /// that includes the following notice: ..." — and this string is that notice.
+    /// `NavigationModel` drives turn-by-turn guidance from `CoreLocation` fixes
+    /// and `VoiceGuide` speaks them, so the clause applies squarely.
+    ///
+    /// **Do not reword, sentence-case, or soften this.** It is a fixed string in
+    /// a contract, capitals included.
+    ///
+    /// Showing it here does **not** by itself discharge §3.3.15, which asks for
+    /// an *end-user licence agreement*: a custom EULA carrying this text still
+    /// has to be filed in App Store Connect before submission (Apple's default
+    /// Licensed Application EULA does not contain it). It is in the app as well
+    /// because the person it protects is driving, and a clause filed on a
+    /// website they never read protects nobody. See `docs/legal-and-ip-audit.md`.
+    ///
+    /// It is also true on the merits: this app deliberately routes drivers onto
+    /// small rural roads, and `via`-way turn restrictions and lane guidance are
+    /// both listed unimplemented in the README.
+    static let routeGuidanceNotice =
+        "YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE "
+        + "RISK. LOCATION DATA MAY NOT BE ACCURATE."
+
     /// OpenStreetMap — every road, street name and turn restriction, via the
     /// Geofabrik extracts the pipeline consumes.
     ///
@@ -89,7 +116,14 @@ enum DataSources {
     static let openStreetMap = DataSource(
         role: "Roads, street names and routing",
         name: "OpenStreetMap",
-        credit: ["© OpenStreetMap contributors"],
+        // Geofabrik's own provenance line, from <https://download.geofabrik.de/>:
+        // "Data processed by Geofabrik GmbH and created by OpenStreetMap
+        // Contributors". Their extract is plausibly itself a Derivative Database
+        // under ODbL, which would make Geofabrik a database author owed
+        // attribution under §4.3 — and it is simply accurate about where the
+        // bytes came from. Cheap, so credited.
+        credit: ["© OpenStreetMap contributors",
+                 "Extracts processed by Geofabrik GmbH"],
         licence: "Open Database License (ODbL) 1.0",
         url: openStreetMapCopyrightURL
     )
@@ -183,6 +217,20 @@ struct AboutView: View {
                     ForEach(DataSources.all) { source in
                         entry(for: source)
                     }
+
+                    // Set apart from the credits, because it is not one. The
+                    // credits say who owns the data; this says what the app
+                    // does not promise about it.
+                    Divider()
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("SAFETY")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Text(DataSources.routeGuidanceNotice)
+                            .font(.caption)
+                            .textSelection(.enabled)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)

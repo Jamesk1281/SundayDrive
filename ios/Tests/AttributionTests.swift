@@ -140,6 +140,38 @@ final class AttributionTests: XCTestCase {
         }
     }
 
+    // MARK: - The Apple route-guidance notice (ADPLA §3.3.15)
+
+    /// The notice is a fixed string in a contract. Asserting it character for
+    /// character is the point — a well-meaning refactor that sentence-cases it,
+    /// splits the two sentences, or softens "AT YOUR SOLE RISK" would leave the
+    /// app out of compliance while looking tidier.
+    func test_the_route_guidance_notice_is_exactly_apples_wording() {
+        XCTAssertEqual(
+            DataSources.routeGuidanceNotice,
+            "YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR "
+            + "SOLE RISK. LOCATION DATA MAY NOT BE ACCURATE.")
+    }
+
+    /// Capitals are part of the required text, not styling. Guards against
+    /// someone "fixing the shouting".
+    func test_the_notice_is_not_quietly_sentence_cased() {
+        let notice = DataSources.routeGuidanceNotice
+        XCTAssertEqual(notice, notice.uppercased(),
+                       "§3.3.15's notice is upper-case in the agreement: \(notice)")
+    }
+
+    // MARK: - Geofabrik
+
+    /// The extracts are processed by Geofabrik, whose own provenance line names
+    /// them alongside OSM's contributors. Their extract is plausibly a
+    /// Derivative Database, which would make them an author owed attribution.
+    func test_geofabrik_is_credited_for_the_extracts() {
+        XCTAssertTrue(
+            DataSources.openStreetMap.credit.contains { $0.contains("Geofabrik") },
+            "Got: \(DataSources.openStreetMap.credit)")
+    }
+
     /// A link's visible text must keep the path, not collapse to the host.
     ///
     /// The guideline names openstreetmap.org/**copyright** as the page the
