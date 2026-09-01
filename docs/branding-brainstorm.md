@@ -1,210 +1,289 @@
-# Branding: why "Scenic" has to go, and what the product is actually called
+# Branding: what this app is actually called
 
-**Written 2026-09-01.** The README has always called Scenic a working title. This
-says why that instinct was right, what the app is actually *for* in words a
-stranger would understand, and what to call it. Companion to
-`legal-and-ip-audit.md`, where the name is risk item #1.
+**Written 2026-09-01, expanded the same day** after actually checking candidate
+names against the App Store instead of just liking the sound of them. That check
+changed the recommendation, which is the main reason this document is worth
+re-reading if you saw the first version.
+
+Companion to `legal-and-ip-audit.md`, where the name is risk item #1.
 
 **Not legal advice.** Nothing here substitutes for a professional trademark
-clearance search before money goes into a brand. But the two facts that decide it
-are checkable, and I checked them.
+clearance search before money goes into a brand. The facts below are checkable
+and I checked them; the conclusions about registrability are doctrine, not
+counsel.
 
 ---
 
-## 1. The name is the biggest single risk in the project
+## 1. Why "Scenic" cannot stay
 
-Two independent problems, either of which alone would be enough.
+Two independent problems, either sufficient on its own.
 
-### It is already taken, by a senior direct competitor
+### It is taken, by a senior direct competitor
 
 | What | Where | Why it matters |
 | --- | --- | --- |
-| **Scenic — Motorcycle Navigation** | `scenic.app`, App Store | ~30M hours ridden, 200k+ user routes, 4.7★, paid Premium tier. A scenic-route *navigation app*. Same name, same category, years of priority. |
-| **Scenic Way** | `scenicway.co.uk` | "Scenic route planner for iPhone & CarPlay" — turn-by-turn, waypoints. |
+| **Scenic — Motorcycle Navigation** | `scenic.app`, App Store | ~30M hours ridden, 200k+ user routes, 4.7★, paid Premium tier. A scenic-route *navigation app*. Same word, same goods, years of priority. |
+| **Scenic Way** | `scenicway.co.uk` | "Scenic route planner for iPhone & CarPlay" — waypoints, turn-by-turn. |
 | **Scenic Map** | App Store | iOS navigation app, GPX routes. |
 | **Scenic Landscapes** | App Store | Photo/video app. |
-| **Scenic Group / Scenic Luxury Cruises** | scenic.com | Large travel brand with marks in travel classes. |
-| **Scenic** (Elixir UI framework) | hex.pm | Not a legal conflict; pure search-result noise. |
+| **Scenic Group / Scenic Luxury Cruises** | `scenic.com` | Large travel brand, marks in travel classes. |
+| **Scenic** (Elixir UI framework) | `hex.pm` | Not legal — pure search-result noise. |
 
-The first row is the one that matters. It is not a distant sound-alike in another
-industry — it is **the same word, for a scenic-route navigation app, already
-established**. In a likelihood-of-confusion analysis the marks are identical and
-the goods are identical, which is the worst possible pairing. They have priority.
+Row one is decisive. Identical mark, identical goods is the worst pairing in a
+likelihood-of-confusion analysis, and they have priority.
 
-### It is legally the weakest kind of name
+### It is descriptive, so it would be weak even unopposed
 
-Trademark distinctiveness runs: **generic → descriptive → suggestive → arbitrary
-→ fanciful.** A mark is "merely descriptive" and refusable under Lanham Act
-§2(e)(1) if it *immediately conveys* a quality, feature, function or purpose of
-the goods. "Scenic" for an app whose entire function is finding scenic routes is
-about as squarely descriptive as it gets — it names the feature.
-
-Consequences, in order of how much they'd hurt:
+Distinctiveness runs **generic → descriptive → suggestive → arbitrary →
+fanciful**. A mark is "merely descriptive" and refusable under Lanham §2(e)(1) if
+it *immediately conveys* a feature, quality, function or purpose of the goods.
+"Scenic", for an app that finds scenic routes, names the feature outright.
 
 1. Likely **refused on the Principal Register** absent acquired distinctiveness
-   (which takes years of use and money to prove). Supplemental Register at best.
-2. A descriptive mark is **weak even if registered** — you can't stop competitors
-   from using the word, because they need it to describe their own product.
-3. **App Store discoverability is bad**: searching "scenic" returns the
-   established competitor and a photo app before it returns you.
+   (years of use and money to prove). Supplemental Register at best.
+2. **Weak even if registered** — competitors need the word to describe their own
+   products, so you cannot stop them using it.
+3. **Bad App Store discovery** — the established competitor and a photo app rank
+   above you for your own name.
 
-### So: rename now, while it costs nothing
+### Renaming is nearly free right now
 
-There are no users, no listing, no audience, and the bundle ID is still
-`app.scenic.demo`. The cost of renaming today is a few hours. The cost after a
-launch is a bundle ID that can never change, a domain, a listing, reviews, and
-whatever audience exists.
+No users, no listing, no audience, and the bundle ID is still `app.scenic.demo`
+— which becomes **permanent after first submission**.
 
-**And the code cost is far lower than it looks.** Grepping suggests thousands of
-hits, but almost all of them are either the gitignored `Scenic.xcodeproj` build
-output or *prose*. What actually has to change:
+The code footprint is much smaller than a grep implies; almost every hit is the
+gitignored `Scenic.xcodeproj` build output or prose. What actually changes:
 
-- `PRODUCT_BUNDLE_IDENTIFIER` (`app.scenic.demo`) and the target/scheme names
+- `PRODUCT_BUNDLE_IDENTIFIER`, target and scheme names, `CFBundleDisplayName`
 - `Color.scenic` (13 uses)
-- the `SCENIC_*` env var prefix (~40 uses: `SCENIC_API`, `SCENIC_DATA`,
-  `SCENIC_DEMO`, `SCENIC_HOST`, `SCENIC_PBF`, `SCENIC_TRACES`, `SCENIC_REGION`)
-- `CFBundleDisplayName`, the README title
+- the `SCENIC_*` env prefix (~40 uses: `API`, `DATA`, `DEMO`, `HOST`, `PBF`,
+  `TRACES`, `REGION`)
 
-**What does *not* change — and this is the point:** the ~47 uses of "scenic
-score", "scenic route", "scenic km", "the scenic arm". Those are correct English
-describing a real quantity, and they stay. The word is a fine *adjective* for the
-feature; it is a bad *proper noun* for the product. Losing it as a brand costs
-you nothing in the domain vocabulary, precisely because it is descriptive.
+**What does not change, and this is the point:** the ~47 uses of "scenic score",
+"scenic route", "scenic km", "the scenic arm". Those are accurate English for a
+real quantity and they stay. The word is a fine *adjective* for the feature and a
+bad *proper noun* for the product — so giving it up as a brand costs nothing in
+the domain vocabulary, precisely *because* it is descriptive.
 
-## 2. What the product actually is
+## 2. The positioning the name has to serve
 
-Worth getting straight before naming it, because the current name describes the
-category rather than the product, and that's the underlying mistake.
+Getting this straight first, because naming the category instead of the product
+is the underlying mistake in "Scenic".
 
-Everyone in this space sells **curvy roads to motorcyclists, from
-community-submitted routes**: Scenic Motorcycle, calimoto, Kurviger, Rever.
-Roadtrippers sells POI-stitched road trips. Two things here are genuinely not on
-that list:
+**The competitive field sells curvy roads to motorcyclists, from
+community-submitted routes** — Scenic Motorcycle, calimoto, Kurviger, Rever.
+Roadtrippers sells POI-stitched itineraries. Two things here are on nobody's
+list:
 
-**(a) Every road is measured, not submitted.** There is a beauty vector for every
-road segment in the region — water, coastline, forest and parks, curvature,
-terrain relief, farmland, viewpoints, scenic tags, urban penalty — computed from
-open geodata. Nobody had to have driven it and uploaded it. That is a real,
-defensible, *statable* claim: **"we scored every road in New England."**
+**(a) Every road is measured, not submitted.** A beauty vector for every segment
+in the region — water, coastline, forest and parks, curvature, terrain relief,
+farmland, viewpoints, scenic tags, urban penalty — computed from open geodata.
+Nobody had to drive it and upload it first. That supports a claim no competitor
+can make: **"we scored every road in New England."**
 
-**(b) The dial, and the loop.** You don't pick a route from a list; you move one
-slider and *spend minutes to buy beauty*, continuously, and watch the trade
-happen (89 min / 0 mi beautiful → 193 min / 25 mi beautiful). And the loops mode
-answers a question no navigation app answers: **"I have ninety minutes and
-nowhere to be — where should I drive?"** No destination required.
+**(b) The dial, and the loop.** You don't pick from a list of routes; you move
+one slider and *spend minutes to buy beauty*, watching the trade as it happens
+(89 min / 0 mi beautiful → 193 min / 25 mi beautiful). And the loop mode answers
+a question no navigation app answers: **"I have ninety minutes and nowhere to be
+— where should I drive?"**
 
-That second one is probably the product. "Directions, but prettier" is a feature.
-"Give me a beautiful hour and bring me home" is a reason to open an app on a
-Sunday morning.
+**The strategic thesis, and it is a good one:** every navigation app ever built
+optimises for *less* — less time, less distance, less traffic. This is the only
+one that asks you to spend more. That is a genuinely contrarian position and a
+culturally live one. **The brand should be proudly anti-efficiency.** Not
+"optimise your leisure" — the opposite of optimisation.
 
-**The positioning line I'd build the brand on: *take the long way, on purpose.***
+Which means the voice is: unhurried, dry, quietly confident. Never breathless,
+never "supercharge", never exclamation marks. It should feel like a well-made
+analogue object — a good map, a mechanical watch.
 
-## 3. Names
+Two brand architectures fit, and the best name serves both:
 
-Every single-word `.app` domain I checked is registered — `amble`, `switchback`,
-`meander`, `wend`, `overlook`, `byway`, `hairpin`, `longway`, all gone. That is
-normal for dictionary words and **not** a reason to reject a name: an exact-match
-single-word domain is a nice-to-have, not a requirement. Compounds are available.
+- **Instrument** — "we scored every road." Precise, technical, for map nerds.
+- **Invitation** — "go get lost on purpose." Warm, for Sunday drivers.
 
-*(Domain notes below are from `dig`/`whois` on 2026-09-01 — indicative only,
-confirm at a registrar. A registered domain may be parked and for sale.)*
+## 3. Names, checked
 
-### The candidates I'd actually put forward
+I queried the US App Store search API for every candidate and counted apps whose
+*name* contains the word, flagging those in Navigation or Travel. This is the
+check that separates a wordlist from a shortlist, and it demoted my own first
+recommendation.
 
-| Name | Evokes | Class | Collision risk | Notes |
-| --- | --- | --- | --- | --- |
-| **Amble** | To travel at an unhurried pace | Suggestive | Low-ish in class 9 | Warm, short, says *unhurried* without saying *scenic*. My favourite. `driveamble.com` taken; `amblerouting.com` free. |
-| **Switchback** | A hairpin climbing a hillside | Suggestive | Moderate — used by other software cos | Vivid and specific to great driving roads. Strong, adventurous. `switchbackdrive.com` free. |
-| **Byroad** | A minor side road | Suggestive | Low — uncommon word | Quietly perfect meaning. `byroadapp.com` free. Careful: near "byway", which is the *US National Scenic Byways* program and leans descriptive. |
-| **Meander** | What a river and a good road both do | Suggestive | Low-moderate | Doubles as the curvature signal. Slightly soft. |
-| **Overlook** | The payoff at the top of the climb | Suggestive | Moderate | Nice noun; competes with "overlook" = to miss something. |
-| **Wend** | To make one's way, unhurried | Arbitrary-ish | Low | Short, distinctive, uncrowded. Slightly archaic — may need the tagline to carry it. |
+| Candidate | Apps with the name | In Nav/Travel | Verdict |
+| --- | --- | --- | --- |
+| **Longcut** | **0** | **0** | **Clean** |
+| **Aimless** | **0** | **0** | **Clean** |
+| **Detourist** | **0** | **0** | **Clean** (coined) |
+| Dawdle | 1 | 0 | Usable |
+| Vireo | 2 | 0 | Usable |
+| Camber | 5 | 0 | Usable |
+| Overlook | 7 | 0 | Usable |
+| ~~Amble~~ | 6+ | **yes** — *Amble: Walk Route Planner*, *Amble App* (Travel) | **Avoid** |
+| ~~Mosey~~ | 6+ | **yes** — *Mosey – Commute Alerts* (Navigation) | **Avoid** |
+| ~~Switchback~~ | 6+ | **yes** — *Switchback Moto* (Navigation) | **Avoid** |
+| ~~Saunter~~ | 4 | **yes** — *Saunter Map* | **Avoid** |
+| ~~Meander~~ | 9 | **yes** — *MeanderEV* | **Avoid** |
+| ~~Byroad~~ | 1 | **yes** — *ByRoad* (Travel) | Avoid |
+| ~~Wynd~~ | 4 | yes — *Wyndham* | Avoid (big mark) |
 
-### Ones I'd avoid, and why
+**Correction to the first version of this document: it recommended Amble.** That
+was wrong, and only checking revealed it — there is already an *Amble: Walk Route
+Planner* on the App Store. Same idea, adjacent category. Switchback, which was
+the runner-up, collides with *Switchback Moto* in Navigation, which is worse
+still given the motorcycle field is exactly what we want distance from.
 
-- **Anything containing "Scenic", "Route", "Drive", "Map", "Road"** as the whole
-  mark — same descriptiveness trap, and "Scenic *anything*" walks straight into
-  the senior competitor.
-- **Verge** — "The Verge" is a major media trademark with class 9/41 coverage.
-- **Backroads** — `backroads.com` is a large established travel-tour operator.
-- **Detour** — conceptually ideal, but heavily used, including a well-known
+### Domains
+
+Every single-word `.app` I checked is registered — `amble`, `switchback`,
+`meander`, `wend`, `overlook`, `byway`, `hairpin`, `longway`, `camber`, `saunter`,
+`dawdle`, `mosey`. That is normal for dictionary words and **not** a reason to
+reject a name; an exact-match single word is a nice-to-have.
+
+For Longcut: `longcut.com` is registered; `longcut.co` and
+`takethelongcut.com` appear free; `longcut.app` returned no A record with
+inconclusive whois — **possibly free, must be confirmed at a registrar** (my
+RDAP query failed to connect, so treat this as unverified).
+
+### Recommendation: **Longcut**
+
+*Tagline: "Take the long way."*
+
+- **It is the product, in one word.** The opposite of a shortcut is a route you
+  chose to make longer on purpose. Nobody needs it explained.
+- **Legally much stronger than Scenic.** It does not describe a feature of a
+  navigation app; it takes a mental step to connect (which is the actual
+  suggestive-vs-descriptive test). Not a term of art in this field.
+- **Zero App Store collisions** — the cleanest result of anything tested.
+- **It serves both architectures.** Wry enough for the invitation, concrete
+  enough for the instrument.
+- **The voice falls out of it.** "Longcut found you 25 good miles for 38
+  minutes." That sentence writes itself and no competitor can write it.
+
+**Honest risks, to test on real people before committing:**
+
+- **"Skoal Long Cut"** is chewing tobacco, and for some Americans "long cut" cues
+  that first. Different trademark class (34 vs 9), so conflict risk is low, but
+  the *association* is a real branding question. Ask five people what "longcut"
+  makes them think of before you buy anything.
+- Slight risk of being heard as two words, or as a hair/sewing term.
+- It is a compound of common words, so it is suggestive rather than fanciful —
+  strong, but not the strongest possible class.
+
+**The bold alternative: Aimless.** Also zero collisions, and it captures the loop
+mode perfectly — "ninety minutes, nowhere to be". A navigation app called Aimless
+is a confident joke, and confident jokes make memorable indie brands. The risk is
+real though: "aimless" carries a negative valence (pointless, lost), and some
+users will read it as the app not knowing where it is going. High reward, higher
+variance.
+
+**The understated alternative: Camber** — the curve of a road surface. Zero
+Nav/Travel collisions, designerly, quiet. Needs the tagline to carry all the
+meaning, because most people do not know the word.
+
+### Avoid regardless of availability
+
+- Anything with **Scenic, Route, Drive, Map, Road** as the whole mark — same
+  descriptiveness trap, and "Scenic *anything*" walks into the senior competitor.
+- **Verge** — "The Verge" is a major media mark with class 9/41 coverage.
+- **Backroads** — `backroads.com` is a large established tour operator.
+- **Detour** — conceptually ideal, heavily used, including a well-known
   location-audio app.
-- **The Long Way / Long Way Round** — the best *phrase* here, but Ewan McGregor's
-  "Long Way Round" is a strong travel/media brand. **Use it as the tagline, not
-  the name.** `thelongwayapp.com` is free if you want it defensively.
-- **Apex, Chicane, Hairpin** — motorsport register. Pulls the brand toward
-  fast/track driving, which is the opposite of the product's soul.
+- **The Long Way / Long Way Round** — best *phrase* in the space, but Ewan
+  McGregor's is a strong travel/media brand. **Use it as the tagline, not the
+  name.** `thelongwayapp.com` is free if you want it defensively.
+- **Apex, Chicane, Hairpin, Esses** — motorsport register. Pulls toward fast and
+  track, the opposite of the product's soul.
 
-### My recommendation
+## 4. Naming things *inside* the product
 
-**Amble**, with *"Take the long way."* as the tagline.
+Cheaper than a rebrand and most of the felt personality. Currently the UI says
+"scenery strength 0.25" and "25 mi beautiful", which is instrumentation talking.
 
-It says unhurried without saying scenic, it's short and pronounceable, it's
-suggestive rather than descriptive (a consumer needs one mental step to get from
-"amble" to "driving routes" — which is exactly the test that separates
-registrable from refused), and it doesn't sit in the motorcycle/curvy-road
-register that the competition owns. **Switchback** is the runner-up and the better
-choice if the brand should feel more adventurous than gentle.
+- **The loop mode deserves a name.** It is the most distinctive thing here and it
+  is currently called "Loop". Call it **Nowhere**. The UI string becomes
+  *"Nowhere · 90 minutes"*, and the empty state becomes *"Nowhere in particular.
+  Ninety minutes. We'll bring you home."* That is a feature people tell friends
+  about.
+- **"Good miles" instead of "mi beautiful".** `25 good miles` is warmer, shorter,
+  and does not overclaim — which matters, because the scoring has never been
+  validated against a human (the README says so).
+- **State the trade, not the setting.** Replace `scenery strength 0.25` with the
+  thing the user is actually buying: **`+38 min · 25 good miles`**. The slider
+  stops being a parameter and becomes a price tag. This is the single highest-
+  value copy change in the app.
+- **The dial** as the internal name for the fastest↔scenic slider — it is what
+  everyone will call it anyway.
 
-## 4. Copy to build the listing on
+## 5. Copy
 
 - **Tagline:** Take the long way.
-- **App Store subtitle** (30 chars): `Take the long way home.` (23)
-- **The one-liner:** Every road in New England, scored for beauty. Move one
-  slider to trade minutes for the view.
-- **The loop hook:** Ninety minutes, no destination. We'll bring you home the
+- **App Store subtitle** (30 char limit): `Take the long way home.` — 23 chars.
+- **One-liner:** Every road in New England, scored for beauty. Move one slider to
+  trade minutes for the view.
+- **The loop hook:** Ninety minutes, nowhere to be. We'll bring you home the
   pretty way.
-- **The credibility line:** Built on open data — every road measured, not
+- **Credibility line:** Built on open data — every road measured, not
   crowdsourced.
-- **What not to claim:** avoid "best route", "fastest scenic route", or anything
-  implying verified ground truth. The README is honest that the scoring has never
-  been validated against a human driving the roads; the marketing should not get
-  ahead of that. "Measured" is defensible; "beautiful, guaranteed" is not.
+- **Opening line of the listing:** *Every other maps app is trying to save you
+  time. This one helps you spend it.*
 
-## 5. Visual identity
+**What not to claim.** No "best route", no "fastest scenic route", nothing
+implying validated ground truth. The README is honest that scoring has never been
+checked against a human driving the roads. **"Measured" is defensible.
+"Beautiful, guaranteed" is not** — and an overclaim here is also the kind of
+thing that turns a bad review into a refund request.
 
-**Keep the green.** `Color.scenic` is `rgb(0.22, 0.83, 0.62)` — a mint/emerald
-that reads clearly against both the Apple basemap's greens and its water blue,
-and is meaningfully distinct from Google Maps blue and Waze's palette. It is
-already the route line, the Tune highlight and the scenery bars. That consistency
-is the one piece of brand equity the project has. Rename the *symbol* with the
-app, keep the *value*.
+## 6. Visual identity
 
-**Icon direction.** The soul of the product is the dial and the curve, so:
+**Keep the green.** `Color.scenic` = `rgb(0.22, 0.83, 0.62)` ≈ `#38D49E`. It
+reads clearly against both the Apple basemap's greens and its water blue, and is
+meaningfully distinct from Google Maps blue and Waze's palette. It is already the
+route line, the Tune highlight and the scenery bars — the only brand equity the
+project has. Rename the *symbol* with the app; keep the *value*.
 
-- a single switchback/hairpin curve, cresting — one confident stroke, mint on
-  dark; or
-- contour lines with one road threading across them (nods to `c_relief`, and
-  reads at 60px); or
-- the trade itself: a curve with a notch on it, like a slider on a road.
+**Icon.** Four directions were drawn and tested at 96px and 28px:
 
-**Two hard constraints for whoever draws it:**
+1. **Two ways** — a dashed straight line and a bold winding one joining the same
+   two dots. **The strongest**: it is the entire product in one mark, it pairs
+   exactly with the name Longcut, and it survives the thumbnail because the two
+   strokes differ in weight *and* style. This is the one to develop.
+2. **Switchback** — a single folded stroke. Boldest at small sizes and the most
+   confident mark, but it says "twisty road" (the motorcycle register) rather
+   than "the long way".
+3. **Contour** — topo lines with a road threading across. Beautiful at full size,
+   **muddies below 40px** — the contour lines merge. Better as a marketing motif,
+   a loading state, or the "Tune scenery" header than as the icon.
+4. **The dial** — an arc with a handle. Reads as a gauge or a speedometer, not a
+   road. Clean, but says "settings" more than "driving".
 
-1. **No SF Symbols.** The Xcode and Apple SDKs licence states you *"may not use
-   SF Symbols — or glyphs that are substantially or confusingly similar — in your
+**Two hard constraints for whoever draws the final mark:**
+
+1. **No SF Symbols.** The Xcode and Apple SDKs licence: you *"may not use SF
+   Symbols — or glyphs that are substantially or confusingly similar — in your
    app icons, logos, or any other trademark-related use."* In-app `systemImage:`
-   use is fine and expected; the icon and wordmark must be original. That rules
-   out the obvious shortcut of dropping `location.north.line.fill` on a green
-   square.
-2. **Have a human draw it.** The current icon (`icon-1024.png`, commit 8e76c80)
-   is a generated mark. The US Copyright Office's position is that AI-generated
-   material without sufficient human authorship isn't copyrightable — so the
-   current icon may be something *nobody owns*, including you. Fine for a private
-   build; weak for a brand you'd want to defend.
+   is fine and expected. This rules out the obvious shortcut of putting
+   `location.north.line.fill` on a green square.
+2. **Have a human draw it.** The current `icon-1024.png` (commit 8e76c80) is a
+   generated mark, and the US Copyright Office's position is that AI-generated
+   material without sufficient human authorship is not copyrightable — so it may
+   be something **nobody owns, including you**. Fine for a private build, weak
+   for a brand you would defend.
 
-## 6. Rename checklist, when the name is picked
+## 7. Order of operations
 
-1. **Clear it first**: professional trademark search in classes 9 (downloadable
-   software) and 42 (SaaS), plus a US and EU knock-out search, plus an App Store
-   name search. Do this *before* buying anything.
-2. Register the domain and the App Store name (App Store names can be reserved
-   ahead of submission).
-3. `PRODUCT_BUNDLE_IDENTIFIER` — **this one is permanent after first submission.**
-   Get it right. Drop `.demo` while you're there.
-4. Target/scheme names in `ios/project.yml`, `CFBundleDisplayName`,
-   `MARKETING_VERSION` off `0.1`.
-5. `Color.scenic` → new name; `SCENIC_*` env vars → new prefix (update
-   `server/DEPLOY.md`, `README.md`, and the simulator invocations in
-   `docs/` that pass `SCENIC_API`/`SCENIC_DEMO`).
-6. Leave "scenic score / scenic route / scenic km" alone — still the right words.
-7. `docs/` prose can be updated lazily; it is internal.
+1. **Test the name on people first.** Five strangers, one question: "what does
+   Longcut sound like it does?" If they say "the long way round", you are done.
+   If they say "chewing tobacco", pick Aimless or Camber.
+2. **Professional clearance search** — classes 9 (downloadable software) and 42
+   (SaaS), US and EU knock-out, plus App Store name search. Before spending.
+3. Register the domain; reserve the App Store name (can be done ahead of
+   submission).
+4. `PRODUCT_BUNDLE_IDENTIFIER` — **permanent after first submission.** Drop
+   `.demo` while you are there.
+5. Target/scheme names, `CFBundleDisplayName`, `MARKETING_VERSION` off `0.1`.
+6. `Color.scenic` → new name; `SCENIC_*` → new prefix (also `server/DEPLOY.md`,
+   `README.md`, and the `SCENIC_API`/`SCENIC_DEMO` invocations in `docs/`).
+7. **Do the in-product copy from §4 at the same time** — it is an afternoon and
+   it is most of what the brand actually feels like.
+8. Leave "scenic score / scenic route / scenic km" alone. Still the right words.
+9. `docs/` prose can be updated lazily; it is internal.
