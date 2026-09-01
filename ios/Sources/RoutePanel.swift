@@ -103,6 +103,25 @@ struct PlanningCompactDetent: CustomPresentationDetent {
     /// clipping on a device that has no home indicator.
     static let bottomInset: CGFloat = 34
 
+    /// The attribution footer pinned under the scroll view, split the same way
+    /// as the block above: one typed line that grows with Dynamic Type, and
+    /// padding that doesn't.
+    ///
+    /// It needs its own pair rather than being folded into `fixedPoints` and
+    /// `textPoints`, because those two were *solved* from the block measured at
+    /// 311 pt and 363 pt and that provenance is the only reason to trust them.
+    /// Adding the footer into them would leave two numbers that match neither a
+    /// measurement nor anything else.
+    ///
+    /// The footer must be counted here at all because it is outside the
+    /// `ScrollView` — see `RoutePanel.attributionFooter` for why it is pinned —
+    /// so at this detent it takes its height off the top of the scrolling area
+    /// rather than falling below the fold. Uncounted, it would push the slider
+    /// caption back under the sheet's bottom edge, which is the exact defect a
+    /// custom detent was introduced to fix.
+    static let attributionTextPoints: CGFloat = 13
+    static let attributionFixedPoints: CGFloat = 12
+
     /// The most of the screen this detent will take. A planning sheet that has
     /// eaten the whole map is not a trade anyone chose.
     static let maximumFraction: CGFloat = 0.85
@@ -121,9 +140,11 @@ struct PlanningCompactDetent: CustomPresentationDetent {
 
         let traits = UITraitCollection(
             preferredContentSizeCategory: contentSizeCategory(context.dynamicTypeSize))
-        let scaled = UIFontMetrics(forTextStyle: .body)
-            .scaledValue(for: textPoints, compatibleWith: traits)
-        return min(fixedPoints + scaled + bottomInset, cap)
+        let metrics = UIFontMetrics(forTextStyle: .body)
+        let scaled = metrics.scaledValue(for: textPoints, compatibleWith: traits)
+        let footer = metrics.scaledValue(for: attributionTextPoints, compatibleWith: traits)
+            + attributionFixedPoints
+        return min(fixedPoints + scaled + footer + bottomInset, cap)
     }
 
     /// SwiftUI's `DynamicTypeSize` and UIKit's `UIContentSizeCategory` are the
@@ -164,6 +185,8 @@ struct RoutePanel: View {
     @FocusState private var focused: Endpoint?
     /// Whether the "Tune scenery" sheet is showing.
     @State private var showingTune = false
+    /// Whether the "Data sources" sheet is showing.
+    @State private var showingAbout = false
 
     var body: some View {
         // The route comparison scrolls; "Start scenic drive" doesn't. Pinning it
@@ -195,6 +218,8 @@ struct RoutePanel: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
             }
+
+            attributionFooter
         }
         // Once the user is working in the panel, never let it sit at the compact
         // height again. Choosing a suggestion dismisses the keyboard, and the
@@ -220,6 +245,9 @@ struct RoutePanel: View {
         }
         .sheet(isPresented: $showingTune) {
             TuneView(model: model)
+        }
+        .sheet(isPresented: $showingAbout) {
+            AboutView()
         }
         // The tune screen edits one set of beauty weights for the whole app, so
         // the loop tab has to be routing under them too. Pushed rather than
@@ -450,6 +478,56 @@ struct RoutePanel: View {
             Text("scenery strength \(prefPosition.wrappedValue, format: .number.precision(.fractionLength(2)))")
                 .font(.caption2).foregroundStyle(.secondary)
         }
+    }
+
+    /// The data credit, and the way in to the full list of sources.
+    ///
+    /// **Pinned outside the `ScrollView`, deliberately.** The OSMF attribution
+    /// guideline's base requirement is that attribution "must be presented to
+    /// anyone who uses, views, accesses, interacts with, or is otherwise exposed
+    /// to the map or produced work", and that the format "should not require
+    /// individuals to interact with the map or produced work to see the
+    /// attribution". Inside the scroll view this row is below the fold at the
+    /// compact detent — which is the height every cold launch opens at — so
+    /// seeing it would require a scroll. Out here it is on screen at all three
+    /// detents. `PlanningCompactDetent` counts its height for the same reason.
+    ///
+    /// One tap then reaches the full credits, which is the guideline's own
+    /// example of where the detail may live ("an 'About' option in a menu").
+    /// That is the *supplement* to a visible credit, not a substitute for one.
+    ///
+    /// The driving screen (`NavView`) carries no credit of its own: a route has
+    /// to be planned here before navigation can start, so this has necessarily
+    /// been on screen first, and the guideline is explicit that attribution
+    /// shown at startup "does not need to be presented to the user every time
+    /// the user looks at or interacts with the application".
+    private var attributionFooter: some View {
+        Button { showingAbout = true } label: {
+            // One concatenated `Text`, not an `HStack` of two. Side by side,
+            // the credit and the link are separate wrapping contexts, and at
+            // the accessibility text sizes they each wrap inside their own
+            // column — "Map data from OpenStreet-/Map" stacked beside a
+            // two-line "Data sources", four lines to say one thing. Joined,
+            // it reflows as a single paragraph. Identical at the default size.
+            //
+            // Truncating instead is not the alternative: this is a licence
+            // credit, and the OSMF guideline asks that it stay legible and
+            // that accessibility guidance be followed. It is allowed to grow.
+            (Text(DataSources.shortCredit) + Text("  ")
+             + Text("Data sources").foregroundColor(.scenic))
+                .font(.caption2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 6)
+                .padding(.bottom, 6)
+            // Without an explicit shape only the text itself is tappable, and
+            // the row is mostly empty space — the same trap the suggestion rows
+            // above document.
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.secondary)
+        .accessibilityLabel("\(DataSources.shortCredit). Data sources and licences.")
     }
 
     /// Begins live navigation along the scenic route.

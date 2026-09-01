@@ -2,9 +2,10 @@
 
 Scenic-route navigation: pick a destination, get a route that's beautiful instead
 of fast. Massachusetts first. A scenic score is computed for every road in the
-state from **open geodata only** (no Google/Apple data), a routing engine trades
-travel time for beauty via a single preference knob, and a native iOS app
-(SwiftUI + MapKit) is the front end on top of the routing API.
+state from **open geodata only** (no Google/Apple data — see [Data sources and
+licences](#data-sources-and-licences)), a routing engine trades travel time for
+beauty via a single preference knob, and a native iOS app (SwiftUI + MapKit) is
+the front end on top of the routing API.
 
 ![heatmap](docs/ma_scenic_heatmap.png)
 
@@ -18,7 +19,9 @@ travel time for beauty via a single preference knob, and a native iOS app
 - [x] Scoring pipeline: per-road-segment "beauty vector" (water, coastline,
       forest/parks, curvature, terrain relief, farmland, viewpoints, scenic tags,
       town/urban)
-- [x] Terrain relief from free Terrarium elevation tiles
+- [x] Terrain relief from the Terrarium elevation tiles (AWS Open Data; an
+      aggregate of national elevation products — see [Data sources and
+      licences](#data-sources-and-licences))
 - [x] Routable graph (~402k edges) split at intersections, scenic-scored
 - [x] Scenic router: Dijkstra with a time-vs-scenery preference knob
 - [x] Per-beauty-type preferences — weight scenery types live per request
@@ -93,20 +96,61 @@ Terrarium tiles ─┼─> score.py ──> scored_chunks.parquet ─┐
 `pipeline/common.py` holds the constants shared across these stages (what counts
 as a drivable road, the Massachusetts projection).
 
+## Data sources and licences
+
+All three sources are open, and all three require attribution in anything put in
+front of a user. The app carries that attribution: a credit line pinned in the
+planning sheet at every height, tapping through to a "Data sources" screen
+(`ios/Sources/AboutView.swift`, asserted by `ios/Tests/AttributionTests.swift`).
+**This README does not discharge the obligation** — it is in a private repo and
+reaches nobody. The credit strings in `AboutView.swift` are reproduced from each
+licensor's own wording; change them there, not here.
+
+| Source | Used for | Licence |
+| --- | --- | --- |
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) (Geofabrik extracts) | every road, street name and turn restriction | Open Database License (ODbL) 1.0 |
+| [ESA WorldCover](https://esa-worldcover.org) 10 m 2021 v200 | half of `c_forest`, so present in every score | CC BY 4.0 |
+| [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Terrarium, AWS Open Data) | `c_relief` | an **aggregate** — see below |
+
+The basemap the routes are drawn on is Apple's, via MapKit, which renders its own
+attribution.
+
+Two things worth knowing before touching any of this:
+
+- **Terrain Tiles is not one dataset under one licence.** It is a mosaic of
+  national elevation products, each with its own attribution, and its largest US
+  upstream being public domain does *not* make the tile set public domain. The
+  registry entry names
+  [`tilezen/joerd`'s attribution doc](https://github.com/tilezen/joerd/blob/master/docs/attribution.md)
+  as its licence. At zoom 11 over `pipeline/elevation.py`'s `BBOX` the upstreams
+  are 3DEP and SRTM (USGS), ETOPO1 (NOAA) over water, and — because the box
+  reaches past the Maine border — CDEM under the **Open Government Licence –
+  Canada**, which is not US-government public domain. Widening `BBOX` can pull in
+  another upstream with another licence; re-read that doc's per-zoom source table
+  when you do.
+- **ODbL share-alike does not apply to the routes on screen, but it would apply
+  to the parquets.** The drawn route is a Produced Work (ODbL §4.3): attribution
+  only. `data/processed/{scored_chunks,graph_edges,graph_nodes,turn_restrictions}.parquet`
+  are a Derivative Database (§4.4), and *distributing those files* obliges
+  offering them under ODbL. Today they only move from the author's Mac to the
+  author's own serving box, which is not distribution — but an
+  offline-download-this-region feature would be, and has to be designed for it.
+  See `docs/licensing-and-attribution-brief.md`.
+
 ## Run the pipeline
 
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r pipeline/requirements.txt
 
-# 1. data (free): MA OpenStreetMap extract
+# 1. data: MA OpenStreetMap extract (ODbL 1.0 — attribution required)
 curl -L -o data/raw/massachusetts-latest.osm.pbf \
   https://download.geofabrik.de/north-america/us/massachusetts-latest.osm.pbf
 
 # 2. features + score
 .venv/bin/python pipeline/extract.py   data/raw/massachusetts-latest.osm.pbf data/processed
 .venv/bin/python pipeline/elevation.py data/processed 11      # terrain relief raster
-.venv/bin/python pipeline/landcover.py data/processed         # WorldCover tree cover
+.venv/bin/python pipeline/landcover.py data/processed         # ESA WorldCover tree cover (CC BY 4.0)
 .venv/bin/python pipeline/score.py     data/processed         # scenic score per chunk
 .venv/bin/python pipeline/render.py    data/processed out     # heatmap + regional maps
 

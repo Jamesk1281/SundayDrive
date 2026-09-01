@@ -1,0 +1,251 @@
+import SwiftUI
+
+/// Who the app owes credit to, and in the words their licences ask for.
+///
+/// Scenic draws OpenStreetMap-derived road geometry on the map, names OSM
+/// streets in its maneuvers and speaks them aloud, and every score it shows is
+/// built from two more open datasets. All three require attribution in the
+/// thing that reaches the user — a private repo's README discharges nothing.
+///
+/// The strings live here, not inline in the view, for one reason: they are the
+/// obligation. `AttributionTests` asserts each one is present and reachable, so
+/// a later refactor that drops a line fails a test instead of quietly shipping
+/// an app that is out of compliance.
+///
+/// **Reproduced, not paraphrased.** Each `credit` below is the wording the
+/// licensor publishes, checked against the source on 2026-08-31 (URLs in each
+/// entry). Do not "tidy" them — the capitalisation, the `©`, the en dash in
+/// "Open Government Licence – Canada" and the trailing punctuation are all part
+/// of text somebody else wrote.
+struct DataSource: Identifiable {
+    /// What this source gives the app, in the user's terms — not the dataset's
+    /// name. Someone reading a credits screen wants to know what they are
+    /// looking at before they are told who made it.
+    let role: String
+    /// The dataset, as its publisher names it.
+    let name: String
+    /// The credit lines, verbatim. More than one where the source is an
+    /// aggregate and several of its upstreams reach this app's footprint.
+    let credit: [String]
+    /// The licence, named the way the licensor names it. `nil` where the source
+    /// renders its own attribution and imposes no string on us (Apple).
+    let licence: String?
+    /// Where the licence and the data's own provenance can be read. Required by
+    /// the ODbL guideline for OSM ("There needs to be a way to access more
+    /// information, including origin and licence of the data"), and good
+    /// practice for the rest.
+    let url: URL
+
+    var id: String { name }
+}
+
+enum DataSources {
+
+    /// The one line that has to be on screen without the user doing anything.
+    ///
+    /// The OSMF attribution guideline's base requirement is that attribution
+    /// "must be presented to anyone who uses, views, accesses, interacts with,
+    /// or is otherwise exposed to the map or produced work", and that the
+    /// format "should not require individuals to interact with the map or
+    /// produced work to see the attribution". A credits screen one tap away is
+    /// the safe harbour for attribution that was *shown and then collapsed* —
+    /// on its own it is not the safe harbour for never showing it at all. So
+    /// this sits visible in the planning sheet at every detent, and taps
+    /// through to the full list.
+    ///
+    /// "Map data from" rather than a bare copyright line because the guideline
+    /// invites exactly that qualification when the reuser has rendered the data
+    /// to their own design, which is what the route lines are: "OSM does not
+    /// wish to claim credit for data or other material that did not come from
+    /// it, so feel free to qualify the credit to explain what OSM content you
+    /// are using." The basemap under those lines is Apple's, so the
+    /// qualification is not decoration — an unqualified "© OpenStreetMap
+    /// contributors" over an Apple basemap would credit OSM for Apple's work.
+    static let shortCredit = "Map data from OpenStreetMap"
+
+    /// The link that `shortCredit` has to reach, per the guideline's "This may
+    /// be done by making the text 'OpenStreetMap' a link to
+    /// openstreetmap.org/copyright".
+    static let openStreetMapCopyrightURL = URL(string: "https://www.openstreetmap.org/copyright")!
+
+    static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, appleMaps]
+
+    /// OpenStreetMap — every road, street name and turn restriction, via the
+    /// Geofabrik extracts the pipeline consumes.
+    ///
+    /// The routes drawn on screen are a **Produced Work** under ODbL §4.3:
+    /// attribution is required, share-alike is not. (The derived `.parquet`
+    /// graph in `data/processed` is a different thing — a Derivative Database,
+    /// §4.4 — and distributing *that* would trigger share-alike. It never
+    /// leaves the author's own machines today. See
+    /// `docs/licensing-and-attribution-brief.md` before building any
+    /// download-a-region-for-offline-use feature.)
+    ///
+    /// Both credit lines are acceptable forms per the guideline: "Attribution
+    /// must be to 'OpenStreetMap'" and "The historical forms of attribution
+    /// '© OpenStreetMap contributors' or '© OpenStreetMap' are acceptable."
+    /// Checked against <https://osmfoundation.org/wiki/Licence/Attribution_Guidelines>
+    /// (adopted 2021-06-25) and <https://www.openstreetmap.org/copyright>.
+    static let openStreetMap = DataSource(
+        role: "Roads, street names and routing",
+        name: "OpenStreetMap",
+        credit: ["© OpenStreetMap contributors"],
+        licence: "Open Database License (ODbL) 1.0",
+        url: openStreetMapCopyrightURL
+    )
+
+    /// ESA WorldCover v200 (2021) — half of `c_forest` at `pipeline/score.py`,
+    /// and forest carries 0.18 of the 1.14 of total scenery weight, so this is
+    /// in every score the app displays.
+    ///
+    /// Credit is ESA's own prescribed CC-BY line for **v200/2021** specifically
+    /// — the consortium words it per version and this is the version
+    /// `pipeline/landcover.py` fetches. Checked against
+    /// <https://esa-worldcover.org/en/data-access>.
+    static let worldCover = DataSource(
+        role: "Forest and green cover in the scenery scores",
+        name: "ESA WorldCover 10 m 2021 v200",
+        credit: ["© ESA WorldCover project 2021 / Contains modified Copernicus "
+                 + "Sentinel data (2021) processed by ESA WorldCover consortium"],
+        licence: "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+        url: URL(string: "https://esa-worldcover.org")!
+    )
+
+    /// The AWS Terrain Tiles (Terrarium) set — feeds `c_relief`.
+    ///
+    /// **This is an aggregate, not a dataset.** It is a mosaic of many national
+    /// elevation products, each with its own attribution, and it would be wrong
+    /// to call it public domain because its largest US upstream is. The AWS Open
+    /// Data registry entry names its licence as
+    /// <https://github.com/tilezen/joerd/blob/master/docs/attribution.md>, whose
+    /// "Required attribution" block lists a line per upstream; the three below
+    /// are reproduced from it verbatim.
+    ///
+    /// Which three: `joerd`'s own per-zoom source table says that at **zoom 11**
+    /// — the zoom `pipeline/elevation.py` fetches — land is `NED/3DEP` and
+    /// `SRTM`, plus `NRCAN` in Canada, and ocean is `ETOPO1`. The pipeline's
+    /// `BBOX` is `(-73.76, 40.93, -66.87, 47.47)`, which reaches north of the
+    /// Maine border into Quebec and New Brunswick and out over the Gulf of
+    /// Maine, so all three upstreams are inside the footprint the relief raster
+    /// is built from. `ArcticDEM` and `GMTED` only apply above 60° latitude at
+    /// this zoom and the European, Austrian, Australian, Mexican, UK, Norwegian
+    /// and New Zealand lines are elsewhere entirely, so they are not reproduced.
+    ///
+    /// Note the Canadian line is the reason not to shortcut this: it is the
+    /// Open Government Licence – Canada, not US-government public domain.
+    static let terrainTiles = DataSource(
+        role: "Hills and valleys in the scenery scores",
+        name: "Terrain Tiles (AWS Open Data, formerly Mapzen)",
+        credit: [
+            "United States 3DEP (formerly NED) and global GMTED2010 and SRTM "
+                + "terrain data courtesy of the U.S. Geological Survey.",
+            "Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric "
+                + "Administration",
+            "Canada terrain data contains information licensed under the Open "
+                + "Government Licence – Canada;",
+        ],
+        licence: nil,
+        url: URL(string: "https://registry.opendata.aws/terrain-tiles/")!
+    )
+
+    /// The basemap under the route lines. MapKit draws Apple's own attribution
+    /// and legal link itself, so no string is owed here — it is listed so the
+    /// screen answers "and the map itself?" rather than leaving the user to
+    /// assume the roads and the basemap came from the same place.
+    static let appleMaps = DataSource(
+        role: "The underlying map",
+        name: "Apple Maps",
+        credit: ["Basemap and place search © Apple Inc. and its data providers, "
+                 + "credited on the map itself."],
+        licence: nil,
+        url: URL(string: "https://www.apple.com/legal/internet-services/maps/")!
+    )
+}
+
+/// The "Data sources" sheet: what Scenic is built from, and the credit each of
+/// those licences asks for.
+///
+/// Presented the way "Tune scenery" is — a `NavigationStack` in a sheet with a
+/// Done button — because that is the only sheet idiom this app has, and a
+/// credits screen is not the place to invent a second one.
+struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("Scenic's roads, and the scores it rates them with, come "
+                         + "from open data. These are the people who made it.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    ForEach(DataSources.all) { source in
+                        entry(for: source)
+                    }
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("Data sources")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    /// One source: what it gives us, its verbatim credit, its licence, and a
+    /// link out to the licence and the data's own provenance.
+    private func entry(for source: DataSource) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(source.role.uppercased())
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(source.name)
+                .font(.subheadline.weight(.semibold))
+
+            // The credit lines themselves. Selectable so the wording can be
+            // copied out exactly — it is somebody else's text and a user (or an
+            // App Review reader) may want it character for character.
+            ForEach(Array(source.credit.enumerated()), id: \.offset) { _, line in
+                Text(line)
+                    .font(.caption)
+                    .textSelection(.enabled)
+            }
+
+            if let licence = source.licence {
+                Text(licence)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Link(destination: source.url) {
+                Text(Self.linkLabel(source.url))
+                    .font(.caption)
+            }
+            .tint(.scenic)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// A link's visible text: host **and path**, scheme and `www.` dropped.
+    ///
+    /// The host alone would read "openstreetmap.org" on a link that goes to
+    /// openstreetmap.org/copyright — and /copyright is the specific page the
+    /// OSMF guideline names as what the credit has to reach. Showing the path
+    /// is the difference between a link that says where it goes and one that
+    /// quietly says something else.
+    static func linkLabel(_ url: URL) -> String {
+        var text = url.absoluteString
+        for prefix in ["https://", "http://", "www."] where text.hasPrefix(prefix) {
+            text.removeFirst(prefix.count)
+        }
+        if text.hasSuffix("/") { text.removeLast() }
+        return text
+    }
+}
