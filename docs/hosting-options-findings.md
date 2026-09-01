@@ -3,7 +3,7 @@
 Answers `docs/hosting-options-brief.md`. Researched 2026-08-31/09-01 against
 `main` at `efbbd28`. **Nothing was migrated, provisioned, purchased or signed
 up for**, per the brief's scope. No source file was changed except
-`server/DEPLOY.md`, where §7 is wrong in a way that matters (see below).
+`server/DEPLOY.md`, whose §7 and sizing figures needed correcting (see below).
 
 The brief's measured requirements were taken as given and not re-derived. Where
 they were cheap to check they held: `graph_nodes.parquet` is 794,685 rows and
@@ -14,21 +14,30 @@ are 364 MiB = **382 MB**, also as stated.
 
 ## Recommendation, in one paragraph
 
-**Do not pay for anything, and do not migrate this week.** Do two things in
-order. **First, tonight: fix process supervision on the laptop and put a free
-external monitor on `/api/health`.** That is free, takes about an hour, carries
-no migration risk, and addresses the actual cause of the outages — which is not
-RAM, not CPU, and not the hardware. **Then, without time pressure: acquire an
-Oracle Cloud Always Free Ampere A1 instance** (2 OCPU / 8 GB, home region
-`us-ashburn-1`, fallback `us-chicago-1`), migrate onto it, and keep the laptop
-as the documented rollback. Oracle is genuinely free, genuinely always-on, and
-fits the measured 3.53 GB with large margin — but acquiring an A1 instance
-involves an **irreversible region choice made before you know whether capacity
-exists**, so it must not be attempted under pressure from a downed API.
+**Go to Oracle Cloud Always Free** — Ampere A1, **2 OCPU / 8 GB**, home region
+`us-chicago-1` (fallback `us-ashburn-1`), **$0/mo**. It is the only mainstream
+free tier that fits the measured 3.53 GB, it does not sleep, and it has no
+12-month clock. Keep the laptop running as the interim and the rollback until
+the new box has served for a fortnight.
 
-The single most important finding is the ordering, and the reason for it is in
-[The outage is a supervision defect](#the-outage-is-a-supervision-defect-not-a-hosting-one):
-**migrating without fixing supervision reproduces the outage on the new box.**
+**But do not treat it as permanent infrastructure.** "Free forever" is not a
+property Oracle sells — see
+[Is it free forever?](#is-it-free-forever),
+which is the most important section in this document. The reason the bet is
+still worth taking is that **the downside is bounded**: the whole deployment is
+three parquet files, a `git clone`, eleven pinned wheels and one systemd unit,
+and the public hostname is a Cloudflare tunnel — so moving hosts again needs no
+DNS change, no App Review, and about an hour. The exit price if Oracle's terms
+move is **~$6/mo**, not the ~$68/mo an earlier draft of this document implied.
+
+> **Superseded (2026-09-01):** an earlier version of this document led with
+> "harden the laptop first" and diagnosed the outages as a process-supervision
+> failure. The owner reports the laptop was simply **switched off** and has
+> never actually misbehaved — so the 530s were the expected response to an
+> absent box, not a fault. The `start-windows.bat` finding below is still true
+> as a *latent* gap and is worth closing if the laptop is ever left unattended,
+> but it explains nothing that happened. The migration is now the plan on its
+> own merits: a laptop that gets turned off is not an always-on host.
 
 ---
 
@@ -79,15 +88,21 @@ secondary reporting and **should be confirmed in the Hetzner console before
 anyone spends money**. Directionally it is not in doubt — the same notice shows
 CCX13 €15.99 → €42.99 and CPX52 €36.49 → €100.49.
 
-**Consequence: "just pay for a small VPS in the US" is no longer a $5–16/mo
-answer. It is a ~$68/mo answer.** That strengthens the case for both free
-options and is the main reason the recommendation does not hedge toward paying.
+**But do not conclude from this that US paid hosting is expensive.** Hetzner
+specifically has stopped being the cheap answer; the market has not. **Contabo
+lists 4 vCPU / 8 GB / 100 GB SSD at ~€5.50/mo with a US location** — a better
+shape than CPX31 at a twelfth of the price. For Scenic in particular Contabo's
+known weakness barely applies: after the 42.6 s load the workload is pure
+CPU and RAM with almost no disk I/O.
 
-### And a fourth correction, to the premise
+So the honest paid floor is **~$6/mo, not ~$68/mo**. That does not change the
+recommendation — free still beats $6 — but it matters enormously for how much
+risk is worth absorbing to stay free, which is the subject of the next section.
 
-The brief says the API has been down "twice in three days". **It is three
-times.** It was down while this was being researched — continuously, for the
-entire session:
+### And a fourth correction — which then corrected itself
+
+The brief says the API has been down "twice in three days". A third outage ran
+throughout this research:
 
 ```
 utc,http_code,time_total_s
@@ -101,28 +116,130 @@ HTTP 530 / Cloudflare 1033, which `DEPLOY.md`'s own decoder table defines as
 **"DNS points at the tunnel, no `cloudflared` connected"**. Not a 502 (app dead,
 tunnel alive). Not a DNS failure. The tunnel process is gone, or the box is.
 
+**It was the box.** The owner confirms the laptop had simply been switched off,
+and that it has never actually misbehaved when running. So 530 was the correct
+response to an absent origin, and the uptime record is not evidence of a fault —
+it is evidence that **the laptop is a machine someone turns off**, which is the
+real argument for moving. Two of the three "outages" may well have been the same
+thing.
+
 ---
 
-## The outage is a supervision defect, not a hosting one
+## Is it free forever?
 
-This is the part that changes what to do first.
+**No — not guaranteed.** The *price* is $0 with no expiry; the *allowance* is
+not contractual, and Oracle halved it three months ago without announcing it.
 
-### What the evidence says
+The offer itself has **no expiry date**. Oracle's documentation is unambiguous: Always
+Free is "a set of Always Free offers that **never expire**", and "after your
+trial ends, your account remains active. There is no interruption to the
+availability of the Always Free Resources you have provisioned." There is no
+12-month clock, no documented inactivity deletion, and no charge unless you
+choose to upgrade.
 
-Three observed outages, and the one I could observe directly presented as
-**530/1033 with a fast TCP connect** (~45 ms — Cloudflare's edge answers
-immediately and reports no origin). So Cloudflare is healthy, DNS is healthy,
-and nothing is connected from the laptop side.
+**What is not guaranteed is the size of the allowance — and Oracle cut it,
+without announcing it, this summer.**
 
-### Was `DEPLOY.md` §7 ever applied?
+The sequence, which is the single best piece of evidence anyone has about how
+durable this tier is:
 
-**I cannot prove it either way from this Mac** — the laptop is a separate
-Windows machine and nothing in the repo records its runtime state. But there is
-strong circumstantial evidence, and one hard finding that makes the question
-partly moot.
+| date | what happened |
+|---|---|
+| **15 June 2026** | Allowance halved, 4 OCPU / 24 GB → 2 OCPU / 12 GB. **No blog post, no announcement.** Users found out by diffing the documentation. |
+| ~22 June 2026 | Community reports begin as support clarifies. |
+| **18 Aug 2026** | Enforcement. Email to affected tenancies: *"you must reduce your usage by August 18, 2026."* Instances over the entitlement **automatically terminated**. |
 
-The hard finding: **§7 as written cannot deliver restart-on-failure, even if it
-was applied exactly as specified.** §7 says to point Task Scheduler at the
+So the realistic model is: **the allowance can be halved again at any time, you
+will get roughly nine weeks and an email, and if you do not act your instance is
+deleted.** Not stopped — the June cut ended in termination for over-limit free
+accounts.
+
+Three further risks, from practitioner reports rather than documentation:
+
+- **Idle reclamation genuinely bites.** One report: *"they are watching CPU and
+  memory and if they see them idled they will take them away."* Another had a
+  lightly-used instance simply *"vanished"*. See the analysis below for why
+  Scenic should be exempt — and why that exemption is worth verifying rather
+  than trusting.
+- **A small number of accounts are terminated without explanation.** Two
+  independent reports of accounts closed with support declining to give a
+  reason. Set against many reports of *"several permanent Arm-VPSes running in
+  OCI for almost 4 years, without paying a single cent"*. It is a tail risk, not
+  a norm, but it is not zero and there is no appeal.
+- **US capacity may be worse than "try another AD" suggests.** One current
+  report: *"Every single availability zone in the U.S. have all been constantly
+  emitting out of capacity errors for free tier resource allocation."*
+
+### So why is this still the recommendation?
+
+**Because the cost of being wrong is about an hour and $6/mo.** That is the
+argument, and it is worth stating explicitly rather than assuming:
+
+1. **The deployment is unusually portable.** Three parquet files, a `git clone`,
+   eleven pinned wheels that all have prebuilt aarch64 *and* x86-64 wheels, and
+   one systemd unit. There is no managed database, no provider-specific service,
+   no vendor SDK, nothing to rewrite. Moving is a data copy and a `pip install`.
+2. **The hostname does not move.** `api.jameskouvlis.com` is a Cloudflare tunnel,
+   so the origin can change hosts with **no DNS change, no certificate work, and
+   no App Review** — the one constraint that could have made a bad host expensive
+   to leave. Run `cloudflared` on the new box, stop it on the old one, done.
+3. **The exit is cheap and known.** ~€5.50/mo at Contabo for a strictly better
+   shape. If Oracle halves the tier again and the box no longer fits, the
+   downside is a $66/year bill, not a stranded service.
+
+A free tier you cannot leave would be a bad bet at any price. This one you can
+leave in an hour, so the expected cost of Oracle reneging is small — and in the
+meantime it is genuinely $0 for a 2-core ARM box with 8 GB of RAM.
+
+### How to make it as durable as it can be
+
+1. **Provision 2 OCPU / 8 GB — deliberately under the 12 GB you are allowed.**
+   Counter-intuitive, and it defends against both risks at once: it keeps memory
+   utilization at 44% (well clear of the 20% idle threshold), and it leaves a
+   margin under the allowance rather than sitting exactly on it. If you want
+   maximum paranoia, **1 OCPU / 6 GB** would survive even another 50% cut
+   intact — at the cost of a single core, which is defensible given routing is
+   single-threaded anyway, but leaves nothing for the OS mid-route.
+2. **Never exceed the entitlement, even briefly.** The trial's $300 of credits
+   will happily let you provision a 4 OCPU / 24 GB A1. Don't. That is precisely
+   the configuration that got terminated on 18 August.
+3. **Watch for the next change.** The June cut was visible in the documentation
+   nine weeks before enforcement. Check
+   [the Always Free page](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+   quarterly, and **make sure Oracle has an email address you actually read** —
+   the 18 August enforcement was announced by email and nowhere else.
+4. **Consider Pay As You Go with a $1 budget alert — and understand the trade.**
+   This is the biggest available reliability upgrade and it costs **$0 in
+   actual spend**, because Always Free resources remain free after upgrading
+   (Oracle's own wording: "Oracle doesn't charge for Always Free resources after
+   you upgrade"). Upgrading reportedly **exempts you from idle reclamation
+   entirely** — Oracle's stated scope is "Always Free customers only", and
+   support has told users to convert to PAYG for exactly this reason — and PAYG
+   accounts appear to have retained the older 4/24 limits.
+   **The trade is a real credit card on file**, so any resource provisioned
+   outside the free allowance bills you for real. If you take this route, set a
+   budget alert at $1 in OCI Cost Management the same day. **This is your call to
+   make, not mine — it is your payment information, and the free tier works
+   without it.**
+
+---
+
+## The incumbent: not broken, just not always-on
+
+The owner's account settles this: the laptop works, and the outages were it
+being off. There is no reliability defect to fix and no diagnosis to perform.
+**The case for migrating is simply that an always-on API cannot live on a
+machine that gets switched off** — which is a property of how the machine is
+used, not a bug in it.
+
+What follows is kept because it is a real latent gap, and it matters the moment
+the laptop is expected to run unattended — including in its new role as the
+rollback target.
+
+### The latent gap in `DEPLOY.md` §7
+
+**§7 as written cannot deliver restart-on-failure, even if it was applied
+exactly as specified.** §7 says to point Task Scheduler at the
 Python and `cloudflared` executables directly, but the repo also ships
 `server/start-windows.bat`, whose own header says:
 
@@ -143,8 +260,9 @@ and has no further relationship with either process. "Restart on failure" never
 fires, because from Task Scheduler's point of view nothing ever failed. The task
 gives you start-at-boot and nothing else.
 
-That is *exactly* consistent with the observed symptom: an API that comes back
-after a reboot but stays down for hours once `cloudflared` dies on its own.
+Nothing observed here was caused by this — the box was off. But it means the
+laptop would not survive a `cloudflared` crash unattended, which is the one job
+it still has to do while it is the rollback target.
 
 The circumstantial evidence that the interactive path is the one in use: the
 script is written to be double-clicked, it opens titled console windows, it
@@ -153,44 +271,12 @@ alternative (`Run whether user is logged on or not`) is incompatible with that
 design — in a non-interactive session those windows have no desktop to appear
 on.
 
-**Verdict on the incumbent: the hardening was specified but the specification is
-defective, so "was it applied?" is the second question, not the first.** Fix the
-supervision model and the answer to the original question stops mattering.
-
-I have corrected §7 in `server/DEPLOY.md` as part of this work.
-
-### What the owner should check on the laptop, to confirm
-
-Five commands, in an **Administrator** PowerShell on the laptop. This is the
-missing evidence; it takes two minutes:
-
-```powershell
-schtasks /query /tn "*Scenic*" /v /fo LIST
-```
-
-```powershell
-powercfg /q SCHEME_CURRENT SUB_SLEEP
-```
-
-```powershell
-powercfg /lastwake
-```
-
-```powershell
-Get-WinEvent -FilterHashtable @{LogName='System'; Id=41,1074,6008} -MaxEvents 20 | Format-Table TimeCreated,Id,Message -AutoSize
-```
-
-```powershell
-Get-Process python,cloudflared -ErrorAction SilentlyContinue | Format-Table Name,Id,StartTime,WS -AutoSize
-```
-
-In order: whether the tasks exist at all and how they are configured; whether
-standby is actually disabled; what last woke the box; unexpected shutdowns and
-Windows-Update-initiated reboots (event 1074 names the initiator); and whether
-both processes are alive right now and since when. If `StartTime` on those two
-processes is recent and the box has not rebooted, something is killing and not
-restarting them. If event 1074 shows Windows Update reboots, active hours were
-never set.
+**Verdict:** the specification is defective, so if the laptop is ever expected
+to run unattended — as the rollback target, or as the interim host while the
+Oracle box is being acquired — point each Task Scheduler task at the executable
+itself rather than at the batch file. I have corrected §7 in `server/DEPLOY.md`.
+No further diagnosis is warranted: the owner reports the machine has never
+misbehaved when it is on.
 
 ---
 
@@ -285,9 +371,24 @@ brief's trap 4 says not to leave implicit. Singapore is disqualifying on its own
 **What I could not establish:** whether A1 capacity is available in
 `us-ashburn-1` or `us-chicago-1` *at this moment*. Oracle publishes no
 unauthenticated capacity API, and checking requires an account, which is out of
-scope. Treat acquisition as a task with an unbounded tail — possibly minutes,
-possibly repeated attempts over days. **This is the whole reason the laptop must
-be hardened first.**
+scope. Worse, one current practitioner report claims *"every single availability
+zone in the U.S. have all been constantly emitting out of capacity errors for
+free tier resource allocation"* — if that is accurate, `us-chicago-1` helps with
+odds but does not guarantee anything.
+
+**So set a stopping rule before you start, rather than grinding indefinitely.**
+A reasonable one:
+
+- **Days 1–14:** retry in the chosen US home region, each availability domain,
+  a few times a day. Oracle's own documented remedy is exactly this.
+- **If still nothing at 14 days:** decide between three known-cost options rather
+  than continuing to wait — (a) keep retrying, laptop still serving; (b) accept
+  `eu-frankfurt-1`, at a measured **+81 ms** per round trip (~+243 ms on a cold
+  reroute, roughly 30%); or (c) spend **~€5.50/mo** at Contabo in a US location
+  and stop playing the lottery.
+
+The point of the rule is that (c) exists at $66/year. Weeks of retrying to avoid
+that is a bad trade if the retrying is costing real attention.
 
 ### 3. Idle reclaim: the halving accidentally protects Scenic
 
@@ -323,6 +424,15 @@ Mac and will move on ARM Linux; at 12 GB, a working set that came in below
 8 GB it would have to fall below 1.6 GB. 8 GB still leaves 4.5 GB of headroom
 over the measured peak, which is comfortably inside the brief's "6–8 GB for
 comfort" target.
+
+**Do not fake load to defeat this.** The common workaround is a script that
+burns CPU or SSHs in every five minutes. Scenic does not need it: the memory
+criterion is documented, and Scenic genuinely holds 3.53 GB of real working set
+rather than pretending to. Manufacturing idle-looking work to defeat a
+resource-efficiency policy is also the kind of thing that reads badly if an
+account review ever happens. If Oracle reclaims the box *despite* memory being
+above 20%, that is the signal to upgrade to PAYG — which exempts you outright —
+not to start burning cycles.
 
 Two caveats I could not close:
 
@@ -420,51 +530,54 @@ do upgrade (the only documented way to escape idle reclaim, incidentally), set a
 | **Fly.io free** | No true permanent free tier any more; legacy allowances honoured only for accounts created before 7 Oct 2024. Current model auto-stops machines on low traffic. Sleeps, and the old allowance was 256 MB anyway. |
 | **Railway free** | Free tier removed July 2023. Current free plan is **$1/month of credit, 0.5 GB RAM**. Fails on RAM by 7x. |
 | **Lambda / Cloud Run / any serverless** | 42.6 s load time paid per cold container against a ~3.5 GB working set. Brief trap 2. Not a pricing question. |
-| **Hetzner US (CPX31, 4 vCPU / 8 GB)** | Works technically. **~€62.49/mo** after the June 2026 increase. Not disqualified — just poor value against two free options that work. |
-| **Hetzner EU (CX33, 4 vCPU / 8 GB)** | ~€6.49/mo and technically fine, but **+81 ms RTT** (+243 ms cold). Only worth it if Oracle capacity proves unobtainable *and* the laptop is unacceptable. |
+| **Hugging Face Spaces free** | 2 vCPU / 16 GB is ample, but free Spaces **sleep after 48 h of inactivity**, and the 382 MB payload would have to live in the repo. Trap 2. |
+| **Hetzner US (CPX31, 4 vCPU / 8 GB)** | Works technically. **~€62.49/mo** after the June 2026 increase — 10x Contabo for a worse shape. No reason to choose it. |
+| **Hetzner EU (CX33, 4 vCPU / 8 GB)** | ~€6.49/mo and technically fine, but **+81 ms RTT** (+243 ms cold) for no saving over a US Contabo box. |
+
+**Not disqualified — the paid fallback:** **Contabo Cloud VPS 4**, 4 vCPU / 8 GB /
+100 GB SSD, **~€5.50/mo**, US location available. Recommended only if Oracle
+capacity proves unobtainable or its terms move again. Confirm the price and the
+US location in Contabo's own console before buying; the listed rate is a
+24-month promotional one and the standard rate applies afterwards.
 
 ---
 
 ## Cost comparison
 
-| option | monthly | RAM | always-on | migration risk | notes |
-|---|---|---|---|---|---|
-| **Laptop, hardened** | **$0** | 8 GB (assumed) | yes, once §7 is fixed properly | **none** | Home ISP and power are the residual risk |
-| **Oracle A1 Always Free** | **$0** | 8 GB provisioned / 12 GB max | yes | low (rollback = one env var) | Acquisition risk; irreversible region choice |
-| Hetzner EU CX33 | ~€6.49 | 8 GB | yes | low | +81 ms RTT |
-| Hetzner US CPX31 | ~€62.49 | 8 GB | yes | low | 3x price increase June 2026 |
+| option | monthly | RAM | always-on | main risk |
+|---|---|---|---|---|
+| **Oracle A1 Always Free** *(recommended)* | **$0** | 8 GB of 12 allowed | yes | Acquisition lottery; allowance cut again; irreversible region choice |
+| Oracle A1 on Pay As You Go | **$0** spend | 8 GB (12–24 allowed) | yes | Real card on file — cap it with a $1 budget alert |
+| **Contabo Cloud VPS 4** *(paid exit)* | **~€5.50** | 8 GB | yes | Oversubscribed host; slow disk (irrelevant after load) |
+| Hetzner EU CX33 | ~€6.49 | 8 GB | yes | +81 ms RTT for no saving |
+| Hetzner US CPX31 | ~€62.49 | 8 GB | yes | Price, for nothing extra |
+| Laptop (status quo) | $0 | 8 GB | **no — it gets switched off** | Not an always-on host by use, not by fault |
 
 ---
 
 ## The plan
 
-### Phase 0 — tonight, on the laptop (free, ~1 hour, no migration risk)
+### Phase 0 — before signing up (10 minutes)
 
-This is required whatever host wins, because it is also the rollback target.
+1. **Leave the laptop on** for the duration of the migration. It is the interim
+   host and the rollback target; nothing else about it needs to change.
+2. **Put a free external monitor on `/api/health` now**, pointed at the laptop.
+   This is worth doing before the migration rather than after, because it gives
+   you a baseline and it is the thing that has always been missing — the current
+   answer to "how do you find out it is down" is "someone curls it". Details
+   under [Uptime](#uptime-what-watches-it-and-what-restarts-it).
+3. **Decide the Pay As You Go question** — see
+   [How to make it as durable as it can be](#how-to-make-it-as-durable-as-it-can-be).
+   It materially changes the reliability of the result and it is easier to decide
+   before signup than after.
 
-1. **Stop using `start-windows.bat` as a Task Scheduler target.** Create **two
-   separate tasks**, each pointing at an executable directly — never at a batch
-   file that spawns and exits:
-   - `…\.venv\Scripts\python.exe` with argument `…\server\serve.py`
-   - `cloudflared.exe` with arguments `tunnel run scenic`
-
-   Each: trigger *At startup*, *Run whether user is logged on or not*, and on the
-   **Settings** tab, *If the task fails, restart every 1 minute*, up to 3 times,
-   with *If the running task does not end when requested, force it to stop*. The
-   critical detail is that the task's action must be the **long-lived process
-   itself**, so that when it dies the task is seen to fail.
-   `start-windows.bat` stays useful for manual double-click starts.
-2. Set `SCENIC_HOST=127.0.0.1` for the API task (System environment variable, or
-   a one-line wrapper that is `cmd /c set ... && python.exe …` — not `start`).
-3. Apply the `powercfg` lines in §7 if they were never applied, and **verify**
-   with `powercfg /q SCHEME_CURRENT SUB_SLEEP` rather than assuming.
-4. Set Windows Update **active hours**.
-5. **Reboot and touch nothing.** Confirm `https://api.jameskouvlis.com/api/health`
-   answers on its own. §7 already says this is the only real test; it is, and it
-   is worth doing twice.
-6. **External monitoring** (see below). This is the item that has been missing
-   entirely, and it is the difference between "down for six hours" and "down for
-   five minutes".
+**Optional, and only if the laptop will ever run unattended:** close the §7 gap
+by pointing two Task Scheduler tasks at `…\.venv\Scripts\python.exe` and
+`cloudflared.exe` directly — never at `start-windows.bat`, which exits
+immediately and so defeats restart-on-failure. Each: *At startup*, *Run whether
+user is logged on or not*, and on the **Settings** tab *If the task fails,
+restart every 1 minute*. Not urgent given the laptop has never actually
+misbehaved.
 
 ### Phase 1 — acquire the Oracle box (no deadline, no pressure)
 
@@ -475,10 +588,13 @@ This is required whatever host wins, because it is also the rollback target.
 2. Create **one** `VM.Standard.A1.Flex` instance: **2 OCPU, 8 GB**, Ubuntu 24.04
    (Python 3.12), 50 GB boot volume. Not 12 GB — see the reclaim table. Not more
    than 2 OCPU total, ever — see the landmine.
-3. If `Out of host capacity`: try each availability domain, then retry over
-   following days. Oracle's documented remedy is exactly this. The laptop is
-   serving throughout, which is the entire point of the ordering.
-4. Open nothing inbound. The Cloudflare tunnel dials out, so the instance needs
+3. **Give Oracle a working email address** and keep it monitored. The 18 August
+   enforcement was announced by email and nowhere else; that mailbox is your only
+   warning if the allowance is cut again.
+4. If `Out of host capacity`: try each availability domain, then retry over
+   following days, against the 14-day stopping rule above. The laptop is serving
+   throughout, which is the entire point of the ordering.
+5. Open nothing inbound. The Cloudflare tunnel dials out, so the instance needs
    **no ingress rule at all** — leave the default security list closed. This is
    strictly better than the laptop's position and removes the firewall question.
 
@@ -604,17 +720,23 @@ named:
 1. **Whether A1 capacity is available in `us-chicago-1` or `us-ashburn-1` right
    now.** Requires an account. Out of scope. This is the recommendation's main
    open risk and the reason for the phased ordering.
-2. **Whether `DEPLOY.md` §7 was ever applied to the laptop.** Requires access to
-   the Windows box. The five diagnostic commands above close it in two minutes.
-   The finding that §7 is *defective as specified* partly moots the question.
-3. **What Oracle actually does to a reclaimed instance** (stop vs delete). Not
+2. **What Oracle actually does to a reclaimed instance** (stop vs delete). Not
    stated in Oracle's documentation; secondary sources say "stopped, volumes
-   preserved".
-4. **Whether the memory-utilization criterion is skipped when the Oracle Cloud
-   Agent monitoring plugin is disabled.** Verify on the box once it exists.
-5. **The exact current Hetzner CPX31-US price.** €62.49 is secondary reporting;
-   the ~3x direction is confirmed by Hetzner's own price-adjustment notice.
-   Irrelevant unless the free options both fail.
+   preserved". Either way it is a total outage for an always-on API.
+3. **Whether the memory-utilization criterion is skipped when the Oracle Cloud
+   Agent monitoring plugin is disabled.** Verify on the box once it exists — this
+   is the mechanism Scenic's reclaim exemption depends on.
+4. **Whether Pay As You Go really exempts you from idle reclamation.** Strongly
+   and consistently reported, including by Oracle support in user accounts, but
+   *not stated in Oracle's documentation*. Oracle's written scope is "Always Free
+   customers only", which implies it. Do not treat it as contractual.
+5. **Whether PAYG accounts genuinely retained the 4 OCPU / 24 GB limits.**
+   Reported by several users via support email, and contradicted by the public
+   documentation's "All tenancies get the first 1,500 OCPU hours". Irrelevant to
+   the recommendation, which stays inside 2 OCPU either way.
+6. **Exact current prices at Hetzner (CPX31-US, €62.49) and Contabo (€5.50).**
+   Both from secondary reporting or promotional listings. Confirm in the
+   provider's own console before spending anything.
 
 ---
 
@@ -633,7 +755,9 @@ Provider primary sources:
 
 Secondary reporting, used only where marked:
 
-- [Oracle quietly halves free tier A1 limits — InfoQ](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/) and [Linuxiac](https://linuxiac.com/oracle-quietly-cuts-free-tier-ampere-a1-resources-in-half/) — the 15 June 2026 date
+- [Oracle quietly halves free tier A1 limits — InfoQ](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/) and [Linuxiac](https://linuxiac.com/oracle-quietly-cuts-free-tier-ampere-a1-resources-in-half/) — the 15 June 2026 cut, the absence of any announcement, and the fate of over-limit instances
+- [HN discussion, Oracle Always Free ARM cut](https://news.ycombinator.com/item?id=49183750) — the 18 Aug 2026 enforcement email, idle-reclamation experiences, PAYG exemption reports, US capacity reports, and two accounts terminated without explanation
+- [Contabo Cloud VPS](https://contabo.com/en/vps/) — 4 vCPU / 8 GB at ~€5.50/mo, US location
 - [Hetzner 2026 price increases — Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases) — CPX31-US €20.99 → €62.49
 - [Render free tier spin-down](https://www.srvrlss.io/provider/render/), [Fly.io billing](https://fly.io/docs/about/billing/), [Railway free tier](https://www.srvrlss.io/provider/railway/) — disqualifications
 - [UptimeRobot keyword monitoring](https://uptimerobot.com/keyword-monitoring/) — free-plan monitoring

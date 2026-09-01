@@ -4,9 +4,9 @@
 > below were refuted there and are left in place as the record — do not quote
 > them:** Oracle Always Free A1 is now **2 OCPU / 12 GB**, not 4 OCPU / 24 GB
 > (halved 15 June 2026, still ample); Hetzner's CX line is **not sold in the
-> US** at all; and
-> the US paid fallback is **~€62/mo, not ~€16**. The measured requirements in
-> this file all held up.
+> US** at all, and a US Hetzner box that fits is **~€62/mo, not ~€16** — though
+> Contabo does the same job for ~€5.50, so Hetzner is simply the wrong
+> yardstick. The measured requirements in this file all held up.
 
 **Status: requirements measured 2026-08-31, nothing changed.** No source file,
 no config, no deploy was touched. The task is a **recommendation and a plan**,

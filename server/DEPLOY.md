@@ -292,9 +292,10 @@ seven sliders that each re-route on release, plus off-route reroutes every 8 s.
   > working hardening right up until the first crash. The task's action has to
   > be the long-lived process itself for Windows to notice it died.
   >
-  > This is the suspected cause of the 530s on 2026-08-29 and 2026-08-31, and of
-  > a third continuous outage observed on 2026-09-01. See
-  > `docs/hosting-options-findings.md`.
+  > This is a latent gap, not a diagnosis of any particular outage: the 530s
+  > observed on 2026-08-29/31 and 2026-09-01 were the laptop being switched off,
+  > which is the expected response and not a fault. Worth closing anyway if the
+  > box is ever meant to run unattended.
 
   Then, as Administrator: `powercfg /change standby-timeout-ac 0`,
   `powercfg /change hibernate-timeout-ac 0`, and to make the lid do nothing:
@@ -320,11 +321,13 @@ docker run -p 5057:5057 --restart unless-stopped scenic-api
 Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd
 (`Restart=always`, and `TimeoutStartSec=180` — the New England graph takes 42.6 s
 to load), and put **Caddy** or **Cloudflare** in front for HTTPS. Size it for
-**4 GB minimum, 8 GB comfortable** on the New England build; that rules out
-every cheap tier at the US providers, and as of the June 2026 price rises a US
-Hetzner box that clears it is ~€62/mo rather than the ~€4 this file used to
-claim. `docs/hosting-options-findings.md` compares the options and recommends
-Oracle Cloud Always Free (Ampere A1, 2 OCPU / 8 GB, $0) instead.
+**4 GB minimum, 8 GB comfortable** on the New England build. Hetzner is no longer
+the cheap answer it was when this file said "roughly €4": its CX line is EU-only
+and the June 2026 rises put a US box that clears 8 GB at ~€62/mo. Contabo is
+~€5.50/mo for 4 vCPU / 8 GB with a US location.
+`docs/hosting-options-findings.md` compares the options and recommends Oracle
+Cloud Always Free (Ampere A1, 2 OCPU / 8 GB, **$0**) as the primary, with Contabo
+as the paid exit if Oracle's free-tier terms move again.
 
 ## Option D — No Cloudflare
 
