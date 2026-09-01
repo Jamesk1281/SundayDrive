@@ -319,8 +319,10 @@ docker run -p 5057:5057 --restart unless-stopped scenic-api
 ## Option C — Bare VPS
 
 Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd
-(`Restart=always`, and `TimeoutStartSec=180` — the New England graph takes 42.6 s
-to load), and put **Caddy** or **Cloudflare** in front for HTTPS. Size it for
+(`Type=simple`, `Restart=always`) and put **Caddy** or **Cloudflare** in front for
+HTTPS. Note the unit goes *active* the moment the process forks, while the graph
+needs 42.6 s (longer on a slower core) before it answers — so don't let a monitor
+page you during a restart. Size it for
 **4 GB minimum, 8 GB comfortable** on the New England build. Hetzner is no longer
 the cheap answer it was when this file said "roughly €4": its CX line is EU-only
 and the June 2026 rises put a US box that clears 8 GB at ~€62/mo. Contabo is

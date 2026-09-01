@@ -12,6 +12,22 @@ are 364 MiB = **382 MB**, also as stated.
 
 ---
 
+## Final verdict
+
+| question | answer |
+|---|---|
+| **Is it free?** | **Yes. $0/mo, genuinely, indefinitely** — no card charged, no 12-month clock, no trial expiry. |
+| **Free *forever*?** | **No guarantee.** The price is fixed at $0; the *allowance* is not, and Oracle halved it without notice in June 2026. Budget ~nine weeks' warning by email. |
+| **Will it pass App Review?** | **Yes** — nothing about the hosting is disqualifying. Just don't migrate and submit in the same week, and fix the raw `HTTP 530` error text first. |
+| **Will it carry the early stages?** | **Comfortably** — on the order of 1,000+ drives/day. But routing doesn't parallelise, so the constraint is *simultaneous* reroutes, not volume. |
+| **Biggest real risk** | Not RAM, not cost: **getting an A1 instance at all.** US capacity is scarce and the home region is a permanent choice. |
+| **If it goes wrong** | ~1 hour and **~€5.50/mo** at Contabo. The hostname is a tunnel, so no DNS change and no App Review. |
+
+**Recommendation: take it.** The full setup is in the
+[runbook](#setup-runbook).
+
+---
+
 ## Recommendation, in one paragraph
 
 **Go to Oracle Cloud Always Free** — Ampere A1, **2 OCPU / 8 GB**, home region
@@ -672,13 +688,15 @@ Compare against the brief's table. The brief is right that 3.53 GB will move —
 `DEPLOY.md` already notes macOS compresses much of the footprint out of plain
 RSS, so **expect ARM Linux to report the same or somewhat more**, not less. My
 estimate is 3.5–4.2 GB; anything above 5 GB or below 2.5 GB deserves
-investigation, and below 2.4 GB would re-open the reclaim question.
+investigation, and below 2.4 GB would re-open the reclaim question. **CPU time is
+the figure that will move most** — see
+[Will it survive App Review and the early stages?](#will-it-survive-app-review-and-the-early-stages).
 
 | measure | how | expected | brief's figure |
 |---|---|---|---|
 | peak RSS | `systemd-cgtop` / `ps -o rss= -p $(pidof python3.12)` after first route | 3.5–4.2 GB | 3.53 GB |
-| load time | time from service start to first `/api/health` 200 | 40–70 s (A1 core is slower than an M-series) | 42.6 s |
-| one real route | Boston → Augusta ME, 262 km, timed server-side | 0.5–1.2 s | 835 ms |
+| load time | time from service start to first `/api/health` 200 | **85–105 s** — the A1 core is under half an M2's | 42.6 s |
+| one real route | Boston → Augusta ME, 262 km, timed server-side | **1.7–2.1 s** — same reason | 835 ms |
 | test suite | `pytest tests/` | 207 passed, **4 skipped** | — |
 | memory utilization | OCI Monitoring, `MemoryUtilization` | **must be > 20%** | — |
 
@@ -712,6 +730,245 @@ three outages became three outages. Whatever host wins:
 
 ---
 
+## Will it survive App Review and the early stages?
+
+Two separate questions. Short answers: **App Review — yes, with one scheduling
+rule. Early stages — yes, with a lot of room, but the ceiling is lower and
+weirder than it looks.**
+
+### The A1 core is about half the speed of the Mac these numbers came from
+
+Every figure in the brief was measured on an **Apple M2**. Oracle's A1 is an
+Ampere Altra Q80-30 — Neoverse N1 cores, documented as **less than half** the
+single-core speed of an M2. This workload is a `scipy` Dijkstra: pointer-chasing
+and memory-latency bound, which is where Apple's memory subsystem is strongest
+and the N1's is weakest. So expect the gap to land at the bad end.
+
+| | measured (M2) | expected (A1) |
+|---|---|---|
+| full API request, two Dijkstras | 835 ms | **~1.7–2.1 s** |
+| `Router` load at boot | 42.6 s | **~85–105 s** |
+| peak RSS | 3.53 GB | 3.5–4.2 GB (unchanged by CPU) |
+
+**This is an estimate, not a measurement** — it is the first thing to check on
+the box, and if a route comes back in ~2 s you have confirmed it. The load time
+matters only at boot. The per-request figure is a real UX regression on route
+*planning*, and it is the one honest cost of choosing free over paid.
+
+It is **not** a problem for the case that matters. A mid-drive reroute at ~2 s is
+fine; the disqualifying number was 42.6 s, which is why serverless was ruled out
+and why an always-warm box is the whole point.
+
+### Early-stage capacity: volume is fine, simultaneity is the constraint
+
+The counter-intuitive part, straight from `DEPLOY.md`: **routing does not
+parallelise.** `scipy.sparse.csgraph.dijkstra` holds the GIL, so four concurrent
+routes measured 0.482 s against 0.519 s serial — a 1.08x speedup. waitress's four
+threads keep the server *responsive*, not faster.
+
+**So the second OCPU buys you nothing in throughput.** One route computes at a
+time, whatever the core count. The ceiling is:
+
+- **~0.5 requests/second sustained** on the A1 (one ~2 s route at a time).
+- A typical 30-minute drive is roughly 1 initial route plus a handful of
+  reroutes — call it **5–10 requests**.
+- At a comfortable 30% utilisation that is **~500 requests/hour**, or on the
+  order of **1,000+ drives a day**.
+
+Nobody reaches that in early stages. What you *can* hit early is a **simultaneity
+stall**: three people rerouting in the same second means the third waits ~6 s
+behind the other two. With a handful of users that is rare and recoverable; it is
+also the first thing that will break if the app gets popular.
+
+**The scaling lever, when it comes:** more throughput means more *processes*, and
+each one is another full ~3.53 GB copy of the graph. Two workers need ~7.1 GB,
+which needs the full 12 GB allowance. That is the one argument for provisioning
+12 GB now instead of 8 — but resizing an `A1.Flex` is an edit-and-reboot, not a
+rebuild, so **start at 8 GB and resize if you ever need to.** Do not pre-buy
+capacity against growth that may not happen, especially when sitting exactly on
+the free allowance is its own risk.
+
+### App Review
+
+Hosting will not fail review on its own. Apple's reviewers are a normal client
+hitting a public HTTPS endpoint; there is no auth to fumble, and Chicago is
+~50–60 ms from Cupertino. Four things are worth knowing:
+
+1. **The backend must be up *whenever* they get to it** — review can land days
+   after submission, at any hour, and a backend that answers 530 gets you a
+   Guideline 2.1 "App Completeness" rejection almost automatically. This is the
+   single biggest hosting-shaped review risk.
+2. **Do not migrate hosts and submit for review in the same week.** Obvious once
+   said, easy to do by accident. Cut over, let it run a fortnight, *then* submit.
+3. **Fix the raw error text first.** `docs/consumer-polish-brief.md` item 1 already
+   records that an outage reaches the user as small red text reading `HTTP 530`.
+   A reviewer who sees that sees a broken app. That is an app-side fix, not a
+   hosting one, but it is on the critical path to a clean review.
+4. **The rate limit is fine.** 60 req/min per IP at Cloudflare is far above
+   anything a reviewer generates, and the ceiling above is the real constraint
+   anyway.
+
+Nothing in Oracle's Acceptable Use Policy restricts serving a public API, a
+commercial app's backend, or App Store distribution. The free tier carries **no
+SLA**, which is worth being clear-eyed about — but neither does a laptop.
+
+---
+
+## Setup runbook
+
+Everything below runs after you have an A1 instance and its public IP. Steps 1–2
+are console work; the rest is copy-paste. Nothing here was executed — **no
+account exists and nothing was provisioned.**
+
+### 1. Sign up and choose the home region — the one irreversible click
+
+Oracle Cloud Free Tier. **Home region `us-chicago-1`** (fallback
+`us-ashburn-1`). This cannot be changed afterwards and Always Free compute only
+exists in it. Give Oracle an email address you actually read.
+
+### 2. Create the instance
+
+`VM.Standard.A1.Flex` — **2 OCPU, 8 GB**, Ubuntu 24.04 (ships Python 3.12), 50 GB
+boot volume, and **add your SSH public key**. Leave the security list closed:
+the tunnel dials out, so no ingress rule is needed at all.
+
+Keep the Oracle Cloud Agent's **monitoring plugin enabled** — reported memory
+utilisation is what keeps the box off the idle-reclaim list.
+
+On `Out of host capacity`, try each availability domain, then retry over days
+against the 14-day stopping rule above.
+
+### 3. Base packages
+
+```bash
+sudo apt update && sudo apt install -y python3-venv python3-pip git rsync
+```
+
+### 4. Code — clone, never hand-copy
+
+```bash
+git clone https://github.com/Jamesk1281/Scenic.git ~/Scenic && cd ~/Scenic && git log --oneline -1
+```
+
+Compare that hash against `git log --oneline -1` on the Mac **before going
+further**. `DEPLOY.md` records a real incident where old code met new parquets
+and died with `KeyError: 'c_green'`.
+
+### 5. Dependencies, from the lock file
+
+```bash
+python3 -m venv ~/Scenic/.venv && ~/Scenic/.venv/bin/python -m pip install -r ~/Scenic/server/requirements-serve.lock.txt
+```
+
+On aarch64 this downloads eleven prebuilt wheels and compiles nothing. If you see
+a compiler invoked, stop — you are on the wrong Python (needs 3.10–3.13) or the
+wrong libc.
+
+### 6. Data — 382 MB, resumable, run from the Mac
+
+```bash
+rsync -avP --append-verify data/processed-ne/graph_edges.parquet data/processed-ne/graph_nodes.parquet data/processed-ne/turn_restrictions.parquet data/processed-ne/access_ways.parquet data/processed-ne/access_entries.parquet ubuntu@<INSTANCE_IP>:~/Scenic/data/processed-ne/
+```
+
+`--append-verify` is what makes a dropped home-upload connection resumable.
+Re-run the same command until it completes clean.
+
+### 7. Verify before exposing anything
+
+```bash
+cd ~/Scenic && SCENIC_DATA=~/Scenic/data/processed-ne .venv/bin/python -m pip install pytest && SCENIC_DATA=~/Scenic/data/processed-ne .venv/bin/python -m pytest tests/
+```
+
+**Expect 207 passed, 4 skipped. Count the skips, not the passes** — 4 means the
+access layer loaded, 8 means it never made it across. Anything *failing* means
+the code and the data disagree; do not proceed.
+
+### 8. systemd for the API
+
+```bash
+sudo tee /etc/systemd/system/scenic-api.service >/dev/null <<'EOF'
+[Unit]
+Description=Scenic routing API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Scenic
+Environment=SCENIC_HOST=127.0.0.1
+Environment=SCENIC_DATA=/home/ubuntu/Scenic/data/processed-ne
+ExecStart=/home/ubuntu/Scenic/.venv/bin/python /home/ubuntu/Scenic/server/serve.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload && sudo systemctl enable --now scenic-api
+```
+
+The unit reports *active* as soon as the process forks, but the graph needs
+~90 s before it answers. Wait, then:
+
+```bash
+curl -s http://localhost:5057/api/health
+```
+
+Expect `{"status":"ok","nodes":794685,...}`. **794685 is the check** — a wrong
+number means the wrong parquets.
+
+### 9. The tunnel
+
+```bash
+curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb -o /tmp/cloudflared.deb && sudo dpkg -i /tmp/cloudflared.deb && cloudflared --version
+```
+
+Authenticate and reuse the **existing** `scenic` tunnel rather than making a new
+one — the DNS record already points at it:
+
+```bash
+cloudflared tunnel login
+```
+
+Copy the existing tunnel's credentials JSON from the laptop to
+`/etc/cloudflared/`, write `/etc/cloudflared/config.yml` with the same
+`tunnel:`/`credentials-file:` and an ingress rule for
+`api.jameskouvlis.com → http://localhost:5057`, then:
+
+```bash
+sudo cloudflared service install && sudo systemctl enable --now cloudflared
+```
+
+### 10. Cut over
+
+**Stop `cloudflared` on the laptop first.** Two connectors on one named tunnel
+will load-balance, and you will get intermittent answers from whichever box is
+less ready. Then from anywhere:
+
+```bash
+curl -s https://api.jameskouvlis.com/api/health
+```
+
+### 11. Monitor it
+
+Free UptimeRobot monitor on `https://api.jameskouvlis.com/api/health`, 5-minute
+interval, **keyword `794685`** — that asserts the right graph is loaded, not just
+that something is listening. Alert to an address you read.
+
+### 12. Measure, and compare against the table above
+
+Peak RSS, load time, and one real route (Boston → Augusta ME). If RSS lands
+**below 2.4 GB**, re-check the idle-reclaim maths — that is the only result that
+would change the shape recommendation.
+
+### Rollback, at any point
+
+Start `cloudflared` on the laptop, stop it on the Oracle box. That is the whole
+procedure. Keep the laptop able to do this for a fortnight after cutover.
+
+---
+
 ## What I could not establish
 
 Stated plainly, because a silently skipped question is the failure mode the brief
@@ -720,21 +977,25 @@ named:
 1. **Whether A1 capacity is available in `us-chicago-1` or `us-ashburn-1` right
    now.** Requires an account. Out of scope. This is the recommendation's main
    open risk and the reason for the phased ordering.
-2. **What Oracle actually does to a reclaimed instance** (stop vs delete). Not
+2. **How much slower the A1 actually is.** The 2–2.5x estimate is inferred from
+   published Neoverse N1 vs Apple M2 single-core comparisons, not measured on
+   this workload. It is the first thing to check on the box, and the only
+   estimate here that would change the *experience* of using the app if wrong.
+3. **What Oracle actually does to a reclaimed instance** (stop vs delete). Not
    stated in Oracle's documentation; secondary sources say "stopped, volumes
    preserved". Either way it is a total outage for an always-on API.
-3. **Whether the memory-utilization criterion is skipped when the Oracle Cloud
+4. **Whether the memory-utilization criterion is skipped when the Oracle Cloud
    Agent monitoring plugin is disabled.** Verify on the box once it exists — this
    is the mechanism Scenic's reclaim exemption depends on.
-4. **Whether Pay As You Go really exempts you from idle reclamation.** Strongly
+5. **Whether Pay As You Go really exempts you from idle reclamation.** Strongly
    and consistently reported, including by Oracle support in user accounts, but
    *not stated in Oracle's documentation*. Oracle's written scope is "Always Free
    customers only", which implies it. Do not treat it as contractual.
-5. **Whether PAYG accounts genuinely retained the 4 OCPU / 24 GB limits.**
+6. **Whether PAYG accounts genuinely retained the 4 OCPU / 24 GB limits.**
    Reported by several users via support email, and contradicted by the public
    documentation's "All tenancies get the first 1,500 OCPU hours". Irrelevant to
    the recommendation, which stays inside 2 OCPU either way.
-6. **Exact current prices at Hetzner (CPX31-US, €62.49) and Contabo (€5.50).**
+7. **Exact current prices at Hetzner (CPX31-US, €62.49) and Contabo (€5.50).**
    Both from secondary reporting or promotional listings. Confirm in the
    provider's own console before spending anything.
 
@@ -761,6 +1022,7 @@ Secondary reporting, used only where marked:
 - [Hetzner 2026 price increases — Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases) — CPX31-US €20.99 → €62.49
 - [Render free tier spin-down](https://www.srvrlss.io/provider/render/), [Fly.io billing](https://fly.io/docs/about/billing/), [Railway free tier](https://www.srvrlss.io/provider/railway/) — disqualifications
 - [UptimeRobot keyword monitoring](https://uptimerobot.com/keyword-monitoring/) — free-plan monitoring
+- [Ampere Altra Q80 review — Phoronix](https://www.phoronix.com/review/ampere-altra-q80) and [HN: Ampere vs M1/M2](https://news.ycombinator.com/item?id=32165554) — Neoverse N1 single-core against Apple M2, the basis for the 2–2.5x estimate
 
 Measured here, on this Mac, 2026-09-01: OCI regional RTTs; live `api.jameskouvlis.com`
 status; parquet row counts and file sizes.
