@@ -26,7 +26,11 @@ five states to not matter yet.
 
 ## What is already compatible, so nobody spends time on it
 
-- **`SCENIC_DATA` is a complete seam.** `server/app.py:47` reads the graph
+- **`SCENIC_DATA` is a complete seam — but it is not the only variable.**
+  `server/app.py` also reads `SCENIC_REGION` (default "New England"), which
+  names the covered region in three error messages and the index response, so a
+  switch *or a rollback* has to move both or the server misreports what it
+  covers. `server/app.py:47` reads the graph
   directory from it, `tests/conftest.py:22` reads the same variable, and every
   pipeline stage and every tool in `tools/` takes the directory as an argument.
   A second region can be built, tested and served **without one line of path
@@ -199,9 +203,21 @@ Resource budget, from measured per-unit costs:
 |---|---|---|---|
 | `extract.py` | ~5.2 GB | ~490 MB | 6.70 GB per GB of PBF × 0.782 GB |
 | `elevation.py` (banded) | band-bounded, well under the 5.6 GB whole-array peak | 159 MB tiles + ~406 MB rasters | 2,120 tiles at 87.7 KB measured; mosaic 10240×13568 |
-| `score.py` | moderate | ~250 MB | 313,791 MA chunks × 3.53 ≈ 1.11 M |
-| `graph.py` | moderate | ~271 MB | 400,983 MA edges × 3.53 ≈ 1.42 M |
+| `score.py` | moderate | ~250 MB | 313,791 MA chunks × 2.53 ≈ 794 K (built: 942,448) |
+| `graph.py` | moderate | ~271 MB | 400,983 MA edges × 2.53 ≈ 1.01 M (built: 998,252) |
 | **total** | peak ~5.2 GB | **~1.5 GB** | 11 GiB free today |
+
+> **The multiplier here was 3.53 and should have been 2.53.** It is the PBF size
+> ratio — 782 MB / 310 MB = 2.53x — and one digit was wrong, which over-projected
+> the edge count by 42% (1.42 M against a built 998,252) and inflated everything
+> derived from it, including Phase 5's latency and Phase 6's RAM. Corrected
+> above. Measured after the build: 2.53x on PBF predicts 2.49x on edges and
+> 2.56x on nodes, so **PBF size is a good proxy to within 1.4%** here. Chunks
+> grew 3.00x, faster than edges, and road miles 3.20x — so scaling the graph by
+> road miles would have over-projected by 29%. That only holds inside a region of
+> MA-like mapping density: nationally MA is an outlier at 8,372 PBF
+> bytes/road-mile against 2,824, so past the Northeast the road-mile ratio is the
+> safer unit and PBF under-provisions.
 
 Disk is the constraint to watch, not RAM: the machine is at 98%. The two
 `.tif`s (~406 MB) are only needed by `score.py` and can be deleted after.
@@ -322,7 +338,13 @@ Baseline, measured on the live MA graph (310,162 nodes / 313,950 routing slots /
 Note the request is ~280 ms, not the 196 ms the expansion note quotes as
 "MA is 196 ms/request" — that figure is close to a *single* `route()` call, and
 `server/app.py:150` makes two. Scaling the measured request by the E^1.20 law
-over a 3.53x edge count gives **~1.27 s per request**, not ~800 ms.
+over a 2.53x edge count gives **~850 ms per request**.
+
+> Said 3.53x and ~1.27 s until the multiplier was corrected (see Phase 2). The
+> law itself held: on the built graph's real 2.49x edge count it predicts
+> 281 ms × 2.49^1.20 = 840 ms, and the measured New England request is ~835 ms
+> (`docs/hosting-options-brief.md`, 2026-08-31). **E^1.20 is sound; only the
+> factor fed into it was wrong.**
 
 **Two candidate fixes were prototyped and both are small.** Reporting them so
 nobody spends a week on either:
@@ -355,18 +377,27 @@ question the traces can answer. Do not build the compiled router on spec.
 
 ## Phase 6 — Deploy
 
-`SCENIC_DATA` makes the switch a one-line change and the rollback identical, so
-the deploy risk is not the switch. It is two numbers.
+`SCENIC_DATA` (with `SCENIC_REGION` — see above) makes the switch a two-line
+change and the rollback identical, so the deploy risk is not the switch. It is
+two numbers. Note this covers switching *data* on one box; moving to a different
+*host* is a tunnel/DNS change and no env var helps.
 
 **RAM on the serving box — settled.** The router peaks at **1.82 GB on
 Massachusetts** with the optional access layers loaded; scaling the arrays by
-3.53x puts New England near **6–6.5 GB resident**. The serving laptop has 16 GB
+2.53x puts New England near **4.6 GB resident**. The serving laptop has 16 GB
 or more (confirmed 2026-08-26), so **the access layers ship** and the
 parking-lot arrival fix is kept — the one that took a replayed drive from 13
 off-route reroutes to 3. Still worth watching the first startup on the box
 rather than trusting the projection: it is a linear extrapolation from one
-measurement, and 6.5 GB of 16 leaves room but not a lot of slack alongside a
-browser and a tunnel.
+measurement, and it leaves room but not a lot of slack alongside a browser and a
+tunnel.
+
+> **Measured 2026-08-31: 3.53 GB for the `Router`, ≈4.3 GB for the warm serving
+> process** (`docs/hosting-options-brief.md`). So RAM is the one quantity here
+> that does *not* scale linearly — it grew 1.94x against 2.49x more edges — and
+> even the corrected 2.53x projection is ~28% high. Unlike latency, do not
+> extrapolate this one; measure it. The original 6–6.5 GB figure combined the
+> wrong multiplier with an assumption of linearity, and was 1.8x the truth.
 
 **Upload.** The serving payload goes from 77 MB (`graph_edges` 70 +
 `graph_nodes` 6.8 + `turn_restrictions` 0.1) to **~271 MB**, and with the access
@@ -430,9 +461,9 @@ there, no extra RAM unless both are loaded).
 | Composite re-fit lands without a BETA re-sweep | router's detour appetite shifts silently; the slider's dead-top defect returns | Phase 4 step 5 is a gate, not a nicety |
 | Disk fills mid-build (98% today, ~1.5 GB needed) | a partial build in a scratch dir | build into `data/processed-ne`, never over `data/processed`; delete the `.tif`s after scoring |
 | Re-fitting the composite regresses Massachusetts | the only validated region gets worse | the 76 marks are the gate; keep the live build serving until it passes |
-| Latency lands worse than 1.3 s | poor planning UX | Phase 5 says defer, not ignore — measure on a real drive |
+| Latency lands worse than 1.3 s | poor planning UX | Phase 5 says defer, not ignore — measure on a real drive (measured: ~835 ms) |
 | Byway relation allowlist admits a walking route | footpaths flagged as scenic road | vet all 13 networks; `nwn`/`lwn`/`lcn` are known-bad |
-| Serving box runs at ~6.5 GB of 16 | swapping would dominate every latency number here | watch the first real startup rather than trusting the extrapolation |
+| Serving box runs at ~6.5 GB of 16 | swapping would dominate every latency number here | watch the first real startup rather than trusting the extrapolation (measured: 3.53 GB, so this risk did not land) |
 
 Throughout: **`data/processed/` is not written to by any phase.** The live
 Massachusetts build keeps serving until Phase 6 chooses to switch, and switching
