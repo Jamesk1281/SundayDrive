@@ -1552,14 +1552,32 @@ def main(argv):
 
 
 def _find_pbf():
-    """The OSM extract, from SCENIC_PBF or the usual place in data/raw."""
+    """The OSM extract, from SCENIC_PBF or the usual place in data/raw.
+
+    This used to take the alphabetically first match, which is silent and wrong
+    the moment `data/raw` holds more than one extract: with the six New England
+    states sitting next to the merged build, "first" is Connecticut, so a drive
+    in Massachusetts got explained with Connecticut's traffic signals and every
+    real stop fell into the "unexplained — traffic" bucket. Nothing in the
+    report said so, which is the failure this file warns about everywhere else.
+
+    So: take the largest extract, which is the merged build the graph came from,
+    and say out loud which one was chosen whenever there is more than one.
+    """
     import os
 
     override = os.environ.get("SCENIC_PBF")
     if override:
         return Path(override)
     root = Path(__file__).resolve().parent.parent
-    return next(iter(sorted((root / "data" / "raw").glob("*.osm.pbf"))), None)
+    found = sorted((root / "data" / "raw").glob("*.osm.pbf"),
+                   key=lambda f: f.stat().st_size, reverse=True)
+    if not found:
+        return None
+    if len(found) > 1:
+        print(f"NOTE: {len(found)} extracts in data/raw; using the largest, "
+              f"{found[0].name}. Set SCENIC_PBF to override.")
+    return found[0]
 
 
 if __name__ == "__main__":

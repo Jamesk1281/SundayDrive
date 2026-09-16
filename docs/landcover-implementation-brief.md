@@ -1,9 +1,9 @@
 # Add a land-cover component to the scenic score — stages 0–3
 
-**Status: fully diagnosed, peer-reviewed, and decided. Nothing in `pipeline/`
-has been touched yet — that is this task.** Four documents on branch
-`claude/stoic-goldstine-d6b9d5` establish the case; read them in this order and
-do not re-derive them:
+**Status: implemented 2026-08-29.** `landcover.py` samples ESA WorldCover into
+`tree_cover.parquet` and `score.py` sets `c_forest` to half OSM green, half
+measured tree cover. Four documents establish the case this was built from;
+read them in this order and do not re-derive them:
 
 1. `docs/geodata-sources-review.md` — the original question
 2. `docs/geodata-sources-findings.md` — the measured answer

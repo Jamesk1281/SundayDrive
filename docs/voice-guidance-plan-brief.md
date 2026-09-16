@@ -1,9 +1,9 @@
 # Voice guidance: plan it, and settle the one thing that cannot be guessed
 
-**Status: scoped and measured, nothing built.** No Swift file, no `project.yml`
-entry, no test has been touched. The deliverable of this task is a **design
-document plus one measured answer**, not shipped guidance — see *Done looks
-like*.
+**Status: built 2026-08-30.** `ios/Sources/VoiceGuide.swift` speaks the
+maneuvers and `VoiceCatalogue.swift` lets the driver pick the voice. What
+follows is the design this was built from, plus the one measurement that
+decided its shape.
 
 ## The goal
 

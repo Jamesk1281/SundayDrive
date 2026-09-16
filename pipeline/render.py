@@ -1,8 +1,13 @@
-"""Render scored road chunks: statewide heatmap PNG + interactive regional maps.
+"""Render scored road chunks: region heatmap PNG + interactive regional maps.
 
 Usage: python render.py <processed_dir> <out_dir>
+
+The heatmap's title names the region being rendered. It comes from
+SCENIC_REGION, the same variable `server/app.py` reads, so the picture and the
+API can never disagree about what is covered.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -16,6 +21,10 @@ import shapely
 from matplotlib.collections import LineCollection
 
 MAJOR = {"motorway", "trunk", "primary", "secondary", "tertiary"}
+
+# Named by the same variable the API reports, so a rebuild over a wider
+# extract cannot leave a stale state name burned into the picture.
+REGION = os.environ.get("SCENIC_REGION", "New England")
 
 # Showcase regions as (west, south, east, north) in lon/lat
 REGIONS = {
@@ -51,7 +60,7 @@ def render_png(chunks: gpd.GeoDataFrame, out_path: Path):
     cbar = fig.colorbar(lc, ax=ax, shrink=0.5, pad=0.01)
     cbar.set_label("scenic score", color="#cccccc")
     cbar.ax.tick_params(colors="#cccccc")
-    ax.set_title("Massachusetts — scenic score per road segment (v0)",
+    ax.set_title(f"{REGION} — scenic score per road segment",
                  color="#eeeeee", fontsize=15, pad=12)
     fig.savefig(out_path, dpi=240, bbox_inches="tight", facecolor="#0b0b12")
     plt.close(fig)
@@ -97,7 +106,7 @@ def main(processed_dir: str, out_dir: str):
     out.mkdir(parents=True, exist_ok=True)
 
     chunks = gpd.read_parquet(d / "scored_chunks.parquet")
-    render_png(chunks, out / "ma_scenic_heatmap.png")
+    render_png(chunks, out / "scenic_heatmap.png")
 
     chunks_4326 = chunks.copy()
     chunks_4326["geometry"] = chunks_4326.geometry.simplify(15)

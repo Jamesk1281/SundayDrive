@@ -1,8 +1,10 @@
 # Build the New England terrain, and prove the relief fix holds
 
-**Status: decided, not started.** Nothing built, no source file to touch. This is
-the first executable step of `docs/new-england-rollout.md`, scoped deliberately
-narrow — see "Why only terrain".
+**Status: built 2026-08-29.** `elevation.py`'s BBOX covers all six states
+(-73.76, 40.93, -66.87, 47.47), the relief window is pinned at a fixed latitude
+rather than the bounding box's, and `data/processed-ne/relief.tif` is the
+result. This was the first executable step of `docs/new-england-rollout.md`,
+scoped deliberately narrow — see "Why only terrain".
 
 ## The goal
 

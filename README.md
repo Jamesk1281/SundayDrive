@@ -1,16 +1,20 @@
 # Scenic (working title)
 
 Scenic-route navigation: pick a destination, get a route that's beautiful instead
-of fast. Massachusetts first. A scenic score is computed for every road in the
-state from **open geodata only** (no Google/Apple data), a routing engine trades
-travel time for beauty via a single preference knob, and a native iOS app
+of fast. All six New England states. A scenic score is computed for every road
+in the region from **open geodata only** (no Google/Apple data), a routing engine
+trades travel time for beauty via a single preference knob, and a native iOS app
 (SwiftUI + MapKit) is the front end on top of the routing API.
 
-![heatmap](docs/ma_scenic_heatmap.png)
+236,000 km of road, scored and routable: a 998k-edge graph, live turn-by-turn
+navigation on a real phone, and a scenic score checked against 79 verdicts a
+driver recorded at the wheel rather than against itself.
+
+![heatmap](docs/scenic_heatmap.png)
 
 <!-- docs/ holds committed showcase images (out/ is gitignored build output;
      referencing it here would render a broken image on GitHub). Refresh with:
-     sips -Z 1800 out/ma_scenic_heatmap.png --out docs/ma_scenic_heatmap.png -->
+     sips -Z 1800 out/scenic_heatmap.png --out docs/scenic_heatmap.png -->
 
 
 ## Status
@@ -19,19 +23,24 @@ travel time for beauty via a single preference knob, and a native iOS app
       forest/parks, curvature, terrain relief, farmland, viewpoints, scenic tags,
       town/urban)
 - [x] Terrain relief from free Terrarium elevation tiles
-- [x] Routable graph (~402k edges) split at intersections, scenic-scored
+- [x] Routable graph (998k edges, 795k nodes) split at intersections,
+      scenic-scored
 - [x] Scenic router: Dijkstra with a time-vs-scenery preference knob
 - [x] Per-beauty-type preferences — weight scenery types live per request
 - [x] iOS app (SwiftUI + MapKit): route planning from an address or your own
       location, tunable scenery, turn-by-turn live navigation with arrival
       time / distance remaining and a switch-to-fastest escape hatch
-- [x] Scenic-byway calibration (Mohawk Trail, Jacob's Ladder)
+- [x] Scenic byways read from OSM route relations rather than hardcoded names,
+      with the Mohawk Trail and Jacob's Ladder kept as calibration benchmarks
 - [x] Scoring calibrated against the score distribution, with tests that guard
       it (`tests/`) — see [How scoring works](#how-scoring-works)
 - [x] Hosted API: self-hosted on a spare laptop behind a Cloudflare tunnel, so
       the app works off-device on a real phone — see
       [`server/DEPLOY.md`](server/DEPLOY.md)
-- [ ] Land cover (NLCD/ESA WorldCover) feature for better score accuracy
+- [x] Land cover: ESA WorldCover tree cover, blended half and half with OSM's
+      mapped green, because OSM's polygons record land *designation* rather
+      than vegetation and are three times more complete in Rhode Island than
+      in Maine
 - [x] Drive traces: every drive records itself, so a test drive produces
       measurements instead of impressions — see
       [Measuring travel times](#measuring-travel-times)
@@ -40,7 +49,21 @@ travel time for beauty via a single preference knob, and a native iOS app
       in the direction those face. Measured against two recorded drives, error
       falls from 22% to 5.7% pooled, and the ETA the app showed for one of
       them goes from 13.3% out to 2.2%. What is left is congestion, which no static graph
-      predicts — see [Measuring travel times](#measuring-travel-times)
+      predicts — see [Measuring travel times](#measuring-travel-times). Those two
+      drives are the sample; the constants are due a re-fit, below
+- [ ] **Re-fit `CONTROL_SECONDS`.** The costs the router charges (9.5 s per
+      signal, 9.3 s per stop sign) were fitted while `analyze_trace.py` was
+      caching the *alphabetically first* extract in `data/raw` — Connecticut,
+      once the six New England states sat next to the merged build. So drives
+      taken in Massachusetts were explained with Connecticut's signals, every
+      real stop fell into "unexplained — traffic", and the denominator the fit
+      divides by said these roads had almost nothing on them. The picker now
+      takes the largest extract and says which one it used. Re-read with the
+      right cache, the share of stopped time that OSM can already account for
+      goes from 18% to 35%, and ten drives put a signal at **11.9 s** and a
+      stop sign at **8.5 s** — so signals are currently under-charged by about
+      a quarter. Re-fitting changes ETAs, so it is a deliberate step, not a
+      drive-by
 - [ ] Time of day. A static cost is an average over a quiet hour and a busy one:
       the two drives met almost the same number of signals — 26 and 27 — and
       stopped at 4 and 12 of them. That variance, not the model, is what now
@@ -55,9 +78,9 @@ travel time for beauty via a single preference knob, and a native iOS app
 - [ ] Lane guidance. Nothing reads `turn:lanes`, so nothing ever says "use the
       right two lanes" — and at a multi-lane exit the wrong lane is a missed
       exit however good the maneuver is
-- [ ] `via`-way turn restrictions (604 in MA), where the forbidden movement
-      spans a whole road rather than a junction. Needs the search to remember
-      more than one junction back
+- [ ] `via`-way turn restrictions, where the forbidden movement spans a whole
+      road rather than a junction. They are counted and skipped at build time;
+      honouring them needs the search to remember more than one junction back
 - [ ] Start from the exact point, not the nearest corner. `snap()` finds the
       road you're on and then routes from that road's *nearer end* — right
       street, but a median 99 m up it (p90 217 m), because graph nodes are
@@ -68,12 +91,19 @@ travel time for beauty via a single preference knob, and a native iOS app
       each verdict against what the score claimed for that stretch — so "is this
       actually a nice road?" produces a number instead of an impression. See
       [Measuring whether the roads are nice](#measuring-whether-the-roads-are-nice)
-- [ ] **Drive the routes and judge them.** The instrument above has never been
-      pointed at a road. Nothing in the repo yet says the scenic score agrees
-      with a human, because scoring is calibrated against its own distribution
-      plus two byways named in `score.py` — self-consistency, not ground truth.
-      This is the one open item a laptop cannot close, and now the only thing
-      it needs is a drive.
+- [x] **Drive the routes and judge them.** 79 marks over 12 drives say the score
+      ranks a road the driver liked above one they didn't **74% of the time**,
+      against a **63%** noise floor computed from those same sample sizes — and
+      the answer holds at every window width tried (0.75 / 0.74 / 0.74 over
+      200 / 400 / 800 m). That is the first thing in this repo that says the
+      score tracks a human rather than only itself.
+- [ ] **More drivers.** Those 79 marks are one person, in one part of one state.
+      A second driver is worth more than a second drive: it is the only way to
+      tell a scenic score from one person's taste.
+- [ ] The app still opens on Massachusetts. The API serves all six states, but
+      `Region.massachusetts` is the iOS map's starting camera and its address
+      search bias (`ios/Sources/Region.swift`), so a Vermont trip is harder to
+      search for than it should be.
 
 > The early MapLibre web demo was retired to focus on iOS; it lives in git
 > history (`git show 82044e2`) and is cheap to revive on the same API if needed.
@@ -99,19 +129,24 @@ as a drivable road, the Massachusetts projection).
 python3 -m venv .venv
 .venv/bin/python -m pip install -r pipeline/requirements.txt
 
-# 1. data (free): MA OpenStreetMap extract
-curl -L -o data/raw/massachusetts-latest.osm.pbf \
-  https://download.geofabrik.de/north-america/us/massachusetts-latest.osm.pbf
+# 1. data (free): the six New England states, merged into one extract.
+#    `extract.py` takes one PBF, and osmium merge needs no code change.
+for s in connecticut maine massachusetts new-hampshire rhode-island vermont; do
+  curl -L -o "data/raw/$s-latest.osm.pbf" \
+    "https://download.geofabrik.de/north-america/us/$s-latest.osm.pbf"
+done
+osmium merge data/raw/{connecticut,maine,massachusetts,new-hampshire,rhode-island,vermont}-latest.osm.pbf \
+  -o data/raw/new-england-latest.osm.pbf
 
 # 2. features + score
-.venv/bin/python pipeline/extract.py   data/raw/massachusetts-latest.osm.pbf data/processed
-.venv/bin/python pipeline/elevation.py data/processed 11      # terrain relief raster
-.venv/bin/python pipeline/landcover.py data/processed         # WorldCover tree cover
-.venv/bin/python pipeline/score.py     data/processed         # scenic score per chunk
-.venv/bin/python pipeline/render.py    data/processed out     # heatmap + regional maps
+.venv/bin/python pipeline/extract.py   data/raw/new-england-latest.osm.pbf data/processed-ne
+.venv/bin/python pipeline/elevation.py data/processed-ne 11   # terrain relief raster
+.venv/bin/python pipeline/landcover.py data/processed-ne      # WorldCover tree cover
+.venv/bin/python pipeline/score.py     data/processed-ne      # scenic score per chunk
+.venv/bin/python pipeline/render.py    data/processed-ne out  # heatmap + regional maps
 
 # 3. routable graph
-.venv/bin/python pipeline/graph.py     data/raw/massachusetts-latest.osm.pbf data/processed
+.venv/bin/python pipeline/graph.py     data/raw/new-england-latest.osm.pbf data/processed-ne
 ```
 
 ## Run the API
@@ -132,7 +167,7 @@ and renders the fastest vs scenic routes. It reads the backend URL from the
 runtime with a `SCENIC_API` environment variable. Command-line equivalent:
 
 ```sh
-.venv/bin/python pipeline/router.py data/processed "42.2626,-71.8023" "42.3551,-71.0657" 0.6
+.venv/bin/python pipeline/router.py data/processed-ne "42.2626,-71.8023" "42.3551,-71.0657" 0.6
 ```
 
 ## How scoring works
@@ -161,7 +196,7 @@ coupling. See
 [`docs/unpaved-and-urban-verdict.md`](docs/unpaved-and-urban-verdict.md).
 
 Every constant in that blend is fitted to the *distribution* it produces, not
-guessed, because a single number silently reshapes 66,000 km of road. `score.py`
+guessed, because a single number silently reshapes 236,000 km of road. `score.py`
 prints a calibration report on each run — scale percentiles, per-component
 coverage, and benchmark roads — and the current numbers are: median road 4.4,
 p90 6.9, p99 9.1, with Greylock's Notch Road at 6.6 and the Mass Pike at 0.6.
@@ -182,7 +217,7 @@ at some point:
 
 Travel time was `length_m / speed_kmh`, summed over the route's edges — free
 flow, with nothing charged for traffic lights, stop signs, turns or traffic,
-though MA has 11,348 mapped signals and 17,567 stop signs. Measured against two
+though New England has 25,213 mapped signals and 49,669 stop signs. Measured against two
 recorded drives it ran 22% short of the clock.
 
 It is now two terms, both applied in `router.py` when the graph loads:
@@ -265,7 +300,7 @@ Then pull the traces off through Files.app (On My iPhone → Scenic) or Finder
 over a cable — do it before deleting the app, since that takes them with it:
 
 ```sh
-.venv/bin/python tools/analyze_trace.py data/processed traces/*.ndjson
+.venv/bin/python tools/analyze_trace.py data/processed-ne traces/*.ndjson
 ```
 
 which reports, per drive and pooled across drives:
@@ -322,8 +357,12 @@ turned out to be the right one: `minutes` is the Dijkstra weight, not a display
 field, so making time more expensive divides through as a *smaller effective*
 `BETA`. Measured after the fact, the pref slider's bottom half had gone soft —
 a pref-0.25 route found scenery of 3.39 where it used to find 4.62 — and `BETA`
-had to rise from 7.0 to 10.0 to mean the same thing to a driver. The top half
-was untouched, because the scenery penalty saturates up there.
+had to rise from 7.0 to mean the same thing to a driver. It and `PREF_CURVE`
+trade against each other, so they are swept as a pair; they now sit at 8.0 and
+2.0, re-swept 2026-08-29 when road surface left the score. The top half was
+untouched either way, because the scenery penalty saturates up there: past
+pref ~0.5 the router has already taken every detour worth taking, and the
+scenery ceiling is 5.6 on the 0–10 scale whatever these two are set to.
 
 The re-ranking prediction was half right. Per-class factors do re-rank, but not
 toward arterials: arterials carry 123 traffic signals per 100 km against a
@@ -353,9 +392,15 @@ many marks anyway, so precision on any single one buys nothing.
 `analyze_trace.py` then resolves each verdict to a stretch of road and compares
 it against what the score claimed there:
 
-    SEPARATION  0.83    above chance
-    0.50 is a coin — but with 24 nice and 19 dull, a score
-    that knows nothing still reaches 0.64 one run in twenty.
+    SCENERY  79 marks over 12 drive(s) — 60 nice, 19 dull
+      model score on the roads you liked   5.24 (median 5.47, n=60)
+      model score on the roads you didn't  3.53 (median 3.63, n=19)
+
+      SEPARATION  0.74    above chance
+      0.50 is a coin — but with 60 nice and 19 dull, a score
+      that knows nothing still reaches 0.63 one run in twenty.
+
+      same number over other windows —  200 m: 0.75   400 m: 0.74   800 m: 0.74
 
 That is the whole exercise in one number: the chance the score ranks a road you
 liked above one you didn't. Three things about it are load-bearing.
@@ -406,7 +451,7 @@ this, unlike for the clock, a second driver would be worth more than either.
 ## Tests
 
 ```sh
-.venv/bin/python -m pytest tests/          # backend: 214 tests
+.venv/bin/python -m pytest tests/          # backend: 348 tests
 ```
 
 The geometry and scoring maths run anywhere; the calibration, routing and API
@@ -450,10 +495,16 @@ carries them onto edges, and `router.py` re-blends them live per request. So:
   Read the separation number against the noise floor printed beside it, never
   against 0.50 — and change one weight at a time, since `score.py`'s calibration
   report is what catches a component pinned at its ceiling.
-- **A second region** is the same pipeline run on another Geofabrik extract.
-  The MA-specific bits to generalize: the projection in `common.py`, the BBOX
-  in `elevation.py`, the byway names in `score.py`, and the
-  `Region.massachusetts` search bias in the iOS app.
+- **A second region** is the same pipeline run on another Geofabrik extract,
+  or several merged with `osmium merge` as New England was. Most of what used
+  to be Massachusetts-specific is already gone: `elevation.py`'s BBOX covers
+  all six states, and the byways come from OSM route relations rather than
+  hardcoded names. What is left to generalize when the region leaves New
+  England: the projection in `common.py` (`CRS_METERS`, fine at these
+  latitudes), `RELIEF_FULL` in `score.py` (fitted so Massachusetts' hills have
+  range — 4.7% of New England chunks already sit at its ceiling, against 1.6%
+  of Massachusetts'), and the `Region.massachusetts` camera and search bias in
+  the iOS app.
 
 The user-facing scenery labels live in one place per language: `SCENERY_BREAKDOWN`
 in `router.py` (server) and `RouteProps.sceneryBreakdown` in `Models.swift`

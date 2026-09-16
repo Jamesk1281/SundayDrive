@@ -1,8 +1,9 @@
 # Show beautiful miles instead of a 0–10 score, and give the slider back its dead quarter
 
-**Status: decided; the server half is already written and tested, the client
-half is not.** Two independent changes, batched because both are small and both
-land in the planning sheet.
+**Status: built, both halves.** The server reports `beautiful_km` on
+point-to-point routes as well as loops, and the client renders it as whole
+miles (`RouteResults.swift`, `LoopPanel.swift`). Two independent changes,
+batched because both were small.
 
 **Start from `claude/holistic-code-review-6bce7c`, not from `main`.** That
 branch is `main` plus one commit, `19dadba` "Report beautiful km on

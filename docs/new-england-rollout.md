@@ -1,8 +1,9 @@
 # Rolling New England into the app
 
-**Status: planned, nothing built.** The data is staged (see
-[`new-england-expansion.md`](new-england-expansion.md)); this is the plan for
-turning it into a region the app actually serves. Every number here was measured
+**Status: built 2026-08-29.** `data/processed-ne` is the six-state build the
+API now serves by default (998k edges against Massachusetts' 401k), and
+`SCENIC_REGION` names it. What follows is the plan that was executed, kept as
+the record of why it was done this way. Every number here was measured
 on this machine on 2026-08-26 against the live Massachusetts build, which was
 not modified. Where a measurement contradicts something previously assumed —
 including two things this session assumed — it says so.
