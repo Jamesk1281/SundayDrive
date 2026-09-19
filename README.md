@@ -143,6 +143,9 @@ osmium merge data/raw/{connecticut,maine,massachusetts,new-hampshire,rhode-islan
 .venv/bin/python pipeline/elevation.py data/processed-ne 11   # terrain relief raster
 .venv/bin/python pipeline/landcover.py data/processed-ne      # WorldCover tree cover
 .venv/bin/python pipeline/score.py     data/processed-ne      # scenic score per chunk
+#   ^ caches its two expensive spatial queries under data/raw/component-cache,
+#     so re-running after a constant change is a minute rather than eight.
+#     `--no-cache` recomputes everything; the output is identical either way.
 .venv/bin/python pipeline/render.py    data/processed-ne out  # heatmap + regional maps
 
 # 3. routable graph
@@ -490,8 +493,12 @@ carries them onto edges, and `router.py` re-blends them live per request. So:
   it costs nothing. Do not replace that with a per-edge or a nearest-edge
   charge: 81.7% of MA's controls have more than one road within 15 m of them.
 - **Retuning the scenery blend against real verdicts** is `WEIGHTS` in
-  `score.py`, then a score + graph rebuild. Drive first: the marks are what say
-  which component is lying, and the disagreement table names the roads to check.
+  `score.py`, then a score + graph rebuild. That rebuild is cheap on purpose:
+  `WEIGHTS` feeds no component column, only the derived `raw` and `score`, so
+  every cached spatial query survives it and the score half runs in about a
+  minute instead of eight (`docs/component-rebuild-cache-findings.md`). Drive first: the
+  marks are what say which component is lying, and the disagreement table names
+  the roads to check.
   Read the separation number against the noise floor printed beside it, never
   against 0.50 — and change one weight at a time, since `score.py`'s calibration
   report is what catches a component pinned at its ceiling.
