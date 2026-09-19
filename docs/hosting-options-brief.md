@@ -1,5 +1,21 @@
 # Where the Scenic API should live, and whether it can be free
 
+> **Answered in `docs/hosting-options-findings.md` (2026-09-01). Three figures
+> below were refuted there and are left in place as the record — do not quote
+> them:** Oracle Always Free A1 is now **2 OCPU / 12 GB**, not 4 OCPU / 24 GB
+> (halved 15 June 2026, still ample); Hetzner's CX line is **not sold in the
+> US** at all, and a US Hetzner box that fits is **~€62/mo, not ~€16** — though
+> Contabo does the same job for ~€5.50, so Hetzner is simply the wrong
+> yardstick.
+>
+> **The findings read this brief's measured requirements as sound. The
+> 2026-09-16 review that rewrote the body below then moved them**, so the
+> findings size on a number this file no longer states: the floor is the warm
+> served process at **≈4.3 GB**, not the `Router`'s 3.53 GB. Their
+> recommendation survives it — 8 GB is 53.8% utilisation, still well clear of
+> Oracle's 20% reclaim criterion — but the "4.5 GB of headroom over the
+> measured peak" there is really ~3.7 GB.
+
 **Status: requirements measured 2026-08-31, nothing changed.** No source file,
 no config, no deploy was touched. The task is a **recommendation and a plan**,
 not a migration — the migration needs account credentials nobody but the owner

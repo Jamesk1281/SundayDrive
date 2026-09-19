@@ -202,8 +202,13 @@ connect directly, so `SCENIC_HOST=127.0.0.1` is worth setting — it keeps the
 local network out and means you can safely decline the Windows Firewall prompt.
 
 ```sh
-curl http://localhost:5057/api/health      # {"status":"ok","nodes":310807}
+curl http://localhost:5057/api/health      # {"status":"ok","nodes":794685,...}
 ```
+
+`nodes` is read live off the loaded graph, so it names the build you copied:
+**794,685 for New England, 310,807 for Massachusetts**. That makes it the one
+cheap assertion that distinguishes "up" from "up and serving the right data" —
+worth asserting in an uptime monitor rather than checking for a bare 200.
 
 ### 5. Tunnel it
 
@@ -275,8 +280,24 @@ seven sliders that each re-route on release, plus off-route reroutes every 8 s.
   argument `…\server\serve.py`, and `cloudflared.exe` with `tunnel run scenic` —
   both *At startup*, *Run whether user is logged on or not*, restart-on-failure.
   (`cloudflared service install` also works but runs as SYSTEM and expects its
-  config under `C:\Windows\System32\config\systemprofile\.cloudflared\`.) Then,
-  as Administrator: `powercfg /change standby-timeout-ac 0`,
+  config under `C:\Windows\System32\config\systemprofile\.cloudflared\`.)
+
+  > **Point each task at the executable, never at `start-windows.bat`.** That
+  > script exists to be double-clicked: it launches both halves with `start`,
+  > which detaches them and returns, so the script itself exits **0** within
+  > milliseconds. A task pointed at it is recorded as having *succeeded*
+  > immediately and holds no handle on either process — so **restart-on-failure
+  > never fires**, and a `cloudflared` that dies at 3am stays dead until someone
+  > curls the API. You get start-at-boot and nothing else, which looks like
+  > working hardening right up until the first crash. The task's action has to
+  > be the long-lived process itself for Windows to notice it died.
+  >
+  > This is a latent gap, not a diagnosis of any particular outage: the 530s
+  > observed on 2026-08-29/31 and 2026-09-01 were the laptop being switched off,
+  > which is the expected response and not a fault. Worth closing anyway if the
+  > box is ever meant to run unattended.
+
+  Then, as Administrator: `powercfg /change standby-timeout-ac 0`,
   `powercfg /change hibernate-timeout-ac 0`, and to make the lid do nothing:
   `powercfg /setacvalueindex SCHEME_CURRENT 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0 ; powercfg /setactive SCHEME_CURRENT`.
   Set Windows Update **active hours** too — it will reboot the box eventually,
@@ -297,10 +318,18 @@ docker run -p 5057:5057 --restart unless-stopped scenic-api
 
 ## Option C — Bare VPS
 
-Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd, and
-put **Caddy** or **Cloudflare** in front for HTTPS. Size it for ~2 GB of RAM,
-which rules out the cheapest $5/mo tiers at most US providers (Hetzner is the
-exception at roughly €4).
+Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd
+(`Type=simple`, `Restart=always`) and put **Caddy** or **Cloudflare** in front for
+HTTPS. Note the unit goes *active* the moment the process forks, while the graph
+needs 42.6 s (longer on a slower core) before it answers — so don't let a monitor
+page you during a restart. Size it for
+**6 GB minimum, 8 GB comfortable** on the New England build. Hetzner is no longer
+the cheap answer it was when this file said "roughly €4": its CX line is EU-only
+and the June 2026 rises put a US box that clears 8 GB at ~€62/mo. Contabo is
+~€5.50/mo for 4 vCPU / 8 GB with a US location.
+`docs/hosting-options-findings.md` compares the options and recommends Oracle
+Cloud Always Free (Ampere A1, 2 OCPU / 8 GB, **$0**) as the primary, with Contabo
+as the paid exit if Oracle's free-tier terms move again.
 
 ## Option D — No Cloudflare
 
@@ -331,10 +360,17 @@ exception at roughly €4).
   the real graph, 4 concurrent routes take 0.482 s versus 0.519 s serial, a
   **1.08x** speedup. (This file used to say scipy releases the GIL during
   routing. It does not, for `scipy.sparse.csgraph.dijkstra`.) More throughput
-  means more processes, at another ~1 GB of graph each.
-  Measured **~0.8 GB physical footprint**; plan for
-  2 GB free, so a 4 GB machine is fine and 8 GB comfortable. Note that plain RSS
-  understates this badly on macOS, which compresses much of it out.
+  means more processes, at another full copy of the graph each.
+  Footprint depends on which build you serve: **~0.8 GB for Massachusetts**, and
+  a measured **3.53 GB peak RSS for New England** with the access layers loaded
+  (3.85 GB after touching them). That is `Router` alone: the served process also
+  holds `LoopPlanner`'s caches, which take a warm process to **≈4.3 GB** once a
+  few `/api/loop` requests have run. So size for the region you actually ship,
+  and size on the warm figure — **6 GB is the floor for New England** and 8 GB
+  is comfortable. A 4 GB box loads fine and OOM-kills later, which is the worst
+  shape of failure to debug. Note that
+  plain RSS understates this on macOS, which compresses much of it out, so
+  expect a Linux box to report the same or a little more, not less.
   (It was ~1.0 GB until the router's node-pair lookup stopped being a dict of
   three quarters of a million boxed tuples — that alone was 204 MB.)
 - **~85 ms per route**, so a request for both options lands under 200 ms locally
