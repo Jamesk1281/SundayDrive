@@ -30,6 +30,7 @@ import math
 import sys
 import warnings
 from functools import cached_property
+from heapq import heappop, heappush
 from pathlib import Path
 
 import geopandas as gpd
@@ -295,6 +296,78 @@ SCENERY_BREAKDOWN = [(label, col, BREAKDOWN_OVERRIDE.get(col, BREAKDOWN_MIN))
 # point of the threshold is that a loop's "beautiful km" and a route's mean the
 # same thing.
 BEAUTIFUL_SCORE = 7.0
+
+# --- A* on the fastest arm --------------------------------------------------
+# `route(pref=0)` is an A* rather than the full-graph Dijkstra every other
+# search runs, because a Dijkstra with no target early-exit settles all 801,719
+# nodes of the New England graph whether the trip is 5.6 km or 314 minutes.
+#
+# The bound is ALT: travel time to and from a fixed set of landmarks, combined
+# through the triangle inequality. Over 12 OD pairs spanning New England, 16 of
+# them let A* settle 1.9% of the graph at the median. The count is what chose
+# 16: docs/astar-fastest-arm-brief.md measured 8 landmarks at 3.8% and 1.6x
+# worse on the two hardest pairs, and a straight-line bound at 9.0% and up to
+# 48% — which is why the straight-line version is not the cheap one to build
+# first but the one that does not work.
+#
+# Sixteen costs 32 Dijkstras at load and 103 MB of float32 table. Measured on
+# New England, against the same load without them: 22.6 s -> 32.1 s, and peak
+# RSS 4.56 GB -> 4.66 GB, which is the 2.4% the plan budgeted for.
+#
+# **Why one landmark set is correct for every request.** `_weights` is
+# `d_minutes` plus strictly non-negative addends, so `w >= d_minutes` pointwise
+# for every pref, every beauty-weight vector and every `avoid_unpaved`. A bound
+# on travel time is therefore a bound on every metric this router can be asked
+# for, and the tables depend on no user parameter. Only the fastest arm uses
+# them — see `route` — but they would be *admissible* on any of them.
+ALT_LANDMARKS = 16
+
+# Slack subtracted from every bound, in minutes, to absorb float32 rounding.
+# The tables are float32 (103 MB; float64 would be 205 MB) and the bound is a
+# *difference* of two stored values, so rounding to nearest can put it above
+# the truth. The graph's longest finite distance is 813 minutes, where a
+# float32 ulp is 6.1e-5 min, which caps the total error — two stored values
+# plus the subtraction — at about 1.5e-4 min. This is a 6x margin over that.
+#
+# Erring downward, always. An inadmissible bound is the one failure here with
+# no symptom: it returns a wrong route that looks entirely right. A slack of
+# 1e-3 min is 60 ms of driving, which no ETA in this app can express.
+ALT_SLACK_MIN = 1e-3
+
+# Stand-in for "no path" in the landmark tables, in minutes. The New England
+# graph is not strongly connected — per landmark, 206 nodes cannot be reached
+# from it and 2 cannot reach it — and `inf - inf` is `nan`, which compares
+# false against everything and would silently switch the bound off. A finite
+# sentinel gives both cases the right answer instead: sentinel minus a real
+# distance is a huge bound, which correctly prunes a node that provably cannot
+# reach the target at all, and sentinel minus sentinel is 0, which is no
+# information and is safe. Far above the 813-minute longest real distance.
+ALT_UNREACHABLE_MIN = 1e6
+
+# How much of the graph `_astar` may settle before it gives up and lets the
+# whole-graph Dijkstra have the query. A* is a bet that the search is small,
+# and the bet does lose: a destination in the corner of Maine, or one that no
+# road reaches at all, walks most of the graph through a Python heap and
+# finishes several times *slower* than scipy's C would have.
+#
+# Set at the break-even point, which is the only defensible place for it: past
+# here the A* has already spent what the Dijkstra would have cost, so it is no
+# longer risking anything it could win. Measured at 1.5-2.0 us per settled node
+# against a 277-304 ms whole-graph Dijkstra over 801,719 nodes, which puts
+# break-even at 16-23% of the graph depending on the sample. Held as a
+# *fraction* because both sides of that division scale with the node count, so
+# the figure carries to a graph of another size.
+#
+# What it costs when it fires, measured over 250 uniformly random OD pairs: it
+# fired on 22 of them, and the slowest whole arm was 630 ms against the old
+# arm's slowest 787 ms. Over 250 pairs at realistic trip lengths it fired on
+# none. The bet is bounded on both sides — a query that gives up pays about
+# twice the old arm, and no query A* would have won is refused.
+ALT_SETTLE_FRACTION = 0.20
+
+# `_astar` returning "I gave up", which is not the same answer as `None` —
+# there is no route — and must not be confused with it.
+_ASTAR_GAVE_UP = object()
 
 _TO_M = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
 
@@ -936,6 +1009,100 @@ class Router:
                                            np.arange(self.n_pairs + 1))
         self._pair_key = self.u_tail.astype(np.int64) * self.n + self.u_head
 
+        # `np.unique` sorted the pairs lexicographically above, which *is* CSR
+        # order: one contiguous run of heads per tail. So the pair arrays are
+        # already a CSR structure — `u_head` is the column-index array and any
+        # per-pair cost vector is the data array — and the A* can walk them
+        # with no per-request matrix build. That build is 15.2 ms of the old
+        # arm's 288 ms, and it is the sorting of an already-sorted COO.
+        #
+        # Checked rather than assumed: the grouping is a property of
+        # `np.unique`, not of this file, and `_astar` reading an ungrouped
+        # array would visit the wrong node's neighbours and return a plausible
+        # wrong route.
+        if self.n_pairs and (np.diff(self.u_tail) < 0).any():
+            raise RuntimeError("directed pairs are not grouped by tail; "
+                               "_astar's CSR indexing assumes np.unique "
+                               "returns them sorted")
+        self._pair_indptr = np.zeros(self.n + 1, np.int64)
+        np.cumsum(np.bincount(self.u_tail, minlength=self.n),
+                  out=self._pair_indptr[1:])
+        self._build_alt_tables()
+
+    def _build_alt_tables(self):
+        """Travel time from and to ALT_LANDMARKS landmarks, for `route`'s A*.
+
+        **After `_apply_turn_restrictions`, never before.** That call grows
+        `self.n` from 794,685 to 801,719 by splitting junctions per approach.
+        Tables built against the pre-split node set would be the wrong length
+        and — worse — the wrong *indexing*: they would load, run, and return
+        plausible routes. This runs at the end of `_build_directed`, after both
+        the split and the pair collapse it indexes into.
+
+        The landmarks are placed by farthest-point selection over travel time:
+        each new one is the node hardest to reach from any already chosen. That
+        drives them to the corners of the region, which is where they make the
+        triangle inequality tight — a landmark in the middle of the map bounds
+        almost nothing, because going via it is a detour for every pair.
+
+        Built on `d_minutes`, the travel time, which no user parameter touches
+        (see ALT_LANDMARKS). 32 Dijkstras, measured at 9.5 s on New England.
+        They are a deterministic function of the graph and could be written
+        beside `graph_edges.parquet` instead if that ever stops being
+        acceptable; this keeps the data directory's contract unchanged, which
+        is worth 9.5 s paid once per process, where nobody is waiting.
+        """
+        self._alt_bwd = self._alt_fwd = None
+        if not self.n_pairs:
+            return
+        # Collapsed the same way `route` collapses its own weights: one entry
+        # per (tail, head), the cheapest parallel edge. The bound has to be
+        # taken on the graph the search actually walks — `min_e w >= min_e
+        # d_minutes` follows from the pointwise bound, so the collapse
+        # preserves it, but only between the *same* pairs.
+        pair_t = np.full(self.n_pairs, np.inf)
+        np.minimum.at(pair_t, self.slot_pair, self.d_minutes)
+        g = csr_matrix((pair_t, self.u_head, self._pair_indptr),
+                       shape=(self.n, self.n))
+        gT = csr_matrix((pair_t, (self.u_head, self.u_tail)),
+                        shape=(self.n, self.n))
+
+        # The first landmark is the node furthest from the graph's centre of
+        # mass, so that selection starts at an edge of the region rather than
+        # wherever node 0 happens to be. Geometry goes through `real_node`:
+        # `_nx`/`_ny` are per `graph_nodes.parquet` row and the copies made for
+        # turn restrictions have no coordinates of their own. This is the only
+        # place coordinates enter — every later landmark is chosen by travel
+        # time, and the bound itself never touches them.
+        cx, cy = self._nx.mean(), self._ny.mean()
+        nxt = int(np.argmax((self._nx[self.real_node] - cx) ** 2
+                            + (self._ny[self.real_node] - cy) ** 2))
+
+        want = min(ALT_LANDMARKS, self.n)
+        land, bwd, chosen = [], np.empty((want, self.n)), want
+        reach = None
+        for i in range(want):
+            land.append(nxt)
+            # d(node -> L), so the pass runs on the transpose.
+            bwd[i] = dijkstra(gT, directed=True, indices=nxt)
+            reach = bwd[i] if reach is None else np.minimum(reach, bwd[i])
+            # Unreachable is not "far" for this purpose: a landmark no one can
+            # reach bounds nothing. -1 takes those out of the running.
+            far = np.where(np.isfinite(reach), reach, -1.0)
+            nxt = int(np.argmax(far))
+            if far[nxt] <= 0.0:
+                chosen = i + 1      # a graph too small to hold any more
+                break
+        fwd = dijkstra(g, directed=True, indices=np.array(land))
+        # In place and then cast, rather than np.where into a new float64
+        # array: these are 103 MB each at float64 and this runs inside a load
+        # that already holds about 4 GB.
+        bwd = bwd[:chosen]
+        for table in (bwd, fwd):
+            table[~np.isfinite(table)] = ALT_UNREACHABLE_MIN
+        self._alt_bwd = bwd.astype(np.float32)
+        self._alt_fwd = fwd.astype(np.float32)
+
     def _load_unpaved(self, e):
         """Per-edge unpaved share, and a `score_adj` with no surface term left.
 
@@ -1174,19 +1341,44 @@ class Router:
         # cost matrix has one entry per pair (no summed duplicates).
         pair_w = np.full(self.n_pairs, np.inf)
         np.minimum.at(pair_w, self.slot_pair, w)
-        g = csr_matrix((pair_w, (self.u_tail, self.u_head)), shape=(self.n, self.n))
-        dist, pred = dijkstra(g, directed=True, indices=src_idx,
-                              return_predecessors=True)
         # A junction split for turn restrictions stands at several indices, one
         # per approach that forbids something. Any of them is a legitimate place
         # to *arrive* — the restriction is on continuing through, and a route
-        # that ends here does not continue — so take whichever is cheapest.
-        # The source needs no such treatment: the original index keeps all of
-        # the junction's exits, which is right for a driver setting off from it
-        # with no direction of arrival to be restricted by.
+        # that ends here does not continue — so any of them will do, and the
+        # cheapest is the answer. The source needs no such treatment: the
+        # original index keeps all of the junction's exits, which is right for
+        # a driver setting off from it with no direction of arrival to be
+        # restricted by.
         targets = self.node_copies.get(dst_idx)
-        if targets is not None:
-            dst_idx = int(targets[np.argmin(dist[targets])])
+        if targets is None:
+            targets = np.array([dst_idx])
+        # The fastest arm, and only it, goes through A*. At pref = 1 even a
+        # *perfect* heuristic still settles 78-93% of the graph on a long
+        # route, and a Python heap costs 3.6x what scipy's C does at equal
+        # work, so a scenic A* would be several times slower than this is
+        # (docs/astar-fastest-arm-brief.md, Trap 4). Every other request takes
+        # the path it always did.
+        path = _ASTAR_GAVE_UP
+        if pref == 0.0 and self._alt_bwd is not None:
+            path = self._astar(src_idx, targets, pair_w)
+        if path is _ASTAR_GAVE_UP:
+            path = self._dijkstra_path(src_idx, targets, pair_w)
+        if path is None:
+            return None
+        return self._collect(path, w, scores, heading)
+
+    def _dijkstra_path(self, src_idx, targets, pair_w):
+        """Cheapest node path to any of `targets`, by settling the whole graph.
+
+        scipy's Dijkstra has no target early-exit, so this costs the same 262 ms
+        on New England whatever the trip — which is the reason `_astar` exists.
+        It is still the right answer for the scenic arm, where the search has
+        to settle most of the graph anyway and C beats a Python heap.
+        """
+        g = csr_matrix((pair_w, (self.u_tail, self.u_head)), shape=(self.n, self.n))
+        dist, pred = dijkstra(g, directed=True, indices=src_idx,
+                              return_predecessors=True)
+        dst_idx = int(targets[np.argmin(dist[targets])])
         if not np.isfinite(dist[dst_idx]):
             return None
         # reconstruct node path
@@ -1199,7 +1391,126 @@ class Router:
             return None
         path.append(src_idx)
         path.reverse()
-        return self._collect(path, w, scores, heading)
+        return path
+
+    def _alt_bound(self, targets: np.ndarray) -> np.ndarray:
+        """Lower bound, per node, on travel time to the nearest of `targets`.
+
+        The ALT bound from one landmark L is the larger of the two triangle
+        inequalities that do not need a path through L to exist:
+
+            d(n, t) >= d(n, L) - d(t, L)        and        d(L, t) - d(L, n)
+
+        and the bound is the largest any landmark gives. Each term is
+        *consistent*, not merely admissible — `d(u,L) - d(t,L)` differs from
+        `d(v,L) - d(t,L)` by at most `w(u,v)` — and a pointwise max of
+        consistent functions is consistent, which is what lets `_astar` stop at
+        the first target it pops.
+
+        **The destination is a set** (see `route`). The exact bound for a set
+        is `min` over targets of the per-target bound, which would cost a pass
+        per target. This takes the min *inside* the max instead:
+
+            min_t max_L b_L(n, t)  >=  max_L min_t b_L(n, t)
+
+        The right-hand side is the weaker of the two and is still a lower bound
+        on the distance to the nearest target, because for each L,
+        `min_t b_L(n,t) <= min_t d(n,t)`. It costs the same as a single target
+        for any number of them, since both mins fold into a per-landmark
+        constant. The weakening is nothing in practice: the targets of a set
+        are copies of one junction, standing in the same place, so their
+        distances to a landmark differ only by which exits they are allowed.
+        """
+        bwd, fwd = self._alt_bwd, self._alt_fwd
+        to_land = bwd[:, targets].max(axis=1) + np.float32(ALT_SLACK_MIN)
+        from_land = fwd[:, targets].min(axis=1) - np.float32(ALT_SLACK_MIN)
+        # Buffers per call, not reused across calls: waitress serves with four
+        # threads and `/api/route` holds no lock, so two routes can be in here
+        # at once. `np.empty` is free until written and the first op writes
+        # every element anyway.
+        h = np.empty(self.n, np.float32)
+        tmp = np.empty(self.n, np.float32)
+        np.subtract(bwd[0], to_land[0], out=h)
+        np.subtract(from_land[0], fwd[0], out=tmp)
+        np.maximum(h, tmp, out=h)
+        for i in range(1, len(bwd)):
+            np.subtract(bwd[i], to_land[i], out=tmp)
+            np.maximum(h, tmp, out=h)
+            np.subtract(from_land[i], fwd[i], out=tmp)
+            np.maximum(h, tmp, out=h)
+        # Clamped at zero, which is a correctness fix and not a tidy-up. A
+        # negative bound is merely no information *as a bound* — but `_astar`
+        # stops at the first target it pops, and it orders by `g + h`, so a
+        # target whose own bound is negative jumps the queue ahead of a
+        # cheaper sibling copy. Every target's bound is negative here, by at
+        # least ALT_SLACK_MIN, and they are not all negative by the *same*
+        # amount.
+        #
+        # Measured, before this line existed: junction 669074 has three
+        # copies, and A* returned the one costing 111.1124 min ahead of the
+        # one costing 111.0289 because their bounds were -0.0846 and -0.0010 —
+        # a 3e-5 min lead on `f`, bought with a route 0.084 min worse. It costs
+        # nothing anywhere else: 7 nodes of 801,719 had a negative bound.
+        np.maximum(h, 0.0, out=h)
+        return h
+
+    def _astar(self, src_idx, targets, pair_w):
+        """Cheapest node path to any of `targets`, settling as little as it can.
+
+        Measured over 12 OD pairs from 7 to 314 minutes, this settles 1.9% of
+        the graph at the median against the full Dijkstra's 100%, taking the
+        whole arm from 255 ms to 46 ms. Over 250 OD pairs at realistic trip
+        lengths, 304 ms to 38 ms.
+
+        Two details are load-bearing:
+
+        **It stops at the first target popped**, which is correct only because
+        `_alt_bound` bounds the distance to the *nearest* target rather than to
+        one chosen up front. A full Dijkstra can pick the cheapest copy of a
+        split junction afterwards because it settled all of them; this cannot.
+
+        **Staleness is decided by the g-value carried in the heap**, not by a
+        closed set. It is 19% faster (18.2 ms against 22.4 ms at the median),
+        and it also reopens a node if a shorter path to it turns up later —
+        which cannot happen with a consistent bound, and means a mistake in
+        `_alt_bound` costs speed rather than correctness.
+
+        Returns `_ASTAR_GAVE_UP` if the search outgrows ALT_SETTLE_FRACTION,
+        `None` if there is genuinely no route. The two are different answers
+        and the caller has to tell them apart.
+        """
+        h = self._alt_bound(targets)
+        indptr, head = self._pair_indptr, self.u_head
+        goal = {int(t) for t in targets}
+        dist = {src_idx: 0.0}
+        pred = {}
+        heap = [(float(h[src_idx]), 0.0, src_idx)]
+        budget = int(ALT_SETTLE_FRACTION * self.n)
+        while heap:
+            _, g_u, u = heappop(heap)
+            if g_u > dist[u]:
+                continue
+            if u in goal:
+                path = [u]
+                while u != src_idx:
+                    u = pred[u]
+                    path.append(u)
+                path.reverse()
+                return path
+            budget -= 1
+            if budget < 0:
+                return _ASTAR_GAVE_UP
+            # float() on the way out of numpy, deliberately: these are the
+            # hottest lines in the router, and a np.float64 costs about twice
+            # a Python float in the arithmetic and in the heap comparison.
+            for i in range(indptr[u], indptr[u + 1]):
+                v = int(head[i])
+                nd = g_u + float(pair_w[i])
+                if nd < dist.get(v, np.inf):
+                    dist[v] = nd
+                    pred[v] = u
+                    heappush(heap, (nd + float(h[v]), nd, v))
+        return None
 
     def _collect(self, path, w, scores, heading=None):
         """Turn a Dijkstra node path into the chosen edges, in travel order.
