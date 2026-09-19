@@ -1,5 +1,7 @@
 # Licensing and copyright: the three questions the IP audit did not answer
 
+> **Answered in `docs/licensing-open-questions.md` (2026-09-19).**
+
 **Status: researched 2026-09-19, nothing changed.** No file under `ios/`,
 `server/`, `pipeline/` or `tests/` was touched, and this task must not touch one
 either — see Trap 2. This brief is *not* the legal audit. The audit exists, it is

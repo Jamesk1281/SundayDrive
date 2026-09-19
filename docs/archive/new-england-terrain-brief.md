@@ -1,5 +1,10 @@
 # Build the New England terrain, and prove the relief fix holds
 
+> **Answered in `docs/new-england-terrain-findings.md` (2026-08-29).** The
+> prediction table below is filled in there, the pinned-latitude fix was
+> verified, and the run turned up a corrupt-pixel defect in the Terrarium source
+> that this brief did not anticipate.
+
 **Status: built 2026-08-29.** `elevation.py`'s BBOX covers all six states
 (-73.76, 40.93, -66.87, 47.47), the relief window is pinned at a fixed latitude
 rather than the bounding box's, and `data/processed-ne/relief.tif` is the

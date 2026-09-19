@@ -1,5 +1,11 @@
 # Are we using the right geographic data?
 
+> **Answered in `docs/geodata-sources-findings.md` (2026-08-28), peer-reviewed
+> in `docs/geodata-peer-review-verdict.md`, and the recommendation was built:**
+> `pipeline/landcover.py` samples ESA WorldCover and `c_forest` is now half OSM
+> green, half measured tree cover. Read the findings first; the state described
+> below is as of the day the question was asked.
+
 **Status: diagnosed, nothing changed.** No source file has been touched. This is
 a review task with a measurement already done: the size of the gap is known, the
 cause is known, and what is *not* known is whether better open data exists to

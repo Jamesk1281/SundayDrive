@@ -1,7 +1,22 @@
 # Eight consumer-facing defects found by driving the app, diagnosed not fixed
 
-**Status: diagnosed 2026-08-29, nothing changed.** No source file and no test
-was touched. Every symptom below was observed by building the app
+**Status: diagnosed 2026-08-29; four of the eight have since been fixed.**
+Re-checked against the tree 2026-09-19 — **#1, #2, #7 and #8 are closed**, and
+each item below now opens with its own state:
+
+| | defect | state |
+| --- | --- | --- |
+| 1 | "HTTP 530" reaches the driver raw | **fixed** — `RouteService.swift:62-64` returns `.unreachable(status)` with a sentence around it |
+| 2 | the comparison contradicts itself by a minute | **fixed** — `RouteComparison` owns both minute figures, so the cards and the sentence share one rounding |
+| 3 | the compact sheet is shorter than its content | open |
+| 4 | the start pin is centred behind the sheet | open |
+| 5 | the verdict buttons are the least visible control | open — but the lines cited below, `NavView.swift:287-296`, are now `currentRoadLabel`; re-locate before acting |
+| 6 | two overlapping location requests strand a task | open |
+| 7 | "Switch to fastest" can do nothing at all | **fixed** — `NavView.swift:106-108` no longer no-ops on a nil fix |
+| 8 | the loop tab never names the place | **fixed** — `LoopModel.swift:137,148` |
+
+The diagnosis below is unchanged from the day it was written. No source file and
+no test was touched *by this document*. Every symptom below was observed by building the app
 (`xcodegen generate` + `xcodebuild`), installing it on a booted iPhone 15 Pro
 simulator, serving `data/processed` locally, and driving the device along a real
 route with `xcrun simctl location start`. Screenshots and the app's own drive

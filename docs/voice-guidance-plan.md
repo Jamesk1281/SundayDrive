@@ -1,14 +1,26 @@
 # Voice guidance: the design, and the one thing that had to be measured
 
-Companion to `docs/voice-guidance-plan-brief.md`, which scoped this and settled
+Companion to `docs/archive/voice-guidance-plan-brief.md`, which scoped this and settled
 the central decision (the schedule is time-based, not distance-based). This
 document chooses the thresholds, the phrasing, the audio session, the mute
 control and the reroute behaviour, and answers the background-audio question by
 measurement.
 
-**Nothing here is built.** No Swift file under `ios/Sources/` was touched, and
-`ios/project.yml` is unchanged. The spike that produced the measurements is on
-the throwaway branch `throwaway/voice-audio-spike`, unmerged.
+**Status: designed here, then built 2026-08-30.** `ios/Sources/VoiceGuide.swift`
+speaks the maneuvers and `VoiceCatalogue.swift` lets the driver pick the voice
+(`67ffc46`, `0b1f240`); `UIBackgroundModes: audio` was added to `ios/project.yml`
+as §1 requires. **This document is cited by section from five files** —
+`ios/project.yml`, `VoiceGuide.swift`, `VoiceCatalogue.swift`,
+`LocationManagerTests.swift` and `VoiceGuideTests.swift` — so its section
+numbering is load-bearing and must not be renumbered.
+
+The design below is left as it was written. Its original status line read:
+
+> **Nothing here is built.** No Swift file under `ios/Sources/` was touched, and
+> `ios/project.yml` is unchanged. The spike that produced the measurements is on
+> the throwaway branch `throwaway/voice-audio-spike`, unmerged.
+
+That spike has since merged (`4a02da0`).
 
 ---
 

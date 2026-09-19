@@ -1,7 +1,7 @@
 # Peer review verdict: the geodata findings
 
 Adversarial review of `docs/geodata-sources-findings.md`, against the brief in
-`docs/geodata-peer-review-brief.md`. Measured 2026-08-28. **No file outside
+`docs/archive/geodata-peer-review-brief.md`. Measured 2026-08-28. **No file outside
 `docs/` was modified**; nothing in `pipeline/` was touched. The test suite was
 run, not changed (`tests/test_calibration.py`, 33 passed, on the shipped data).
 

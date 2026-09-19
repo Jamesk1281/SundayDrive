@@ -8,6 +8,17 @@ on this machine on 2026-08-26 against the live Massachusetts build, which was
 not modified. Where a measurement contradicts something previously assumed —
 including two things this session assumed — it says so.
 
+> **One decision here was overruled by what shipped.** §0a below decides to
+> **band the relief filter by latitude**; what shipped on 2026-08-29 (`6cd0620`)
+> is the **pinned** reference latitude it argues against —
+> `RELIEF_REF_LAT = 42.05` (`pipeline/elevation.py:58`). Phase 0a's own
+> verification was run against the pinned implementation and passed
+> (`docs/new-england-terrain-findings.md`, Finding 2). The doc's remaining
+> objection to pinning still stands and is still unaddressed: a pinned 13 px is
+> 751 m of ground in Connecticut and 672 m in northern Maine, so the window no
+> longer moves when the box widens but is still not a constant distance within
+> it. The two decision sites below are marked where they occur.
+
 ## The shape of the work
 
 Merging the PBF was the easy half. The hard half is that **five of the app's
@@ -83,7 +94,8 @@ relief for Massachusetts by 13% before a single new state is considered, which
 is exactly the region-dependence the `RELIEF_WINDOW_M` comment predicts. Any
 attempt to re-fit `RELIEF_FULL` without fixing this is fitting to an artifact.
 
-**Decided 2026-08-26: band the filter by latitude.** Split the mosaic into latitude
+**Decided 2026-08-26: band the filter by latitude.** *(Overruled — the pinned
+`RELIEF_REF_LAT` shipped instead. See the note at the top of this file.)* Split the mosaic into latitude
 bands, use the correct pixel window per band, and overlap the bands by a halo of
 `win // 2 + 1` rows so the `maximum_filter`/`minimum_filter` results are
 identical to a whole-array run. Then 750 m means 750 m everywhere.
@@ -441,7 +453,8 @@ change, it ships on its own schedule, before or after the server switch.
 
 ## Decisions taken, 2026-08-26
 
-1. **Relief window: band the filter by latitude.** Correct rather than
+1. **Relief window: band the filter by latitude.** *(Overruled — pinning
+   shipped. See the note at the top of this file.)* Correct rather than
    re-centred, cuts the filter peak, and is the machinery the next expansion
    needs anyway.
 2. **Scoring re-fit: full, region-wide** — `RELIEF_FULL`, the byway relations,

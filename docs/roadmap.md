@@ -90,6 +90,31 @@ measured; `[ ]` is open, with what it is waiting on.
       `Region.massachusetts` is the iOS map's starting camera and its address
       search bias (`ios/Sources/Region.swift`), so a Vermont trip is harder to
       search for than it should be.
+- [ ] **A drive that never joins its route can never end.** All three arrival
+      tests are gated on `hasJoinedRoute`
+      (`ios/Sources/NavigationModel.swift:849-857`), so a car that is snapped
+      onto the wrong road, or parked beside a line it never reached, stays in
+      navigation indefinitely — holding GPS at 1 Hz with the screen awake. Found
+      on the 2026-08-25 drives and flagged as out of scope by three documents
+      since (`reroute-audit.md`, `reroute-step-offset.md`,
+      `docs/archive/stale-plan-after-arrival.md`); it belongs to none of them. The fix is not
+      to clear `hasJoinedRoute` — it also gates the backtrack floor and
+      off-route recovery — so it needs an arrival path that does not depend on
+      having joined
+- [ ] **Remaining distance and ETA credit route the driver has not driven.** The
+      banner half of this was fixed 2026-08-25; the odometer half was not. A
+      driver matched 229.6 m along a line they have not started still has
+      229.6 m knocked off `remainingMeters`. 0.5% on a 42 km trip, and it
+      corrects itself on joining — see `docs/reroute-step-offset.md`
+- [ ] **`RELIEF_FULL` has no range left north of Massachusetts.** It is 100.0
+      (`score.py`), fitted to Massachusetts. Measured over the New England
+      build, **13.4% of chunks north of MA already saturate it**, so a 1,453 m
+      ravine in the White Mountains scores the same as a 100 m rise outside
+      Worcester. Re-fitting is rollout Phase 4 and changes every score, so it is
+      a deliberate step — `docs/new-england-terrain-findings.md`, Finding 3
+- [ ] **The 500 m reroute re-seat window is argued, not fitted.** Bounded by one
+      measured case (282 m). A drive deliberately routed over a road the route
+      uses twice would calibrate it — `docs/reroute-audit.md`
 
 > The early MapLibre web demo was retired to focus on iOS; it lives in git
 > history (`git show 82044e2`) and is cheap to revive on the same API if needed.

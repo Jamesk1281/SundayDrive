@@ -5,6 +5,14 @@ stated, one new and more severe defect found underneath both — and all of them
 now fixed.** The original brief is preserved below unaltered. Findings begin at
 "# Findings"; what was changed, and how it was verified, at "# What was fixed".
 
+**Three items are still open**, listed at "What is still open" at the end: the
+arrival gate (`ios/Sources/NavigationModel.swift:849-857` — all three arrival
+tests gated on `hasJoinedRoute`, so a car that never joins its route can never
+end its drive), the request record that cannot be applied backwards to the twelve
+traces already on disk, and the 500 m re-seat window, which is bounded by
+argument and one measured case rather than by a fitted distribution. All three
+are now carried in `docs/roadmap.md`.
+
 ## Context: what is already fixed, so do not re-find it
 
 Three defects from the 2026-08-25 drives are **already fixed and merged to
@@ -17,7 +25,7 @@ main** (`beedb2c`, `0f7b5ba`, `e6109d9`). Do not report them again:
   strictly-past with a margin. See `docs/reroute-step-offset.md`.
 - The projection running backwards along a line that doubles back.
 - A finished drive restartable from a stale plan. See
-  `docs/stale-plan-after-arrival.md`.
+  `docs/archive/stale-plan-after-arrival.md`.
 
 One known defect is **deliberately still open and is not yours**: all three
 arrival tests at `NavigationModel.swift:571-582` gate on `hasJoinedRoute`, so a

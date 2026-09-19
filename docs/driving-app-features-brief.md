@@ -1,5 +1,8 @@
 # Seven driving-app features: what exists today, and what each would cost
 
+> **Costed in `docs/driving-app-features-cost.md` (2026-09-19).** Neither
+> document chooses what ships; both are inventory awaiting a decision.
+
 **Status: surveyed 2026-09-19, nothing changed.** No source file, no constant
 and no test was touched. Every claim below is a `file:line` read off
 `main` at `378aaee`. This document is a **brief for a costing study**, not a

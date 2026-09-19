@@ -1,5 +1,11 @@
 # Plan: time-of-day travel times
 
+**Status: decided 2026-08-31 — not built, and deliberately not.** This is a
+standing negative result, not a backlog item. The filename says "plan"; the
+verdict immediately below says do not build it. Nothing in `pipeline/` or
+`server/` was touched. §§4-7 cost the model out anyway, so the numbers are here
+if the evidence ever changes — but read the verdict before proposing this again.
+
 ## Verdict: do not build this — not on borrowed data
 
 **Three reasons, in order of weight.**

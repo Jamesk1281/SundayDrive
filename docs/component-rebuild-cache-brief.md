@@ -1,5 +1,7 @@
 # A per-column cache for score.py, so retuning a constant is not a rebuild
 
+> **Answered in `docs/component-rebuild-cache-findings.md` (2026-09-19).**
+
 **Status: measured 2026-09-19, nothing built.** No file under `pipeline/`,
 `server/`, `ios/` or `tests/` has been touched. The timings below were taken by
 a scratch script outside the repository that loads `scored_chunks.parquet` and

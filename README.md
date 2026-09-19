@@ -115,3 +115,7 @@ maneuver has been passed, which of two overlapping reroutes wins.
 - [Data sources and licences](docs/data-sources.md) — the three open
   sources, what each one is used for, and why the app rather than this
   file is what discharges the attribution
+
+Behind those sit the measurements the constants were fitted against — the
+studies, verdicts and audits that say why each number is what it is.
+[`docs/README.md`](docs/README.md) indexes all of them.

@@ -1,5 +1,10 @@
 # Voice guidance: plan it, and settle the one thing that cannot be guessed
 
+> **Answered in `docs/voice-guidance-plan.md`, and then built.** That document
+> is the one the code cites by section; it also re-measured this brief's 455-leg
+> distribution on a second sample (194 legs, median 507 m against 746 m here)
+> and the conclusion held. Read it first.
+
 **Status: built 2026-08-30.** `ios/Sources/VoiceGuide.swift` speaks the
 maneuvers and `VoiceCatalogue.swift` lets the driver pick the voice. What
 follows is the design this was built from, plus the one measurement that
