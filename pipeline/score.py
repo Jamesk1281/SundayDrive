@@ -23,6 +23,9 @@ plus a composite 0-10 score. Output: scored_chunks.parquet.
 Usage: python score.py <processed_dir>
 """
 
+import hashlib
+import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -206,6 +209,158 @@ def near_flags(tree: STRtree | None, geoms: np.ndarray, dist: float) -> np.ndarr
     return flags
 
 
+# --- Cache: the three queries that are ~99% of the feature cost ------------
+#
+# main() issues nine `dwithin` queries and two layers are almost all of the
+# time. It is not a hit-count problem — water and green run 0.33 and 0.48 hits
+# per chunk, in line with every other layer — it is polygon vertex count: 88 MB
+# and 171 MB of parquet against farm_areas' 16 MB.
+#
+# Three queries rather than two, because water is queried *twice* and the
+# second one is not free. docs/component-rebuild-cache-brief.md's table carries
+# one row per layer and prices water at its 350 m query alone; measured on the
+# 942,448-chunk New England build, the 120 m query costs 123.4 s against the
+# 350 m query's 125.3 s. So the water layer is about twice what that table
+# implies — and the five uncached layers, 7.5 s between them, really are the
+# rounding error it makes them out to be (place has a second unlisted query
+# too, and it is 0.5 s).
+#
+# So this caches those two layers and nothing else. Wrapping the cheap five in
+# hash-and-verify machinery would save seconds and add another place for the
+# misalignment hazard in chunk_digest to happen.
+#
+# Cached at the *query* rather than at the finished `c_` column, because a
+# query's inputs are strictly narrower than its column's, in two ways that both
+# matter for the constant sweeps this exists to make affordable:
+#
+#   * `c_forest` is half OSM green and half measured tree cover, and only the
+#     green half is expensive. Keying on the column would throw that query
+#     away every time landcover.py rewrote tree_cover.parquet.
+#   * `c_water` is two queries against one tree, so re-tuning DIST["water_mid"]
+#     leaves the 120 m answer alone.
+#
+# What is deliberately *not* in the key is the point of the whole change:
+# WEIGHTS, RAW_BASE, STRETCH and CLASS_ADJ reach none of these queries, so
+# re-blending is a cache-hit rebuild. tests/test_cache.py asserts that, and the
+# rest of the invalidation table, row by row.
+
+CACHE_FORMAT = 1  # bump when the stored meaning of `flags` changes
+
+
+def file_digest(path: Path) -> str:
+    """Content hash, not mtime.
+
+    The workflow this exists for is "change one constant, re-run", where the
+    layer files are untouched — but a git checkout, a re-copy, or a re-run of
+    an upstream stage all move mtime without moving a byte, and would evict
+    exactly the two entries worth keeping. Hashing all 473 MB of layer parquet
+    takes 0.7 s, against the 389 s it protects.
+    """
+    h = hashlib.blake2b(digest_size=16)
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 22), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def chunk_digest(geoms: np.ndarray) -> str:
+    """Identity of the exact chunk sequence a cached answer lines up with.
+
+    A cached answer joined by position to the wrong chunks has no symptom: it
+    would credit one road with another's water and still produce a plausible
+    score. That is the same hazard sample_tree_cover raises SystemExit over,
+    by the same mechanism, so it gets the same treatment — except stronger.
+    Rather than the midpoints, this hashes every coordinate of every chunk plus
+    the per-chunk vertex counts that say where one chunk ends and the next
+    begins. Two sequences with this digest therefore have identical midpoints
+    *and* identical geometry, which is what a dwithin query actually reads. It
+    costs 0.35 s over 9.8M coordinates — less than computing the midpoints.
+
+    It also subsumes everything upstream that decides the chunks: roads.parquet,
+    CHUNK_LEN, and the one no file hash could catch — a shapely upgrade moving
+    a chunk boundary by a float, since chunk_roads cuts with substring().
+    """
+    h = hashlib.blake2b(digest_size=16)
+    coords = np.ascontiguousarray(shapely.get_coordinates(geoms), dtype=np.float64)
+    counts = np.ascontiguousarray(shapely.get_num_coordinates(geoms), dtype=np.int64)
+    h.update(coords.tobytes())
+    h.update(counts.tobytes())
+    return h.hexdigest()
+
+
+def cache_dir(d: Path) -> Path:
+    """Where cached queries live: beside the build, never inside it.
+
+    `d` is the deploy source — docs/hosting-options-brief.md counts its bytes
+    for transfer planning and a naive rsync of it would ship this to the
+    serving box. Same placement landcover.py:267 uses for its WorldCover tiles.
+    Builds of different regions share the directory safely, because their chunk
+    digests differ and so do their entries.
+    """
+    return d.parent / "raw" / "component-cache"
+
+
+class CachedQuery:
+    """One layer group's dwithin queries, answered from disk when they can be.
+
+    Takes a callable that builds the tree rather than a tree, because a hit
+    must not pay to read and reproject the 88–171 MB of polygons it is never
+    going to query — on a warm rebuild those layers are not opened at all.
+    """
+
+    def __init__(self, name: str, build, directory: Path | None, key: dict):
+        self.name = name
+        self.build = build
+        self.dir = directory
+        self.key = key
+        self._tree = None
+        self._built = False
+
+    def tree(self) -> STRtree | None:
+        if not self._built:
+            self._tree, self._built = self.build(), True
+        return self._tree
+
+    def near(self, geoms: np.ndarray, dist: float) -> np.ndarray:
+        if len(geoms) != self.key["n_chunks"]:
+            raise SystemExit(
+                f"{self.name} cache was keyed on {self.key['n_chunks']:,} chunks "
+                f"but is being queried with {len(geoms):,}")
+        blob = json.dumps({**self.key, "query": self.name, "dist": dist},
+                          sort_keys=True)
+        path = None
+        if self.dir is not None:
+            digest = hashlib.blake2b(blob.encode(), digest_size=16).hexdigest()
+            path = self.dir / f"{self.name}-{digest}.npz"
+
+        if path is not None and path.exists():
+            with np.load(path, allow_pickle=False) as z:
+                stored, flags = z["key"].item(), z["flags"]
+            # The filename *is* the digest of `blob`, so a mismatch here is not
+            # a cache miss — it is a hash collision or a hand-edited entry,
+            # and the cost of guessing wrong is a silently misaligned score.
+            # Same response as sample_tree_cover: stop, do not proceed.
+            if stored != blob or len(flags) != self.key["n_chunks"]:
+                raise SystemExit(
+                    f"{path.name} does not hold what its name says it holds "
+                    f"({len(flags):,} chunks, wanted {self.key['n_chunks']:,}). "
+                    f"Delete {path.parent} and re-run.")
+            print(f"  {self.name} @ {dist:.0f} m: cached")
+            return flags
+
+        t = time.time()
+        flags = near_flags(self.tree(), geoms, dist)
+        print(f"  {self.name} @ {dist:.0f} m: computed in {time.time() - t:.0f}s")
+        if path is not None:
+            # Atomic, so an interrupted run leaves no half-written entry for
+            # the next one to trip the SystemExit above on.
+            tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+            with open(tmp, "wb") as f:
+                np.savez_compressed(f, flags=flags, key=np.array(blob))
+            os.replace(tmp, path)
+        return flags
+
+
 def sample_relief(chunks: gpd.GeoDataFrame, relief_path: Path) -> np.ndarray:
     """Sample local relief (m) at each chunk midpoint, normalized to 0..1."""
     if not relief_path.exists():
@@ -294,7 +449,7 @@ def build_tree(gdf: gpd.GeoDataFrame, min_area: float | None = None) -> STRtree 
     return STRtree(geoms)
 
 
-def main(processed_dir: str):
+def main(processed_dir: str, cache: bool = True):
     d = Path(processed_dir)
     t0 = time.time()
 
@@ -311,27 +466,52 @@ def main(processed_dir: str):
     curv = curvature_deg_per_km(geoms, chunks["road_len_m"].to_numpy())
     chunks["c_curves"] = np.clip(curv / CURVE_FULL, 0, 1)
 
-    # Components: proximity to scenic features
-    # area filter only applies to polygons; rivers are lines with area 0, keep them
-    wa = load_layer(d, "water_areas")
-    wl = load_layer(d, "water_lines")
-    water_geoms = []
-    if len(wa):
-        g = wa.geometry.values
-        water_geoms.append(g[shapely.area(g) >= MIN_AREA["water"]])
-    if len(wl):
-        water_geoms.append(wl.geometry.values)
-    water_tree = STRtree(np.concatenate(water_geoms)) if water_geoms else None
+    # Components: proximity to scenic features.
+    #
+    # Water and green are the two expensive queries and go through the cache;
+    # see CachedQuery for why those two and why at the query rather than at the
+    # column. Both are built lazily, so a warm rebuild never opens the 259 MB
+    # of polygons behind them. The other five are cheap enough to just do.
+    def water_tree():
+        # area filter only applies to polygons; rivers are lines with area 0, keep them
+        wa = load_layer(d, "water_areas")
+        wl = load_layer(d, "water_lines")
+        water_geoms = []
+        if len(wa):
+            g = wa.geometry.values
+            water_geoms.append(g[shapely.area(g) >= MIN_AREA["water"]])
+        if len(wl):
+            water_geoms.append(wl.geometry.values)
+        return STRtree(np.concatenate(water_geoms)) if water_geoms else None
+
+    directory = cache_dir(d) if cache else None
+    if directory is not None:
+        directory.mkdir(parents=True, exist_ok=True)
+    base = {"format": CACHE_FORMAT, "chunks": chunk_digest(geoms),
+            "n_chunks": len(geoms),
+            # dwithin is GEOS's, so a GEOS upgrade can move an answer without
+            # moving anything else this key covers.
+            "geos": shapely.geos_version_string}
+    print(f"cache: {directory or 'disabled (--no-cache)'} "
+          f"[chunks {base['chunks'][:12]}] in {time.time() - t0:.0f}s")
+
+    water = CachedQuery("water", water_tree, directory, {
+        **base, "min_area": MIN_AREA["water"],
+        "layers": {n: file_digest(d / f"{n}.parquet")
+                   for n in ("water_areas", "water_lines")}})
+    green = CachedQuery("green", lambda: build_tree(load_layer(d, "green_areas"),
+                                                    MIN_AREA["green"]), directory, {
+        **base, "min_area": MIN_AREA["green"],
+        "layers": {"green_areas": file_digest(d / "green_areas.parquet")}})
 
     coast_tree = build_tree(load_layer(d, "coastline"))
-    green_tree = build_tree(load_layer(d, "green_areas"), MIN_AREA["green"])
     farm_tree = build_tree(load_layer(d, "farm_areas"), MIN_AREA["farm"])
     view_tree = build_tree(load_layer(d, "viewpoints"))
     urban_tree = build_tree(load_layer(d, "urban_areas"))
     place_tree = build_tree(load_layer(d, "place_points"))
 
-    near_water = near_flags(water_tree, geoms, DIST["water"])
-    mid_water = near_flags(water_tree, geoms, DIST["water_mid"])
+    near_water = water.near(geoms, DIST["water"])
+    mid_water = water.near(geoms, DIST["water_mid"])
     chunks["c_water"] = np.where(near_water, 1.0, np.where(mid_water, 0.45, 0.0))
     chunks["c_coast"] = near_flags(coast_tree, geoms, DIST["coast"]).astype(float)
     # Forest: OSM's designated green polygons and WorldCover's measured tree
@@ -348,9 +528,9 @@ def main(processed_dir: str):
     # 0.18 — a separate baseline column would leave half of forest-ness
     # permanently on for a user who set the slider to zero. See
     # docs/geodata-sources-findings.md.
-    green = near_flags(green_tree, geoms, DIST["green"]).astype(float)
+    green_flag = green.near(geoms, DIST["green"]).astype(float)
     tree = sample_tree_cover(chunks, d / "tree_cover.parquet")
-    chunks["c_forest"] = 0.5 * green + 0.5 * tree
+    chunks["c_forest"] = 0.5 * green_flag + 0.5 * tree
     chunks["c_farm"] = near_flags(farm_tree, geoms, DIST["farm"]).astype(float)
     chunks["c_views"] = near_flags(view_tree, geoms, DIST["view"]).astype(float)
     chunks["c_scenic_tag"] = chunks["scenic"].astype(float)
@@ -482,4 +662,7 @@ def calibration_report(chunks: gpd.GeoDataFrame):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    # --no-cache recomputes everything and writes nothing, which is how the
+    # cached output is checked against an uncached one.
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    main(args[0], cache="--no-cache" not in sys.argv[1:])
