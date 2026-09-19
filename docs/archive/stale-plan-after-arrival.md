@@ -1,7 +1,11 @@
 # Arriving leaves a stale route armed, and it can be driven again
 
-**Status: fixed** — `endNavigation()` in `ios/Sources/RouteModel.swift`, with
-`ios/Tests/RouteModelTests.swift` to hold it; see "What was done". One of four
+**Status: fixed 2026-08-25, and the argument now lives in the code.**
+`endNavigation()` in `ios/Sources/RouteModel.swift:279-300` carries this
+document's whole case in its comment — the 86 seconds, Harvard, the 38 km, the
+nine-minute parked trace and the `end`/`endQuery` decision — and
+`ios/Tests/RouteModelTests.swift:53-94` holds all four behaviours. **This file
+is archived: it holds no measurement that does not survive there.** One of four
 defects found on the 2026-08-25 drives; the other three are tracked separately
 and deliberately excluded here — see "Out of scope".
 

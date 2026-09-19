@@ -1,7 +1,14 @@
 # Vermont has the prettiest roads in New England and the worst scores
 
-**Status: diagnosed and measured 2026-08-29, nothing changed.** No source file
-touched. `UNPAVED_ADJ` is still -0.25, `WEIGHTS["urban"]` still 0.14. The
+> **Answered in `docs/unpaved-and-urban-verdict.md` (2026-08-29), and the
+> recommendation was implemented.** Surface left the scenic score and became a
+> preference priced in minutes (`avoid_unpaved=0..2`). **`UNPAVED_ADJ` no longer
+> exists under that name** — it is `LEGACY_UNPAVED_ADJ` (`pipeline/router.py:45`).
+> `WEIGHTS["urban"]` is still 0.14, deliberately; the verdict says why. Read the
+> verdict first: the state described below is as of 2026-08-29.
+
+**Status: diagnosed and measured 2026-08-29, nothing changed at the time.** No
+source file touched. `UNPAVED_ADJ` was -0.25, `WEIGHTS["urban"]` 0.14. The
 measurements below are all from the shipped New England build
 (`data/processed-ne`, 940,420 chunks, 236,196 km, attributed to states by
 `way_id` against the six Geofabrik extracts).

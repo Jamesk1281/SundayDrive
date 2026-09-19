@@ -80,9 +80,9 @@ for f in docs/*.md; do b=$(basename "$f"); \
 is the single most useful fact about the corpus. Measured:
 
 ```
-docs/landcover-implementation-brief.md:3:**Status: implemented 2026-08-29.**
-docs/voice-guidance-plan-brief.md:3:    **Status: built 2026-08-30.**
-docs/stale-plan-after-arrival.md:3:     **Status: fixed** — `endNavigation()` in ...
+docs/archive/landcover-implementation-brief.md:3:**Status: implemented 2026-08-29.**
+docs/archive/voice-guidance-plan-brief.md:3:    **Status: built 2026-08-30.**
+docs/archive/stale-plan-after-arrival.md:3:     **Status: fixed** — `endNavigation()` in ...
 docs/consumer-polish-brief.md:3:        **Status: diagnosed 2026-08-29, nothing changed.**
 docs/hosting-options-brief.md:3:        **Status: requirements measured 2026-08-31, nothing changed.**
 ```

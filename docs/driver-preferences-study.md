@@ -1,5 +1,14 @@
 # What else should be a driver preference, and what shape should preferences take
 
+> **One claim in this study was later measured wrong.**
+> `docs/unpaved-and-urban-verdict.md` ("The cost claim in
+> `driver-preferences-study.md` is wrong") refutes the statement below that
+> *"`surface` is NOT on the edges … Making anything surface-based tunable
+> requires `graph.py` to carry a new column, i.e. a full rebuild and redeploy."*
+> `CLASS_ADJ` is a pure function of `highway`, which **is** on every edge, so
+> per-edge unpaved fraction is recoverable from the shipped graph with no
+> rebuild. The rest of the study is unaffected.
+
 **Status: measured 2026-08-29, nothing changed.** No source file, no constant,
 no test was touched. Every measurement below was made by scratch scripts outside
 the repository that monkeypatch `Router._edge_scores` / `Router._weights` in

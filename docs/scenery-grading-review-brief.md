@@ -1,5 +1,9 @@
 # Scenery grading: twenty proposals, and a request for verdicts
 
+> **Verdicts delivered in `docs/scenery-grading-verdict.md` (2026-09-16).**
+> Nothing has been built from either document. Read the verdict before acting on
+> any proposal below — it rejects a number of them.
+
 **Status: proposed, nothing measured, nothing changed.** No source file, no
 constant, no test has been touched. This document is a *hypothesis set* produced
 by a brainstorm against the code, not a set of findings. Every claim in it is

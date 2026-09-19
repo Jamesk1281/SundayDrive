@@ -1,12 +1,18 @@
 # A structure for `docs/` — what to keep, what to archive, and the rule that stops it recurring
 
-**Status: proposed 2026-09-19, nothing changed.** No file was edited, moved,
-renamed or deleted. This document and `docs/documentation-structure-brief.md`
+**Status: proposed 2026-09-19, and applied the same day.** The plan in §7 has
+been carried out, with two departures recorded at the end of §7. The corpus it
+was measured against (`378aaee`, 30 documents) has since grown to 47 as nine
+branches merged; every disposition below was re-verified against the merged tree
+before it was acted on, and all six archive candidates still qualified unchanged.
+
+Originally: *"nothing changed. No file was edited, moved, renamed or deleted."*
+That was true when it was written and is the reason it was scoped that way. This document and `docs/archive/documentation-structure-brief.md`
 (the question it answers) are the only two files this work added. Everything
 below was measured against `main` at `378aaee` and against the nine unmerged
 branches listed in §2; every disposition cites the line that justifies it.
 
-Answers `docs/documentation-structure-brief.md`. Reading order: that file first
+Answers `docs/archive/documentation-structure-brief.md`. Reading order: that file first
 — it holds the measurement table this one does not repeat.
 
 ---

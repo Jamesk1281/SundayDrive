@@ -1,5 +1,14 @@
 # The banner skips the first turn of every reroute
 
+**Status: fixed 2026-08-25 — two items still open.** The reported defect and
+three more faults underneath it are closed. Still open, listed at
+[Still open](#still-open): remaining distance and ETA still credit route the
+driver has not driven, and **the arrival gate** — a drive that never joins its
+route can never end, because all three arrival tests are gated on
+`hasJoinedRoute` (`ios/Sources/NavigationModel.swift:849-857`). The gate is also
+flagged by `docs/reroute-audit.md` and `docs/archive/stale-plan-after-arrival.md`, and is
+now carried in `docs/roadmap.md`.
+
 Reported by the driver on 2026-08-25 ("it always seems to place me one step of
 the drive ahead of where it should place me on a reroute"), then confirmed
 against that day's three traces. **Fixed 2026-08-25** — see "What was changed"

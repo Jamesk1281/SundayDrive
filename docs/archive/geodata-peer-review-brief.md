@@ -1,5 +1,9 @@
 # Peer review: the geodata findings
 
+> **The review this brief commissions was done:
+> `docs/geodata-peer-review-verdict.md` (2026-08-28).** Its verdict — make
+> variant D, with four amendments — was accepted and built.
+
 **Status: complete and committed, awaiting adversarial review. Nothing in
 `pipeline/` has been touched and nothing should be.** Two commits on
 `claude/stoic-goldstine-d6b9d5` (`76317d8`, `a8856e4`) added

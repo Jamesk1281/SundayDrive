@@ -1,6 +1,6 @@
 # New England terrain: built, and the relief fix verified
 
-Run 2026-08-29 against `docs/new-england-terrain-brief.md`. Command, verbatim,
+Run 2026-08-29 against `docs/archive/new-england-terrain-brief.md`. Command, verbatim,
 from the main checkout:
 
 ```bash
