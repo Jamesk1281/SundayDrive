@@ -80,6 +80,8 @@ first — the body below it is a historical record, not a description of today.
 | [licensing-and-attribution-brief.md](licensing-and-attribution-brief.md) | The credit strings and where they came from |
 | [licensing-open-questions-brief.md](licensing-open-questions-brief.md) → [licensing-open-questions.md](licensing-open-questions.md) | The three questions the audit did not answer. **Has a live claim on `route-census/`** — an ODbL attribution obligation on `census-pairs.csv` that is not yet discharged |
 | [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them |
+| [privacy-and-submission-brief.md](privacy-and-submission-brief.md) → [app-store-submission.md](app-store-submission.md) | The four things answered in App Store Connect and nowhere else: the custom EULA, the nutrition label, the policy URL, export compliance. **Read §1 before touching the route-guidance notice — it already shipped** |
+| [privacy-policy.md](privacy-policy.md) | **A draft, published nowhere, not cleared by a lawyer.** Every factual claim cites the file that makes it true; §7 lists what a lawyer has to clear and §8 what would make the document wrong |
 | [driving-app-features-brief.md](driving-app-features-brief.md) → [driving-app-features-cost.md](driving-app-features-cost.md) | Seven candidate features, costed. Neither document chooses what ships |
 | [documentation-structure-proposal.md](documentation-structure-proposal.md) | Why this directory is shaped the way it is, and what was done to it on 2026-09-19 |
 
