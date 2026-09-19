@@ -10,9 +10,18 @@ graph, with live turn-by-turn navigation on a real phone.
 
 ![heatmap](docs/scenic_heatmap.png)
 
+*Road geometry from [OpenStreetMap](https://www.openstreetmap.org/copyright) —
+© OpenStreetMap contributors, extracts processed by Geofabrik GmbH, made
+available under the
+[Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
+Full credits: [data sources and licences](docs/data-sources.md).*
+
 <!-- docs/ holds committed showcase images (out/ is gitignored build output;
      referencing it here would render a broken image on GitHub). Refresh with:
-     sips -Z 1800 out/scenic_heatmap.png --out docs/scenic_heatmap.png -->
+     sips -Z 1800 out/scenic_heatmap.png --out docs/scenic_heatmap.png
+     The credit line above is required: the image is a Produced Work rendered
+     from OSM geometry by pipeline/render.py, and ODbL §4.3 wants the notice
+     where a reader sees it, not one link away. Keep it with the image. -->
 
 ## Both claims are measured
 

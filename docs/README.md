@@ -78,7 +78,8 @@ first — the body below it is a historical record, not a description of today.
 | [hosting-options-brief.md](hosting-options-brief.md) → [hosting-options-findings.md](hosting-options-findings.md) | Where the API should live, and whether it can be free. Three figures in the brief were refuted by the findings and are marked there |
 | [legal-and-ip-audit.md](legal-and-ip-audit.md) | What the app owes, and to whom |
 | [licensing-and-attribution-brief.md](licensing-and-attribution-brief.md) | The credit strings and where they came from |
-| [licensing-open-questions-brief.md](licensing-open-questions-brief.md) → [licensing-open-questions.md](licensing-open-questions.md) | The three questions the audit did not answer. **Has a live claim on `route-census/`** — an ODbL attribution obligation on `census-pairs.csv` that is not yet discharged |
+| [licensing-open-questions-brief.md](licensing-open-questions-brief.md) → [licensing-open-questions.md](licensing-open-questions.md) | The three questions the audit did not answer. §1b's claim on `route-census/` is now discharged — see the next row. §1a, the repository's own licence, is still open |
+| [odbl-repository-compliance-brief.md](odbl-repository-compliance-brief.md) | What §1b's finding took to close: the notice on `census-pairs.csv`, the heatmap credited, and the two things in the same blast radius |
 | [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them |
 | [driving-app-features-brief.md](driving-app-features-brief.md) → [driving-app-features-cost.md](driving-app-features-cost.md) | Seven candidate features, costed. Neither document chooses what ships |
 | [documentation-structure-proposal.md](documentation-structure-proposal.md) | Why this directory is shaped the way it is, and what was done to it on 2026-09-19 |
@@ -86,11 +87,13 @@ first — the body below it is a historical record, not a description of today.
 ## Not documentation
 
 - **`route-census/`** — 6,267 lines of committed CSV, the output of
-  `tools/route_census.py`. It is data, and it would sit better under `tools/`;
-  it has not been moved because `licensing-open-questions.md` cites two live
-  `raw.githubusercontent.com` URLs into this path and proposes adding a
-  `route-census/README.md` here to discharge an ODbL obligation. Move it once
-  that is settled, and update `tools/route_census.py`'s `--out-dir` default.
+  `tools/route_census.py`, plus the [ODbL notice](route-census/README.md) that
+  `census-pairs.csv` needs. It is data, and it would sit better under `tools/`.
+  **The move is now unblocked** — the notice that was the condition on it is
+  written — but it was deliberately kept out of that change, because
+  `licensing-open-questions.md` cites two live `raw.githubusercontent.com` URLs
+  into this path. Update those citations in the same commit that moves the
+  directory, and update `tools/route_census.py`'s `--out-dir` default.
 - **`scenic_heatmap.png`** — the README's hero image. `out/` is gitignored, so
   it cannot be referenced from there.
 - **`archive/`** — below.

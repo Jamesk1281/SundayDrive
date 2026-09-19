@@ -4,8 +4,17 @@ All three sources are open, and all three require attribution in anything put in
 front of a user. The app carries that attribution: a credit line pinned in the
 planning sheet at every height, tapping through to a "Data sources" screen
 (`ios/Sources/AboutView.swift`, asserted by `ios/Tests/AttributionTests.swift`).
-**This repository does not discharge the obligation** — it is private and
-reaches nobody. The credit strings in `AboutView.swift` are reproduced from each
+**This repository is public, so it carries obligations of its own** — the app's
+attribution does not reach a reader of GitHub. Two committed artifacts are
+derived from OpenStreetMap and are credited where they are seen: the README's
+heatmap, a Produced Work rendered by `pipeline/render.py`, carries its notice
+beside the image; and `docs/route-census/census-pairs.csv`, which extracts 1,621
+OSM place-node coordinates and is therefore a Derivative Database, is offered
+under ODbL by [its own notice](route-census/README.md). Nothing else committed
+here is derived from the data — `data/` is gitignored, and source code that
+computes over a database is neither a Derivative Database nor a Produced Work
+(the reasoning is in [licensing-open-questions.md](licensing-open-questions.md)
+§1b). The credit strings in `AboutView.swift` are reproduced from each
 licensor's own wording; change them there, not here.
 
 | Source | Used for | Licence |
