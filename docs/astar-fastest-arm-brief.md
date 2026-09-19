@@ -1,10 +1,11 @@
 # A\* on the fastest arm: ALT landmarks over the time metric
 
-**Status: measured 2026-09-19, nothing built.** No file under `pipeline/`,
-`server/`, `ios/` or `tests/` has been touched. Every number below comes from
-scratch scripts outside the repository that load one `Router` and work on its
-arrays — the `pipeline/scenery_cap_experiment.py` pattern. A working Python A\*
-exists only in that scratch script; it is not in the tree.
+**Status: built 2026-09-19 — see "Built" at the foot of this file, which
+records what this plan got wrong.** Everything above it is the brief as it was
+written, before any of it was implemented: the numbers in it come from scratch
+scripts outside the repository that load one `Router` and work on its arrays,
+the `pipeline/scenery_cap_experiment.py` pattern. They held up. Four of the
+inferences drawn from them did not, and one of those returned a wrong route.
 
 Companion to `docs/scenery-grading-verdict.md` (proposal **F3**), which
 concluded "build now, fastest arm only". **This brief supersedes that document's
@@ -231,3 +232,87 @@ SCENIC_DATA=<abs>/Scenic/data/processed-ne     # the live New England build
 The data lives **only in the main checkout**, never in a worktree. The project
 path contains spaces, so every venv console script has a broken shebang: always
 `.venv/bin/python -m <tool>`, never `.venv/bin/pytest`.
+
+---
+
+# Built, 2026-09-19
+
+(`docs/scenery-grading-verdict.md`, referenced above, was not on the branch
+this was built on — it was copied across on its own so that the plan and the
+thing built from it travelled together. Both are on `main` now, merged from
+`claude/funny-elbakyan-93c75f` alongside the component-cache brief.)
+
+`pipeline/router.py` and `tests/test_routing.py`. `Router._build_alt_tables`
+precomputes the tables at the end of `_build_directed`; `_alt_bound` turns them
+into a per-node bound; `_astar` searches; `route` picks between it and
+`_dijkstra_path`, which is the old body moved out whole so the scenic arm is
+byte-for-byte the search it always was. Measured on `data/processed-ne`
+(801,719 nodes), Apple M2, with another job holding a core throughout — so the
+absolute figures are a little high, and the two arms were timed interleaved,
+pair by pair, in one process, which is what makes the ratios fair.
+
+**What it costs at load**, measured against the same load without it:
+22.6 s -> 32.1 s and peak RSS 4.56 GB -> 4.66 GB. The tables are 103 MB and the
+CSR row index another 6 MB, so +2.2% — Trap 9 estimated 2.4%.
+
+**The arm, end to end** — `_edge_scores` through `_collect`, not just the
+search:
+
+| sample | old | new | |
+|---|---|---|---|
+| the 12 pairs above, best of 3 | 254.8 ms | **45.8 ms** | 5.6x |
+| 250 OD pairs ≤ 60 km apart (median 43 min) | 303.6 ms | **38.0 ms** | 8.0x |
+| 250 uniformly random OD pairs (median 125 min) | 276.6 ms | **76.4 ms** | 3.6x |
+
+Against `hosting-options-brief.md`'s 835 ms request, the realistic sample is
+**~32% off every request with `pref > 0`**, against the ~25% estimated here.
+
+**Correctness.** 500 OD pairs over the two samples and all 5,897 split
+junctions as destinations: **0 cost differences** above 1e-9 (worst 4.55e-13),
+**0 edge-list differences** — Trap 8's tie-breaking worry is real in principle
+and did not happen once. Admissibility checked by backward Dijkstra on the real
+`w` for five targets: 0 violations over 801,717 nodes each. `avoid_unpaved` at
+0.0, 1.0 and 2.0 all agree (Trap 3).
+
+## Four things this brief had wrong or missing
+
+**1. The bound is negative at the targets, and that alone returns wrong
+routes.** The brief's rule — `h = min` over targets, stop at the first target
+popped — is not sufficient, and neither is the variant used here. A* orders by
+`g + h`, so two copies of one junction are compared on `g + h` and not on `g`;
+their bounds differ, so the costlier copy can pop first. Measured before the
+fix: junction 669074 returned a copy costing 111.1124 min ahead of one costing
+111.0289, on a 3e-5 min lead in `f`. **Clamp the bound at zero.** It restores
+`h(t) = 0` for every target, which is the actual precondition for stopping at
+the first pop, and it changes nothing else — 7 nodes of 801,719 had a negative
+bound. This is the one defect that reached a route; nothing else did.
+
+**2. Trap 7's slack of 1e-6 minutes is ~60x too small.** The error is two
+float32 roundings of an 813-minute quantity plus one of the subtraction: about
+1.5e-4 min. Measured worst overshoot before clamping, over five full-graph
+passes: 6e-5 min. `ALT_SLACK_MIN` is 1e-3.
+
+**3. The min over a target set does not cost a pass per target.** Trap 1 asks
+for `min_t max_L b_L(n,t)`; `max_L min_t b_L(n,t)` is smaller, is still a bound
+on the distance to the nearest target, and folds both mins into per-landmark
+constants — so any number of targets costs one pass. The copies of a junction
+stand in the same place, so the weakening is not measurable.
+
+**4. The tail regresses, and needs a stop-loss.** The brief costs the win and
+not the loss. On a destination in the far corner of the region the A* settles
+most of the graph through a Python heap and finishes *slower* than scipy's C;
+on a destination no road reaches it settles all of it. Over uniformly random OD
+pairs, 24 of 250 came out slower, the worst at 2x. `ALT_SETTLE_FRACTION` caps
+it: A* gives up at 20% of the graph — measured break-even is 16-23% — and hands
+the query to the Dijkstra. It fired on 22 of 250 random pairs and on 0 of 250
+realistic ones, the budget counter costs nothing measurable, and the slowest
+new arm (630 ms) is below the slowest old one (787 ms).
+
+## What the search is not
+
+45.8 ms of arm is ~24 ms of search and bound and ~22 ms of array work that both
+arms pay: `_edge_scores` 4.3 ms, `_weights` 10.1 ms, the parallel-edge collapse
+7.6 ms. At `pref = 0` the scenery term is multiplied by zero and the collapse
+depends only on `avoid_unpaved`, so most of that 22 ms is recomputing a
+constant. Not touched here — it is a different change, and it is now the
+larger half of the arm.
