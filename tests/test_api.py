@@ -162,15 +162,40 @@ def test_the_route_that_found_this_defect_no_longer_returns_it(client):
     Without the guard the scenic arm comes back 3.8 km *shorter*, 0.3 minutes
     slower, and scoring 5.98 against the fastest route's 6.07 — the length-
     proportional penalty buying "scenery" credit by cutting distance.
+
+    Those are `data/processed` (Massachusetts) numbers and they still reproduce
+    there exactly: neutralise `_no_worse_than_fastest` and the scenic arm at
+    pref 0.25 and 0.5 is 70.1 km/5.98 against the fastest route's 73.9 km/6.07.
+    On `data/processed-ne` — the build the API actually serves — the bigger
+    graph finds a genuinely *better* scenic arm on this pair (6.79 against
+    6.28, 30.0 beautiful km against 21.4, and 0.3 km longer), so the guard has
+    nothing to do and the two arms are no longer the same drive.
+
+    So this asserts the shape of the answer, not two floats: pinning it to
+    `scenic["mean_score"] == fast["mean_score"]` pinned it to one build's
+    numbers, and it went red on the other with nothing wrong. Both branches
+    below still fail on the defect — with the guard neutralised, Massachusetts
+    trips the `>` and the `km` assertion independently.
     """
     body = client.get("/api/route?from=42.4443,-73.0787&to=42.4945,-72.4684"
                       "&pref=0.5").get_json()
     fast = body["fastest"]["properties"]
     scenic = body["scenic"]["properties"]
-    assert scenic["mean_score"] >= fast["mean_score"]
-    # It is the fastest route that comes back, so the app says "same drive".
-    assert scenic["mean_score"] == fast["mean_score"]
-    assert scenic["minutes"] == fast["minutes"]
+
+    if body["scenic"]["geometry"] == body["fastest"]["geometry"]:
+        # The guard handed back the fastest route, so the app says "same
+        # drive" — and then every number on the two cards has to agree.
+        assert scenic["mean_score"] == fast["mean_score"]
+        assert scenic["minutes"] == fast["minutes"]
+        assert scenic["km"] == fast["km"]
+    else:
+        # A *different* drive is only offerable if it is better, and it has to
+        # have earned that by detouring. Never by cutting distance: that is the
+        # defect's exact mechanism, a shorter route carrying less of a
+        # length-proportional penalty while being uglier per kilometre.
+        assert scenic["mean_score"] > fast["mean_score"]
+        assert scenic["km"] >= fast["km"]
+        assert scenic["beautiful_km"] >= fast["beautiful_km"]
 
 
 @pytest.mark.parametrize("pref", ["0.25", "0.5", "0.8", "1.0"])
