@@ -309,9 +309,18 @@ against Python static 319.9 ms on a Massachusetts-sized graph,
 `docs/traffic-schedule-plan.md:232-234`) — a scenic arm settling 78% of the
 graph in Python would be **≈2.8× slower than today**.
 
-So: **build it for the fastest arm and leave the scenic arm on scipy.** That is
-a ~36% latency cut on every request with `pref > 0`, it is correct by the proof
-above, and the fallback is the code that already exists. Preprocessing for 16
+So: **build it for the fastest arm and leave the scenic arm on scipy.** It is
+correct by the proof above, and the fallback is the code that already exists.
+
+> **Superseded 2026-09-19, in the proposal's own favour but with a smaller
+> number.** The table above is the *perfect* heuristic, which bounds the family
+> and is not implementable per request. A real 16-landmark ALT was since
+> measured: it settles **2.9% of the graph at the median** rather than 0.0%, and
+> a `heapq` A\* on it runs in **20.3 ms against scipy's 227 ms** — 11× at the
+> median, matching scipy's cost to 1e-6 on all 12 pairs. That is **~25%** of an
+> 835 ms request, not the ~36% estimated here. A Euclidean bound settles 31–48%
+> on long routes and is not viable. Full table and nine traps in
+> `docs/astar-fastest-arm-brief.md`. Preprocessing for 16
 landmarks is 32 Dijkstra runs (~10 s) and 103 MB of RAM on a process already at
 4.0 GB.
 
@@ -976,7 +985,7 @@ Differs from the brief's ranking, as invited.
 |---|---|---|---|
 | 1 | **C6 first version — drive the six known disagreements** | resolves a live ambiguity in `CLASS_ADJ`, which C1 shows moves 11/13 routes; the addresses are already printed | one afternoon, no code |
 | 2 | **Plan October foliage drives (E4's prerequisite)** | the window is three weeks away and closes for a year; it is also the only way to test E4 ever | zero now, one drive later |
-| 3 | **F3 on the fastest arm** | proved admissible, measured at 0.0–0.1% of the graph, ~36% of request latency | days |
+| 3 | **F3 on the fastest arm** | proved admissible; ALT-16 measured at 2.9% of the graph and 11x faster than scipy, ~25% of request latency | days |
 | 4 | **C2 post-drive pairwise screen** | the only thing that lifts the bar every other proposal has to clear | client work, no rebuild |
 | 5 | **F2 component cache** | makes C1's expensive half cheap and removes a real staleness | days |
 | 6 | **A2 + A3 on ~5,000 clustered chunks** | cheapest test of the whole Group A thesis; must report density first | an afternoon |
