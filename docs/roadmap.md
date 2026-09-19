@@ -6,7 +6,9 @@ measured; `[ ]` is open, with what it is waiting on.
 - [x] Scoring pipeline: per-road-segment "beauty vector" (water, coastline,
       forest/parks, curvature, terrain relief, farmland, viewpoints, scenic tags,
       town/urban)
-- [x] Terrain relief from free Terrarium elevation tiles
+- [x] Terrain relief from the Terrarium elevation tiles (AWS Open Data; an
+      aggregate of national elevation products — see
+      [data sources and licences](data-sources.md))
 - [x] Routable graph (998k edges, 795k nodes) split at intersections,
       scenic-scored
 - [x] Scenic router: Dijkstra with a time-vs-scenery preference knob

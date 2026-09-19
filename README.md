@@ -2,7 +2,8 @@
 
 Scenic-route navigation: pick a destination, get a route that's beautiful
 instead of fast. Every road in the six New England states is scored for beauty
-from **open geodata only** (no Google or Apple data), a Dijkstra router trades
+from **open geodata only** ([no Google or Apple data](docs/data-sources.md)),
+a Dijkstra router trades
 travel time for scenery on a single preference knob, and a native iOS app
 (SwiftUI + MapKit) rides on the routing API. 236,000 km of road on a 998k-edge
 graph, with live turn-by-turn navigation on a real phone.
@@ -111,3 +112,6 @@ maneuver has been passed, which of two overlapping reroutes wins.
   missing instructions, audited over 120 random routes
 - [Where the next features plug in](docs/extending.md) — a new scenery
   component, retuning the timing constants, or another region
+- [Data sources and licences](docs/data-sources.md) — the three open
+  sources, what each one is used for, and why the app rather than this
+  file is what discharges the attribution
