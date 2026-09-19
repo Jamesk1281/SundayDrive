@@ -10,6 +10,10 @@ graph, with live turn-by-turn navigation on a real phone.
 
 ![heatmap](docs/scenic_heatmap.png)
 
+<sub>Contains information from [OpenStreetMap](https://www.openstreetmap.org/copyright),
+which is made available under the
+[Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).</sub>
+
 <!-- docs/ holds committed showcase images (out/ is gitignored build output;
      referencing it here would render a broken image on GitHub). Refresh with:
      sips -Z 1800 out/scenic_heatmap.png --out docs/scenic_heatmap.png -->
@@ -113,5 +117,21 @@ maneuver has been passed, which of two overlapping reroutes wins.
 - [Where the next features plug in](docs/extending.md) — a new scenery
   component, retuning the timing constants, or another region
 - [Data sources and licences](docs/data-sources.md) — the three open
-  sources, what each one is used for, and why the app rather than this
-  file is what discharges the attribution
+  sources, what each one is used for, and how the attribution the app
+  carries is derived from each licensor's own wording
+- [Licensing: the open questions, answered](docs/licensing-open-questions.md) —
+  what the public repository owes, and what it does not
+
+## Licence
+
+The source in this repository is licensed under the
+[Apache License 2.0](LICENSE). See [`NOTICE`](NOTICE) for the attribution that
+travels with it.
+
+Two things the Apache licence does **not** cover:
+
+- **`docs/route-census/`** is a Derivative Database under
+  [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/) and carries its own
+  terms — see [`docs/route-census/README.md`](docs/route-census/README.md).
+- **The name.** Apache-2.0 §6 grants no rights to the project's names or marks,
+  and "Scenic" is a working title that is going to change.

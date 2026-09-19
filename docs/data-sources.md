@@ -4,9 +4,16 @@ All three sources are open, and all three require attribution in anything put in
 front of a user. The app carries that attribution: a credit line pinned in the
 planning sheet at every height, tapping through to a "Data sources" screen
 (`ios/Sources/AboutView.swift`, asserted by `ios/Tests/AttributionTests.swift`).
-**This repository does not discharge the obligation** — it is private and
-reaches nobody. The credit strings in `AboutView.swift` are reproduced from each
-licensor's own wording; change them there, not here.
+The credit strings in `AboutView.swift` are reproduced from each licensor's own
+wording; change them there, not here.
+
+**This repository is public, so it carries obligations of its own.** An earlier
+version of this page said the opposite — that the repo was private and reached
+nobody — and that stopped being true when it was published. What the repository
+owes is recorded in [`NOTICE`](../NOTICE), and the one directory whose contents
+are themselves an OpenStreetMap extraction carries ODbL terms separately: see
+[`route-census/README.md`](route-census/README.md). The reasoning behind both is
+in [Licensing: the open questions, answered](licensing-open-questions.md).
 
 | Source | Used for | Licence |
 | --- | --- | --- |

@@ -276,7 +276,10 @@ def run(args):
 
     graph = processed / "graph_edges.parquet"
     summary = {
-        "processed_dir": str(processed),
+        # Basename only. This file is committed to a public repository, and the
+        # absolute path leaked the account name and the whole parent directory
+        # chain of the checkout. Which processed dir was used is the useful part.
+        "processed_dir": processed.name,
         "graph_built": time.strftime("%Y-%m-%d %H:%M",
                                      time.localtime(graph.stat().st_mtime)),
         "place_points": int(len(places)),

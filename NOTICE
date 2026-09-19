@@ -1,0 +1,61 @@
+Scenic (working title)
+Copyright 2026 James Kouvlis
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+================================================================================
+Third-party data
+================================================================================
+
+No third-party code is distributed with this project. The iOS app links only
+Apple frameworks, and the Python under pipeline/ and server/ is not distributed
+to end users.
+
+The project is *built from* three open geodata sources, each of which requires
+attribution. The user-facing attribution is carried by the app itself, in each
+licensor's own wording, at ios/Sources/AboutView.swift and asserted by
+ios/Tests/AttributionTests.swift. Those strings are canonical — change them
+there, not here. They are reproduced below so this file is complete on its own.
+
+--------------------------------------------------------------------------------
+OpenStreetMap — roads, street names and routing
+Open Database License (ODbL) 1.0 — https://www.openstreetmap.org/copyright
+
+  © OpenStreetMap contributors
+  Extracts processed by Geofabrik GmbH
+
+--------------------------------------------------------------------------------
+ESA WorldCover 10 m 2021 v200 — forest and green cover in the scenery scores
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://esa-worldcover.org
+
+  © ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data
+  (2021) processed by ESA WorldCover consortium
+
+--------------------------------------------------------------------------------
+Terrain Tiles (AWS Open Data, formerly Mapzen) — hills and valleys in the
+scenery scores. An aggregate of national elevation products, each with its own
+attribution; see https://registry.opendata.aws/terrain-tiles/ and
+https://github.com/tilezen/joerd/blob/master/docs/attribution.md
+
+  United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data
+  courtesy of the U.S. Geological Survey.
+
+  Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric
+  Administration
+
+  Canada terrain data contains information licensed under the Open Government
+  Licence – Canada;
+
+--------------------------------------------------------------------------------
+Apple Maps, via MapKit — the basemap the routes are drawn on. MapKit renders
+Apple's own attribution and legal link, so no string is owed here.
+
+================================================================================
+Data committed to this repository
+================================================================================
+
+docs/route-census/ contains a Substantial extraction of OpenStreetMap place
+nodes and is therefore a Derivative Database under ODbL 1.0, carrying its own
+terms. The Apache License above does not apply to it. See
+docs/route-census/README.md.
