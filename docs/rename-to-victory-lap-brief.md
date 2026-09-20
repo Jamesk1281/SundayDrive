@@ -75,7 +75,24 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 - `ios/project.yml:66` `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo`
 - `ios/project.yml:101` `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo.tests`
 - `ios/Sources/ScenicApp.swift` — the struct **and** the filename
-- `Color.scenic` and the other `.scenic` tokens (34 in `ios/Sources/`)
+- ~~`Color.scenic` and the other `.scenic` tokens (34 in `ios/Sources/`)~~
+  **Corrected while executing, 2026-09-20.** `Color.scenic` did exist and was
+  brand — but the 34 is three different things, and only the first was renamed:
+  - **21 colour uses** → renamed to `Color.brand`. `Theme.swift` called it
+    *"the app's accent green"*, and it tints the About sheet, the Tune button
+    and the mute control, none of which are the route.
+  - **2 dispatch-queue labels** (`app.scenic.drive-trace`,
+    `app.scenic.audio-session`) → `app.victorylap.*`.
+  - **11 routing-arm accessors** — `response.scenic`, `miles.scenic`,
+    `model.response?.scenic.coordinates` — **left alone, and they must stay
+    that way.** They are the client half of the API contract: `server/app.py:8`
+    documents the response as `{"fastest": …, "scenic": <GeoJSON Feature>}`,
+    and `Models.swift`'s `let scenic: RouteFeature` decodes from that key **by
+    property name** — there are no `CodingKeys` in the file. Renaming the Swift
+    property breaks decoding against every deployed server, and it fails as a
+    nil route at run time, not as a compile error. Same rule as Trap 2: it
+    names the arm, not the product. `ModelsTests` decodes the literal
+    `"scenic"` key and is the guard.
 - the `SCENIC_*` env prefix (88): `SCENIC_API`, `_DATA`, `_DEMO`, `_HOST`,
   `_PBF`, `_REGION`, `_TRACES`
 - the `ScenicAPIBaseURL` Info.plist key, whose call sites outside
@@ -88,7 +105,9 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 ## Traps
 
 **1. Never find-and-replace, in any casing.** 3,168 hits, of which about 121 are
-brand. The other ~3,047 are data and correct English. **Read every hit.** It is
+brand — **measured afterwards at 114 machine-countable identifiers plus ~26
+prose uses of the product name.** The other ~3,047 are data, API contract, and
+correct English. **Read every hit.** It is
 an afternoon; the alternative is unreviewable.
 
 **2. Capitalisation is not the discriminator, and `RoutePanel.swift` proves it
