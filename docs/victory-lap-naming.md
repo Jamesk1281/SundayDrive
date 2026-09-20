@@ -29,13 +29,15 @@ merged first.
 
 1. **Victory Lap survives the knockout screen.** No knockout blocker found —
    proceed to professional clearance.
-2. **The subtitle should not contain "Scenic."** Not primarily for trademark
-   reasons: App Review Guideline 2.3.7 says in Apple's own words that subtitles
-   "should not … reference other apps," and an app named *Scenic* is the senior
-   incumbent in the category this one is filing into. Two Scenic-free subtitles
-   are recommended in §7.
-3. **The word is still usable in two of the four metadata fields**, on a
-   graduated argument rather than a ban — §6.
+2. **The owner has chosen `The scenic route, on purpose` as the subtitle**
+   (2026-09-20), against this document's recommendation. **That is the
+   decision and it is not being reopened here.** The evidence that argued the
+   other way is left standing in §5 and §6, unedited, because it is what a
+   re-read would need — not because the question is open. §6a records the
+   decision and the one thing worth knowing if it is ever challenged.
+3. **The recommendation it overrode**, for the record: keep "Scenic" out of
+   the name and subtitle, keep it in the keywords and the description. The
+   analysis is graduated by field rather than a ban — §6.
 4. **"Victory Lap - The Scenic Route" is exactly 30 characters and therefore
    fits** either field. Fitting is not the objection; §6 is.
 
@@ -347,7 +349,7 @@ a trade is free, you do not need to resolve the other side.
 | Field | Visible? | Recommendation | Why |
 | --- | --- | --- | --- |
 | **Name** (30) | Yes, everywhere | **No.** `Victory Lap` alone | Use in commerce as a mark, in the incumbent's category. The strongest form of the objection |
-| **Subtitle** (30) | Yes, under the name | **No** | Guideline 2.3.7 names subtitles specifically |
+| **Subtitle** (30) | Yes, under the name | **No** — ***overruled by the owner, see §6a*** | Guideline 2.3.7 names subtitles specifically |
 | **Keywords** (100 bytes) | **No** — never shown to a user | **Yes, include `scenic`** | Not displayed, so not a source identifier to any consumer. Purely functional and descriptive. It is the single highest-value search term this app has, and losing it costs real installs. The rule in Apple's reference — *"Names of other apps or companies aren't allowed"* — is aimed at packing a competitor's brand, not at an English adjective describing your own feature. **Risk is not zero:** the worst case is a metadata rejection, which costs one review cycle and is fixed by deleting a word |
 | **Description** (4000) | Yes | **Yes, sparingly — twice** | Running prose, plainly descriptive, and Apple's own reference says the description "will be used for web engine search results," so it is where the term earns its SEO. Not a title, not a claim of source |
 
@@ -357,6 +359,29 @@ slider (`RoutePanel.swift:472`). That is the *arm name* — correct English for
 the feature — and [`release-plan.md`](release-plan.md) §6b is explicit that it
 must not change. **In-app feature vocabulary and App Store metadata are
 different questions and this document only answers the second.**
+
+### 6a. The decision taken, 2026-09-20
+
+**The owner chose `The scenic route, on purpose`.** The recommendation above
+was to avoid the word in that field; it was overruled with the evidence in
+front of the decision, which is the owner's call to make. The listing in §7 is
+written to that decision.
+
+Three things worth recording rather than re-arguing:
+
+1. **The requested wording was `Take the scenic route on purpose`, which is 32
+   characters and cannot be entered.** The chosen string is the repair that
+   keeps the phrase and "on purpose" inside the 30-character field.
+2. **Nothing in §5 or §6 changes.** Twenty-five Navigation/Travel apps carry
+   the word, the senior incumbent among them is named for it, and Scenic Tours
+   Europe AG's IC 009/039/042 application is live and under examination. The
+   decision accepts that exposure; it does not dissolve it.
+3. **If it is ever challenged, the subtitle is metadata, not a binary.**
+   Changing it costs an App Store Connect edit rather than a new build — which
+   is materially cheaper than a rename, and is the reason this is a reversible
+   decision rather than a permanent one. The bundle identifier, which is
+   permanent, is untouched and carries no form of the word that is at issue
+   here.
 
 ---
 
@@ -389,7 +414,11 @@ not rejected on length in either. §6 is the objection, not the ruler.
 | Field | Value | Count |
 | --- | --- | --- |
 | **Name** | `Victory Lap` | 11 / 30 |
-| **Subtitle** | `Take the long way on purpose` | 28 / 30 |
+| **Subtitle** | `The scenic route, on purpose` | 28 / 30 |
+
+**Chosen by the owner 2026-09-20 (§6a)**, over this document's recommendation
+of `Take the long way on purpose`. The options table below is left as written
+so the choice is legible; option 4 is the one that was taken.
 
 Using only 11 of 30 name characters is deliberate. The name field is what
 appears under the icon on the home screen, where it is truncated hard; a short
@@ -403,38 +432,56 @@ subtitle's separate 30 characters for nothing.
 | **1** | `Take the long way on purpose` | 28 | No | **Recommended.** Carries `branding-brainstorm.md` §5's tagline, answers the "is this a racing app?" problem in six words, and "on purpose" is the whole thesis. Invitation architecture |
 | **2** | `Every road, scored for beauty` | 29 | No | **Recommended alternative.** Instrument architecture — the one claim no competitor can make, and it is verifiable, which matters because 2.3.7 forbids "unverifiable product claims" |
 | 3 | `Drive the long way home` | 23 | No | Warmer, loop-mode flavoured, slightly vaguer |
-| 4 | `The Scenic Route` | 16 | **Yes** | The owner's phrasing, as a subtitle rather than folded into the name. **Not recommended — §6.** Recorded so the choice is visible |
+| **4** | `The scenic route, on purpose` | 28 | **Yes** | **CHOSEN — §6a.** The owner's phrasing, repaired to fit: the requested `Take the scenic route on purpose` is 32 characters. Not this document's recommendation, and §5–§6 say why |
+| 4a | `The Scenic Route` | 16 | **Yes** | The bare phrase, as first proposed. Superseded by 4, which at no extra cost buys back the "this is not a racing app" work that options 1–3 were doing |
 
 Options 1 and 2 discharge the brief's requirement for at least two Scenic-free
-subtitles, and they are not in competition: whichever is chosen, the other's
-claim still appears in the listing — option 2's is the description's first
+subtitles. They were not taken, and they are recorded here rather than deleted
+because a subtitle is an App Store Connect edit rather than a build (§6a), so
+this table is the shortlist if the decision is ever revisited. Option 2's
+claim still reaches the listing either way — it is the description's first
 section heading.
 
-### Keywords — 99 / 100 bytes
+### Keywords — 97 / 100 bytes
+
+**Instructed by the owner 2026-09-20: the scenic terms go in.** They do, and
+§6's analysis already recommended `scenic` here — the keyword field is the one
+place the word was never in question, because nothing in it is displayed to a
+user.
 
 ```
-scenic,backroad,byway,countryside,road trip,loop,curvy,touring,joyride,twisty,coastal,weekend,drive
+scenic,route,backroad,byway,countryside,road trip,loop,curvy,touring,twisty,coastal,weekend,drive
+```
+
+**`scenic` and `route` are two terms rather than the phrase `scenic route`, and
+that is deliberate.** `scenic,route` and `scenic route` are **the same twelve
+bytes** — the comma and the space cost the same. Apple's search combines
+individual keyword terms into phrases, so the two-term form still covers the
+"scenic route" query, and it additionally covers "scenic drive", "scenic
+byway", "route planner" and "coastal route", which the literal phrase does
+not. **Same price, strictly more coverage.** If the literal string is wanted
+anyway, this is the same 97 bytes:
+
+```
+scenic route,backroad,byway,countryside,road trip,loop,curvy,touring,twisty,coastal,weekend,drive
 ```
 
 Every term > 2 characters. No app or company name. The app's own name is
 excluded deliberately — Apple's reference says an app "is searchable by app name
 and company name, so you shouldn't duplicate these values in the keyword list."
-
-**Scenic-free variant, if the owner would rather not take even that risk — 99
-bytes, same 13 terms less `scenic`, plus `pretty`:**
-
-```
-backroad,byway,countryside,road trip,loop,curvy,touring,joyride,twisty,coastal,pretty,weekend,drive
-```
+That rule names the app name and the developer name; **it does not name the
+subtitle**, so carrying `scenic` and `route` in both the subtitle and the
+keyword field is not a documented duplication.
 
 Words considered and dropped: **`detour`** and **`revroutes`** — both are
 names of shipping Navigation apps (*Detour - Scenic Navigation*, *RevRoutes*),
 and unlike `scenic` **neither describes anything this app actually does**,
 which is the whole of the distinction the table above rests on. Also dropped:
 `navigation` and `gps` (the category assignment already covers them and they
-are the most contested terms in the store), and `vermont`/`maine`/state names
-(six to fourteen bytes each, for terms the description already carries into
-web search).
+are the most contested terms in the store), `joyride` (cut to make room for
+`route`, which the subtitle decision made worth more), and
+`vermont`/`maine`/state names (six to fourteen bytes each, for terms the
+description already carries into web search).
 
 ### Promotional text — 159 / 170 characters
 
@@ -650,9 +697,11 @@ The verdict is the same in both documents, reached twice.
   reason but the driving — but it is an argument, and
   [`release-plan.md`](release-plan.md) §5.3 already prescribes the test that
   settles it: **five strangers, one question, "what does this sound like it
-  does?"** It is free and it has not been run. Subtitle option 1 exists partly
-  to answer this in the listing itself; if five people still say "racing," the
-  fallbacks in the companion document are there.
+  does?"** It is free and it has not been run. **The chosen subtitle (§6a) does
+  more of this work than any of the alternatives** — "the scenic route" tells a
+  stranger what the app is for before the name can mislead them, which is a
+  real argument in its favour that §6 does not make. If five people still say
+  "racing," the fallbacks in the companion document are there.
 - **Whether `Scenic Tours Europe AG`'s serial 79431580 registers.** It is under
   examination. If it registers, §6 gets stronger; if it is abandoned, §6's
   register argument goes away and the App Store argument stands alone.
