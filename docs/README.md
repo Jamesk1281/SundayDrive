@@ -80,7 +80,8 @@ first — the body below it is a historical record, not a description of today.
 | [licensing-and-attribution-brief.md](licensing-and-attribution-brief.md) | The credit strings and where they came from |
 | [licensing-open-questions-brief.md](licensing-open-questions-brief.md) → [licensing-open-questions.md](licensing-open-questions.md) | The three questions the audit did not answer, and now **resolved** — §1a chose Apache-2.0 (`LICENSE`, `NOTICE`), §1b's ODbL claim on `route-census/` is discharged. The commit email and the Gap 2 Apple clauses are still open |
 | [odbl-repository-compliance-brief.md](odbl-repository-compliance-brief.md) | What §1b's finding took to close: the notice on `census-pairs.csv`, the heatmap credited, and the two things in the same blast radius. Its "no `LICENSE` file" instruction was overtaken by the §1a decision |
-| [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them |
+| [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them. **Three of its four survivors are since knocked out** — corrected at the top |
+| [trademark-knockout-brief.md](trademark-knockout-brief.md) → [trademark-knockout-findings.md](trademark-knockout-findings.md) | The free knockout screen, run against the live federal register and the open web. Camber is blocked by a registration, Aimless and Detourist by common-law use; **Longcut is the only candidate left**. Carries the positive control that shows the register alone cannot clear a name, and what the paid clearance costs |
 | [driving-app-features-brief.md](driving-app-features-brief.md) → [driving-app-features-cost.md](driving-app-features-cost.md) | Seven candidate features, costed. Neither document chooses what ships |
 | [documentation-structure-proposal.md](documentation-structure-proposal.md) | Why this directory is shaped the way it is, and what was done to it on 2026-09-19 |
 
