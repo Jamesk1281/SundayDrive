@@ -11,15 +11,36 @@ written, and none of it shipped.** `docs/branding-brainstorm.md` §4–§6 speci
 the in-product naming, the copy and the visual identity. Measured on `main`
 today:
 
-| Recommendation (§4/§5) | In the code? |
+**§4 is live and unshipped. §5 is dead. Do not treat them as one list.**
+
+| §4 — name-independent, all still live | In the code on `main` (`8e53ec9`)? |
 | --- | --- |
-| "good miles" instead of "mi beautiful" | **0 files** — `RouteResults.swift:103,106` still emit `"\(…) mi beautiful"` |
-| Loop mode renamed **Nowhere** | **0 files** — it is still "Loop" |
+| "good miles" instead of "mi beautiful" | **0 hits** — `RouteResults.swift:103,106` still emit `"\(…) mi beautiful"` |
+| Loop mode renamed **Nowhere** | **0 hits** — `RouteModel.swift:19` is `case loops = "Loop"` |
 | State the trade, not the setting | **not done** — `RoutePanel.swift:484` still reads `Text("scenery strength \(prefPosition…))` |
-| Keep the green, rename the symbol (§6) | **done by the rename** — `Theme.swift` is now `static let brand`, see Trap 3 |
+| "The dial" as the slider's internal name | not adopted |
+
+| §5 / §6 | Status |
+| --- | --- |
+| §5 tagline *"Take the long way."* and subtitle `Take the long way home.` | **Superseded, not pending.** Both are Longcut positioning carried from §3's Longcut entry (`branding-brainstorm.md:149` → `:219`, `:220`). Longcut lost, and the subtitle is already decided as `The scenic route, on purpose`. Proposing §5 as a live option resurrects the losing candidate's voice, on the one field the owner personally overruled |
+| §6 keep the green, rename the symbol | **done by the rename** — `Theme.swift` is now `static let brand`, see Trap 3 |
+
+**§4 was supposed to ship with the rename, and the gap is documented.**
+`branding-brainstorm.md` §7 item 7 reads, verbatim: *"**Do the in-product copy
+from §4 at the same time** — it is an afternoon and it is most of what the brand
+actually feels like."* It did not happen: the rename's scope was identifiers, and
+the owner's follow-up (`14efbf6`) was specifically about removing the *name* from
+the places a driver reads it, not the instrumentation copy. So this is a
+deliberate, recorded gap — not an oversight to re-litigate, and not something to
+discover again.
 
 §4 calls the third of those "the single highest-value copy change in the app,"
 and it is a one-line change that has been sitting unmade for three weeks.
+
+**Line numbers here are `main` at `8e53ec9`, not the pre-rename tree.**
+`scenery strength` was at `RoutePanel.swift:478` at `897dbe7` and moved to `:484`
+when `14efbf6` grew the header comment. Re-resolve any citation against the tree
+you are actually reading.
 
 ---
 
@@ -40,6 +61,11 @@ some is welded to the old name, and **nobody has separated the two**:
 - **Superseded outright.** §5's App Store subtitle `Take the long way home.` The
   owner has chosen **`The scenic route, on purpose`**, verified at 28/30
   characters. That is decided; do not reopen it.
+- **A live collision to design around.** The rename rewrote the panel header:
+  it is now `Text(hint)` at `RoutePanel.swift:304`, where `hint` is a four-state
+  string computed at `:327`. §4's "state the trade, not the setting" and that
+  header now live in the same view, so they have to be designed together rather
+  than as two independent edits.
 - **Open, and the most interesting question in this document.** Does **Nowhere**
   survive as the loop mode's name under Victory Lap, or does the new name suggest
   something better? §4's case for it is strong and independent of the app name —
