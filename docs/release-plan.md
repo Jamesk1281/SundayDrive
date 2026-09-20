@@ -1,9 +1,10 @@
 # Release plan: what shipping needs, in what order
 
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
-two unmerged branches named in §2. **Nothing was executed** — no rename, no
-`LICENSE`, no Oracle account, no `project.yml` edit. Checkable facts this rests
-on: `ios/project.yml:66` still reads `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo`,
+two unmerged branches named in §2, and **revised the same day** with three owner
+decisions recorded in §8. **Nothing was executed** — no rename, no `LICENSE`, no
+Oracle account, no `project.yml` edit. Checkable facts this rests on:
+`ios/project.yml:66` still reads `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo`,
 `grep -rE 'MKMapView|UIViewRepresentable' ios/Sources/` returns zero, and
 `https://api.jameskouvlis.com/api/health` answered **HTTP 530** while this was
 written.
@@ -21,21 +22,22 @@ of them contains is the sequence, and that is all this adds.
 
 ## 1. The honest headline
 
-**The engineering left is about a week. The calendar is one to two months, and
-almost none of that is code.**
+**About a week of engineering, $99, and one external wait that is measured in
+hours.** That is the whole release.
 
-Three external clocks dominate everything: Apple's enrolment approval, a
-professional trademark clearance search, and a lawyer reading the privacy policy
-draft. Each is measured in days-to-weeks, each costs money, and **none of them
-can be started by writing software**. The whole engineering backlog — the
-rename, one UIKit refactor, two defect fixes and a hosting migration that already
-has a runbook — fits comfortably inside the time those three take to return.
+An earlier draft of this section put the calendar at one to two months, because
+it assumed three external clocks: Apple's enrolment, a paid trademark clearance
+search, and a lawyer reading the privacy policy. **Two of those three were
+removed by owner decision on 2026-09-19** (§8, decisions 2 and 3), and what
+replaced them is free and takes an afternoon. The calendar collapsed to roughly
+the engineering time.
 
-So this is not a programme. It is **three purchases, three decisions and about a
-week of work**, and the only reason it is not a weekend is that two of the
-purchases have strangers attached to them.
+So this is not a programme, and it is not really a plan either. It is **one
+purchase, one afternoon of free checks, and about a week of work**, of which the
+single largest item is one UIKit refactor.
 
-The one thing that would genuinely change this estimate is §3.
+Read §8 first if you read nothing else — the decisions are what make the rest
+small.
 
 ---
 
@@ -62,7 +64,13 @@ tree tell the truth.
 
 ## 3. The gate: is there a paid Developer Program membership?
 
-**The evidence says no, and the owner can settle it in thirty seconds.**
+> **Resolved 2026-09-19: the owner will buy it.** The question below is settled
+> and the section is kept for its evidence, which still matters — it says what
+> the project is running on *today*, and therefore what changes on the day the
+> membership starts (§8, decision 1).
+
+**The evidence says the project is on free provisioning**, and the owner can
+confirm it in thirty seconds.
 
 What is checkable on the build Mac, without asking anyone:
 
@@ -77,15 +85,20 @@ What is checkable on the build Mac, without asking anyone:
 that carries it — it is an observed limit, not an absence of evidence, and the
 limit it observed does not exist on a paid account.
 
-**Confirm it anyway**, because everything in §6 is downstream: open
-`developer.apple.com/account` and look at the membership panel. That is faster
-than reading this paragraph.
+**$99/year is the gate in front of:** reserving the App Store name, creating the
+App Store Connect record, TestFlight, and submission. It is *not* a gate in front
+of the rename, the licence, the attribution fix, hosting, or the privacy policy —
+all of that proceeds on free provisioning, which is why nothing below stalls
+waiting for enrolment to clear.
 
-**If unpaid, then $99/year is a gate in front of:** reserving the App Store
-name, creating the App Store Connect record, TestFlight, and submission. It is
-*not* a gate in front of the rename, the licence, the attribution fix, hosting,
-or the privacy policy — all of that proceeds unpaid, which is why the sequence
-below does not stall waiting for it.
+**Two things change on the day membership starts**, and both are worth having
+ready rather than discovering:
+
+- **The three-app device cap lifts.** The spike apps currently competing for
+  slots on the phone stop being a constraint on device testing.
+- **The App Store name can be reserved.** Do it the same day the name is chosen
+  (§6b) — an App Store Connect record holds the name, and holding it is the only
+  protection available short of a registered mark.
 
 ---
 
@@ -102,8 +115,8 @@ you **when** to make it. What sets timing is dependency and lead time.
 - **The bundle identifier** is irreversible *at first submission* and it encodes
   the name, so the rename must precede the App Store Connect record. That is a
   real ordering constraint — but its deadline is submission, not today. Making
-  it today, before clearance comes back, is how you buy a permanent identifier
-  for a name a lawyer then tells you not to use.
+  it today, before the §5.2 search comes back, is how you buy a permanent
+  identifier for a name the search then tells you not to use.
 - **The Oracle home region** is irreversible and **gates nothing whatsoever**.
   [`hosting-options-findings.md`](hosting-options-findings.md) heads its own
   Phase 1 *"no deadline, no pressure"*, because the laptop serves throughout.
@@ -111,30 +124,33 @@ you **when** to make it. What sets timing is dependency and lead time.
   It is a decision to make **carefully at the moment of account creation**,
   wherever that lands.
 
-The items that genuinely force the order are the ones with **external clocks**
-(§5) and the one that **App Review will actually test** (§7).
+The one item with an **external clock** is enrolment (§5.1), and the one thing
+that **App Review will actually test** is the backend (§7). Those two set the
+order. Nothing else does.
 
 ---
 
-## 5. Start the three clocks (day one, no code, parallel)
+## 5. Day one: one purchase and one afternoon
 
-These are first because they are slow and outside the project's control. Nothing
-else in this document is on the critical path while these are running.
+**There is only one external wait, and it is short.**
 
-1. **Settle membership (§3), and buy it if buying.** Enrolment approval is
-   typically fast but can take a day or two, and individual enrolments sometimes
-   require identity verification. Cost: **$99/year**.
-2. **Commission the trademark clearance search** on the candidate recommended in
-   [`branding-brainstorm.md`](branding-brainstorm.md) §3 — the one with zero App
-   Store collisions. That document is explicit that the search comes **before
-   money goes into a brand**, and it is right: its own first recommendation was
-   withdrawn after a check. Cost: unpriced anywhere in this repo — see §11.
-3. **Send the privacy policy draft to a lawyer** — `docs/privacy-policy.md`,
-   which arrives with the §2 merge. It is a marked draft, and it is the gating
-   input to a hard submission requirement (audit item 4: a privacy policy URL).
-   Cost: unpriced — see §11.
+1. **Enrol in the Developer Program.** Approval is usually same-day, though
+   individual enrolments sometimes need identity verification, so start it first
+   and stop thinking about it. Cost: **$99/year**. This is the only thing here
+   that anyone else has to act on.
+2. **Run the free trademark knock-out search yourself** — see §8, decision 2 for
+   what it does and does not buy. Twenty minutes: the candidate name in
+   **USPTO classes 9 and 42** at `tmsearch.uspto.gov`, plus a plain web and
+   domain search. [`branding-brainstorm.md`](branding-brainstorm.md) §3 has
+   already done the App Store half, which is the half that catches the realistic
+   risk.
+3. **Test the name on five strangers.** One question — "what does this sound
+   like it does?" — straight from `branding-brainstorm.md` §7 step 1. Free, and
+   it is the only check here that tests whether the name *works* rather than
+   whether it is available.
 
-Everything from §6 onward can proceed while these three are out.
+Item 1 blocks §10. Items 2 and 3 block the rename (§6b). Everything else in §6
+can start immediately and in parallel, including the largest item.
 
 ---
 
@@ -144,7 +160,8 @@ Everything from §6 onward can proceed while these three are out.
 
 ### 6b. The rename — half a day, plus the copy pass
 
-**Gated by:** clearance returning clean (§5.2).
+**Gated by:** the knock-out search coming back clean (§5.2), which is an
+afternoon rather than a wait.
 **Gates:** the bundle identifier, and therefore the App Store Connect record.
 
 [`branding-brainstorm.md`](branding-brainstorm.md) §7 already has the internal
@@ -154,8 +171,10 @@ order of operations, and it is sound. Two amendments:
   and ~40 `SCENIC_*`. Measured on `4cf43b8`: **36** `.scenic` uses, **83**
   `SCENIC_*` occurrences, **2** `PRODUCT_BUNDLE_IDENTIFIER` — about **121**
   brand identifiers.
-- **Its step 1 — test the name on five strangers — is worth keeping**, and it is
-  free, and it can run during the clearance wait.
+- **Its step 1 — test the name on five strangers — is worth keeping**, and it
+  matters more now than it did. Listed as §5.3: every other check on the name
+  tests whether it is *available*, and this is the only one that tests whether it
+  **works**.
 
 #### The trap, stated explicitly
 
@@ -201,7 +220,7 @@ and the `ScenicAPIBaseURL` Info.plist key. That key has seven call sites outside
 
 ### 6c. The Apple attribution fix — the one real refactor, one to two days
 
-**Gated by:** nothing. **Start it now**, in parallel with the §5 clocks. It is
+**Gated by:** nothing. **Start it now**, in parallel with §5. It is
 the only item here that could surprise, and it is the largest.
 
 Audit item 2 is a **confirmed breach of ADPLA Attachment 6 §2.1**, and
@@ -242,12 +261,32 @@ qualify.
   gate — nobody rejects for it — but it is the first screen, and it makes five
   of six states harder to search than they should be.
 
-**One cheap privacy win worth taking here:** route requests put coordinates in the
-**query string**, and the tunnel terminates TLS, so "the server logs nothing" is
-true of `server/app.py` and false of the system. Moving them to a POST body is
-small, and it reduces what the submission has to declare as collected.
+### 6e. Move the coordinates out of the query string — an hour, and now required
 
-### 6e. A backend a reviewer can reach — see §7
+**Promoted from "nice to have" by §8 decision 3.** Route requests put start and
+destination in the **URL query string**, and the Cloudflare tunnel terminates
+TLS — so *"the server stores nothing"* is true of `server/app.py`, which has no
+logger, no database and no file writes, and false of the system as deployed.
+
+While that is true, the honest privacy policy has to either disclose an edge
+that may retain coordinates in access logs, or argue that it does not. **With no
+lawyer in the loop, do not argue it — remove it.** Moving the coordinates into a
+POST body keeps them out of URLs, which is what access logs record by default.
+
+Two things this does *not* do, stated so the policy does not overclaim:
+
+- It does **not** remove Cloudflare from the path. The tunnel still terminates
+  TLS and can still see the body. The policy names Cloudflare as a processor
+  either way — that is a one-sentence disclosure, not a legal judgment.
+- It does **not** change the privacy manifest. Precise location stays declared
+  as collected, which is the conservative answer and the one to keep (§8,
+  decision 3).
+
+Touches `ios/Sources/RouteService.swift` and `server/app.py`. Note
+`privacy-policy.md` §8 lists this change as one that invalidates the draft — so
+make the edit and the policy wording in the same pass.
+
+### 6f. A backend a reviewer can reach — see §7
 
 ---
 
@@ -286,50 +325,111 @@ App Review.
 
 ---
 
-## 8. The three decisions, positioned and priced by deferral
+## 8. The decisions — three taken 2026-09-19, one still open
 
-Each sits at the point in the sequence where it must be made. The price is **what
-deferring it costs**, which is the thing no single document can show.
+Four decisions were outstanding when this document was written. **Three were
+taken on 2026-09-19** and are recorded here with their reasoning, because a
+decision recorded nowhere but a conversation is the failure mode §2 documents.
+One remains open, and it sits inside the largest code item.
 
-### Decision 1 — Buy Developer Program membership? ($99/year)
+### Decision 1 — Developer Program membership: **buy it** ✅
 
-**Position:** day one (§5.1). **Deferral cost: everything downstream stops, and
-the exposure compounds.** Without it there is no App Store Connect record, and
-without that the chosen name **cannot be reserved** — so every week of deferral
-is a week the name sits unclaimed after a clearance search has been paid for.
-Deferring also defers nothing useful: the rename, the MapKit fix and hosting all
-proceed unpaid, so the $99 buys time rather than work.
+**$99/year, day one (§5.1).** Settled. The evidence in §3 says the project is on
+free provisioning today, so this is a real change rather than a formality: the
+three-app device cap lifts, and the App Store name becomes reservable.
 
-*If the answer is no*, that is a legitimate outcome and it should be said out
-loud rather than discovered — the product stays a private instrument on free
-provisioning with a three-app cap, and §5.2, §5.3, §6b and the whole of §10
-become unnecessary. **That is a materially cheaper project**, and it is the
-version this repository has actually been optimised for.
+*Recorded because the alternative was live and reasonable:* not buying leaves a
+private instrument on free provisioning, and deletes §5.2, §6b and all of §10.
+That was a materially cheaper project and it is the one this repository was
+optimised for. It was declined deliberately.
 
-### Decision 2 — The name
+### Decision 2 — Trademark clearance: **do the free search, not the paid one** ✅
 
-**Position:** after clearance returns, before the App Store Connect record (§6b).
-**Deferral cost: low now, permanent later.** Today the rename is an afternoon of
-reading 121 identifiers. After the first submission the bundle identifier is
-permanent, and changing the name means a new identifier, a new listing, and no
-continuity of ratings or installs. There are no users and no listing, so this is
-the cheapest this decision will ever be — and the competing mark in the same
-category on the App Store is the reason it cannot simply be skipped.
+**Twenty minutes, day one (§5.2).** Paid clearance was declined. What replaces it:
+USPTO classes 9 and 42, a web and domain search, and the App Store search
+`branding-brainstorm.md` §3 has already run.
 
-### Decision 3 — Attribution at the `.large` detent
+**Why this is proportionate, stated honestly.** The realistic failure mode for a
+free app with no revenue is **not** litigation — that costs a complainant more
+than it recovers. It is an **App Store trademark complaint**, which is cheap to
+file and can pull an app pending resolution. The App Store name search is exactly
+the check that catches that, and it returned zero collisions and zero in
+Navigation/Travel for the recommended candidate.
 
-**Position:** inside the MapKit refactor (§6c) — it is a parameter of the fix,
-not a separate task. **Deferral cost: it blocks the refactor from being
-finished**, and the refactor is the largest code item, so deferring it idles the
-long pole.
+**What the free version does not buy**, so nobody later believes it did: no
+search of unregistered common-law rights, no coverage of close-but-not-identical
+marks, and **no opinion** — a knock-out search tells you what is obviously taken,
+not what is safe.
 
-The question: at `.large` the sheet covers ~92% of the screen. Does the ornament
-ride above the sheet at every detent, or is it allowed off-screen at full height?
-Apple Maps itself lets its attribution go off-screen at full sheet height, which
-is the strongest available precedent — but choosing it makes the honest claim
-*"visible whenever the map is meaningfully visible"*, not *"always"*. The audit
-recommends following Apple's own behaviour; the owner should confirm, because it
-is the difference between a defensible reading of §2.1 and a literal one.
+**Why deferring the paid search is cheap and deferring the rename is not.** If
+the free search misses something, the cost is renaming at low download counts —
+which is the cheap state the project is in now and will stay in for a while.
+Clearance becomes worth paying for when there is brand equity to defend, and that
+is not a launch-day condition. **Revisit it before spending money on the brand**,
+which is what `branding-brainstorm.md` §7 step 2 actually says.
+
+**This does not make the rename optional.** Keeping "Scenic" is the single
+highest-risk naming option available — identical mark, identical goods, senior
+user, already shipping in the same App Store category. A free search substitutes
+for clearance, not for renaming.
+
+### Decision 3 — Privacy: **no lawyer; US-only at launch** ✅
+
+**Not legal advice**, and the same caveat `branding-brainstorm.md` opens with
+applies here: the engineering facts below are checkable and were checked; the
+conclusion that they do not need a lawyer is a proportionality judgment the owner
+made, not counsel's opinion. It is recorded with its reasoning so that it can be
+re-opened on its merits rather than re-litigated from scratch.
+
+`privacy-policy.md` §7 lists eight items "a lawyer has to clear."
+None of them needs one, given four conditions — three of which are decisions or
+tests rather than legal work:
+
+| §7 item | What resolves it instead |
+| --- | --- |
+| 1. Cloudflare sees the coordinates | **§6e** — move them to a POST body, then name Cloudflare as a processor in one sentence |
+| 2. Is precise location "collected"? | Already answered **yes**, the conservative side. **Keep it.** Over-declaring is free; under-declaring is what bites |
+| 3. CPRA | A threshold test, not a judgment: >$25M revenue, 100k+ consumers, or revenue from selling data. None is met, and no data is sold |
+| 4. GDPR | **Removed by shipping US-only.** Territory is a checkbox in App Store Connect |
+| 5. Children / age rating | App Store Connect's own questionnaire decides this. Answer it honestly |
+| 6. Reduced-accuracy behaviour | The draft says outright this is not a legal question. It is an **untested code path** — test what the app does under approximate location, then write what it does |
+| 7. Contact address | Owner's pick. Use a monitored alias, not a personal address — it is published |
+| 8. The name | Decision 2 and §6b |
+
+**Why no lawyer is defensible here, specifically.** What makes a privacy policy
+dangerous is asserting something untrue. This one was written against the code,
+and the code is unusually easy to describe: **zero third-party dependencies**
+(every import in `ios/Sources/` is an Apple framework — no analytics, no ads, no
+crash reporting), no accounts, no advertising identifier, and a server with no
+logger, no database and no file writes. One declared data type, not linked, not
+used for tracking.
+
+**US-only at launch, and why it is the right shape rather than a dodge.** It
+removes GDPR from scope rather than answering it, leaving CPRA as the only regime
+in play — and CPRA fails on thresholds. It is **reversible**: territories can be
+added later, and the honest sequence is to add the EU when someone has reason to
+want it, with the policy revisited then. What it costs is EU availability at
+launch, which is worth approximately nothing for a New England driving app.
+
+**When this decision expires.** Revisit the moment any of these becomes true:
+money changes hands (paid app, IAP, subscription), an account system appears, a
+third-party SDK is added, or EU/UK territories are switched on. `privacy-policy.md`
+§8 already lists the engineering changes that invalidate the draft; this is the
+commercial half of the same list.
+
+### Decision 4 — Attribution at the `.large` detent ⬜ **still open**
+
+**Position:** inside the MapKit refactor (§6c) — a parameter of the fix, not a
+separate task. **Deferral cost: it blocks the refactor from being finished**, and
+that refactor is the largest code item, so deferring it idles the long pole.
+
+At `.large` the sheet covers ~92% of the screen. Does the ornament ride above the
+sheet at every detent, or is it allowed off-screen at full height? Apple Maps
+itself lets its attribution go off-screen at full sheet height, which is the
+strongest available precedent — but choosing it makes the honest claim *"visible
+whenever the map is meaningfully visible"*, not *"always"*. The audit recommends
+following Apple's own behaviour; the owner should confirm, because it is the
+difference between a defensible reading of Attachment 6 §2.1 and a literal one.
 
 ### Already decided, recorded here so it is not re-opened
 
@@ -372,8 +472,11 @@ All of these are downstream of Decision 1, and most are already written.
 
 | Item | State |
 | --- | --- |
-| `PrivacyInfo.xcprivacy` | **Written**, unmerged (§2) |
-| Privacy policy **draft** | **Written**, unmerged — needs a lawyer (§5.3) and a public URL |
+| `PrivacyInfo.xcprivacy` | **Written**, unmerged (§2). Keep precise location declared as collected — §8, decision 3 |
+| Privacy policy **draft** | **Written**, unmerged. No longer needs a lawyer (§8, decision 3). Needs four things: §6e landed, Cloudflare named as a processor, the approximate-location path tested, and a monitored contact alias |
+| Privacy policy **URL** | Open, and a **hard submission gate**. It needs somewhere public to live; GitHub Pages off this repo is free and sufficient |
+| **Territories: United States only** | Decided (§8, decision 3). Set at the listing. Reversible later |
+| App Store **name reservation** | Open. Do it the day membership clears and the name is chosen — §3 |
 | The four App Store Connect answers | **Written**, unmerged — `app-store-submission.md` (§2) |
 | In-app route-guidance notice | **Shipped, and on `main`** — `AboutView.swift:97-98`, asserted character-for-character in `AttributionTests.swift`. **Do not add it again** — a test asserts there is exactly one. (The audit cites `:100-102`, which is where the §2 merge moves it) |
 | EULA field in App Store Connect | Open. Paste-ready text is in `app-store-submission.md` §1, which arrives with the §2 merge |
@@ -383,25 +486,40 @@ All of these are downstream of Decision 1, and most are already written.
 
 ---
 
-## 11. What cannot be estimated, and why
+## 11. What this costs, and what is left
 
-Two numbers are missing and neither can be found inside this repository:
+**The two unpriced items are gone.** An earlier draft of this section said the
+total was "$99 plus two unknowns, and the unknowns are plausibly the larger
+half" — the unknowns being professional trademark clearance and counsel. §8
+declined both, and replaced them with free checks.
 
-1. **The cost of professional trademark clearance**, and of filing if the owner
-   chooses to file. `branding-brainstorm.md` correctly says "not legal advice"
-   and stops there. This is the largest unpriced item in the plan.
-2. **The cost of counsel reviewing the privacy policy.** Same shape.
+**The total cost of this release is $99/year.** There is nothing else to buy.
+Hosting is $0/mo on the Oracle free tier, or free on the laptop that already
+serves; the exit, if it is ever outgrown, is ~€5.50/mo (§7).
 
-Both are quotes, not research, and both are obtainable in a day of phone calls.
-Until they exist, the dollar total for this release is **$99 plus two unknowns**,
-and the unknowns are plausibly the larger half.
+**The time is about a week of engineering**, and it is no longer gated by anyone
+else:
 
-The **time** estimate does survive: roughly a week of engineering (rename half a
-day, MapKit refactor one to two days, the two defects about a day, hosting a
-weekend if migrating, submission artifacts a day), inside one to two months of
-calendar set by clearance and counsel.
+| Item | Estimate |
+| --- | --- |
+| Merge the two finished branches (§6a) | minutes |
+| The rename (§6b), including the in-product copy pass | half a day |
+| **MapKit attribution refactor (§6c)** | **one to two days** |
+| The two roadmap defects (§6d) | about a day |
+| Coordinates to a POST body (§6e) | an hour |
+| Hosting: keep the laptop up, or migrate (§7) | an evening, or a weekend |
+| Submission artifacts, screenshots, listing (§10) | a day |
 
-**The estimate is only wrong in one direction that matters:** if the MapKit
-refactor turns out to need the polyline and marker rendering rebuilt more
-thoroughly than the audit's ~150-line estimate assumes, §6c is the item that
-grows. Nothing else here has that shape.
+Plus the day-one afternoon in §5, and however long Apple takes to approve
+enrolment — usually same-day.
+
+**The estimate is only wrong in one direction that matters.** §6c is the item
+that can grow: if re-implementing the polyline, marker and user-location content
+on `MKMapView` turns out to need more than the audit's ~150-line estimate, that
+is where the week becomes two. Nothing else here has that shape — everything else
+is either already written, a checkbox, or an afternoon.
+
+**What genuinely cannot be estimated:** how long App Review takes, and whether it
+passes first time. §7 names the most likely rejection — a reviewer opening the app
+against a backend that is down — and that one is preventable. The rest is not
+forecastable and should not be planned around.
