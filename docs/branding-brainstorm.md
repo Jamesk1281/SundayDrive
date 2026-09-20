@@ -12,6 +12,45 @@ clearance search before money goes into a brand. The facts below are checkable
 and I checked them; the conclusions about registrability are doctrine, not
 counsel.
 
+> **Status, 2026-09-20: the name is decided and most of §7 has shipped. The
+> body below is the record of how it was chosen, not a description of today.**
+> The app is **Victory Lap** (`victory-lap-naming.md`), not Longcut, and the
+> identifier rename is on `main`. What §7 actually looks like now:
+>
+> - **§7.1** — the five-stranger name test has **not** been run. **§7.2** —
+>   professional clearance was **declined by the owner**; that decision, not a
+>   clean search, is what opened the gate. **§7.3** — nothing registered or
+>   reserved.
+> - **§7.4 shipped** as `app.victorylap`, `.demo` dropped. Its "permanent after
+>   first submission" is wrong in the direction that matters: App Store
+>   Connect's own reference says the bundle ID *"can't be changed after you
+>   upload a build"* — the trigger is the first **build upload, including
+>   TestFlight**, not App Review. Nothing has been uploaded.
+> - **§7.5 shipped except `MARKETING_VERSION`**, which is still `"0.1"`.
+>   **§7.6 shipped except the `docs/` invocations**, left as written on
+>   purpose — the `SCENIC_*` names are still read as a one-release fallback, so
+>   those commands keep working.
+> - **§7.7 is the outstanding one.** None of §4's in-product copy shipped:
+>   "good miles" appears in no source file, the loop mode is still "Loop", and
+>   `RoutePanel.swift:484` still reads "scenery strength". §7 wanted this in the
+>   same afternoon as the rename and it did not get it. §4 is name-independent,
+>   so it survived the rename intact and is still live.
+> - **§5 is superseded, not pending.** Its tagline and App Store subtitle are
+>   the Longcut positioning carried down from §3, and Longcut lost. The subtitle
+>   is already decided as `The scenic route, on purpose`.
+>
+> Two identifiers in the body are stale: **`Color.scenic` is now `Color.brand`**
+> (§6's colour *value* is unchanged at `rgb(0.22, 0.83, 0.62)`), and §1's
+> "`Color.scenic` (13 uses)" undercounts it — 13 is the explicit spelling, but
+> there were **21** colour uses once `.tint(.scenic)`, `tint: .scenic` and
+> `.foregroundColor(.scenic)` are counted. Those 21 are part of a larger 34 in
+> `ios/Sources/`, which is three different things: 21 colour uses and 2
+> dispatch-queue labels, both renamed, and **11 routing-arm accessors —
+> `response.scenic`, `miles.scenic` — which are the API contract and were
+> deliberately left alone.** `Models.swift` decodes that key by property name
+> with no `CodingKeys`, so renaming it would break every deployed client as a
+> nil route at run time. See `rename-to-victory-lap-brief.md`.
+
 ---
 
 ## 1. Why "Scenic" cannot stay
