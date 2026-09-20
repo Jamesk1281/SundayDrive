@@ -147,7 +147,9 @@ what `xcodegen` emits** — expect to update `.gitignore` too, and confirm the o
 `Scenic.xcodeproj` is not left behind shadowing the new one.
 
 **6. Do not submit anything, and do not treat the bundle id as final.** It
-becomes permanent **at first submission** and that has not happened.
+becomes permanent ~~**at first submission**~~ **at the first build upload,
+TestFlight included** — verified 2026-09-20 against App Store Connect's own
+reference, which is earlier than this line claimed. Neither has happened.
 `bundleIdPrefix: app.scenic` → `app.victorylap` with `app.victorylap` and
 `app.victorylap.tests` is the obvious shape and drops the now-wrong `.demo` —
 **propose it, use it, and flag it explicitly for the owner's confirmation before
