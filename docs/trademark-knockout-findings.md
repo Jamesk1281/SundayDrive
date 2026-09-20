@@ -3,8 +3,8 @@
 **Status: screened 2026-09-19 against `main` at `2d6fbc0`. Nothing was filed,
 bought or reserved. Three of the original four candidates are knocked out —
 Camber on the register, Aimless and Detourist on common-law use. Longcut
-survives every leg, and so do Backway (§12) and Sideroad (§13). Sunday
-Drive (§14) is blocked.**
+survives every leg, and so do Backway (§12), Sideroad (§13) and Victory Lap
+(§15). Sunday Drive (§14) is blocked.**
 
 Answers [`trademark-knockout-brief.md`](trademark-knockout-brief.md). Corrects
 three rows of [`branding-brainstorm.md`](branding-brainstorm.md) §3 and settles
@@ -80,6 +80,7 @@ came from there.
 | **Aimless** | One live pending application, IC 042, different field | ***Aimless Drives*** — App Store, **Navigation**, same feature, live since 2026-09-02 | **Blocked, drop it** |
 | **Detourist** | Ten filings, **all dead** | `detourist.app` — live travel app for road trippers, since 2026-08-01 | **Blocked, drop it** |
 | **Camber** | **`CAMBER` reg. 7205668, live, IC 009 "downloadable mobile applications for providing travel information, planning…"** | `camberplaces.com`, live product | **Blocked, drop it** |
+| **Victory Lap** *(§15)* | 30 marks with the phrase; **zero live in 9/39/42**; every class 9 and 39 attempt abandoned | No app of the name; live users are a recruiter, a restaurant, a pool company — none in software or travel | **No knockout blocker found — proceed to professional clearance** |
 | **Sunday Drive** *(§14)* | Zero live in 9/39/42 — but two live automotive registrations next door, and a class 9 application for this exact product, abandoned | Operating car dealership on the exact-match `.com`; a second automotive app already using the name | **Blocked, drop it** |
 | **Sideroad** *(§13)* | 3 marks ever contain the string; 1 live, class 35 wine advertising | `Sideroads` trip-planner on Windows/Android; App Store empty | **No knockout blocker found — proceed to professional clearance** |
 | **Backway** *(§12)* | **Zero** marks contain the token, any class, any status | Two dormant/unrelated apps; the `.com` is in other use | **No knockout blocker found — proceed to professional clearance** |
@@ -815,6 +816,103 @@ why a dealership, a brewery, a band, a film, a New Zealand car dealer and
 SiriusXM all reached for it. The plainest phrase is common property. That is the
 same lesson as §7's Scenic Route, one notch milder: a name everybody already uses
 is not available to be owned, however ordinary and however right it sounds.
+
+---
+
+## 15. Victory Lap — added 2026-09-20, screened to the same depth
+
+A borrowed metaphor rather than a description: the extra lap driven after the
+race is already won, purely for the pleasure of driving it. Metaphors from
+another domain cannot be descriptive of these goods, which is why this angle
+keeps producing clean results.
+
+### Register
+
+Controls: `*scenic*` → 417, `*lap*` → 7,886.
+
+| Query | Hits |
+| --- | --- |
+| `wordmark:*victorylap*` — one word, substring | 1 |
+| `VICTORYLAP / VICTORYLAPS / VICTRYLAP / VIKTORYLAP / VICTORYLAPP` | 1 |
+| `wordmark:"VICTORY LAP"` — all classes, all statuses | 30 |
+| `wordmark:"VICTORY LAPS"` | **0** |
+| `wordmarkPseudoText:"VICTORY LAP"` | 3 |
+| `wordmark:VICTORYLAP~1` | 3, **all dead** |
+| **`wordmark:(VICTORY AND LAP)` live in 9/39/42** | **0** |
+
+**Every attempt in this product's classes is dead:**
+
+| Mark | Owner | Serial | Class | Goods | Status |
+| --- | --- | --- | --- | --- | --- |
+| `VICTORY LAP` | Video Gaming Technologies | 78622026 | 009 | Software for games of chance | Abandoned |
+| `VICTORY LAP` | Bandai Namco Entertainment | 90710268 | 009, 028, 041 | Computer game software | Abandoned |
+| `VICTORY LAP` | Victory Airlines Corporation | 78550035 | 039 | Airline customer loyalty programme | Abandoned |
+| `VICTORY LAP` | Kellogg Company | 75652704 / 2348414 | 041 | Sponsoring automobile racing | Cancelled |
+| `VICTORY LAP` | Kellogg Company | 75184075 | 041 | Sponsoring professional sport | Abandoned |
+| `VICTORY LAP MEDIA` | Victory Lap Media, LLC | 86807449 | 041 | Film and television production | Abandoned |
+
+Two games companies and an airline tried class 9 and 39 and let them go. Per
+Trap 4 that removes the registrations, not any rights their use created — but
+these are large companies that dropped applications, not small users quietly
+trading on.
+
+**The live marks are all in other industries:** employment recruiting (Victory
+Lap LLC, reg. 5511282, classes 035/041), starter repair kits for land vehicles
+(Clean Plus, Inc., reg. 1769701, classes 012/007), a restaurant and bar
+(reg. 7778175), clothing (reg. 6064185), dietary supplements, swimming-pool
+maintenance, and collectible trading cards. Nothing in software, navigation,
+mapping or travel.
+
+The three edit-distance-1 neighbours — `VICTORYLAP` for toy model cars,
+`VICTORYLIP`, `VICTORYLAB` — are all cancelled.
+
+### Common-law signals *(separate from the register above)*
+
+- **App Store: zero.** No app named Victory Lap under either spelling.
+- **Victory Lap**, Chicago — a sales-recruitment and training company founded
+  2016, around 62 staff, publicly reported at roughly $7M revenue. This is the
+  owner of reg. 5511282 and the largest user of the phrase. Unrelated field.
+- **Victory Lap** — a sports-marketing conference in Brisbane
+  (`victorylap.com.au`).
+- **Victory Lap Marketing** — an app on Google Play.
+- **The Nipsey Hussle album.** *Victory Lap* (2018) is a culturally significant
+  record, so the phrase carries that association for many people. **It is not a
+  register conflict:** the estate's 44 marks cover `NIPSEY HUSSLE`
+  (reg. 4494798, classes 009/041), `NIPSEY BLUE` and related names — **there is
+  no `VICTORY LAP` mark among them.** Recorded as a fact about the phrase, not a
+  claim about anyone.
+
+### Domains
+
+`victorylap.com` has been registered since 1997 and serves **an empty parking
+lander** — the same 114-byte redirect as `longcut.com`, and the opposite of
+§12's problem. `victorylap.app` was taken in 2021 and does not resolve.
+`victorylaps.com` (2005) and `thevictorylap.com` (2018) are held.
+**`victorylapapp.com` and `victorylap.co` are free.**
+
+### The honest weaknesses
+
+**It is a crowded phrase.** A restaurant, a clothing line, a recruiter, a
+supplement, a pool company and a trading-card shop all use it. In trademark
+terms a crowded field cuts both ways: coexistence is clearly normal, so nobody
+is likely to come after you — and equally, whatever you register would be narrow
+and weak, because you would be one of many.
+
+**The tone may be wrong, and the screen cannot tell you that.**
+`branding-brainstorm.md` §2 specifies the voice: "unhurried, dry, quietly
+confident. Never breathless." *Victory Lap* is celebratory and a little loud. The
+metaphor is the most accurate one found in this whole exercise — driving further
+than you need to, for the pleasure of it — but "victory" imports competition and
+winning into a product whose entire thesis is that it is not a race. That is a
+positioning judgement and it belongs to the owner.
+
+### Verdict
+
+**No knockout blocker found — proceed to professional clearance.**
+
+For the attorney: the Chicago recruiter's reg. 5511282 (classes 035/041) is the
+best-resourced user of the phrase, and the question is whether a crowded field
+of unrelated users leaves room for a class 9 registration that is worth having.
 
 ---
 
