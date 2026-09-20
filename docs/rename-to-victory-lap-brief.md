@@ -53,14 +53,9 @@ case-insensitive "scenic", whole repo        3,168   across 118 files
   "scenic score|route|km|arm|byway|detour"     190   ← correct English, keep
 brand identifiers
   SCENIC_* environment occurrences              88
+  .scenic  (Swift colour token, ios/Sources)    34
   PRODUCT_BUNDLE_IDENTIFIER lines                2
-  .scenic  (routing-arm accessor)               34   ← NOT brand. see correction below
 ```
-
-**The ~121 figure in this brief counted those 34 as brand. It should not have.
-The true brand-identifier count is closer to ~90**, almost all of it the
-`SCENIC_*` prefix. Treat every count here as a measurement to re-take, not a
-target to hit.
 
 Reproduce with:
 
@@ -81,21 +76,23 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 - `ios/project.yml:101` `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo.tests`
 - `ios/Sources/ScenicApp.swift` — the struct **and** the filename
 - ~~`Color.scenic` and the other `.scenic` tokens (34 in `ios/Sources/`)~~
-  **CORRECTION, 2026-09-20 — this line was wrong and it is the dangerous kind of
-  wrong.** There is no `Color.scenic`. `ios/Sources/Theme.swift:10` already reads
-  `static let brand = Color(red: 0.22, green: 0.83, blue: 0.62)` — the colour was
-  named for the app, not the arm, before this rename started. **All 34 `.scenic`
-  hits are the routing-arm accessor** — `response.scenic`, `miles.scenic`,
-  `model.response?.scenic.coordinates` — at `ContentView.swift:48,84,116,122`,
-  `NavigationModel.swift:1266`, `RoutePanel.swift:542`, and
-  `RouteResults.swift:10,106,134,180,191`.
-  **They are the API contract and they must not be renamed.** `server/app.py:8`
-  documents the response as `{"fastest": …, "scenic": <GeoJSON Feature>}` and
-  `ios/Sources/Models.swift:12` is `let scenic: RouteFeature`, decoded from that
-  key **by property name** — there are no `CodingKeys`. Renaming the Swift
-  property silently breaks decoding against every deployed server. This is the
-  same "it names the arm, not the brand" rule as Trap 2, and the identifier list
-  above originally contradicted the trap that protects it.
+  **Corrected while executing, 2026-09-20.** `Color.scenic` did exist and was
+  brand — but the 34 is three different things, and only the first was renamed:
+  - **21 colour uses** → renamed to `Color.brand`. `Theme.swift` called it
+    *"the app's accent green"*, and it tints the About sheet, the Tune button
+    and the mute control, none of which are the route.
+  - **2 dispatch-queue labels** (`app.scenic.drive-trace`,
+    `app.scenic.audio-session`) → `app.victorylap.*`.
+  - **11 routing-arm accessors** — `response.scenic`, `miles.scenic`,
+    `model.response?.scenic.coordinates` — **left alone, and they must stay
+    that way.** They are the client half of the API contract: `server/app.py:8`
+    documents the response as `{"fastest": …, "scenic": <GeoJSON Feature>}`,
+    and `Models.swift`'s `let scenic: RouteFeature` decodes from that key **by
+    property name** — there are no `CodingKeys` in the file. Renaming the Swift
+    property breaks decoding against every deployed server, and it fails as a
+    nil route at run time, not as a compile error. Same rule as Trap 2: it
+    names the arm, not the product. `ModelsTests` decodes the literal
+    `"scenic"` key and is the guard.
 - the `SCENIC_*` env prefix (88): `SCENIC_API`, `_DATA`, `_DEMO`, `_HOST`,
   `_PBF`, `_REGION`, `_TRACES`
 - the `ScenicAPIBaseURL` Info.plist key, whose call sites outside
@@ -107,10 +104,10 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 
 ## Traps
 
-**1. Never find-and-replace, in any casing.** 3,168 hits, of which about **90**
-are brand (see the correction above — an earlier count said 121 and wrongly
-included the 34 routing-arm accessors). The other ~3,078 are data, API contract,
-and correct English. **Read every hit.** It is
+**1. Never find-and-replace, in any casing.** 3,168 hits, of which about 121 are
+brand — **measured afterwards at 114 machine-countable identifiers plus ~26
+prose uses of the product name.** The other ~3,047 are data, API contract, and
+correct English. **Read every hit.** It is
 an afternoon; the alternative is unreviewable.
 
 **2. Capitalisation is not the discriminator, and `RoutePanel.swift` proves it
