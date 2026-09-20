@@ -2,8 +2,9 @@
 
 **Status: drafted 2026-09-19, published nowhere.** Checkable: `git grep -l
 'privacy polic'` finds no URL in `ios/`, and App Store Connect has never been
-given one. The app itself is still `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo`
-at `MARKETING_VERSION: "0.1"` (`ios/project.yml:66`, `:74`).
+given one. The app itself is `PRODUCT_BUNDLE_IDENTIFIER: app.victorylap` at
+`MARKETING_VERSION: "0.1"` (`ios/project.yml:66`, `:74`) — the identifier
+changed with the 2026-09-20 rename and is **not** final until first submission.
 
 > **This is a draft for review. It is not published anywhere, it is not linked
 > from the app, and it is not the policy URL that App Store Connect asks for.**
@@ -23,14 +24,14 @@ at `MARKETING_VERSION: "0.1"` (`ios/project.yml:66`, `:74`).
 
 ## 0. What this app is
 
-Scenic plans and narrates driving routes that prefer scenic roads over fast
-ones. It runs on iPhone, it talks to one routing server the developer operates,
+Victory Lap plans and narrates driving routes that prefer scenic roads over
+fast ones. It runs on iPhone, it talks to one routing server the developer operates,
 and it uses Apple's Maps services for the map, for address search and for place
 names. There is no account, no sign-in, and no way to create one.
 
 **The app is not published.** At the time of writing it is a single-user
 research instrument (`docs/legal-and-ip-audit.md`; the bundle identifier is
-still `app.scenic.demo` and the marketing version `0.1`). This document is
+`app.victorylap` and the marketing version `0.1`). This document is
 written as the policy it would need if it were published, which is the only way
 to find out what would have to change first.
 
@@ -70,8 +71,8 @@ of them the app reading back its own preferences:
 **The app uses your location for one thing: following the route you asked for.**
 It requests *when in use* authorization only (`LocationManager.swift:145`,
 `:218`) — never "always" — and the purpose string the system shows you is the
-one at `ios/project.yml:21`: "Scenic uses your location to follow your route,
-turn by turn, while you drive."
+one at `ios/project.yml:21`: "Victory Lap uses your location to follow your
+route, turn by turn, while you drive."
 
 **Location continues while the app is in the background, and the blue bar shows
 whenever it does.** `UIBackgroundModes` includes `location`
@@ -231,10 +232,10 @@ characterisations are not mine to make. In order of how much turns on them:
    approximate location. The policy should not describe behaviour that has not
    been observed. **Test it, then write what happens.**
 7. **The contact address (§6).**
-8. **The app's name.** `docs/legal-and-ip-audit.md` item 1: "Scenic" is taken by
-   a senior direct competitor and is descriptive. A published privacy policy is
-   a public document naming the app, so it should not be published under a name
-   that is going to change.
+8. ~~**The app's name.**~~ **Resolved 2026-09-20.** The app is **Victory
+   Lap** (`docs/victory-lap-naming.md`), and this document was updated with it.
+   The audit's item 1 — "Scenic" being taken by a senior direct competitor, and
+   descriptive — is what the rename answers.
 
 ## 8. What would make this document wrong
 

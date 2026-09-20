@@ -16,7 +16,7 @@ struct RouteResults: View {
                 card("Fastest", minutes: comparison.fastestMinutes,
                      km: fastest.km, detail: comparison.fastestDetail, tint: .gray)
                 card("Scenic", minutes: comparison.scenicMinutes,
-                     km: scenic.km, detail: comparison.scenicDetail, tint: .scenic)
+                     km: scenic.km, detail: comparison.scenicDetail, tint: .brand)
             }
             Text(comparison.attributedSummary)
                 .font(.caption)
@@ -239,7 +239,7 @@ struct SceneryBar: View {
             Text(label).font(.caption2).foregroundStyle(.secondary)
                 .frame(width: labelWidth, alignment: .leading)
             GeometryReader { geo in
-                Capsule().fill(Color.scenic)
+                Capsule().fill(Color.brand)
                     .frame(width: geo.size.width * (km / maxKm), height: 6)
                     .frame(maxHeight: .infinity, alignment: .center)
             }

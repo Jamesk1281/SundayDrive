@@ -1,6 +1,6 @@
 import CoreLocation
 import Foundation
-@testable import Scenic
+@testable import VictoryLap
 
 /// Replays a drive recorded by `DriveTrace` back through `NavigationModel`.
 ///
@@ -25,13 +25,15 @@ enum DriveReplay {
     /// `<repo>/.claude/worktrees/<name>/ios/Tests` the walk climbs out of the
     /// worktree and finds the real one.
     ///
-    /// `SCENIC_TRACES` overrides it for a copy kept elsewhere, but note it
+    /// `VICTORYLAP_TRACES` overrides it for a copy kept elsewhere (the
+    /// pre-rename `SCENIC_TRACES` still works for one release), but note it
     /// cannot be set on the `xcodebuild` command line: these are app-hosted
     /// unit tests, so neither a bare variable nor the `TEST_RUNNER_` prefix
     /// reaches the process that reads `ProcessInfo`. It has to go in the
     /// scheme's test action in `ios/project.yml`.
     static func directory(from file: String = #filePath) -> URL? {
-        if let override = ProcessInfo.processInfo.environment["SCENIC_TRACES"] {
+        let env = ProcessInfo.processInfo.environment
+        if let override = env["VICTORYLAP_TRACES"] ?? env["SCENIC_TRACES"] {
             return URL(fileURLWithPath: override)
         }
         var directory = URL(fileURLWithPath: file).deletingLastPathComponent()

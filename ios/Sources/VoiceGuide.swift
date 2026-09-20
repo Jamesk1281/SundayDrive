@@ -72,7 +72,7 @@ final class SystemSpeaker: NSObject, Speaker {
     /// 570, max 577) — and 0 ms on a simulator, so it is real hardware cost and
     /// not the instrument. That is most of a location fix, on a stream that
     /// delivers about one a second, so it does not happen on the main actor.
-    private static let sessionQueue = DispatchQueue(label: "app.scenic.audio-session")
+    private static let sessionQueue = DispatchQueue(label: "app.victorylap.audio-session")
 
     /// So a session that refuses on every fix reports once rather than
     /// becoming its own storm.

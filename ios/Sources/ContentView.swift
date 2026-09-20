@@ -47,7 +47,7 @@ struct ContentView: View {
                 }
                 if let scenic = model.response?.scenic {
                     MapPolyline(coordinates: scenic.coordinates)
-                        .stroke(Color.scenic, lineWidth: 6)
+                        .stroke(Color.brand, lineWidth: 6)
                 }
                 if let start = model.start {
                     Marker("Start", coordinate: start).tint(.green)
@@ -60,7 +60,7 @@ struct ContentView: View {
                 // thing a loop has to say about its shape that the line doesn't.
                 if let loop = model.loops.response?.loop {
                     MapPolyline(coordinates: loop.coordinates)
-                        .stroke(Color.scenic, lineWidth: 6)
+                        .stroke(Color.brand, lineWidth: 6)
                 }
                 if let start = model.loops.start {
                     Marker("Start and finish", coordinate: start).tint(.green)

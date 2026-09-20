@@ -405,7 +405,7 @@ final class DriveTrace {
 /// `handle` is touched only from inside `queue`, which is what makes this safe
 /// to call from the main actor.
 private final class LineWriter: @unchecked Sendable {
-    private let queue = DispatchQueue(label: "app.scenic.drive-trace", qos: .utility)
+    private let queue = DispatchQueue(label: "app.victorylap.drive-trace", qos: .utility)
     private let url: URL
     private var handle: FileHandle?
     private var broken = false

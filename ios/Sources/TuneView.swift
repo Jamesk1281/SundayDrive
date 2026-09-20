@@ -59,7 +59,7 @@ struct TuneView: View {
                         Task { await model.computeRoute() }
                     }
                 }
-                .tint(.scenic)
+                .tint(.brand)
                 Image(systemName: "plus").font(.caption2).foregroundStyle(.tertiary)
             }
             // Only `town` carries one. A slider that starts pinned to the left

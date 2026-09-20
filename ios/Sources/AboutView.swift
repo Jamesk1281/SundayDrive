@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Who the app owes credit to, and in the words their licences ask for.
 ///
-/// Scenic draws OpenStreetMap-derived road geometry on the map, names OSM
+/// Victory Lap draws OpenStreetMap-derived road geometry on the map, names OSM
 /// streets in its maneuvers and speaks them aloud, and every score it shows is
 /// built from two more open datasets. All three require attribution in the
 /// thing that reaches the user — a private repo's README discharges nothing.
@@ -200,7 +200,7 @@ enum DataSources {
     )
 }
 
-/// The "Data sources" sheet: what Scenic is built from, and the credit each of
+/// The "Data sources" sheet: what Victory Lap is built from, and the credit each of
 /// those licences asks for.
 ///
 /// Presented the way "Tune scenery" is — a `NavigationStack` in a sheet with a
@@ -213,7 +213,7 @@ struct AboutView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Scenic's roads, and the scores it rates them with, come "
+                    Text("Victory Lap's roads, and the scores it rates them with, come "
                          + "from open data. These are the people who made it.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -280,7 +280,7 @@ struct AboutView: View {
                 Text(Self.linkLabel(source.url))
                     .font(.caption)
             }
-            .tint(.scenic)
+            .tint(.brand)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

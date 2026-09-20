@@ -4,13 +4,13 @@ import XCTest
 ///
 /// These are not tests of behaviour either — like `AttributionTests`, they are
 /// tests of a file somebody else specifies the contents of. The failure mode
-/// they guard against is specific and silent: `ios/Scenic.xcodeproj` is a
+/// they guard against is specific and silent: `ios/VictoryLap.xcodeproj` is a
 /// gitignored build output, so a manifest that is plainly on disk can be absent
 /// from the product simply because nobody ran `xcodegen generate`. Nothing
 /// warns you. App Store Connect does, weeks later, at submission.
 ///
 /// So the first test deliberately reads `Bundle.main` — which, because
-/// `ScenicTests` is app-hosted (`TEST_HOST` is set in the generated project),
+/// `VictoryLapTests` is app-hosted (`TEST_HOST` is set in the generated project),
 /// is the **app** bundle at run time — rather than reading the source file. A
 /// manifest that only exists in the repository fails here.
 ///

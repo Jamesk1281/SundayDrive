@@ -1,5 +1,5 @@
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The attribution the app owes its data sources.
 ///

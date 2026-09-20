@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Scenic's privacy manifest.
+  Victory Lap's privacy manifest.
 
   Required because the app calls a "required reason" API: `UserDefaults`, at six
   call sites (VoiceCatalogue.swift:118,119,148,149 and VoiceGuide.swift:351,352).

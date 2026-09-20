@@ -1,6 +1,7 @@
 # What is in here
 
-Scenic scores every road in New England for beauty and routes across that score.
+Victory Lap scores every road in New England for beauty and routes across that
+score.
 Almost none of the numbers it uses are guesses — `BETA`, `CONTROL_SECONDS`,
 `SPEED_FACTOR`, `RELIEF_FULL`, `PREF_CURVE` and the scoring weights were each
 fitted against measured data, and **this directory is where those measurements
@@ -15,6 +16,14 @@ Everything here opens with a bold **Status:** line saying what state the tree wa
 in when it was written. Where a question has since been answered, the question
 document carries a blockquote at the top pointing at the answer. Read the pointer
 first — the body below it is a historical record, not a description of today.
+
+**The app was renamed from Scenic to Victory Lap on 2026-09-20**
+([`victory-lap-naming.md`](victory-lap-naming.md)), and the rename was applied
+to code, configuration and the currently-descriptive documents only. Everything
+here written before that date says "Scenic" and is left as written, for the
+reason in the paragraph above. The word also survives on purpose wherever it is
+the right English one — the *scenic route*, the *scenic score*, the *scenic
+arm* — and in `route-census/`, where it is a column value in published data.
 
 ---
 

@@ -105,9 +105,11 @@ final class RouteModel {
         locationManager = manager
         loops = LoopModel(locationManager: manager)
 
-        // Demo mode (launch with SCENIC_DEMO set) preloads a route via the real
-        // search path, so a screenshot doubles as an end-to-end check.
-        if ProcessInfo.processInfo.environment["SCENIC_DEMO"] != nil {
+        // Demo mode (launch with VICTORYLAP_DEMO set) preloads a route via the
+        // real search path, so a screenshot doubles as an end-to-end check.
+        // `SCENIC_DEMO` is the pre-rename name, still read for one release.
+        let env = ProcessInfo.processInfo.environment
+        if (env["VICTORYLAP_DEMO"] ?? env["SCENIC_DEMO"]) != nil {
             Task {
                 await search("Northampton, MA", into: .start)
                 await search("Boston, MA", into: .end)

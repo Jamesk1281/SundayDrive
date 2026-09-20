@@ -1,4 +1,4 @@
-# Deploying the Scenic API
+# Deploying the Victory Lap API
 
 The whole backend is self-hosted and free per request (no Google/Apple/Mapbox
 metering). Costs are flat, not per-user: the same box serves 3 or 3,000 people.
@@ -130,6 +130,11 @@ interpreter path, so they break if the folder is moved or contains a space.
 git clone https://github.com/Jamesk1281/Scenic.git C:\Scenic
 ```
 
+The app is called Victory Lap; the GitHub repository is still `Scenic`, and the
+paths below follow it. Renaming the repository would break that URL and the
+`raw.githubusercontent.com` citations in `docs/licensing-open-questions.md`, so
+it is a separate decision.
+
 Copy `graph_edges.parquet`, `graph_nodes.parquet`,
 `turn_restrictions.parquet` and — unless you are deliberately skipping the
 access layer — `access_ways.parquet` and `access_entries.parquet` into
@@ -198,7 +203,7 @@ see *errors* rather than skips, the graph is present but partial — most likely
 ```
 
 Warm and listening on `0.0.0.0:5057`. Behind a tunnel nothing off-box needs to
-connect directly, so `SCENIC_HOST=127.0.0.1` is worth setting — it keeps the
+connect directly, so `VICTORYLAP_HOST=127.0.0.1` is worth setting — it keeps the
 local network out and means you can safely decline the Windows Firewall prompt.
 
 ```sh
@@ -231,7 +236,10 @@ named tunnel rather than a reason to debug.
 
 **Named tunnel on your own domain** (stable URL, and it can be rate-limited).
 The CLI flow below needs only a normal free Cloudflare account — the Zero Trust
-dashboard asks for a credit card even on its free tier, and is not required:
+dashboard asks for a credit card even on its free tier, and is not required.
+The tunnel is named `scenic`, and the deployed one still is: the name goes into
+the credentials filename and the DNS CNAME, so changing it means recreating the
+tunnel and re-pointing the hostname. It is not user-visible.
 
 ```sh
 cloudflared tunnel login                                  # authorize the zone
@@ -312,8 +320,8 @@ the only real test of the setup.
 ## Option B — Docker
 
 ```sh
-docker build -f server/Dockerfile -t scenic-api .   # build context = repo root
-docker run -p 5057:5057 --restart unless-stopped scenic-api
+docker build -f server/Dockerfile -t victorylap-api .   # build context = repo root
+docker run -p 5057:5057 --restart unless-stopped victorylap-api
 ```
 
 ## Option C — Bare VPS
@@ -384,19 +392,21 @@ as the paid exit if Oracle's free-tier terms move again.
   real ceiling — compression multiplies how many routes the laptop can serve.
 - **Warm at startup.** The graph and its lookups are built when the server boots,
   so the first request is already fast (no cold penalty after a restart).
-- **Data location** comes from the `SCENIC_DATA` env var (default
-  `data/processed`); set it only if your parquets live elsewhere.
+- **Data location** comes from the `VICTORYLAP_DATA` env var (default
+  `data/processed`); set it only if your parquets live elsewhere. The
+  pre-rename `SCENIC_DATA` is still read after it, for one release.
 - **Cloudflare stores nothing.** It is a doorway, not a copy: if the laptop
   sleeps or either process stops, the API is down within seconds.
 
 ## Pointing the clients at it
 
-- **iOS app:** the deployed URL is baked into the bundle as `ScenicAPIBaseURL`
-  in `ios/project.yml`. It has to be an Info.plist value rather than a scheme
-  environment variable, because an env var only exists while Xcode owns the
-  process — an app launched from the home screen, or relaunched by iOS after
-  being jettisoned mid-drive, would otherwise fall back to localhost and fail
-  every request. `SCENIC_API` still overrides it for local development.
+- **iOS app:** the deployed URL is baked into the bundle as
+  `VictoryLapAPIBaseURL` in `ios/project.yml`. It has to be an Info.plist value
+  rather than a scheme environment variable, because an env var only exists
+  while Xcode owns the process — an app launched from the home screen, or
+  relaunched by iOS after being jettisoned mid-drive, would otherwise fall back
+  to localhost and fail every request. `VICTORYLAP_API` still overrides it for
+  local development.
   Note that on a free Apple developer account a sideloaded build expires after
   7 days and needs reinstalling.
 - **Web demo:** a static page (e.g. on `jameskouvlis.com`) can call the same

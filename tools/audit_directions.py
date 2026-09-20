@@ -310,14 +310,15 @@ def audit(router, banned, only, n_routes, seed=5):
 
 
 def _find_pbf():
-    """The OSM extract, from SCENIC_PBF or the usual place in data/raw.
+    """The OSM extract, from VICTORYLAP_PBF or the usual place in data/raw.
 
     Same rule as `tools/analyze_trace.py`, and needed for the same reason: run
     from a git worktree, `data/` lives only in the main checkout.
     """
     import os
 
-    override = os.environ.get("SCENIC_PBF")
+    # `SCENIC_PBF` is the pre-rename name, read for one release.
+    override = os.environ.get("VICTORYLAP_PBF") or os.environ.get("SCENIC_PBF")
     if override:
         return Path(override)
     return next(iter(sorted((ROOT / "data" / "raw").glob("*.osm.pbf"))), None)
@@ -333,7 +334,7 @@ def main(argv):
     cache = data / "forbidden_movements.parquet"
     pbf = _find_pbf()
     if not cache.exists() and pbf is None:
-        print("no OSM extract found — put the .pbf in data/raw or set SCENIC_PBF. "
+        print("no OSM extract found — put the .pbf in data/raw or set VICTORYLAP_PBF. "
               "It is only needed once; the movements are cached afterwards.")
         return 1
     frame = forbidden_movements(pbf, cache)

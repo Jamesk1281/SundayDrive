@@ -295,7 +295,7 @@ struct RoutePanel: View {
     private var header: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("Scenic").font(.title2.bold())
+                Text("Victory Lap").font(.title2.bold())
                 Text(hint).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -304,7 +304,7 @@ struct RoutePanel: View {
             Button { showingTune = true } label: {
                 Label("Tune", systemImage: "slider.horizontal.3").font(.subheadline)
             }
-            .tint(model.isTuned ? .scenic : .secondary)
+            .tint(model.isTuned ? .brand : .secondary)
             // Swap and clear belong to a trip with two ends. A loop has one,
             // and its own clear button lives in its start field.
             if model.mode == .directions, model.start != nil || model.end != nil {
@@ -390,7 +390,7 @@ struct RoutePanel: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Color.scenic)
+        .foregroundStyle(Color.brand)
         .disabled(model.isLocatingUser)
         .accessibilityLabel("Start from my current location")
     }
@@ -409,7 +409,7 @@ struct RoutePanel: View {
                         Task { await model.useMyLocation() }
                     } label: {
                         Label("My Location", systemImage: "location.fill")
-                            .foregroundStyle(Color.scenic)
+                            .foregroundStyle(Color.brand)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
@@ -514,7 +514,7 @@ struct RoutePanel: View {
             // credit, and the OSMF guideline asks that it stay legible and
             // that accessibility guidance be followed. It is allowed to grow.
             (Text(DataSources.shortCredit) + Text("  ")
-             + Text("Data sources").foregroundColor(.scenic))
+             + Text("Data sources").foregroundColor(.brand))
                 .font(.caption2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
@@ -539,6 +539,6 @@ struct RoutePanel: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .tint(.scenic)
+        .tint(.brand)
     }
 }

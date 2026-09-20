@@ -252,7 +252,8 @@ code fact.)*
 ## 6. Version and identity fields
 
 These are still development values and are wrong for a submission
-(`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.scenic.demo`,
+(`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.victorylap`
+(renamed 2026-09-20, **still provisional** until first submission),
 marketing version `0.1`, build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
 deployment target iOS 17.0. **Each is an owner decision**, and the bundle
 identifier in particular cannot be changed after first submission.
@@ -269,10 +270,11 @@ than by default.
 Both from `docs/legal-and-ip-audit.md`; neither is fixed, and neither is fixed
 by this document.
 
-1. **The name.** Item 1: "Scenic" is taken by a senior direct competitor in the
-   same category *and* is merely descriptive. Nothing public-facing — a listing,
-   a privacy policy page, a EULA — should go out under it.
-   `branding-brainstorm.md`.
+1. ~~**The name.**~~ **Resolved 2026-09-20.** Item 1 — "Scenic" taken by a
+   senior direct competitor in the same category *and* merely descriptive — is
+   answered: the app is **Victory Lap** (`victory-lap-naming.md`), and the
+   identifiers were renamed to match. Nothing public-facing has gone out under
+   either name.
 2. **Apple's map attribution is obscured** by the planning sheet. Item 2, ADPLA
    Attachment 6 §2.1, confirmed breach, unfixed. Submitting with a clipped Apple
    logo is submitting a known contract breach.
@@ -289,7 +291,7 @@ so it is its own piece of work.
 
 | # | Item | State |
 | --- | --- | --- |
-| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done** — `ios/Sources/PrivacyInfo.xcprivacy`, verified at the root of the built `Scenic.app` and guarded by `ios/Tests/PrivacyManifestTests.swift` |
+| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done** — `ios/Sources/PrivacyInfo.xcprivacy`, verified at the root of the built `VictoryLap.app` and guarded by `ios/Tests/PrivacyManifestTests.swift` |
 | 2 | Route-guidance notice in the app | **Done** — `AboutView.swift:100-102`, shipped 2026-09-19 |
 | 3 | Custom EULA filed in App Store Connect | **Open** — §1; needs a lawyer and an owner decision |
 | 4 | Privacy policy drafted | **Done, as a draft** — `docs/privacy-policy.md` |
