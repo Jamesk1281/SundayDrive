@@ -1,5 +1,21 @@
 # Branding: what this app is actually called
 
+> **§3's shortlist is corrected by
+> [`trademark-knockout-findings.md`](trademark-knockout-findings.md)
+> (2026-09-19).** Three of the four survivors are out: **Camber** is blocked by a
+> live federal registration (reg. 7205668, class 9, *"downloadable mobile
+> applications for providing travel information, planning…"*), **Aimless** by
+> *Aimless Drives* — a Navigation-category App Store app doing this project's
+> loop feature, published 2026-09-02, one day after §3's check — and
+> **Detourist** by a live travel app at `detourist.app`. **Longcut survives**,
+> and it is the only candidate that does. Also settled there: `longcut.app` is
+> **registered**, not free (§3 marks it unverified), and §3's "different class
+> (34 vs 9), so conflict risk is low" reaches the right answer by the wrong
+> route — classification is not the test, and the real reasons are that
+> "LONG CUT" is *disclaimed* in the tobacco marks and the Skoal registrations
+> are dead. §3's App Store method was not wrong; it was answering a narrower
+> question than availability.
+
 **Written 2026-09-01, expanded the same day** after actually checking candidate
 names against the App Store instead of just liking the sound of them. That check
 changed the recommendation, which is the main reason this document is worth
