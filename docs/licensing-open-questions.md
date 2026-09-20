@@ -1,8 +1,20 @@
 # Licensing: the three open questions, answered
 
-**Researched 2026-09-19 against `main` at `378aaee`. Nothing was changed.** No
-file under `ios/`, `server/`, `pipeline/` or `tests/` was touched, no `LICENSE`
-was added, and no licensing decision was made on anyone's behalf.
+> **Resolved 2026-09-19.** The research below stands as written, but it is no
+> longer an open question. The owner chose **Apache-2.0**, and the repository
+> now carries [`LICENSE`](../LICENSE) and [`NOTICE`](../NOTICE). The ODbL
+> obligation found in Gap 1b was discharged with a notice file at
+> [`route-census/README.md`](route-census/README.md) rather than by slimming the
+> CSV. The heatmap credit, the leaked local path, and the stale "this repository
+> is private" claim in [`data-sources.md`](data-sources.md) are all fixed.
+> **Still open, and still the owner's:** the commit email, and everything in
+> Gap 2 that needs the binding agreement in the developer account.
+
+**Researched 2026-09-19 against `main` at `378aaee`. At the time of writing,
+nothing was changed** — no file under `ios/`, `server/`, `pipeline/` or `tests/`
+was touched, no `LICENSE` was added, and no licensing decision was made on
+anyone's behalf. The decisions recorded in the banner above were taken
+separately, by the owner, after reading this.
 
 This document answers the three questions left open by
 [`licensing-open-questions-brief.md`](licensing-open-questions-brief.md). It is

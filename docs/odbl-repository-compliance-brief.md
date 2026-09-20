@@ -1,5 +1,12 @@
 # Discharge the ODbL obligations the public repository actually carries
 
+> **Done 2026-09-19.** All four deliverables landed. One instruction below was
+> then overtaken: "Do not add a `LICENSE` file" was correct while
+> `licensing-open-questions.md` §1a was open, and §1a has since been decided —
+> the repository is Apache-2.0, with `LICENSE` and `NOTICE` at the root.
+> `docs/route-census/` is carved out of that licence and keeps the ODbL terms
+> this brief asked for.
+
 **Status: diagnosed 2026-09-19 against `main` at `4cf43b8`, nothing changed.**
 No file was touched. **The owner has chosen the remedy** — see "The decision,
 already made" — so this is implementation, not research.

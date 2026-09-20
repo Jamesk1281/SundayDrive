@@ -171,22 +171,6 @@ def measure(result, weights_name, pair, arm, pref):
     return row
 
 
-def public_path(p: Path) -> str:
-    """`p` relative to the checkout, or its basename if it lies outside.
-
-    The summary JSON is committed and served from a public repository, so the
-    resolved `--processed` path cannot go into it verbatim: it would publish the
-    author's home directory and every parent folder name along the way. The
-    committed file was corrected by hand; this keeps a rerun from putting it
-    back. See docs/route-census/README.md.
-    """
-    root = Path(__file__).resolve().parent.parent
-    try:
-        return str(p.relative_to(root))
-    except ValueError:
-        return p.name
-
-
 def run(args):
     processed = Path(args.processed).resolve()
     out_dir = Path(args.out_dir).resolve()
@@ -292,7 +276,10 @@ def run(args):
 
     graph = processed / "graph_edges.parquet"
     summary = {
-        "processed_dir": public_path(processed),
+        # Basename only. This file is committed to a public repository, and the
+        # absolute path leaked the account name and the whole parent directory
+        # chain of the checkout. Which processed dir was used is the useful part.
+        "processed_dir": processed.name,
         "graph_built": time.strftime("%Y-%m-%d %H:%M",
                                      time.localtime(graph.stat().st_mtime)),
         "place_points": int(len(places)),
