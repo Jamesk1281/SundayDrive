@@ -3,7 +3,7 @@
 **Status: screened 2026-09-19 against `main` at `2d6fbc0`. Nothing was filed,
 bought or reserved. Three of the original four candidates are knocked out —
 Camber on the register, Aimless and Detourist on common-law use. Longcut
-survives every leg, and so does Backway (§12, added the same day).**
+survives every leg, and so do Backway (§12) and Sideroad (§13).**
 
 Answers [`trademark-knockout-brief.md`](trademark-knockout-brief.md). Corrects
 three rows of [`branding-brainstorm.md`](branding-brainstorm.md) §3 and settles
@@ -79,6 +79,7 @@ came from there.
 | **Aimless** | One live pending application, IC 042, different field | ***Aimless Drives*** — App Store, **Navigation**, same feature, live since 2026-09-02 | **Blocked, drop it** |
 | **Detourist** | Ten filings, **all dead** | `detourist.app` — live travel app for road trippers, since 2026-08-01 | **Blocked, drop it** |
 | **Camber** | **`CAMBER` reg. 7205668, live, IC 009 "downloadable mobile applications for providing travel information, planning…"** | `camberplaces.com`, live product | **Blocked, drop it** |
+| **Sideroad** *(§13)* | 3 marks ever contain the string; 1 live, class 35 wine advertising | `Sideroads` trip-planner on Windows/Android; App Store empty | **No knockout blocker found — proceed to professional clearance** |
 | **Backway** *(§12)* | **Zero** marks contain the token, any class, any status | Two dormant/unrelated apps; the `.com` is in other use | **No knockout blocker found — proceed to professional clearance** |
 
 **The App Store name-count check in `branding-brainstorm.md` §3 rated the first
@@ -481,7 +482,7 @@ answered instead), `whois.nic.co` and every `.co` RDAP endpoint tried, and
 
 ## 11. What this changes
 
-**Longcut stands, and Backway joins it (§12). Aimless, Detourist and Camber are
+**Longcut stands, and Backway (§12) and Sideroad (§13) join it. Aimless, Detourist and Camber are
 out, and `branding-brainstorm.md` §3 has no fourth candidate behind them** — the remaining "usable" rows there
 (Dawdle, Vireo, Overlook) were never screened past the App Store count and would
 each need this treatment.
@@ -613,6 +614,107 @@ Two facts that are not the attorney's call and belong to the owner: what sits on
 `backway.com`, and the second meaning of the phrase. Neither blocks the name.
 Both would be cheaper to think about now than after the bundle identifier is
 permanent.
+
+---
+
+## 13. Sideroad — added 2026-09-20, screened to the same depth
+
+Raised after §12, and taken through the same method.
+
+### Register
+
+Controls first: `*scenic*` → 417 and `*road*` → 23,129 on the same field, so the
+machinery was returning results when these numbers were recorded.
+
+| Query | Hits |
+| --- | --- |
+| `wordmark:*sideroad*` — substring, whole register, every class and status | **3** |
+| `wordmark:*sideroads*` | 1 |
+| `SIDEROAD / SIDEROADS / SYDEROAD / SIDROAD / SIDEROD / SIDEROADE` | 2 |
+| `wordmark:"SIDE ROAD"` / `"SIDE ROADS"` — two words | 1 each |
+| `wordmarkPseudoText:*sideroad*` | **0** |
+| `wordmark:(SIDE AND ROAD)` **live in 9/39/42** | **0** |
+| `wordmark:SIDEROAD~1` **live in 9/39/42** | **0** |
+
+**Three marks in the history of the register contain the string, and only one is
+live:**
+
+| Mark | Owner | Serial / Reg. | Class | Goods | Status |
+| --- | --- | --- | --- | --- | --- |
+| `SIDEROAD` | WineDirect, Inc. | 88669722 / **6229505** | 035 | Online advertising and marketing services in the field of wine and alcoholic beverages | **LIVE** |
+| `SIDEROADONE.COM` | Side Road One.com, Inc. | 76104340 | 035, 042 | Online promotion of others' goods | Abandoned |
+| `SIDEROADS` | WHAS, Inc. (Kentucky) | 73172966 / 1123018 | 041 | Television programmes of human-interest stories | Cancelled |
+
+The one live mark is wine marketing in class 35 — about as far from a driving
+app as the register goes.
+
+`wordmarkPseudoText:"SIDE ROAD"` returns 7, and all seven are substring noise:
+`WESTSIDE ROAD NEIGHBORS` and `EASTSIDE ROAD NEIGHBORS` (wines), `WESTSIDE ROAD
+OLIVE OIL COMPANY`, `EZ ROADSIDE`, `CIDE ROAD ORGANIC SWITCHEL`. The string
+"sideroad" sits inside "westside road" and "roadside". None is a mark for side
+roads.
+
+**The `SIDE-` prefix family is electronics, not travel.** 59 live `SIDE-` marks
+in classes 9 and 39, and the ones in class 9 are `SIDETRACK` (Audio-Technica,
+audio transmitter units) and four separate `SIDEKICK` registrations — Borland's
+1984 computer-programs mark is still live, plus industrial sensors, a personal
+emergency response system, and telephone line testing equipment. Nothing in
+navigation or travel. This is the check that found Bushnell's `BACKTRACK` for
+Backway in §12; for Sideroad it comes back empty.
+
+### Common-law signals *(separate from the register above)*
+
+- **`Sideroads`** (plural) — `sideroads.app`, registered 2018-11-16, a WordPress
+  site for *"the definitive trip planning and trip companion app for the
+  obsessive trip planner."* **Windows and Android only — not iOS.** Itinerary
+  planning rather than scenic scoring, so the products differ, but it is the
+  nearest live user of the name and the first thing to put in front of an
+  attorney. One detail worth recording: its Google Play package identifier is
+  **`com.backroads.android`** — the app was called Backroads before it was called
+  Sideroads. Somebody else hit the §7 problem and solved it the same way.
+- **`sideroad.com`** — "The Sideroad: Your Road to Expert Advice", a
+  business-advice publisher running since 1997, self-reporting ~160,000 visitors
+  a month. Unrelated field, nothing objectionable. **Direct retrieval failed —
+  Cloudflare blocks this machine — so that characterisation is from the site's
+  own published pages via search and is a secondary read, labelled as one.**
+- **App Store, 2026-09-20: zero.** No app named `sideroad`, `sideroads` or `side
+  road`, across three separate queries.
+- `thesideroad.com` registered 2025-07-07 (Gandi) — **could not be retrieved from
+  this machine.**
+
+### Domains
+
+**`sideroad.app`, `sideroadapp.com` and `sideroad.co` are all unregistered.**
+`sideroads.app` is the trip-planner above. `sideroad.com` and `sideroads.com`
+have both been held since 1997.
+
+### The honest weakness
+
+"Side road" is ordinary English for a minor road off a main one. For an app that
+routes you onto minor roads, that is suggestive drifting toward descriptive —
+registrable, but a weaker mark than a coined compound like Longcut, and easier
+for a competitor to use in their own copy. It is the same trade `Backway` makes
+and a slightly worse version of it.
+
+### Verdict
+
+**No knockout blocker found — proceed to professional clearance.**
+
+Two questions for the attorney: the rights held by the **Sideroads** trip-planner
+(plural, non-iOS, in use since at least 2018), and whether "side road" is too
+descriptive of the goods to register on the Principal Register without a fight.
+
+### The three survivors, side by side
+
+| | Register | Nearest live risk | Common law | `.com` | `.app` |
+| --- | --- | --- | --- | --- | --- |
+| **Longcut** | 0 with the token; 49 two-word `LONG CUT`, all class 34 | `LONGCAT`, class 9 | Nothing found | Parked lander | Taken |
+| **Backway** | **0**, any class, any status | **`BACKTRACK`, Bushnell, class 9, GPS navigation** | Dormant 2012 nav app; a shipment marketplace | **Adult site** | **Free** |
+| **Sideroad** | 3 ever; 1 live, class 35 wine advertising | None in 9/39/42 by any route | `Sideroads` trip-planner, Windows/Android | Business-advice publisher | **Free** |
+
+All three reach the same verdict and the differences are in what surrounds them,
+not in whether they are blocked. That is the point at which a knockout screen has
+done its job and the remaining question belongs to a professional.
 
 ---
 
