@@ -72,6 +72,7 @@ arm* — and in `route-census/`, where it is a column value in published data.
 | [reroute-audit.md](reroute-audit.md) | Five findings on the reroute path, four fixed. Three items still open, listed at the end |
 | [reroute-step-offset.md](reroute-step-offset.md) | The banner skipping the first turn of every reroute. Fixed; two items still open |
 | [consumer-polish-brief.md](consumer-polish-brief.md) | Eight defects found by driving the app. Four since fixed — the table at the top says which |
+| [ui-redesign-brief.md](ui-redesign-brief.md) → [ui-redesign.md](ui-redesign.md) | `branding-brainstorm.md` §4–§6 triaged against the new name, with the copy layer specified `file:line` so it can be applied without re-deciding. §4 survives and is still unshipped; §5 is Longcut's voice and is dead; §6's colour shipped with the rename. **The one disagreement: §4's "highest-value copy change" cannot be applied as specified** — §3.3 says why, and answers it with a deletion |
 
 ## Region and build
 
