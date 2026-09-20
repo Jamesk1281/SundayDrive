@@ -67,10 +67,12 @@ counsel.
 > with no `CodingKeys`, so renaming it would break every deployed client as a
 > nil route at run time. See `rename-to-victory-lap-brief.md`.
 >
-> **§4–§6 have since been triaged item by item in
-> [`ui-redesign.md`](ui-redesign.md)**, which is where §7.7 above is specified
-> well enough to apply. Four things in the body below do not survive that triage,
-> beyond the §5 and `Color.scenic` corrections already noted:
+> **§4–§6 were triaged item by item in `ui-redesign.md`, which the owner deleted
+> on 2026-09-20** in favour of a clean-sheet design,
+> [`interface-design.md`](interface-design.md) — whose §14 carries the surviving
+> conclusions and §13.3 the best of the reasoning. (The triage itself is in git at
+> `1ed7d97`.) Four things in the body below do not survive it, beyond the §5 and
+> `Color.scenic` corrections already noted:
 >
 > - **§4's "Nowhere" is dead** — not because of the new name, which it is
 >   independent of, but because it contradicts the subtitle the owner chose the
