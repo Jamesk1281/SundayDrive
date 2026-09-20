@@ -55,7 +55,13 @@ brand identifiers
   SCENIC_* environment occurrences              88
   .scenic  (Swift colour token, ios/Sources)    34
   PRODUCT_BUNDLE_IDENTIFIER lines                2
+  .scenic  (routing-arm accessor)               34   ← NOT brand. see correction below
 ```
+
+**The ~121 figure in this brief counted those 34 as brand. It should not have.
+The true brand-identifier count is closer to ~90**, almost all of it the
+`SCENIC_*` prefix. Treat every count here as a measurement to re-take, not a
+target to hit.
 
 Reproduce with:
 
@@ -75,7 +81,22 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 - `ios/project.yml:66` `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo`
 - `ios/project.yml:101` `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo.tests`
 - `ios/Sources/ScenicApp.swift` — the struct **and** the filename
-- `Color.scenic` and the other `.scenic` tokens (34 in `ios/Sources/`)
+- ~~`Color.scenic` and the other `.scenic` tokens (34 in `ios/Sources/`)~~
+  **CORRECTION, 2026-09-20 — this line was wrong and it is the dangerous kind of
+  wrong.** There is no `Color.scenic`. `ios/Sources/Theme.swift:10` already reads
+  `static let brand = Color(red: 0.22, green: 0.83, blue: 0.62)` — the colour was
+  named for the app, not the arm, before this rename started. **All 34 `.scenic`
+  hits are the routing-arm accessor** — `response.scenic`, `miles.scenic`,
+  `model.response?.scenic.coordinates` — at `ContentView.swift:48,84,116,122`,
+  `NavigationModel.swift:1266`, `RoutePanel.swift:542`, and
+  `RouteResults.swift:10,106,134,180,191`.
+  **They are the API contract and they must not be renamed.** `server/app.py:8`
+  documents the response as `{"fastest": …, "scenic": <GeoJSON Feature>}` and
+  `ios/Sources/Models.swift:12` is `let scenic: RouteFeature`, decoded from that
+  key **by property name** — there are no `CodingKeys`. Renaming the Swift
+  property silently breaks decoding against every deployed server. This is the
+  same "it names the arm, not the brand" rule as Trap 2, and the identifier list
+  above originally contradicted the trap that protects it.
 - the `SCENIC_*` env prefix (88): `SCENIC_API`, `_DATA`, `_DEMO`, `_HOST`,
   `_PBF`, `_REGION`, `_TRACES`
 - the `ScenicAPIBaseURL` Info.plist key, whose call sites outside
