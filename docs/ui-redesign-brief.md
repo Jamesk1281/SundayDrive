@@ -70,14 +70,17 @@ back where you started."*), and `RoutePanel.swift:484` (`scenery strength`).
 
 ## Traps
 
-**1. Touch no file under `ios/`, and no asset.** The rename is *running* —
-`claude/rename-to-victory-lap` exists and is rewriting `project.yml`,
-`ScenicApp.swift`, the `SCENIC_*` prefix and every one of the 19 test files. A
-redesign touches `RoutePanel`, `NavView`, `RouteResults`, `LoopPanel`,
-`ContentView` — all of them in its path. **Write one markdown file.**
+**1. Touch no file under `ios/`, and no asset — but not for the reason first
+given here.** This brief originally said the rename was still running. **It has
+since merged** (`b90f858`, `8e53ec9`), so the collision argument is spent. The
+scope is still proposal-only, for two better reasons: the icon needs a human
+illustrator to be ownable at all (Trap 6), and the largest interface change —
+the `MKMapView` attribution refactor — already has an owner and carries a
+product decision that is not yours (Trap 5). **Write one markdown file.**
 
-**2. Do not propose renaming anything `.scenic` in Swift.** All 34 occurrences
-are the **routing-arm accessor** (`response.scenic`, `miles.scenic`) and they are
+**2. Do not propose renaming anything `.scenic` in Swift.** The ~11 that survive
+on `main` today are all the **routing-arm accessor** (`response.scenic`,
+`miles.scenic`) and they are
 the client half of the API contract: `server/app.py:8` documents the response as
 `{"fastest": …, "scenic": …}` and `Models.swift:12` decodes it **by property
 name**, with no `CodingKeys`. Renaming them breaks decoding at runtime with no
@@ -85,12 +88,16 @@ compile error. The same rule governs the *visible* strings: `RoutePanel.swift:47
 and `RouteResults.swift:18` say "Scenic" because they name the **arm**, not the
 app. `RoutePanel.swift:298` is the brand and is the rename's business, not yours.
 
-**3. §6's colour recommendation is already done — do not propose it again.**
-It says `Color.scenic = rgb(0.22, 0.83, 0.62)`, "rename the *symbol* with the
-app; keep the *value*." `Theme.swift:10` already reads
-`static let brand = Color(red: 0.22, green: 0.83, blue: 0.62)`, with a comment
-saying it is named for the app rather than the arm on purpose. Keep the value —
-§6 is right that it is the only brand equity the project has.
+**3. §6's colour recommendation is done — do not propose it again.** It says
+`Color.scenic = rgb(0.22, 0.83, 0.62)`, "rename the *symbol* with the app; keep
+the *value*." `Theme.swift` now reads
+`static let brand = Color(red: 0.22, green: 0.83, blue: 0.62)`. **Correction to
+an earlier draft of this brief:** that was not pre-existing — `Color.scenic` did
+exist, at `897dbe7:ios/Sources/Theme.swift:6`, and the rename carried out §6's
+instruction exactly. Of the 34 pre-rename `.scenic` hits, **21 were colour uses
+(renamed), 2 were dispatch-queue labels (renamed), and 11 were routing-arm
+accessors (deliberately untouched)**. Keep the value — §6 is right that it is the
+only brand equity the project has.
 
 **4. One of §5's premises is now false, and it cuts in your favour.** §5 says not
 to overclaim "because the scoring has never been validated against a human (the
