@@ -72,23 +72,27 @@ enum DataSources {
 
     /// The route-guidance notice, **verbatim and non-negotiable**.
     ///
-    /// Apple Developer Program License Agreement §3.3.15: "For Applications that
-    /// use location-based APIs for real-time navigation (including, but not
-    /// limited to, turn-by-turn route guidance and other routing that is enabled
-    /// through the use of a sensor), You must have an end-user license agreement
-    /// that includes the following notice: ..." — and this string is that notice.
+    /// Apple Developer Program License Agreement §3.3.3(F)(iii) — "Data and
+    /// Privacy" → F. "Location and Maps; User Consents" → (iii): "For
+    /// Applications that use location-based APIs for real-time navigation
+    /// (including, but not limited to, turn-by-turn route guidance and other
+    /// routing that is enabled through the use of a sensor), You must have an
+    /// end user license agreement that includes the following notice: ..." —
+    /// and this string is that notice.
     /// `NavigationModel` drives turn-by-turn guidance from `CoreLocation` fixes
     /// and `VoiceGuide` speaks them, so the clause applies squarely.
     ///
     /// **Do not reword, sentence-case, or soften this.** It is a fixed string in
     /// a contract, capitals included.
     ///
-    /// Showing it here does **not** by itself discharge §3.3.15, which asks for
-    /// an *end-user licence agreement*: a custom EULA carrying this text still
-    /// has to be filed in App Store Connect before submission (Apple's default
-    /// Licensed Application EULA does not contain it). It is in the app as well
-    /// because the person it protects is driving, and a clause filed on a
-    /// website they never read protects nobody. See `docs/legal-and-ip-audit.md`.
+    /// Showing it here does **not** by itself discharge §3.3.3(F)(iii), which
+    /// asks for an *end user licence agreement*: a custom EULA carrying this
+    /// text still has to be filed in App Store Connect before submission
+    /// (Apple's default Licensed Application EULA does not contain it). The
+    /// text to paste is in `docs/app-store-submission.md`. It is in the app as
+    /// well because the person it protects is driving, and a clause filed on a
+    /// website they never read protects nobody. See
+    /// `docs/legal-and-ip-audit.md`.
     ///
     /// It is also true on the merits: this app deliberately routes drivers onto
     /// small rural roads, and `via`-way turn restrictions and lane guidance are

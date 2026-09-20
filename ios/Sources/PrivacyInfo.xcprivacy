@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Scenic's privacy manifest.
+
+  Required because the app calls a "required reason" API: `UserDefaults`, at six
+  call sites (VoiceCatalogue.swift:118,119,148,149 and VoiceGuide.swift:351,352).
+  The other four categories are absent from `ios/Sources` and are therefore not
+  declared: no file-timestamp call, no disk-space call, no active-keyboard call,
+  and no `systemUptime`/`mach_absolute_time` (the only `ProcessInfo` uses are
+  `.environment` lookups, which are not in the boot-time category).
+
+  Every declaration here has code behind it. The reasoning, including the one
+  judgement call — whether precise location counts as "collected" when it is
+  sent to the routing backend and not retained there — is written up in
+  `docs/app-store-submission.md`, and this file must be kept in step with the
+  App Store Connect nutrition label answers recorded in the same document.
+-->
+<plist version="1.0">
+<dict>
+    <!-- No tracking. No ad SDK, no analytics SDK, no IDFA, no ATT prompt, and
+         no third-party code of any kind ships in the binary — the app imports
+         only Apple frameworks (see docs/legal-and-ip-audit.md §1). -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array>
+        <dict>
+            <!-- Start and destination coordinates, and the driver's live
+                 position on a reroute, are sent to the routing backend as query
+                 parameters (RouteService.swift:136-146, :185-190). Declared
+                 because that transmission passes through a Cloudflare tunnel
+                 that terminates TLS and can log the URL; `server/app.py` itself
+                 stores and logs nothing. Drive traces are NOT the reason for
+                 this entry — they never leave the device, and on-device storage
+                 is not "collection" under Apple's definition. -->
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypePreciseLocation</string>
+            <!-- Not linked: no account, no login, no device or user identifier
+                 is sent with a route request. -->
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+    </array>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <!-- CA92.1 — "access info from same app, per documentation". Correct
+                 here because all three keys are the app reading back its own
+                 settings: the chosen voice, a speech-length cache, and the mute
+                 flag. Nothing is read from an app group or from another app. -->
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

@@ -11,6 +11,15 @@ and the privacy-policy obligations) turn on facts a professional has to clear.
 Everything else is a documented term of an agreement already signed by anyone
 holding an Apple developer account, checked against what the code does.
 
+> **Two corrections since, both from documents that checked this one's sources.**
+> `licensing-open-questions.md` (2026-09-19) verified every clause against the
+> current agreement: **§3.3.15 no longer exists** and the route-guidance
+> obligation is now **§3.3.3(F)(iii)** — corrected throughout below, the notice
+> string itself unchanged. And **item 3's in-app half shipped on 2026-09-19**;
+> item 6 (`PrivacyInfo.xcprivacy`) is **done** and item 4's policy is drafted.
+> See `app-store-submission.md` for what is genuinely left, and §2c before
+> touching the notice.
+
 **The headline: the data attribution that shipped on 2026-08-31 was the smaller
 half of the problem.** The larger half is Apple's, and the largest single item is
 the *name*.
@@ -23,7 +32,7 @@ the *name*.
 | --- | --- | --- | --- | --- |
 | 1 | **"Scenic" is taken by a senior direct competitor**, and is descriptive | **Rename before spending anything on brand** | App Store; TM doctrine | Rename |
 | 2 | Apple's map attribution is **obscured** by the planning sheet | **Confirmed breach, unfixed** | ADPLA Att. 6 §2.1 | ~150 lines (UIKit wrapper) |
-| 3 | **No EULA** carrying the required route-guidance notice | **Confirmed gap** | ADPLA §3.3.15 | ~1 hour |
+| 3 | **No EULA** carrying the required route-guidance notice | **Half closed** — the notice shipped in-app on 2026-09-19; the App Store Connect EULA field is still open | ADPLA §3.3.3(F)(iii) | ~1 hour |
 | 4 | **No privacy policy URL** — a hard App Store submission gate | Confirmed missing | App Store Connect | ~2 hours |
 | 5 | Drive traces **persist Apple-derived coordinates** | Technically engaged, low enforcement risk | ADPLA Att. 6 §2.5 | ~20 lines |
 | 6 | No `PrivacyInfo.xcprivacy` | Known, already recorded | Apple submission rule | ~1 hour |
@@ -68,8 +77,12 @@ verbatim from the executed ADPLA text filed with the SEC by a licensee
 cross-checked for current numbering against Apple's own
 [Program agreements page](https://developer.apple.com/support/terms/apple-developer-program-license-agreement/).
 **Verify exact wording against the current PDF before relying on it** — the
-clause *numbering* (Attachment 6, §2.1–2.7, §3.3.15) is stable across both, but
-the text I quote is from the 2020/21 execution.
+text I quote is from the 2020/21 execution. That verification has since been
+done, in `docs/licensing-open-questions.md`: the Attachment 6 numbering
+(§2.1–2.7) held, but **§3.3.15 did not** — §3.3 was restructured into eleven
+thematic subsections and the route-guidance clause is now **§3.3.3(F)(iii)**.
+The required notice string is byte-for-byte unchanged. Citations below have been
+corrected; the clause numbers are the only thing that moved.
 
 The definition that makes several of these bite:
 
@@ -80,7 +93,7 @@ The definition that makes several of these bite:
 
 ### 2a. The good news: Scenic's core architecture is expressly permitted
 
-§3.3.15 opens by contemplating exactly what this app does:
+§3.3.3(F)(iii) opens by contemplating exactly what this app does:
 
 > If You choose to provide Your own location-based service, data and/or
 > information in conjunction with the Apple maps provided through the Apple Maps
@@ -136,7 +149,15 @@ off-screen with the map at full sheet height, which is the strongest precedent t
 follow — but it means the honest answer is "visible whenever the map is
 meaningfully visible", not "always".
 
-### 2c. §3.3.15 — the missing EULA notice (item 3)
+### 2c. §3.3.3(F)(iii) — the EULA notice (item 3)
+
+> **Update, 2026-09-19: the in-app half of this is done.** The notice is in
+> `ios/Sources/AboutView.swift:100-102`, rendered at `:233`, one tap from the
+> main screen via `RoutePanel.swift:250`, and asserted character-for-character
+> in `ios/Tests/AttributionTests.swift:149-154` with an uppercase guard at
+> `:158-163`. **Do not add it again** — a second copy breaks a test that asserts
+> there is exactly one. What remains is the App Store Connect field; the
+> paste-ready text is in `docs/app-store-submission.md` §1.
 
 The same clause continues:
 
@@ -156,7 +177,8 @@ This is the cheapest item on the list with the clearest text. Two routes:
 
 1. Rely on Apple's **standard EULA** (the "Licensed Application End User License
    Agreement"), which App Store apps get by default — but that standard document
-   does **not** contain this notice, so it does not discharge §3.3.15 on its own.
+   does **not** contain this notice, so it does not discharge §3.3.3(F)(iii) on
+   its own.
 2. Supply a **custom EULA** in App Store Connect containing the notice verbatim,
    and — because a driver should actually see it — surface the sentence in-app.
    The "Data sources" sheet added in 41cbae7 is the natural home; it is already
@@ -349,9 +371,10 @@ in `branding-brainstorm.md`.
 1. **Stop using "Scenic" in anything public-facing** until the name is settled.
    Costs nothing today; costs a rename of bundle ID, domain, App Store listing
    and any built audience later. → `branding-brainstorm.md`
-2. **Write the EULA notice** (§3.3.15). One paragraph, verbatim string, into App
-   Store Connect and the "Data sources" sheet. Cheapest item, clearest text, and
-   defensible on safety grounds alone.
+2. ~~**Write the EULA notice** (§3.3.3(F)(iii)). One paragraph, verbatim string,
+   into App Store Connect and the "Data sources" sheet.~~ **Done in the app on
+   2026-09-19**; the App Store Connect half is in
+   `docs/app-store-submission.md` §1.
 3. **Draft the privacy policy** and host it. Most of its content is already true
    and good: on-device traces, no server-side storage, no tracking, no ads.
 4. **Fix the Apple attribution** (§2.1) via `MKMapView` + `layoutMargins`, and
