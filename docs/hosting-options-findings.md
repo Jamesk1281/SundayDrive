@@ -10,6 +10,19 @@ they were cheap to check they held: `graph_nodes.parquet` is 794,685 rows and
 `graph_edges.parquet` is 998,252, exactly as stated, and the five serving files
 are 364 MiB = **382 MB**, also as stated.
 
+> **Re-checked 2026-09-19 in
+> [hosting-status-2026-09.md](hosting-status-2026-09.md). The verdict, the
+> runbook and the four dated provider facts all survive; one number does not.**
+> Every figure below that reads **3.53 GB** is an under-read — the `Router` peak
+> measures **4.39 GB** on current `main` and **4.24 GB** on `efbbd28` itself
+> today, so it is the reading that moved, not A\*. Two consequences: the
+> headroom claimed over the measured peak is ~3.2 GB, not 4.5 GB, and the
+> "around two workers" ceiling in
+> [Early-stage capacity](#early-stage-capacity-volume-is-fine-simultaneity-is-the-constraint)
+> is now **one** — 8 GB does not hold two 4.4 GB processes. 8 GB remains the
+> right size, with more margin against idle reclamation than this document
+> claimed.
+
 ---
 
 ## Final verdict
@@ -819,6 +832,13 @@ SLA**, which is worth being clear-eyed about — but neither does a laptop.
 Everything below runs after you have an A1 instance and its public IP. Steps 1–2
 are console work; the rest is copy-paste. Nothing here was executed — **no
 account exists and nothing was provisioned.**
+
+> **The follow-along version is [`server/DEPLOY-oracle.md`](../server/DEPLOY-oracle.md)**
+> (2026-09-19). Same twelve steps, expanded with the prerequisites this summary
+> assumes: pushing `main` first (the remote was 36 commits behind when that was
+> written), making an SSH key, the tunnel credentials that exist only on the
+> Windows laptop, and rollback. It also corrects step 7's "expect 207 passed" —
+> the suite is 379 tests now — and step 12's sizing figures.
 
 ### 1. Sign up and choose the home region — the one irreversible click
 
