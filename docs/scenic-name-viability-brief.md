@@ -1,5 +1,21 @@
 # Is "Scenic" usable after all, and is any variation of it?
 
+> **Answered in [`scenic-name-viability-findings.md`](scenic-name-viability-findings.md)
+> (2026-09-20). Nothing was renamed.** Both bars: **the bare word is blocked**,
+> and so are nine of the thirteen variations screened. §3a is closed — serial
+> 79431580 has **not** moved (status date 2026-07-16), and the reason matters
+> more than the fact: its only maintained ground is a **§2(e)(1) "merely
+> descriptive" refusal**, now issued twice, so the word fails for the applicant
+> the same way it would fail for this project. §3b is closed too, and the
+> structural hypothesis in it was right — every variation that still reads as
+> "scenic" is blocked, and the four that survive (Scenix, Scenica, Skenic,
+> Skene) survive by no longer reading as "scenic" at all. Two of the brief's own
+> figures are corrected there: the App Store count is **≥29, not 25** (§6), and
+> "the definite article is the only part nobody has taken" is **false on the
+> register** — `THE SCENIC ROUTE` is a live class 9 registration (§7.2). Read
+> the findings first; the state described below is as of the day the question
+> was asked.
+
 **Status: commissioned 2026-09-20 against `main` at `d11344d`. Nothing has been
 renamed, filed, bought or reserved by this brief, and this task must not rename
 anything either** — the deliverable is two documents and a verdict per
