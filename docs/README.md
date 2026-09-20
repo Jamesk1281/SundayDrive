@@ -75,6 +75,7 @@ first — the body below it is a historical record, not a description of today.
 
 | doc | |
 | --- | --- |
+| [release-plan-brief.md](release-plan-brief.md) → [release-plan.md](release-plan.md) | **Start here for anything about shipping.** The sequence the rest of this section does not contain: the membership gate, the three owner decisions priced by what deferring them costs, and why the order is set by external lead times rather than by irreversibility. Records two items believed open that are already done |
 | [hosting-options-brief.md](hosting-options-brief.md) → [hosting-options-findings.md](hosting-options-findings.md) | Where the API should live, and whether it can be free. Three figures in the brief were refuted by the findings and are marked there |
 | [legal-and-ip-audit.md](legal-and-ip-audit.md) | What the app owes, and to whom |
 | [licensing-and-attribution-brief.md](licensing-and-attribution-brief.md) | The credit strings and where they came from |
