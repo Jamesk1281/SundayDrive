@@ -3,7 +3,8 @@
 **Status: screened 2026-09-19 against `main` at `2d6fbc0`. Nothing was filed,
 bought or reserved. Three of the original four candidates are knocked out —
 Camber on the register, Aimless and Detourist on common-law use. Longcut
-survives every leg, and so do Backway (§12) and Sideroad (§13).**
+survives every leg, and so do Backway (§12) and Sideroad (§13). Sunday
+Drive (§14) is blocked.**
 
 Answers [`trademark-knockout-brief.md`](trademark-knockout-brief.md). Corrects
 three rows of [`branding-brainstorm.md`](branding-brainstorm.md) §3 and settles
@@ -79,6 +80,7 @@ came from there.
 | **Aimless** | One live pending application, IC 042, different field | ***Aimless Drives*** — App Store, **Navigation**, same feature, live since 2026-09-02 | **Blocked, drop it** |
 | **Detourist** | Ten filings, **all dead** | `detourist.app` — live travel app for road trippers, since 2026-08-01 | **Blocked, drop it** |
 | **Camber** | **`CAMBER` reg. 7205668, live, IC 009 "downloadable mobile applications for providing travel information, planning…"** | `camberplaces.com`, live product | **Blocked, drop it** |
+| **Sunday Drive** *(§14)* | Zero live in 9/39/42 — but two live automotive registrations next door, and a class 9 application for this exact product, abandoned | Operating car dealership on the exact-match `.com`; a second automotive app already using the name | **Blocked, drop it** |
 | **Sideroad** *(§13)* | 3 marks ever contain the string; 1 live, class 35 wine advertising | `Sideroads` trip-planner on Windows/Android; App Store empty | **No knockout blocker found — proceed to professional clearance** |
 | **Backway** *(§12)* | **Zero** marks contain the token, any class, any status | Two dormant/unrelated apps; the `.com` is in other use | **No knockout blocker found — proceed to professional clearance** |
 
@@ -715,6 +717,104 @@ descriptive of the goods to register on the Principal Register without a fight.
 All three reach the same verdict and the differences are in what surrounds them,
 not in whether they are blocked. That is the point at which a knockout screen has
 done its job and the remaining question belongs to a professional.
+
+---
+
+## 14. Sunday Drive — added 2026-09-20, screened to the same depth
+
+The plainest phrase in American English for what this app is for, which turns
+out to be the problem.
+
+### Register — clean in the classes that matter, crowded next door
+
+Controls: `*scenic*` → 417, `*drive*` → 18,434.
+
+| Query | Hits |
+| --- | --- |
+| `wordmark:*sundaydrive*` — one word, substring | 1 |
+| `wordmark:"SUNDAY DRIVE"` — all classes, all statuses | 11 |
+| `wordmark:"SUNDAY DRIVER"` | 11 |
+| `wordmarkPseudoText:"SUNDAY DRIVE"` | 0 |
+| **`wordmark:(SUNDAY AND DRIVE)` live in 9/39/42** | **0** |
+
+**Zero live marks in classes 9, 39 or 42.** On the exact-match test this passes.
+
+**The hit that matters is dead, and it is the most on-the-nose result in this
+entire document:**
+
+| Mark | Owner | Serial | Class | Goods | Status |
+| --- | --- | --- | --- | --- | --- |
+| `SUNDAY DRIVE` | Sunday Drive, LLC | 77812622 | **009** | **"App which details iconic 'Sunday Drives' throughout America."** | **Abandoned** |
+
+Someone filed this exact name, in this exact class, for approximately this
+exact product. It died — the prosecution history is not retrievable from here,
+so **why it died cannot be determined from public sources.** Trap 4 applies in
+full: abandonment removed the application, not whatever rights the use created.
+
+**The live marks cluster in automotive, one class away:**
+
+| Mark | Owner | Reg. | Class | Goods |
+| --- | --- | --- | --- | --- |
+| `SUNDAY DRIVE` | Tomlinson, Jr., John D. | **7214321** | 035, 037 | Automobile dealerships; providing information about new and used automobiles for sale via the internet |
+| `SUNDAY DRIVE` | Tomlinson, Jr., John D. | **6979596** | **041** | **Providing entertainment information in the field of automobiles via a global computer network** |
+| `SUNDAY DRIVE` | SIRIUS XM RADIO LLC | 50004613 (pending) | 041 | Sports programming |
+| `SUNDAY DRIVE` | Mother Road Brewing | 5998225 | 032 | Beer |
+| `SUNDAY DRIVE` | Treece, Jeffrey | 3817920 | 041 | Live musical performances |
+| `SUNDAY DRIVE CAR CARE` | Sunday Drive, LLC | pending | 003, 007, 021, 024 | Car washing mitts, microfibre towels, automobile products |
+
+Reg. 6979596 is the one to look at twice: automotive information delivered over
+a network, which is not far from an app about driving.
+
+**On descriptiveness, the register gives a real answer.** No `SUNDAY DRIVE` mark
+sits on the Supplemental Register and none disclaims the phrase, so the USPTO has
+registered it as inherently distinctive — for beer, for a band, for a car
+dealership. The phrase is not treated as descriptive *in those fields*. For
+software whose purpose is planning a Sunday drive it would be closer to the line,
+and the one class 9 attempt was abandoned before that question was settled.
+
+### Common-law signals *(separate from the register above)*
+
+- **`sundaydrive.com` is an operating car dealership.** "Sunday Drive", St
+  Augustine, Florida — Tomlinson Motor Company's second dealership, matching the
+  two registrations above. A live automotive consumer brand on the exact-match
+  domain.
+- **"The Sunday Drive" is already an app** — Orange Coast Media LLC, Amazon
+  Appstore, automotive shows and racing content.
+- `sundaydrive.co.nz` — "We Sell Cool Cars", a New Zealand car dealer.
+- `sundaydrives.com` — a shut Shopify store (HTTP 402).
+- **App Store: zero.** No iOS app named Sunday Drive under any spelling.
+- `sundaydriveapp.com` was registered 2025-08-11 and `thesundaydrive.com` in
+  2014; **neither could be retrieved from this machine.**
+- Wikipedia carries entries for *Sunday drive* the activity, *Sunday Drive*, and
+  *Sunday Drive (film)*.
+
+### Domains
+
+`sundaydrive.com`, `.app`, `sundaydrives.com`, `thesundaydrive.com` and
+`sundaydriveapp.com` are **all taken**. Only `sundaydrive.co` is free. This is
+the worst domain position of any candidate screened.
+
+### Verdict
+
+**Blocked, drop it.**
+
+Stated so it can be overruled, because the register alone would not support it:
+there is **no live mark in classes 9, 39 or 42**, and an attorney might well
+conclude a Florida used-car dealership and a scenic routing app can coexist.
+
+What makes it a drop at the knockout stage is the accumulation, all of it in or
+beside the automotive field: two live federal registrations held by an operating
+car brand, one of them for automotive information delivered over a network; that
+brand holding the exact-match `.com`; a second automotive app already using the
+name; every sensible domain gone; and a prior application for this precise
+product abandoned for reasons nobody here can determine.
+
+**And the reason it is crowded is the reason it appealed.** "Sunday drive" is the
+plainest phrase in American English for driving with no destination — which is
+why a dealership, a brewery, a band, a film, a New Zealand car dealer and
+SiriusXM all reached for it. The plainest phrase is common property. That is the
+same lesson as §7's Scenic Route, one notch milder: a name everybody already uses
+is not available to be owned, however ordinary and however right it sounds.
 
 ---
 
