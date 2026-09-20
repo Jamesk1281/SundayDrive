@@ -4,7 +4,9 @@
 'privacy polic'` finds no URL in `ios/`, and App Store Connect has never been
 given one. The app itself is `PRODUCT_BUNDLE_IDENTIFIER: app.victorylap` at
 `MARKETING_VERSION: "0.1"` (`ios/project.yml:66`, `:74`) — the identifier
-changed with the 2026-09-20 rename and is **not** final until first submission.
+changed with the 2026-09-20 rename and is **not** final — it locks at the
+first build upload, TestFlight included, not at submission
+(`docs/app-store-submission.md` §6). Nothing has been uploaded.
 
 > **This is a draft for review. It is not published anywhere, it is not linked
 > from the app, and it is not the policy URL that App Store Connect asks for.**

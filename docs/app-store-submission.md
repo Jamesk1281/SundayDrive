@@ -253,10 +253,24 @@ code fact.)*
 
 These are still development values and are wrong for a submission
 (`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.victorylap`
-(renamed 2026-09-20, **still provisional** until first submission),
+(renamed 2026-09-20, **still provisional — see the gate below**),
 marketing version `0.1`, build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
-deployment target iOS 17.0. **Each is an owner decision**, and the bundle
-identifier in particular cannot be changed after first submission.
+deployment target iOS 17.0. **Each is an owner decision.**
+
+**The bundle identifier locks at the first build *upload*, not at submission.**
+App Store Connect Help → Reference → App information states it directly: the
+bundle ID is a property you *"can't change … after you upload a build."*
+**A TestFlight build is an upload.** An earlier version of this section said
+"cannot be changed after first submission", which implies a window that runs
+up to App Review; the real one closes the first time a binary is pushed.
+Nothing has been uploaded, so the window is open — but confirm the identifier
+before the first TestFlight build, not before the first submission.
+
+Two more from the same reference, worth knowing here because neither is
+recoverable either: the **SKU** *"can't be changed after you add the app to
+your account"*, and the numeric **Apple ID** is generated and never editable.
+The **app name**, by contrast, is *not* permanent — editable until submission
+and changeable with any later version.
 
 Note that publishing the app publishes `api.jameskouvlis.com` — the backend URL
 is baked into the bundle and readable by anyone who unpacks it. That is already
