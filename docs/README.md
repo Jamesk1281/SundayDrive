@@ -77,6 +77,7 @@ first — the body below it is a historical record, not a description of today.
 | --- | --- |
 | [hosting-options-brief.md](hosting-options-brief.md) → [hosting-options-findings.md](hosting-options-findings.md) | Where the API should live, and whether it can be free. Three figures in the brief were refuted by the findings and are marked there |
 | [hosting-refresh-brief.md](hosting-refresh-brief.md) → [hosting-status-2026-09.md](hosting-status-2026-09.md) | The 2026-09-19 re-check of the four dated provider facts and the sizing measurement A\* invalidated. **Verdict unchanged**; the findings' 3.53 GB is superseded by a measured 4.4 GB |
+| [../server/DEPLOY-oracle.md](../server/DEPLOY-oracle.md) | **How to actually build the Oracle box**, sign-up to cutover to rollback. Not a study — a tutorial, and the only document here you follow rather than read |
 | [legal-and-ip-audit.md](legal-and-ip-audit.md) | What the app owes, and to whom |
 | [licensing-and-attribution-brief.md](licensing-and-attribution-brief.md) | The credit strings and where they came from |
 | [licensing-open-questions-brief.md](licensing-open-questions-brief.md) → [licensing-open-questions.md](licensing-open-questions.md) | The three questions the audit did not answer, and now **resolved** — §1a chose Apache-2.0 (`LICENSE`, `NOTICE`), §1b's ODbL claim on `route-census/` is discharged. The commit email and the Gap 2 Apple clauses are still open |

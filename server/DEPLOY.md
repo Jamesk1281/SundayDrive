@@ -331,6 +331,11 @@ and the June 2026 rises put a US box that clears 8 GB at ~€62/mo. Contabo is
 Cloud Always Free (Ampere A1, 2 OCPU / 8 GB, **$0**) as the primary, with Contabo
 as the paid exit if Oracle's free-tier terms move again.
 
+**To actually build that box, follow [DEPLOY-oracle.md](DEPLOY-oracle.md)** —
+the end-to-end tutorial, from sign-up to cutover to rollback, including the two
+prerequisites that are Mac-side and the tunnel credentials that only exist on
+the laptop.
+
 ## Option D — No Cloudflare
 
 - **Tailscale**: `tailscale serve --bg http://localhost:5057` publishes it over
