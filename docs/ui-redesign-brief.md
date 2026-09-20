@@ -1,9 +1,10 @@
 # UI and copy for Victory Lap — propose it, change no Swift
 
-**Status: scoped 2026-09-20 against `main` at `897dbe7`, nothing changed and
-nothing may be changed.** No Swift file, no asset, no string. **A rename is
-running right now across the entire iOS target** (`claude/rename-to-victory-lap`)
-— see Trap 1. The deliverable is one document.
+**Status: scoped 2026-09-20, revised after the rename merged (`main` at
+`8e53ec9`). Nothing changed and nothing may be changed.** No Swift file, no
+asset, no string — the deliverable is one document. See Trap 1 for why the scope
+is proposal-only; the original reason (a rename in flight) no longer applies, and
+two better ones do.
 
 **The finding that makes this worth a session: a UI copy redesign was already
 written, and none of it shipped.** `docs/branding-brainstorm.md` §4–§6 specifies
@@ -15,7 +16,7 @@ today:
 | "good miles" instead of "mi beautiful" | **0 files** — `RouteResults.swift:103,106` still emit `"\(…) mi beautiful"` |
 | Loop mode renamed **Nowhere** | **0 files** — it is still "Loop" |
 | State the trade, not the setting | **not done** — `RoutePanel.swift:484` still reads `Text("scenery strength \(prefPosition…))` |
-| Keep the green, rename the symbol (§6) | **already done** — `Theme.swift:10` is `static let brand`, see Trap 3 |
+| Keep the green, rename the symbol (§6) | **done by the rename** — `Theme.swift` is now `static let brand`, see Trap 3 |
 
 §4 calls the third of those "the single highest-value copy change in the app,"
 and it is a one-line change that has been sitting unmade for three weeks.
