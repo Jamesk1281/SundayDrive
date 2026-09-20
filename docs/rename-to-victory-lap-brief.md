@@ -53,7 +53,6 @@ case-insensitive "scenic", whole repo        3,168   across 118 files
   "scenic score|route|km|arm|byway|detour"     190   ← correct English, keep
 brand identifiers
   SCENIC_* environment occurrences              88
-  .scenic  (Swift colour token, ios/Sources)    34
   PRODUCT_BUNDLE_IDENTIFIER lines                2
   .scenic  (routing-arm accessor)               34   ← NOT brand. see correction below
 ```
@@ -108,8 +107,10 @@ git grep -o '\.scenic\b' -- 'ios/Sources/*.swift' | wc -l
 
 ## Traps
 
-**1. Never find-and-replace, in any casing.** 3,168 hits, of which about 121 are
-brand. The other ~3,047 are data and correct English. **Read every hit.** It is
+**1. Never find-and-replace, in any casing.** 3,168 hits, of which about **90**
+are brand (see the correction above — an earlier count said 121 and wrongly
+included the 34 routing-arm accessors). The other ~3,078 are data, API contract,
+and correct English. **Read every hit.** It is
 an afternoon; the alternative is unreviewable.
 
 **2. Capitalisation is not the discriminator, and `RoutePanel.swift` proves it
