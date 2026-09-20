@@ -1,6 +1,7 @@
 # What is in here
 
-Scenic scores every road in New England for beauty and routes across that score.
+Victory Lap scores every road in New England for beauty and routes across that
+score.
 Almost none of the numbers it uses are guesses — `BETA`, `CONTROL_SECONDS`,
 `SPEED_FACTOR`, `RELIEF_FULL`, `PREF_CURVE` and the scoring weights were each
 fitted against measured data, and **this directory is where those measurements
@@ -15,6 +16,14 @@ Everything here opens with a bold **Status:** line saying what state the tree wa
 in when it was written. Where a question has since been answered, the question
 document carries a blockquote at the top pointing at the answer. Read the pointer
 first — the body below it is a historical record, not a description of today.
+
+**The app was renamed from Scenic to Victory Lap on 2026-09-20**
+([`victory-lap-naming.md`](victory-lap-naming.md)), and the rename was applied
+to code, configuration and the currently-descriptive documents only. Everything
+here written before that date says "Scenic" and is left as written, for the
+reason in the paragraph above. The word also survives on purpose wherever it is
+the right English one — the *scenic route*, the *scenic score*, the *scenic
+arm* — and in `route-census/`, where it is a column value in published data.
 
 ---
 
@@ -82,6 +91,8 @@ first — the body below it is a historical record, not a description of today.
 | [odbl-repository-compliance-brief.md](odbl-repository-compliance-brief.md) | What §1b's finding took to close: the notice on `census-pairs.csv`, the heatmap credited, and the two things in the same blast radius. Its "no `LICENSE` file" instruction was overtaken by the §1a decision |
 | [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them |
 | [victory-lap-naming-brief.md](victory-lap-naming-brief.md) → [victory-lap-naming.md](victory-lap-naming.md) | "Victory Lap" put through the knockout screen, and the App Store listing it justifies. Survives the screen. The brief's "six Navigation/Travel apps named Scenic" is corrected to 25 — and the subtitle recommendation that followed from it was **overruled by the owner**, whose choice §6a records alongside the evidence against it. Companion to the four-name screen in `trademark-knockout-findings.md` |
+| [privacy-and-submission-brief.md](privacy-and-submission-brief.md) → [app-store-submission.md](app-store-submission.md) | The four things answered in App Store Connect and nowhere else: the custom EULA, the nutrition label, the policy URL, export compliance. **Read §1 before touching the route-guidance notice — it already shipped** |
+| [privacy-policy.md](privacy-policy.md) | **A draft, published nowhere, not cleared by a lawyer.** Every factual claim cites the file that makes it true; §7 lists what a lawyer has to clear and §8 what would make the document wrong |
 | [driving-app-features-brief.md](driving-app-features-brief.md) → [driving-app-features-cost.md](driving-app-features-cost.md) | Seven candidate features, costed. Neither document chooses what ships |
 | [documentation-structure-proposal.md](documentation-structure-proposal.md) | Why this directory is shaped the way it is, and what was done to it on 2026-09-19 |
 

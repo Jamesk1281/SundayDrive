@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// What the planning screen is holding once a drive is over.
 ///

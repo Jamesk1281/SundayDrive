@@ -1,6 +1,6 @@
 import AVFoundation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// Which voices get offered, and what choosing one does to the schedule.
 ///

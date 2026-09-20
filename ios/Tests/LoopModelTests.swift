@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// Loop-tab tests. Every one of these is a *sequence* of requests — which
 /// direction comes next, which of two overlapping responses wins, what stays on

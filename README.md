@@ -1,4 +1,4 @@
-# Scenic (working title)
+# Victory Lap
 
 Scenic-route navigation: pick a destination, get a route that's beautiful
 instead of fast. Every road in the six New England states is scored for beauty
@@ -89,20 +89,20 @@ Command-line equivalent:
 ```
 
 The iOS app (`ios/`, open in Xcode) reads its backend URL from the
-`ScenicAPIBaseURL` Info.plist key in `ios/project.yml`, overridable at runtime
-with a `SCENIC_API` environment variable.
+`VictoryLapAPIBaseURL` Info.plist key in `ios/project.yml`, overridable at
+runtime with a `VICTORYLAP_API` environment variable.
 
 ## Tests
 
 ```sh
-.venv/bin/python -m pytest tests/       # backend: 348 tests
-cd ios && xcodegen generate && xcodebuild test -project Scenic.xcodeproj \
-  -scheme Scenic -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+.venv/bin/python -m pytest tests/       # backend: 379 tests
+cd ios && xcodegen generate && xcodebuild test -project VictoryLap.xcodeproj \
+  -scheme VictoryLap -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 Geometry and scoring maths run anywhere; the calibration, routing and API tests
 need a built graph and skip cleanly without one — point them elsewhere with
-`SCENIC_DATA=/path/to/processed`. The iOS suite covers what a simulator can't
+`VICTORYLAP_DATA=/path/to/processed`. The iOS suite covers what a simulator can't
 exercise and a drive only tests once: where the driver is on the route, when a
 maneuver has been passed, which of two overlapping reroutes wins.
 
@@ -140,5 +140,9 @@ Two things the Apache licence does **not** cover:
 - **`docs/route-census/`** is a Derivative Database under
   [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/) and carries its own
   terms — see [`docs/route-census/README.md`](docs/route-census/README.md).
-- **The name.** Apache-2.0 §6 grants no rights to the project's names or marks,
-  and "Scenic" is a working title that is going to change.
+- **The name.** Apache-2.0 §6 grants no rights to the project's names or marks.
+  The app was named **Victory Lap** on 2026-09-20
+  ([`docs/victory-lap-naming.md`](docs/victory-lap-naming.md)); the repository,
+  the Cloudflare tunnel and `docs/scenic_heatmap.png` still carry the old
+  working title, and the word "scenic" remains the right one for the routing
+  arm, the score and the roads themselves.

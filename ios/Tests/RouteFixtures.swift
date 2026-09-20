@@ -1,6 +1,6 @@
 import CoreLocation
 import Foundation
-@testable import Scenic
+@testable import VictoryLap
 
 /// Routes built the way the app really gets them — decoded from the backend's
 /// JSON — so these tests exercise the decoding path too, and a field renamed on

@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The announcement latch against twelve real drives instead of four-maneuver
 /// fixtures.
@@ -17,7 +17,7 @@ import XCTest
 /// `DriveReplay.directory`.
 ///
 /// **Slow — around 70 s.** The cost is real map-matching against real
-/// polylines, tens of thousands of times. `-skip-testing:ScenicTests/DriveReplayTests`
+/// polylines, tens of thousands of times. `-skip-testing:VictoryLapTests/DriveReplayTests`
 /// while iterating on something else.
 ///
 /// **What this does not catch, checked rather than assumed.** Two mutations
@@ -49,7 +49,7 @@ final class DriveReplayTests: XCTestCase {
         try XCTSkipIf(drives.isEmpty,
                       "no traces/*.ndjson found. They are gitignored, being a record of "
                       + "where someone drove — copy them off a phone with `xcrun devicectl "
-                      + "device copy from`, or point SCENIC_TRACES at them.")
+                      + "device copy from`, or point VICTORYLAP_TRACES at them.")
         return drives
     }
 

@@ -8,10 +8,11 @@ enum RouteService {
 
     /// Where the backend lives, in order of precedence:
     ///
-    ///   1. `SCENIC_API` in the environment — for developing against a local
-    ///      server. Add it to the Run action in Xcode's scheme editor.
-    ///   2. `ScenicAPIBaseURL` from Info.plist — the deployed backend, baked
-    ///      into the bundle at build time (set in `ios/project.yml`).
+    ///   1. `VICTORYLAP_API` in the environment — for developing against a
+    ///      local server. Add it to the Run action in Xcode's scheme editor.
+    ///      The old `SCENIC_API` is still read as a fallback; see below.
+    ///   2. `VictoryLapAPIBaseURL` from Info.plist — the deployed backend,
+    ///      baked into the bundle at build time (set in `ios/project.yml`).
     ///   3. localhost, as a last resort.
     ///
     /// The Info.plist entry is what makes the app usable away from a Mac. An
@@ -20,12 +21,19 @@ enum RouteService {
     /// mid-drive — starts it with no environment at all. With only the env var,
     /// that silently fell back to localhost, i.e. the phone itself, and every
     /// request failed at the worst possible moment.
+    ///
+    /// `SCENIC_API` is still honoured after `VICTORYLAP_API`, for one release:
+    /// the variable is set by hand in scheme editors and in every documented
+    /// command written before the rename, and the failure it would otherwise
+    /// cause is silent — the app quietly talks to localhost instead of saying
+    /// the variable was ignored.
     static let baseURL: String = {
-        if let override = ProcessInfo.processInfo.environment["SCENIC_API"],
+        let env = ProcessInfo.processInfo.environment
+        if let override = env["VICTORYLAP_API"] ?? env["SCENIC_API"],
            !override.isEmpty {
             return override
         }
-        if let baked = Bundle.main.object(forInfoDictionaryKey: "ScenicAPIBaseURL") as? String,
+        if let baked = Bundle.main.object(forInfoDictionaryKey: "VictoryLapAPIBaseURL") as? String,
            !baked.isEmpty {
             return baked
         }

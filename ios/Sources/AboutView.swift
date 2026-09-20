@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Who the app owes credit to, and in the words their licences ask for.
 ///
-/// Scenic draws OpenStreetMap-derived road geometry on the map, names OSM
+/// Victory Lap draws OpenStreetMap-derived road geometry on the map, names OSM
 /// streets in its maneuvers and speaks them aloud, and every score it shows is
 /// built from two more open datasets. All three require attribution in the
 /// thing that reaches the user — a private repo's README discharges nothing.
@@ -72,23 +72,27 @@ enum DataSources {
 
     /// The route-guidance notice, **verbatim and non-negotiable**.
     ///
-    /// Apple Developer Program License Agreement §3.3.15: "For Applications that
-    /// use location-based APIs for real-time navigation (including, but not
-    /// limited to, turn-by-turn route guidance and other routing that is enabled
-    /// through the use of a sensor), You must have an end-user license agreement
-    /// that includes the following notice: ..." — and this string is that notice.
+    /// Apple Developer Program License Agreement §3.3.3(F)(iii) — "Data and
+    /// Privacy" → F. "Location and Maps; User Consents" → (iii): "For
+    /// Applications that use location-based APIs for real-time navigation
+    /// (including, but not limited to, turn-by-turn route guidance and other
+    /// routing that is enabled through the use of a sensor), You must have an
+    /// end user license agreement that includes the following notice: ..." —
+    /// and this string is that notice.
     /// `NavigationModel` drives turn-by-turn guidance from `CoreLocation` fixes
     /// and `VoiceGuide` speaks them, so the clause applies squarely.
     ///
     /// **Do not reword, sentence-case, or soften this.** It is a fixed string in
     /// a contract, capitals included.
     ///
-    /// Showing it here does **not** by itself discharge §3.3.15, which asks for
-    /// an *end-user licence agreement*: a custom EULA carrying this text still
-    /// has to be filed in App Store Connect before submission (Apple's default
-    /// Licensed Application EULA does not contain it). It is in the app as well
-    /// because the person it protects is driving, and a clause filed on a
-    /// website they never read protects nobody. See `docs/legal-and-ip-audit.md`.
+    /// Showing it here does **not** by itself discharge §3.3.3(F)(iii), which
+    /// asks for an *end user licence agreement*: a custom EULA carrying this
+    /// text still has to be filed in App Store Connect before submission
+    /// (Apple's default Licensed Application EULA does not contain it). The
+    /// text to paste is in `docs/app-store-submission.md`. It is in the app as
+    /// well because the person it protects is driving, and a clause filed on a
+    /// website they never read protects nobody. See
+    /// `docs/legal-and-ip-audit.md`.
     ///
     /// It is also true on the merits: this app deliberately routes drivers onto
     /// small rural roads, and `via`-way turn restrictions and lane guidance are
@@ -196,7 +200,7 @@ enum DataSources {
     )
 }
 
-/// The "Data sources" sheet: what Scenic is built from, and the credit each of
+/// The "Data sources" sheet: what Victory Lap is built from, and the credit each of
 /// those licences asks for.
 ///
 /// Presented the way "Tune scenery" is — a `NavigationStack` in a sheet with a
@@ -209,8 +213,9 @@ struct AboutView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Scenic's roads, and the scores it rates them with, come "
-                         + "from open data. These are the people who made it.")
+                    Text("The roads on this map, and the scores they are rated "
+                         + "with, come from open data. These are the people who "
+                         + "made it.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
@@ -276,7 +281,7 @@ struct AboutView: View {
                 Text(Self.linkLabel(source.url))
                     .font(.caption)
             }
-            .tint(.scenic)
+            .tint(.brand)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -1,7 +1,7 @@
 import AVFoundation
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The announcement schedule, and the latch that stops a reroute re-speaking
 /// the drive.

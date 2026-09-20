@@ -1,5 +1,5 @@
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The two summary cards and the sentence beneath them, which used to
 /// contradict each other by a minute.

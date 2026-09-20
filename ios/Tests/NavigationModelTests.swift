@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The drive logic. None of this can be checked by looking at the app, and a
 /// real drive tests it once, slowly, in one shape — so it is tested here.

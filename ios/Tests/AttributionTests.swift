@@ -1,5 +1,5 @@
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The attribution the app owes its data sources.
 ///
@@ -140,7 +140,7 @@ final class AttributionTests: XCTestCase {
         }
     }
 
-    // MARK: - The Apple route-guidance notice (ADPLA §3.3.15)
+    // MARK: - The Apple route-guidance notice (ADPLA §3.3.3(F)(iii))
 
     /// The notice is a fixed string in a contract. Asserting it character for
     /// character is the point — a well-meaning refactor that sentence-cases it,
@@ -158,7 +158,8 @@ final class AttributionTests: XCTestCase {
     func test_the_notice_is_not_quietly_sentence_cased() {
         let notice = DataSources.routeGuidanceNotice
         XCTAssertEqual(notice, notice.uppercased(),
-                       "§3.3.15's notice is upper-case in the agreement: \(notice)")
+                       "§3.3.3(F)(iii)'s notice is upper-case in the agreement: "
+                       + notice)
     }
 
     // MARK: - Geofabrik

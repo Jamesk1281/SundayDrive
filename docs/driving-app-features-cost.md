@@ -593,7 +593,7 @@ items that gate submission at all:
 |---|---|---|
 | 1 | **"Scenic" is taken by a senior direct competitor**, and is descriptive | rename before spending anything on brand |
 | 2 | Apple's map attribution **obscured** by the planning sheet | confirmed breach, unfixed |
-| 3 | No EULA carrying the ADPLA §3.3.15 route-guidance notice | confirmed gap |
+| 3 | No EULA carrying the ADPLA §3.3.3(F)(iii) route-guidance notice | in-app notice shipped 2026-09-19; App Store Connect field still open |
 | 4 | No privacy policy URL | confirmed missing — a hard submission gate |
 
 Plus no `PrivacyInfo.xcprivacy` (item 6) and no LICENSE. Item 2 is the one that

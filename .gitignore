@@ -23,6 +23,11 @@ __pycache__/
 
 # iOS build artifacts (xcodeproj regenerated from project.yml)
 ios/build/
+ios/VictoryLap.xcodeproj/
+# Left behind by the rename: xcodegen emits a project named after the
+# target, so an existing checkout keeps the old directory until it is
+# deleted. Ignored so nobody commits it; delete it — two projects in
+# ios/ is how Xcode opens the stale one.
 ios/Scenic.xcodeproj/
 ios/Generated/
 ios/DerivedData/

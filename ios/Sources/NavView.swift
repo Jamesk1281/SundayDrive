@@ -37,7 +37,7 @@ struct NavView: View {
     var body: some View {
         Map(position: $camera) {
             MapPolyline(coordinates: nav.coordinates)
-                .stroke(nav.followingFastest ? .gray : Color.scenic, lineWidth: 6)
+                .stroke(nav.followingFastest ? .gray : Color.brand, lineWidth: 6)
             Marker("Destination", coordinate: nav.destination).tint(.red)
             UserAnnotation()
         }
@@ -147,7 +147,7 @@ struct NavView: View {
                         // not look like a left turn.
                         Image(systemName: nav.currentSymbol)
                             .font(.title2.bold())
-                            .foregroundStyle(Color.scenic)
+                            .foregroundStyle(Color.brand)
                             .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(distanceText(nav.distanceToNext))
@@ -211,7 +211,7 @@ struct NavView: View {
                 Image(systemName: nav.voiceMuted
                       ? "speaker.slash.fill" : "speaker.wave.2.fill")
                     .font(.title3)
-                    .foregroundStyle(nav.voiceMuted ? Color.secondary : Color.scenic)
+                    .foregroundStyle(nav.voiceMuted ? Color.secondary : Color.brand)
                     // A generous tap target around a small glyph, so this is
                     // hittable without aiming.
                     .frame(width: controlSize, height: controlSize)
@@ -352,7 +352,7 @@ struct NavView: View {
         if nav.hasJoinedRoute && !nav.arrived && nav.canRecordMarks {
             HStack(spacing: 12) {
                 verdictButton(.nice, symbol: "hand.thumbsup.fill",
-                              tint: Color.scenic, label: "Lovely road")
+                              tint: Color.brand, label: "Lovely road")
                 verdictButton(.dull, symbol: "hand.thumbsdown.fill",
                               tint: .secondary, label: "Nothing to see")
             }
@@ -489,7 +489,7 @@ struct NavView: View {
                     Text("\(nav.marksRecorded)")
                         .font(.caption2.bold())
                         .monospacedDigit()
-                        .foregroundStyle(Color.scenic)
+                        .foregroundStyle(Color.brand)
                         .contentTransition(.numericText())
                 }
             }

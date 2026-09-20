@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import Scenic
+@testable import VictoryLap
 
 /// The decode is the contract with the backend. A field renamed on the server
 /// is a silent failure on the phone, so the shape is pinned here against the

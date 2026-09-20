@@ -44,7 +44,7 @@ struct LoopPanel: View {
     private var startField: some View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
-                Circle().fill(Color.scenic).frame(width: 9, height: 9)
+                Circle().fill(Color.brand).frame(width: 9, height: 9)
                 TextField("Start and finish here", text: $model.startQuery)
                     .focused($startFocused)
                     .submitLabel(.search)
@@ -95,7 +95,7 @@ struct LoopPanel: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Color.scenic)
+        .foregroundStyle(Color.brand)
         .disabled(model.isLocatingUser)
         .accessibilityLabel("Loop from my current location")
     }
@@ -109,7 +109,7 @@ struct LoopPanel: View {
                 Task { await model.useMyLocation() }
             } label: {
                 Label("My Location", systemImage: "location.fill")
-                    .foregroundStyle(Color.scenic)
+                    .foregroundStyle(Color.brand)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 8).padding(.horizontal, 12)
                     .contentShape(Rectangle())
@@ -174,7 +174,7 @@ struct LoopPanel: View {
             HStack(spacing: 10) {
                 card("Loop", value: "\(Int(meta.minutes.rounded())) min",
                      detail: "\(meta.km.wholeMilesFromKm) mi · heading \(meta.sector)",
-                     tint: .scenic)
+                     tint: .brand)
                 // The legible number. The mean score separates a scenic loop
                 // from a fast one of the same length by about a point; this
                 // separates them five-fold, so it leads.
@@ -269,7 +269,7 @@ struct LoopPanel: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(.scenic)
+            .tint(.brand)
         }
     }
 }
