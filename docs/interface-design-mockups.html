@@ -6,14 +6,13 @@
 <title>Interface design — rendered screens</title>
 <style>
 /* ------------------------------------------------------------------ *
- * Self-contained. No network, no CDN, no web fonts. Every face named
- * below is a system face; ui-rounded and ui-serif resolve to SF Pro
- * Rounded and New York on Apple platforms and fall back elsewhere.
+ * Self-contained. No network, no CDN, no web fonts. Both faces named
+ * below are system faces; ui-rounded resolves to SF Pro Rounded on
+ * Apple platforms and falls back elsewhere.
  * ------------------------------------------------------------------ */
 :root{
   --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --round:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  --serif:ui-serif,"New York",Georgia,"Times New Roman",serif;
 }
 html{-webkit-text-size-adjust:100%}
 body{
@@ -21,12 +20,12 @@ body{
   background:#EDE9E1;color:#1A1713;line-height:1.45;
 }
 .doc{max-width:1180px;margin:0 auto}
-h1{font-family:var(--serif);font-size:40px;line-height:1.15;margin:0 0 6px;font-weight:500;letter-spacing:-.01em}
+h1{font-size:36px;line-height:1.15;margin:0 0 6px;font-weight:650;letter-spacing:-.022em}
 .sub{font-size:15px;color:#6B6459;margin:0 0 40px;max-width:60ch}
 h2{font-size:13px;letter-spacing:.11em;text-transform:uppercase;color:#8A8274;
    margin:56px 0 4px;font-weight:650;border-top:1px solid #D9D3C7;padding-top:18px}
 h2 span{color:#A5541A}
-h3{font-family:var(--serif);font-size:25px;font-weight:500;margin:2px 0 8px;letter-spacing:-.01em}
+h3{font-size:23px;font-weight:600;margin:2px 0 8px;letter-spacing:-.018em}
 .note{font-size:14px;color:#605A50;margin:0 0 22px;max-width:74ch}
 .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#E2DCD1;padding:1px 5px;border-radius:4px}
 .flag{display:inline-block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
@@ -103,7 +102,7 @@ h3{font-family:var(--serif);font-size:25px;font-weight:500;margin:2px 0 8px;lett
 .scroll{flex:1;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:16px}
 .scroll.top{padding-top:18px}
 .lab{font-size:11px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
-.editorial{font-family:var(--serif);font-size:23px;line-height:1.24;letter-spacing:-.01em;color:var(--ink);font-weight:500}
+.editorial{font-size:19px;line-height:1.3;letter-spacing:-.012em;color:var(--ink);font-weight:600}
 .muted{color:var(--ink2)}
 .tiny{font-size:12.5px;color:var(--ink2)}
 
@@ -141,7 +140,7 @@ h3{font-family:var(--serif);font-size:25px;font-weight:500;margin:2px 0 8px;lett
 .readout{font-family:var(--round);font-size:27px;font-weight:650;letter-spacing:-.015em;
   margin-top:11px;line-height:1.16}
 .readout .a{color:var(--amber-t)} .readout .s{color:var(--slate)}
-.readout.name{font-family:var(--serif);font-weight:500;font-size:25px;color:var(--ink)}
+.readout.name{font-family:var(--round);font-weight:650;font-size:25px;color:var(--ink)}
 
 /* ledger */
 .ledger{display:flex;gap:10px;background:var(--card);border-radius:18px;padding:15px 16px;box-shadow:var(--shadow)}
@@ -183,7 +182,7 @@ h3{font-family:var(--serif);font-size:25px;font-weight:500;margin:2px 0 8px;lett
 <div class="doc">
 <h1>Victory Lap — the interface, drawn</h1>
 <p class="sub">Companion to <b>docs/interface-design.md</b>, written against <code>main</code> at d11344d.
-Nothing here is built. Every screen is 393&times;852&nbsp;pt, portrait iPhone, light and dark.
+Nothing here is built. Every screen is 393&times;852&nbsp;pt, portrait iPhone. <b>The app is dark by default</b>, so dark leads each pair; light is fully designed and is one switch away in Sources.
 Apple&rsquo;s map attribution is drawn as a neutral grey placeholder rather than reproducing Apple&rsquo;s
 mark; the reserved space is the point. Numbers are plausible for the trips named and consistent
 across screens.</p>
@@ -235,7 +234,7 @@ across screens.</p>
     <text x="264" y="64" font-weight="600">Rockport</text>
     <text x="86" y="112" font-weight="500" font-size="8.5">Middlesex Fells</text>
   </g>
-  <text x="300" y="214" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="10.5"
+  <text x="300" y="214" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-style="italic" font-size="10.5"
         fill="var(--map-label-w)" opacity=".85">Massachusetts Bay</text>
   <g>
     <circle cx="72" cy="236" r="8.5" fill="#fff"/><circle cx="72" cy="236" r="6" fill="#3E9E6B"/>
@@ -313,7 +312,7 @@ across screens.</p>
     <text x="60" y="540" font-weight="500">Annisquam</text>
     <text x="238" y="300" font-weight="500">Rocky Neck</text>
   </g>
-  <text x="332" y="470" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="12"
+  <text x="332" y="470" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-style="italic" font-size="12"
         fill="var(--map-label-w)" opacity=".9" transform="rotate(90 332 470)">Gloucester Harbor</text>
   <g><circle cx="196" cy="648" r="26" fill="#3478F6" opacity=".16"/>
      <path d="M196 620 l17 30 l-17 -9 l-17 9 z" fill="#3478F6" opacity=".3"/>
@@ -354,7 +353,7 @@ across screens.</p>
 </defs></svg>
 
 <h2>1 &middot; <span>Cold launch</span></h2>
-<h3>Two intents, not a search box</h3>
+<h3>Directions or a loop, on the first screen</h3>
 <p class="note">The loop is one tap from a cold start &mdash; it already has a place (here) and a
 length (whatever you asked for last time). Today it is behind a segmented control, a start field
 and a distance slider. The map is a card, so Apple&rsquo;s attribution sits inside it, bottom-left,
@@ -363,8 +362,8 @@ scrolls. <span class="flag new">new</span>Recent destinations &mdash; five entri
 <code>UserDefaults</code>, the mechanism the voice picker already uses.</p>
 <div class="row">
 
-<div class="unit"><div class="cap">light</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark &mdash; the default</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:306px">
     <svg viewBox="0 0 393 306" preserveAspectRatio="none" style="height:306px"><use href="#map-home" width="393" height="306"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -372,19 +371,18 @@ scrolls. <span class="flag new">new</span>Recent destinations &mdash; five entri
   </div>
   <div class="page">
     <div class="scroll top">
-      <div class="editorial">Where are we going?</div>
       <div class="intent">
         <div class="ic s"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.8 12.8 L17.5 17.5" stroke-linecap="round"/></svg></div>
-        <div class="txt"><div class="t">Somewhere to be</div><div class="s">Search a place</div></div>
+        <div class="txt"><div class="t">Directions</div><div class="s">Search for a destination</div></div>
         <svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 1.5 L6.5 6.5 L1.5 11.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="intent">
         <div class="ic a"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3.4 C14.4 3.4 17 6 17 10 C17 14 14 16.6 10 16.6 C6 16.6 3 14 3 10 C3 6 5.6 3.4 10 3.4 Z"/><path d="M7.4 5.2 L4.6 4.2 L5.6 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="txt"><div class="t">Nowhere to be</div><div class="s">A loop from here &middot; about 1 hr 30</div></div>
+        <div class="txt"><div class="t">Loop</div><div class="s">From here, about 1 hr 30</div></div>
         <svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 1.5 L6.5 6.5 L1.5 11.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div style="height:2px"></div>
-      <div class="lab">Been there</div>
+      <div class="lab">Recent</div>
       <div style="display:flex;flex-direction:column;gap:0;margin-top:-6px">
         <div style="display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--hair)">
           <div class="dot r"></div><div style="flex:1"><div style="font-size:15.5px;font-weight:550">Rockport</div><div class="tiny">Massachusetts &middot; 44 mi</div></div></div>
@@ -399,8 +397,8 @@ scrolls. <span class="flag new">new</span>Recent destinations &mdash; five entri
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">dark</div>
-<div class="phone dark"><div class="scr">
+<div class="unit"><div class="cap">light</div>
+<div class="phone light"><div class="scr">
   <div class="mapwrap card" style="height:306px">
     <svg viewBox="0 0 393 306" preserveAspectRatio="none" style="height:306px"><use href="#map-home" width="393" height="306"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -408,19 +406,18 @@ scrolls. <span class="flag new">new</span>Recent destinations &mdash; five entri
   </div>
   <div class="page">
     <div class="scroll top">
-      <div class="editorial">Still nowhere to be?</div>
       <div class="intent">
         <div class="ic s"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.8 12.8 L17.5 17.5" stroke-linecap="round"/></svg></div>
-        <div class="txt"><div class="t">Somewhere to be</div><div class="s">Search a place</div></div>
+        <div class="txt"><div class="t">Directions</div><div class="s">Search for a destination</div></div>
         <svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 1.5 L6.5 6.5 L1.5 11.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="intent">
         <div class="ic a"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3.4 C14.4 3.4 17 6 17 10 C17 14 14 16.6 10 16.6 C6 16.6 3 14 3 10 C3 6 5.6 3.4 10 3.4 Z"/><path d="M7.4 5.2 L4.6 4.2 L5.6 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="txt"><div class="t">Nowhere to be</div><div class="s">A loop from here &middot; about 1 hr 30</div></div>
+        <div class="txt"><div class="t">Loop</div><div class="s">From here, about 1 hr 30</div></div>
         <svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 1.5 L6.5 6.5 L1.5 11.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div style="height:2px"></div>
-      <div class="lab">Been there</div>
+      <div class="lab">Recent</div>
       <div style="display:flex;flex-direction:column;gap:0;margin-top:-6px">
         <div style="display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--hair)">
           <div class="dot r"></div><div style="flex:1"><div style="font-size:15.5px;font-weight:550">Rockport</div><div class="tiny">Massachusetts &middot; 44 mi</div></div></div>
@@ -471,15 +468,15 @@ scrolls. <span class="flag new">new</span>Recent destinations &mdash; five entri
 </style>
 
 <h2>2 &middot; <span>Setting the ends</span></h2>
-<h3>The card shrinks, the page scrolls, nothing is covered</h3>
+<h3>The map shrinks while you type</h3>
 <p class="note">The keyboard takes the bottom half of the screen. A page gives it that space by
 scrolling and shortening the map; a sheet has to fight it &mdash; which is the origin of the
 <code>onChange(of: focused)</code> nudge at <code>RoutePanel.swift:238</code>, the stale hit-test frame,
 and the panel that appeared to close itself. Swap and clear sit with the fields they act on.
 The credit line survives at the only place left: above the keyboard, still without interaction.</p>
 <div class="row">
-<div class="unit"><div class="cap">light</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark &mdash; the default</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:132px">
     <svg viewBox="0 0 393 132" preserveAspectRatio="none" style="height:132px"><use href="#map-home" width="393" height="230" y="-52"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -509,8 +506,8 @@ The credit line survives at the only place left: above the keyboard, still witho
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">the same screen, dark</div>
-<div class="phone dark"><div class="scr">
+<div class="unit"><div class="cap">light</div>
+<div class="phone light"><div class="scr">
   <div class="mapwrap card" style="height:132px">
     <svg viewBox="0 0 393 132" preserveAspectRatio="none" style="height:132px"><use href="#map-home" width="393" height="230" y="-52"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -551,8 +548,8 @@ The credit line survives at the only place left: above the keyboard, still witho
 </style>
 
 <h2>3 &middot; <span>The trade</span></h2>
-<h3>The price and the prize, in one line</h3>
-<p class="note">The screen the app is for. The dial&rsquo;s readout replaces
+<h3>What the setting costs and what it buys</h3>
+<p class="note">The main planning screen. The dial&rsquo;s readout replaces
 <code>scenery strength 0.25</code> (<code>RoutePanel.swift:484</code>) with what that setting costs and
 what it buys. The ledger&rsquo;s small slate figures are the fastest route &mdash; a reference price,
 not a second product: you cannot start it, and the dial&rsquo;s left end already <em>is</em> it, exactly.
@@ -561,8 +558,8 @@ measured <code>sqrt</code> mapping; only the caption changed. Bars carry the six
 also the legend for the line on the map.</p>
 <div class="row">
 
-<div class="unit"><div class="cap">light &mdash; settled, after routing</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark &mdash; settled, after routing</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:218px">
     <svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:218px"><use href="#map-trade" width="393" height="340"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -608,8 +605,8 @@ also the legend for the line on the map.</p>
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">dark &mdash; the same state</div>
-<div class="phone dark"><div class="scr">
+<div class="unit"><div class="cap">light &mdash; the same state</div>
+<div class="phone light"><div class="scr">
   <div class="mapwrap card" style="height:218px">
     <svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:218px"><use href="#map-trade" width="393" height="340"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -657,7 +654,7 @@ also the legend for the line on the map.</p>
 </div>
 
 <h2>4 &middot; <span>The trade, mid-drag</span></h2>
-<h3>The app never prints a number it has not earned</h3>
+<h3>No figures until the route is recomputed</h3>
 <p class="note">While the finger is down the route has not been recomputed, so the readout shows the
 name of the region of the track instead of a figure that would be wrong for half a second. The ledger
 and the bars dim to say so. On release the request goes, and the numbers roll in with
@@ -666,8 +663,8 @@ and the bars dim to say so. On release the request goes, and the numbers roll in
 route &mdash; the ledger is replaced rather than annotated.</p>
 <div class="row">
 
-<div class="unit"><div class="cap">light &mdash; dragging</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark &mdash; dragging</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:218px">
     <svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:218px"><use href="#map-trade" width="393" height="340"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -681,7 +678,7 @@ route &mdash; the ledger is replaced rather than annotated.</p>
           <div class="tick" style="left:25%"></div><div class="tick" style="left:50%"></div><div class="tick" style="left:75%"></div>
           <div class="knob" style="left:83%;transform:translateX(-14px) scale(1.18)"></div></div>
         <div class="ends"><span class="l">Fastest</span><span class="r">Scenic</span></div>
-        <div class="readout name">No hurry at all</div>
+        <div class="readout name">Most scenic</div>
       </div>
       <div style="opacity:.34">
         <div class="ledger">
@@ -734,8 +731,8 @@ route &mdash; the ledger is replaced rather than annotated.</p>
       </div>
       <div style="background:var(--sunk);border-radius:16px;padding:15px 16px">
         <div style="font-size:15.5px;font-weight:600">Same as the fastest route</div>
-        <div class="tiny" style="margin-top:3px">at this setting. Drag right to spend some time on
-          better road &mdash; the first quarter of the dial is worth about 55% of what the whole thing buys.</div>
+        <div class="tiny" style="margin-top:3px">The scenic arm and the fastest arm are the same
+          route here. Drag right to spend time on better road.</div>
       </div>
       <div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
@@ -768,9 +765,9 @@ route &mdash; the ledger is replaced rather than annotated.</p>
 .loopcard .sm span{display:inline-flex;align-items:center;gap:5px}
 </style>
 
-<h2>5 &middot; <span>Nowhere to be</span></h2>
-<h3>The loop, and a dial measured in the thing people actually have</h3>
-<p class="note">Nobody has 48 kilometres; they have an afternoon. The request still goes to
+<h2>5 &middot; <span>Loop</span></h2>
+<h3>The loop, set in time rather than distance</h3>
+<p class="note">The request is a distance; what a driver has is a span of time. It still goes to
 <code>/api/loop</code> in kilometres, and the label converts &mdash; using the km-per-minute ratio of the
 <em>last loop the server returned</em>, so the estimate calibrates itself with no backend change and is
 replaced by the truth the moment the loop lands. <code>repeated_km</code> stays always-visible, because it
@@ -778,8 +775,8 @@ is the one number that tells a driver their loop is really an out-and-back &mdas
 orange, which in this palette means an alert.</p>
 <div class="row">
 
-<div class="unit"><div class="cap">light</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:200px">
     <svg viewBox="0 0 393 300" preserveAspectRatio="none" style="height:200px"><use href="#map-loop" width="393" height="300"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -787,7 +784,6 @@ orange, which in this palette means an alert.</p>
   </div>
   <div class="page">
     <div class="scroll top" style="gap:10px">
-      <div class="editorial">Nowhere to be.</div>
       <div class="field"><span class="dot a"></span><span style="flex:1">Woodstock, VT</span>
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--ink3)" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M7 7 L13 13 M13 7 L7 13" stroke-linecap="round"/></svg></div>
       <div class="dial">
@@ -827,8 +823,8 @@ orange, which in this palette means an alert.</p>
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">dark &mdash; and a loop that doubles back</div>
-<div class="phone dark"><div class="scr">
+<div class="unit"><div class="cap">light &mdash; a loop that doubles back</div>
+<div class="phone light"><div class="scr">
   <div class="mapwrap card" style="height:200px">
     <svg viewBox="0 0 393 300" preserveAspectRatio="none" style="height:200px"><use href="#map-loop" width="393" height="300"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -836,7 +832,6 @@ orange, which in this palette means an alert.</p>
   </div>
   <div class="page">
     <div class="scroll top" style="gap:10px">
-      <div class="editorial">Nowhere to be.</div>
       <div class="field"><span class="dot a"></span><span style="flex:1">Woodstock, VT</span>
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--ink3)" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M7 7 L13 13 M13 7 L7 13" stroke-linecap="round"/></svg></div>
       <div class="dial">
@@ -898,44 +893,13 @@ orange, which in this palette means an alert.</p>
 </style>
 
 <h2>6 &middot; <span>What you like</span></h2>
-<h3>A control that states its own value</h3>
+<h3>The scenery weights, and a chip that shows them</h3>
 <p class="note">The entry point is a chip reading <em>Coast &amp; water</em>, not a button labelled
 <em>Tune</em>: the current screen can tell you something is set but not what. Each slider carries its
 type&rsquo;s colour, so this sheet, the breakdown bars and the map speak one language. The
 <em>Town centers</em> note stays exactly as written &mdash; a product admitting a measurement went
-against it is the best sentence in the current interface, and the model for the app&rsquo;s voice.</p>
+against it is worth keeping, and it sets the register for everything else.</p>
 <div class="row">
-
-<div class="unit"><div class="cap">light</div>
-<div class="phone light"><div class="scr">
-  <div class="behind"><svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:104px"><use href="#map-trade" width="393" height="340"/></svg>
-    <div class="status over" style="z-index:3"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div></div>
-  <div class="sheet">
-    <div class="sheetgrab"></div>
-    <div class="navbar"><span style="width:52px"></span><span class="t">What you like</span><span class="b">Done</span></div>
-    <div class="scroll top" style="gap:17px">
-      <div class="tiny">Drag toward what you&rsquo;d rather drive past. Centred means no preference.</div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-coast)"></span>Coast<span class="em">more</span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:78%;background:var(--h-coast)"></span><span class="knob" style="left:78%"></span></div></div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-forest)"></span>Forest &amp; parks<span class="em"></span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-forest)"></span><span class="knob" style="left:50%"></span></div></div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-town)"></span>Town centers<span class="em">less</span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:0%;background:var(--h-town)"></span><span class="knob" style="left:0%"></span></div>
-        <div class="nt">Off by default &mdash; drivers rated built-up stretches worse than the score predicted.</div></div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-water)"></span>Lakes &amp; rivers<span class="em">more</span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:68%;background:var(--h-water)"></span><span class="knob" style="left:68%"></span></div></div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-hills)"></span>Hills<span class="em"></span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-hills)"></span><span class="knob" style="left:50%"></span></div></div>
-      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-farm)"></span>Farmland<span class="em"></span></div>
-        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-farm)"></span><span class="knob" style="left:50%"></span></div></div>
-      <div style="display:flex;gap:10px;align-items:center;padding-top:2px">
-        <div class="secondary" style="flex:1;height:44px;font-size:14.5px">Back to no preference</div></div>
-      <div class="tiny" style="color:var(--ink3)">Routes update in the background as you drag, so the
-        new one is waiting when you close this.</div>
-    </div>
-    <div class="hind"></div>
-  </div>
-</div></div></div>
 
 <div class="unit"><div class="cap">dark</div>
 <div class="phone dark"><div class="scr">
@@ -967,17 +931,48 @@ against it is the best sentence in the current interface, and the model for the 
     <div class="hind"></div>
   </div>
 </div></div></div>
+
+<div class="unit"><div class="cap">light</div>
+<div class="phone light"><div class="scr">
+  <div class="behind"><svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:104px"><use href="#map-trade" width="393" height="340"/></svg>
+    <div class="status over" style="z-index:3"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div></div>
+  <div class="sheet">
+    <div class="sheetgrab"></div>
+    <div class="navbar"><span style="width:52px"></span><span class="t">What you like</span><span class="b">Done</span></div>
+    <div class="scroll top" style="gap:17px">
+      <div class="tiny">Drag toward what you&rsquo;d rather drive past. Centred means no preference.</div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-coast)"></span>Coast<span class="em">more</span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:78%;background:var(--h-coast)"></span><span class="knob" style="left:78%"></span></div></div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-forest)"></span>Forest &amp; parks<span class="em"></span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-forest)"></span><span class="knob" style="left:50%"></span></div></div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-town)"></span>Town centers<span class="em">less</span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:0%;background:var(--h-town)"></span><span class="knob" style="left:0%"></span></div>
+        <div class="nt">Off by default &mdash; drivers rated built-up stretches worse than the score predicted.</div></div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-water)"></span>Lakes &amp; rivers<span class="em">more</span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:68%;background:var(--h-water)"></span><span class="knob" style="left:68%"></span></div></div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-hills)"></span>Hills<span class="em"></span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-hills)"></span><span class="knob" style="left:50%"></span></div></div>
+      <div class="tsl"><div class="hd"><span class="sw" style="background:var(--h-farm)"></span>Farmland<span class="em"></span></div>
+        <div class="tk"><span class="rail"></span><span class="fill" style="width:50%;background:var(--h-farm)"></span><span class="knob" style="left:50%"></span></div></div>
+      <div style="display:flex;gap:10px;align-items:center;padding-top:2px">
+        <div class="secondary" style="flex:1;height:44px;font-size:14.5px">Back to no preference</div></div>
+      <div class="tiny" style="color:var(--ink3)">Routes update in the background as you drag, so the
+        new one is waiting when you close this.</div>
+    </div>
+    <div class="hind"></div>
+  </div>
+</div></div></div>
 </div>
 
 <h2>7 &middot; <span>Compliance, as designed elements</span></h2>
-<h3>A colophon and an honesty statement</h3>
+<h3>The credit line, and the safety notice</h3>
 <p class="note">Left: <b>Sources</b>. Every credit string is unchanged &mdash; they are somebody
 else&rsquo;s text, checked against the licensors and reproduced verbatim. What changes is that the
 sentence explaining <em>why</em> you are reading this becomes the largest thing on the screen, and the
 six scenery hues appear against the datasets that produce them.
 Right: <b>Before you drive</b>, shown once on first launch and reachable for ever after from Sources
 &mdash; one view, one copy of the fixed notice, two ways in. The obligation is the natural host for
-the app&rsquo;s honest limits, and no other navigation app opens by telling you what it cannot do.</p>
+the app&rsquo;s honest limits, which is better than burying both.</p>
 <div class="row">
 
 <div class="unit"><div class="cap">sources &mdash; dark</div>
@@ -1023,8 +1018,8 @@ the app&rsquo;s honest limits, and no other navigation app opens by telling you 
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">before you drive &mdash; light, first launch</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">before you drive &mdash; first launch, in the default appearance</div>
+<div class="phone dark"><div class="scr">
   <div class="status"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
   <div class="page">
     <div class="scroll" style="gap:18px;padding-top:26px">
@@ -1034,15 +1029,14 @@ the app&rsquo;s honest limits, and no other navigation app opens by telling you 
         <div class="b">YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE RISK.
           LOCATION DATA MAY NOT BE ACCURATE.</div>
       </div>
-      <div class="editorial" style="font-size:21px">And four things this is honestly not.</div>
+      <div class="lab" style="padding-top:2px">What it does not do</div>
       <div class="limit"><span class="m">&mdash;</span><span><b>New England only.</b> Six states, 236,000 km of road, all of it measured.</span></div>
       <div class="limit"><span class="m">&mdash;</span><span><b>No lane guidance.</b> The data covers between 4.6% and 23.8% of junction
         approaches depending on the state, which is not enough to tell you which lane to be in.</span></div>
       <div class="limit"><span class="m">&mdash;</span><span><b>No live traffic.</b> Every time shown is a model, not a measurement.</span></div>
       <div class="limit"><span class="m">&mdash;</span><span><b>Beauty is not measured evenly.</b> The terrain component saturates north of
         Massachusetts, so a Maine road and a Connecticut road are not scored on quite the same ruler.</span></div>
-      <div class="tiny" style="color:var(--ink3);padding-top:2px">This screen stays in Sources, if you
-        want it again.</div>
+      <div class="tiny" style="color:var(--ink3);padding-top:2px">Also in Sources, any time.</div>
     </div>
     <div class="pin"><div class="primary">Got it</div></div>
     <div class="foot"><span class="credit">Map data from OpenStreetMap</span><span class="srcs">Sources &rsaquo;</span></div>
@@ -1089,7 +1083,7 @@ the app&rsquo;s honest limits, and no other navigation app opens by telling you 
 </style>
 
 <h2>8 &middot; <span>The drive</span></h2>
-<h3>Five things, floating, and the tail of the map left alone</h3>
+<h3>Five things, floating clear of the bottom-left</h3>
 <p class="note">The banner is <b>opaque</b>, not <code>.ultraThinMaterial</code>. The codebase already
 learned this one screen down &mdash; the verdict buttons were moved to <code>.regularMaterial</code>
 because glass over a map is a tint, not a background, and POI labels read straight through it
@@ -1128,7 +1122,7 @@ display.</p>
   <div class="hind" style="position:absolute;left:0;right:0;bottom:0"></div>
 </div></div></div></div>
 
-<div class="unit"><div class="cap">light &mdash; off route, and the escape hatch already taken</div>
+<div class="unit"><div class="cap">light &mdash; off route, in daylight</div>
 <div class="phone light"><div class="scr"><div class="drivewrap">
   <svg viewBox="0 0 393 852" preserveAspectRatio="none"><use href="#map-drive" width="393" height="852"/></svg>
   <div class="status over"><span>4:38</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -1160,7 +1154,7 @@ Orange is not used for either alarm: in this palette amber never means warning, 
 recording fault are red and only red.</p>
 
 <h2>9 &middot; <span>The score ribbon</span> <span class="flag dep" style="vertical-align:3px">needs one API field</span></h2>
-<h3>The good bit is in three miles</h3>
+<h3>What is coming up</h3>
 <p class="note">The app scores 236,000 km of road and, from behind the wheel, none of that is visible.
 A ten-point strip up the right edge shows the beauty of the next five miles, coloured by what makes it
 beautiful &mdash; so the driver can see the coast arriving. This needs
@@ -1212,8 +1206,8 @@ interface wants from the backend.</b></p>
   <svg viewBox="0 0 393 852" preserveAspectRatio="none"><use href="#map-drive" width="393" height="852"/></svg>
   <div class="status over"><span>4:51</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
   <div class="arr">
-    <div class="lab" style="color:var(--amber-t)">You&rsquo;re here</div>
-    <div style="font-family:var(--serif);font-size:34px;font-weight:500;letter-spacing:-.015em;margin-top:2px">Rockport</div>
+    <div class="lab">Arrived</div>
+    <div style="font-size:31px;font-weight:680;letter-spacing:-.025em;margin-top:3px">Rockport</div>
     <div style="display:flex;gap:22px;margin-top:16px">
       <div><div class="k" style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)">Drove</div>
         <div style="font-family:var(--round);font-size:25px;font-weight:650;letter-spacing:-.02em;margin-top:2px">51 mi</div></div>
@@ -1223,7 +1217,7 @@ interface wants from the backend.</b></p>
         <div style="font-family:var(--round);font-size:25px;font-weight:650;letter-spacing:-.02em;margin-top:2px;color:var(--amber-t)">19 mi</div></div>
     </div>
     <div style="height:1px;background:var(--hair);margin:17px 0 14px"></div>
-    <div style="font-family:var(--serif);font-size:19px;font-weight:500">Was it?</div>
+    <div class="lab">How was the road?</div>
     <div style="display:flex;gap:10px;margin-top:11px">
       <div class="mark a" style="box-shadow:none;height:50px;font-size:15px"><svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M6 18 H3.6 A1.6 1.6 0 0 1 2 16.4 V10 A1.6 1.6 0 0 1 3.6 8.4 H6 Z"/><path d="M7.4 8.4 L11 2.2 A2 2 0 0 1 14 4.4 L13 8.4 H17 A1.6 1.6 0 0 1 18.5 10.4 L16.8 16.6 A1.8 1.8 0 0 1 15 18 H7.4 Z"/></svg>Lovely</div>
       <div class="mark b" style="box-shadow:none;height:50px;font-size:15px">Not really</div>
@@ -1244,8 +1238,8 @@ cannot lay its attribution out around it. Two applications of one rule, drawn be
 comparison, what ships today.</p>
 <div class="row">
 
-<div class="unit"><div class="cap">planning &mdash; the keep is inside the card</div>
-<div class="phone light"><div class="scr">
+<div class="unit"><div class="cap">dark &mdash; planning: the keep is inside the card</div>
+<div class="phone dark"><div class="scr">
   <div class="mapwrap card" style="height:340px">
     <svg viewBox="0 0 393 340" preserveAspectRatio="none" style="height:340px"><use href="#map-trade" width="393" height="340"/></svg>
     <div class="status over"><span>9:41</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -1273,7 +1267,7 @@ comparison, what ships today.</p>
   </div>
 </div></div></div>
 
-<div class="unit"><div class="cap">driving &mdash; the furniture floats above it</div>
+<div class="unit"><div class="cap">dark &mdash; driving: the furniture floats above it</div>
 <div class="phone dark"><div class="scr"><div class="drivewrap">
   <svg viewBox="0 0 393 852" preserveAspectRatio="none"><use href="#map-drive" width="393" height="852"/></svg>
   <div class="status over"><span>4:30</span><span class="r"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
@@ -1306,7 +1300,7 @@ comparison, what ships today.</p>
   <div class="hind" style="position:absolute;left:0;right:0;bottom:0"></div>
 </div></div></div></div>
 
-<div class="unit"><div class="cap" style="color:#B3352C">today &mdash; the breach</div>
+<div class="unit"><div class="cap">light &mdash; today, the breach</div>
 <div class="phone light"><div class="scr">
   <div class="mapwrap" style="flex:1">
     <svg viewBox="0 0 393 852" preserveAspectRatio="none" style="height:100%"><use href="#map-trade" width="393" height="852"/></svg>

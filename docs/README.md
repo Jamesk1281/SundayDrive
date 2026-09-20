@@ -73,7 +73,7 @@ arm* — and in `route-census/`, where it is a column value in published data.
 | [reroute-step-offset.md](reroute-step-offset.md) | The banner skipping the first turn of every reroute. Fixed; two items still open |
 | [consumer-polish-brief.md](consumer-polish-brief.md) | Eight defects found by driving the app. Four since fixed — the table at the top says which |
 | [interface-design-brief.md](interface-design-brief.md) → [interface-design.md](interface-design.md) | **The interface, designed again from nothing.** The planning sheet obscures Apple’s logo at *every* detent, which Attachment 6 §4 makes grounds for revoking MapKit access — so the planning surface becomes a page with a map card, and the bottom-left of every map is a keep-out. The dial prints what a setting costs and buys instead of `scenery strength 0.25`; the loop is one tap from a cold launch; the fixed safety notice gets a screen of its own. §13 reviews the two documents this replaced — their citations were re-resolved against a later tree and every one holds, so the defect is elsewhere: their brief ruled the attribution refactor out of scope, which is the constraint that shapes the whole interface. **Nothing is built** |
-| [interface-design-mockups.html](interface-design-mockups.html) | Those screens, rendered. Twenty-one phone-framed states, light and dark, self-contained and offline — open it in a browser. Words about a design are not a design |
+| [interface-design-mockups.html](interface-design-mockups.html) | Those screens, rendered. Twenty-one phone-framed states, dark and light, self-contained and offline — open it in a browser |
 
 ## Region and build
 

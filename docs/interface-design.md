@@ -9,7 +9,7 @@ not return today, it says so at the point of use and is listed again in §12.
 
 ---
 
-## 1. The one sentence
+## 1. The idea
 
 **The trade is the interface.**
 
@@ -24,7 +24,7 @@ So the whole planning side is built around making that trade visible, priced,
 and reversible, and the whole driving side is built around one promise: *you
 chose this, and here is the road you chose.*
 
-A second sentence, for the layout: **a page, not a drawer.**
+And for the layout: **a page, not a drawer.**
 
 ---
 
@@ -68,7 +68,7 @@ card is the app's own surface and can hold whatever it likes.
 full-bleed. Every control sits in a floating card with a margin all round, and
 the bottom **48 pt above the safe-area inset** is empty. On a heading-up
 navigation map, the bottom of the screen is the road *already driven* — the
-least valuable pixels on the display. Donating them costs the driver nothing.
+least valuable pixels on the display, so reserving them costs nothing.
 
 There is a second, independent protection on the driving screen: because the
 furniture is composed with `.safeAreaInset` on the `Map` rather than presented
@@ -123,8 +123,8 @@ its job actually needs.
                       ┌──────────────────────────┐
      cold launch ───▶ │  THE PAGE   (parked)     │
                       │                          │
-                      │  ▸ Somewhere to be  ─────┼──▶  set the ends  ──▶  THE TRADE
-                      │  ▸ Nowhere to be    ─────┼──▶  THE LOOP
+                      │  ▸ Directions  ──────────┼──▶  set the ends  ──▶  THE TRADE
+                      │  ▸ Loop        ──────────┼──▶  THE LOOP
                       │                          │
                       │  what you like  (sheet)  │
                       │  sources        (sheet)  │
@@ -157,21 +157,19 @@ like* and *sources* — never for the flow itself.
 
 ## 4. The page, screen by screen
 
-### 4.1 Cold launch — two intents, not a search box
+### 4.1 Cold launch — directions or a loop
 
-Every navigation app opens with "where to?". This one should not, because its
-best feature has no destination. The brief's own description of loop mode —
-*"ninety minutes, nowhere to be, bring me home the pretty way"* — is a product
-that today sits behind a segmented control labelled `Loop`
-(`RouteModel.swift:19`), inside a sheet, below a destination field the loop does
-not use.
+Every navigation app opens with a destination field. This one should not, because
+one of its two products has no destination. Loop mode today sits behind a
+segmented control (`RouteModel.swift:19`), inside a sheet, below a destination
+field it does not use.
 
-So the first screen offers the two shapes a drive can have:
+So the first screen offers both, as two rows:
 
-> **Somewhere to be** — a field, a magnifier, "Search a place"
-> **Nowhere to be** — "A loop from here · about 1 hr 30 →"
+> **Directions** — "Search for a destination"
+> **Loop** — "From here, about 1 hr 30 →"
 
-**The second one is a single tap to a finished drive.** It uses the current
+**The second is a single tap to a finished drive.** It uses the current
 location and the last duration and returns a loop. No form. That is the true
 shape of the feature and it is currently four interactions away.
 
@@ -181,9 +179,8 @@ destinations if there are any — a new, small persistence (five entries in
 the chosen voice); nothing is stored today, and a nav app that forgets where you
 went last Sunday is making you retype it.
 
-The editorial line above the two cards is set in **New York** — "Where are we
-going?" on a fresh launch, "Still nowhere to be?" on a Sunday afternoon. This is
-the only voice the app has, and it costs one system font.
+No headline above them. The two rows say what they are, and a greeting line
+would be the most prominent thing on a screen whose job is to get out of the way.
 
 ### 4.2 Setting the ends
 
@@ -228,7 +225,7 @@ measured, and it is right.** What changes is only what the caption says.
 **Mid-drag, the readout does not show a number**, because the route has not been
 recomputed and any number would be a lie for the half-second it is on screen.
 Instead it shows the name of the region of the track the handle is in —
-*Direct · A gentle detour · The long way · No hurry at all* — and resolves to
+*Direct · A little scenic · Scenic · Most scenic* — and resolves to
 the real figures when the finger lifts and the response lands. This is the
 honest version of a live readout: the app never prints a number it has not
 earned.
@@ -277,13 +274,13 @@ routes.
 
 **7. The credit line** — always visible, never scrolls. §8.
 
-### 4.4 Nowhere to be — the loop
+### 4.4 The loop
 
 One field (where from), one dial (how long), and the loop.
 
 **The dial reads in time, not distance.** Today it is 5–200 km with the caption
-"about 25 miles" (`LoopPanel.swift:151–166`). But nobody has 48 kilometres. They
-have an afternoon. The request still goes to the API in kilometres, because
+"about 25 miles" (`LoopPanel.swift:151–166`). The request is a distance; what a
+driver has is a span of time. The request still goes to the API in kilometres, because
 that is what `/api/loop` takes; the label converts, and — the part that keeps it
 honest — **the conversion factor is the km/minutes ratio of the last loop the
 server actually returned**, not a constant. The app calibrates its own estimate
@@ -408,7 +405,7 @@ the drive was:
 > **Rockport**
 > 51 miles · 1 hr 14
 > **19 of them beautiful**
-> *Was it?*  ♥ Lovely · Not really
+> HOW WAS THE ROAD?  ·  Lovely · Not really
 
 New, and it earns its place three ways: it closes the promise the trade screen
 made; it gives a driver who marked nothing a single chance to mark the whole
@@ -508,11 +505,10 @@ already one too many.
 
 ### 7.5 Type
 
-System faces only, which is three faces and no dependency.
+Two system faces, no dependency.
 
 | role | face | size |
 | --- | --- | --- |
-| Editorial line | **New York** | 22/28 |
 | Hero number (arrival, ledger) | **SF Pro Rounded** Semibold | 28–40 |
 | Driving instruction | **SF Pro Rounded** Bold | 28/32 |
 | Title | SF Pro Semibold | 20 |
@@ -520,25 +516,42 @@ System faces only, which is three faces and no dependency.
 | Caption | SF Pro | 13 |
 | Label (small caps, tracked) | SF Pro Semibold | 11 |
 
-**New York appears on the planning page only, and only on editorial lines.**
-Never a number, never a control label, never on the driving screen. One rule,
-easy to hold, and it is what stops three faces becoming a ransom note.
+**SF Pro Rounded is for figures and for the driving instruction, nowhere else.**
+Everything a user reads as prose is SF Pro. Two faces with one rule between them
+is enough; an earlier draft added New York for a few editorial lines, and the
+lines it invited were the problem rather than the face.
 
 Every figure that changes is `monospacedDigit()`. Metrics: 20 pt page margin
 (the app's existing value), 12 pt gutter, radii 18 (card) / 14 (control) /
 999 (pill).
 
-### 7.6 Dark mode and sunlight
+### 7.6 Dark is the default
 
-Dark mode is not an inversion. Paper goes to a warm near-black, amber
-*brightens* (`#F09A4B`) because a dark surround makes mid-amber muddy, and slate
-lifts to `#9AA3AB`. The driving screen uses the same treatment in both modes
-except for the map itself, which follows the system — a driver at dusk wants a
-dark map and a driver at noon does not.
+**The app ships dark**, whatever the system setting is —
+`.preferredColorScheme(.dark)` at the root, with one switch in Sources,
+*Match system appearance*, for anyone who wants otherwise. Three reasons:
 
-Sunlight is why the driving furniture is opaque and why its type is Rounded and
-large. It is also why there is no thin type anywhere on that screen: the
-lightest weight on the drive is Medium.
+- A phone in a windscreen mount is a light source pointed at the driver. Dark is
+  the correct default for the half of the product used in a moving car, and the
+  planning half is used minutes before it, in the same car.
+- MapKit's dark basemap is where amber separates best: against `#23262A` ground
+  and `#16394F` water, `#F09A4B` is the brightest thing on screen by a wide
+  margin, which is what a route line should be.
+- Most driving happens at the two ends of the day. Following the system means the
+  app is light at 4 p.m. and dark at 6 p.m. on the same drive; picking one and
+  holding it is steadier than being right half the time.
+
+**The honest cost:** in direct midday sun, light-on-dark is harder to read than
+dark-on-light, so the default is wrong for the brightest hour. That is what the
+switch is for, and it is why the driving furniture is opaque rather than glass,
+why its type is Rounded and large, and why nothing on that screen is lighter than
+Medium.
+
+Light mode is fully designed, not a fallback: paper is a warm off-white, amber
+darkens to `#A5541A` for text, slate drops to `#5C6771`. Dark is not an inversion
+of it — amber *brightens* to `#F09A4B` because a dark surround makes mid-amber
+muddy, and slate lifts to `#9AA3AB`. The map follows the app rather than the
+system, so the two never disagree on one screen.
 
 ### 7.7 Dynamic Type and VoiceOver
 
@@ -632,12 +645,14 @@ nobody — the code comment says as much itself.
 first launch and reachable for ever after from Sources.** One view, one copy of
 the string, two ways in.
 
-That screen holds the notice and the three things this app is honestly not:
+That screen holds the notice, and then what the app does not do:
 
 > **BEFORE YOU DRIVE**
 >
 > *YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE RISK.*
 > *LOCATION DATA MAY NOT BE ACCURATE.*
+>
+> **What it does not do**
 >
 > — New England only. Six states, 236,000 km of road.
 > — No lane guidance. The data covers between 4.6% and 23.8% of junction
@@ -648,12 +663,12 @@ That screen holds the notice and the three things this app is honestly not:
 >   saturates north of Massachusetts.
 >
 > **Got it**
+>
+> *Also in Sources, any time.*
 
-This is the design's best single argument for itself. The obligation is not
-bolted on — it is the natural host for the app's honesty, and the app has an
-unusual amount of honesty to be getting on with. Nobody else's navigation app
-opens by telling you what it cannot do. This one can afford to, because the
-thing it *can* do is unusual enough to carry it.
+The obligation is not bolted on: the notice is a reasonable host for the app's
+limits, and stating them once, up front, is cheaper than a driver discovering
+them on a back road in Maine.
 
 Three points of compliance hygiene:
 
@@ -707,8 +722,8 @@ far as a document should go without a pencil.
 
 ## 11. What I am keeping, and why that matters
 
-A redesign that changes everything is not a design, it is a reset. These are
-load-bearing and they survive:
+Most of the current app's small decisions are right. These are load-bearing and
+they survive:
 
 | kept | why |
 | --- | --- |
@@ -723,11 +738,10 @@ load-bearing and they survive:
 | `contentShape(Rectangle())` on every full-width row | Half of every suggestion row was dead space without it |
 | Verbatim credit strings, and their capitalisation | Somebody else's text |
 
-The interface this replaces is not badly *reasoned*. Almost every small decision
-in `RoutePanel` and `NavView` has a paragraph behind it and most of those
-paragraphs are right. What it lacks is a shape: it is a sheet that grew, and
-every good decision in it was taken inside a container that was the wrong
-container.
+The interface this replaces is not badly reasoned. Almost every small decision in
+`RoutePanel` and `NavView` has a paragraph behind it and most of those paragraphs
+are right. What it lacks is a shape. The container was wrong, so good local
+decisions could not add up to a good screen.
 
 ---
 
@@ -765,8 +779,8 @@ Two smaller asks, neither blocking:
 
 ## 13. A review of the two documents this deletes
 
-Written after the design above was drafted and drawn, which is the only order in
-which the judgement is worth anything.
+Written after the design above was drafted and drawn, so it is not anchored by
+them.
 
 ### 13.1 The accuracy charge does not stand
 
@@ -794,8 +808,8 @@ The only wobble I found is arithmetic and trivial: it says "13 surviving
 whether `scenicMinutes` and `scenicDetail` count as `.scenic` references. It
 names which ones it means, so nothing turns on it.
 
-**So: substantially correct, and not what was wanted.** I am not going to
-manufacture a fault it does not have.
+**So: substantially correct, and not what was wanted.** There is no accuracy
+fault here to report.
 
 ### 13.2 Where the real defect is, and it is not in that document
 
@@ -804,15 +818,14 @@ The owner asked for an interface. What `ui-redesign.md` delivers is a
 with `file:line`, a per-test cost tally, an apply order. Its unit of thought is
 the string literal. There is no screen in it — no layout, no hierarchy, no
 drawing, no claim about what the thing should feel like in the hand. **You could
-apply every word of it and the app would look identical.** That is a category
-difference, not a quality one, and it is the whole of the owner's complaint,
-correctly felt and imprecisely named.
+apply every word of it and the app would look identical.** That is a difference
+of category, not of quality, and it is what the complaint was about.
 
 Why it reads as assembled: its agenda is inherited wholesale. Every section
 answers a section of `branding-brainstorm.md` §4–§6; its structure *is* that
 document's structure; even where it disagrees it is arguing inside a frame
 somebody else set, about words somebody else picked, under a name that had since
-changed. Editing is not authorship, however good the editing is.
+changed. That is editing, and the editing is good; it is not design.
 
 **And the fault for that belongs to the brief, not the document.**
 `ui-redesign-brief.md` Trap 5 rules the largest interface change out of scope in
@@ -827,9 +840,9 @@ triage-and-specify items, none of which asks for a screen.
 
 Given that commission, `ui-redesign.md` did the right work. It answered the
 question it was asked, and the question was the wrong one. The honest verdict is
-that **the brief is the weaker of the two documents**, and it is the one whose
-mistake is worth remembering: a document that inherits its agenda will inherit
-its ceiling.
+that **the brief is the weaker of the two documents**, and its mistake is the one
+worth remembering: a brief that rules out the load-bearing problem caps the
+answer, however well the answer is written.
 
 ### 13.3 Its best paragraph, and where it went
 
@@ -874,7 +887,7 @@ are the things worth carrying, checked so that nothing is orphaned:
 | Renaming `response.scenic` breaks decoding at runtime with no compile error (no `CodingKeys` in `ios/Sources` — verified, zero) | §13.1, and §10 keeps *scenic* as the arm's name anyway |
 | "1 good miles" — the plural trap any adjective swap introduces | Here. It applies to **any** replacement for `mi beautiful`, including keeping it |
 | No SF Symbols in an app icon; a human must draw the mark; a signed authorship statement **and a written assignment** | §10 |
-| Never draw a chequered flag, a trophy, a podium, a speedometer, a stopwatch, or speed lines | §10, and it is right — the name has already spent the product's entire motorsport budget |
+| Never draw a chequered flag, a trophy, a podium, a speedometer, a stopwatch, or speed lines | §10, and it is right: the name already carries the motorsport reference, so the mark should not repeat it |
 | `Text("You've arrived 🎉")` is an exclamation mark with extra steps | §5.4 replaces the whole banner state with the arrival card |
 | The opening region serves one state of six | Already owned by `roadmap.md:89`, independently of this |
 | The camera and the search bias want *different* constants — widening the search box is how "main street" starts offering one four towns away | Here, because it is a real distinction and the roadmap item does not draw it |
@@ -882,18 +895,17 @@ are the things worth carrying, checked so that nothing is orphaned:
 
 **Two of its conclusions I am overturning, with reasons rather than silence.**
 
-**"Lap" for the loop mode.** Its argument for replacing "Nowhere" is sharp and I
-accept the premise: a mode called *Nowhere* fights a subtitle that says *on
-purpose*, and `branding-brainstorm.md` had already refused *Aimless* as a product
-name for carrying exactly that valence. But the objection lands on the bare word,
-not on the idea. **"Nowhere to be" is a fact about the driver's afternoon, not
-about the app's competence** — it says *I am free*, where *Nowhere* says *this
-thing does not know where it is going*. And paired as **Somewhere to be / Nowhere
-to be** it draws the distinction that actually matters on the first screen:
-whether you have a destination. "Lap" is parallel with "Directions" in the
-grammar of a segmented control, which is the right answer to the question the
-segmented control asks — but my design deletes the segmented control, so the
-question goes with it.
+**"Lap" for the loop mode.** Its argument against "Nowhere" is sound — a mode
+called *Nowhere* fights a subtitle that says *on purpose*, and
+`branding-brainstorm.md` had already refused *Aimless* as a product name for
+carrying that valence. It then proposed *Lap*. I am keeping what the app already
+says: **Loop**.
+
+It is the accurate word, it is what the feature is called everywhere else in the
+project (`LoopModel`, `LoopPanel`, `/api/loop`), and it needs no explaining. *Lap*
+is a wink at the app's name, and the first screen is the last place to spend one:
+a driver reading **Directions** and **Loop** knows immediately which is which.
+`RouteModel.swift:19` does not change.
 
 **"Good miles" for "beautiful".** Its case is that 79 marks from one driver in
 one part of one state support *measured* but not *beautiful*. The force of that
