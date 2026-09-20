@@ -50,6 +50,24 @@ counsel.
 > deliberately left alone.** `Models.swift` decodes that key by property name
 > with no `CodingKeys`, so renaming it would break every deployed client as a
 > nil route at run time. See `rename-to-victory-lap-brief.md`.
+>
+> **§4–§6 have since been triaged item by item in
+> [`ui-redesign.md`](ui-redesign.md)**, which is where §7.7 above is specified
+> well enough to apply. Four things in the body below do not survive that triage,
+> beyond the §5 and `Color.scenic` corrections already noted:
+>
+> - **§4's "Nowhere" is dead** — not because of the new name, which it is
+>   independent of, but because it contradicts the subtitle the owner chose the
+>   same day. `Lap` replaces it.
+> - **§4's "single highest-value copy change in the app" cannot be applied as
+>   written.** `+38 min · 25 good miles` has nothing to print before a route
+>   exists, and is stale mid-drag because the route recomputes only on release.
+>   The diagnosis stands; the cure is a deletion.
+> - **§6's icon ranking loses its top pick's main argument.** "Two ways" was
+>   chosen partly because it paired with the name Longcut.
+> - **§5's stated premise is false, in §4's and §5's favour.** The scoring *has*
+>   been checked against a human since 2026-08-25 (`measuring-scenery.md`). §5's
+>   rule against overclaiming survives anyway, on a better reason.
 
 ---
 
