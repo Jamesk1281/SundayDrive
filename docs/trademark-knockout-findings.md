@@ -1,8 +1,9 @@
-# Knockout screen: four candidate names against the live federal register
+# Knockout screen: the candidate names against the live federal register
 
 **Status: screened 2026-09-19 against `main` at `2d6fbc0`. Nothing was filed,
-bought or reserved. Three of the four candidates are knocked out — Camber on the
-register, Aimless and Detourist on common-law use. Longcut survives every leg.**
+bought or reserved. Three of the original four candidates are knocked out —
+Camber on the register, Aimless and Detourist on common-law use. Longcut
+survives every leg, and so does Backway (§12, added the same day).**
 
 Answers [`trademark-knockout-brief.md`](trademark-knockout-brief.md). Corrects
 three rows of [`branding-brainstorm.md`](branding-brainstorm.md) §3 and settles
@@ -78,9 +79,10 @@ came from there.
 | **Aimless** | One live pending application, IC 042, different field | ***Aimless Drives*** — App Store, **Navigation**, same feature, live since 2026-09-02 | **Blocked, drop it** |
 | **Detourist** | Ten filings, **all dead** | `detourist.app` — live travel app for road trippers, since 2026-08-01 | **Blocked, drop it** |
 | **Camber** | **`CAMBER` reg. 7205668, live, IC 009 "downloadable mobile applications for providing travel information, planning…"** | `camberplaces.com`, live product | **Blocked, drop it** |
+| **Backway** *(§12)* | **Zero** marks contain the token, any class, any status | Two dormant/unrelated apps; the `.com` is in other use | **No knockout blocker found — proceed to professional clearance** |
 
-**The App Store name-count check in `branding-brainstorm.md` §3 rated all four
-of these clean or usable.** It was not wrong — it was answering a narrower
+**The App Store name-count check in `branding-brainstorm.md` §3 rated the first
+four clean or usable.** It was not wrong — it was answering a narrower
 question. Each of the three knockouts came from somewhere that check
 structurally cannot see: the federal register (Camber), the open web
 (Detourist), and seven weeks passing in the same storefront (Aimless, whose
@@ -139,8 +141,9 @@ look at it, not because this screen thinks it is a problem.
 
 ### Verdict
 
-**No knockout blocker found — proceed to professional clearance.** This is the
-cleanest of the four by a wide margin and the only one still standing.
+**No knockout blocker found — proceed to professional clearance.** The cleanest
+of the original four by a wide margin. Backway (§12), screened later the same
+day, has a cleaner register still and a messier common-law picture.
 
 ---
 
@@ -478,8 +481,8 @@ answered instead), `whois.nic.co` and every `.co` RDAP endpoint tried, and
 
 ## 11. What this changes
 
-**Longcut stands. Aimless, Detourist and Camber are out, and `branding-brainstorm.md`
-§3 has no fourth candidate behind them** — the remaining "usable" rows there
+**Longcut stands, and Backway joins it (§12). Aimless, Detourist and Camber are
+out, and `branding-brainstorm.md` §3 has no fourth candidate behind them** — the remaining "usable" rows there
 (Dawdle, Vireo, Overlook) were never screened past the App Store count and would
 each need this treatment.
 
@@ -503,5 +506,114 @@ Two knock-on points for `release-plan.md`, which is on
 Nothing here decides the name. That is Decision 2's twin in `release-plan.md` §8
 and it belongs to the owner, after clearance and before the App Store Connect
 record, because the bundle identifier becomes permanent at first submission.
+
+---
+
+## 12. Backway — added 2026-09-19, screened to the same depth
+
+Not one of the original four. Raised after the first screen emptied the
+shortlist, and taken through the full method rather than the first-pass count
+that §11's leftovers got.
+
+### Register — the cleanest position of anything in this document
+
+Controls first, because that is the rule: `*scenic*` → 417 and `*way*` → 66,544
+on the same field, so the machinery was returning results when these zeros were
+recorded.
+
+| Query | Hits |
+| --- | --- |
+| `wordmark:*backway*` — substring, whole register, every class, live and dead | **0** |
+| `BACKWAY / BACKWAYS / BAKWAY / BACWAY / BACKWEY / BACKWAI / BAKWEY / BACKWHEY` | **0** |
+| `wordmarkPseudoText:*backway*` | **0** |
+| `wordmarkPseudoText:"BACK WAY"` | **0** |
+| `wordmark:"BACK WAY"` — two words, any class, any status | **1** |
+| `wordmark:(BACK AND WAY)` live in 9/39/42 | 4 |
+| `wordmark:BACKWAY~1` live in 9/39/42 | 4 |
+
+The one two-word mark is `FALL BACK GO BACK WAY BACK MORE BACK` (Eze, Princess;
+serial 90519360; classes 016, 045) — **abandoned**, and about motivational
+stickers.
+
+The four live `(BACK AND WAY)` marks in the relevant classes are long phrases
+with nothing to do with this: `THE BEST WAY BACK` (physical rehabilitation),
+`BTWSHUTTLE THE SMART WAY BACK TO WORK` (bus chartering, class 039), `WE GO WAY
+BACK` (law-firm merchandise), and a ShoulderDolly slogan.
+
+The four nearest live marks by spelling — one character away — are `BANKWAY`
+(banking software), `BACKPAY` (financial software), `BACKBAY COMMUNICATIONS`
+(public relations) and `BACKBAY R/C` (electrical connectors). None is in travel
+or navigation.
+
+**This is a stronger register position than Longcut's**, which returned zero for
+the token but had 49 two-word `LONG CUT` marks standing behind it.
+
+### The real risk is the prefix, and it is worth naming
+
+Searching the exact word finds nothing. Searching the *family* does:
+
+| Mark | Owner | Reg. | Class | Goods |
+| --- | --- | --- | --- | --- |
+| **`BACKTRACK`** | **Bushnell Inc.** | **4181999** | **009** | **"Global positioning receivers for use in navigation, hunting, and sports"** |
+| `BACKROADS` | Backroads (California) | 2919546 | 039, 043 | Organizing and arranging tours |
+| `BACKCOUNTRY` | Backcountry.com, LLC | 5522844 | 035, 039 | On-line retail; travel |
+
+Bushnell's `BACKTRACK` is the one to put in front of an attorney: live, class 9,
+and its goods are *GPS navigation devices*. Whether `BACKWAY` is confusingly
+similar to `BACKTRACK` for navigation software is a real question — shared
+prefixes alone are usually not enough, because the differing element carries the
+distinction, but "usually" is doing work in that sentence and resolving it is
+precisely what the paid opinion is for. This is the shape of risk Trap 2 exists
+to catch: the exact-match search returns a clean zero and the similar-mark search
+returns Bushnell.
+
+### Common-law signals *(separate from the register above)*
+
+- **`BackWay`** — Dares Core d.o.o., App Store, **Travel/Navigation**, released
+  2012-05-26, v3.1.1, **2 ratings**. An offline "find your way back" waypoint and
+  travel-log app. Company-profile databases record the Croatian startup behind it
+  (Samobor, founded 2012) as inactive/deadpooled — **that is a secondary source
+  and is labelled as one** — while the App Store listing remains live. Whether a
+  still-listed app from a wound-up company is continuing use, or a mark abandoned
+  through non-use, is an attorney question and a good one.
+- **`Backway`** — Tarik El Hallaoui, App Store, Lifestyle/Travel, released
+  2026-08-05, and `backway.ca`: *"Send shipments across Canada with Backway
+  delivery app. Connect with verified drivers, get AI-powered pricing."* A
+  shipment marketplace matching senders to drivers already making the trip.
+  Different business, adjacent domain, six weeks old.
+- **`backway.com`** — registered 1999-02-07 and currently serving an **active
+  pornography site**. Stated because it is a material fact for a consumer brand,
+  not because it is a trademark conflict: the goods are unrelated and it blocks
+  nothing. It does mean the exact-match `.com` is unavailable and unattractive,
+  and that the word carries an anatomical reading some users will reach first.
+- **`thebackway.com`** — a personal journal, registered 2011.
+- **"The Back Way"** is established terminology for the irregular migration route
+  from The Gambia across the Sahara and Mediterranean to Europe, used in
+  journalism and in peer-reviewed work. Not a legal issue. It is the kind of
+  collision that surfaces in a review or a press mention rather than in a
+  register.
+
+### Domains
+
+**`backway.app` is unregistered**, as is `backwayapp.com` — worth noting only
+because `branding-brainstorm.md` §3 found every single-word `.app` it checked
+already taken. `backway.com` and `thebackway.com` are both long since registered
+and both in use, as above.
+
+### Verdict
+
+**No knockout blocker found — proceed to professional clearance.** The same
+verdict as Longcut, reached on a cleaner register and a messier world.
+
+Two questions for the attorney, in order: **`BACKTRACK`** (Bushnell, reg.
+4181999, class 9, GPS navigation), and whether the 2012 `BackWay` app's mark
+survives as use in commerce or has been abandoned.
+
+Two facts that are not the attorney's call and belong to the owner: what sits on
+`backway.com`, and the second meaning of the phrase. Neither blocks the name.
+Both would be cheaper to think about now than after the bundle identifier is
+permanent.
+
+---
 
 **Nothing was filed, purchased or reserved in the course of this screen.**
