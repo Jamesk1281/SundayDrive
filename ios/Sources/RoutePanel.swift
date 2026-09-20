@@ -290,15 +290,21 @@ struct RoutePanel: View {
         }
     }
 
-    /// Title + a short hint, with the Tune button and (once something is set)
+    /// The contextual hint, with the Tune button and (once something is set)
     /// swap/clear buttons.
+    ///
+    /// **No app name here, deliberately.** The home screen, the location
+    /// prompt and the Data sources sheet all name it, and a driver who has
+    /// opened the app knows which one it is. The most prominent line in the
+    /// sheet is better spent on what to do next — and `hint` already says
+    /// something different in each of the four states, which a fixed title
+    /// cannot.
     private var header: some View {
         HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Victory Lap").font(.title2.bold())
-                Text(hint).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
+            Text(hint)
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
             // Tune is always available — the accent tint signals an active
             // preference so the user knows their routes are being shaped.
             Button { showingTune = true } label: {

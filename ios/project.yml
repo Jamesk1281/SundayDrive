@@ -18,7 +18,7 @@ targets:
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         # Shown when navigation asks for location to follow the route.
-        NSLocationWhenInUseUsageDescription: "Victory Lap uses your location to follow your route, turn by turn, while you drive."
+        NSLocationWhenInUseUsageDescription: "Your location is used to follow the route, turn by turn, while you drive."
         # Keep receiving location while backgrounded. With when-in-use
         # authorization this is allowed for navigation as long as the blue
         # status bar indicator is showing, which LocationManager opts into.

@@ -213,8 +213,9 @@ struct AboutView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Victory Lap's roads, and the scores it rates them with, come "
-                         + "from open data. These are the people who made it.")
+                    Text("The roads on this map, and the scores they are rated "
+                         + "with, come from open data. These are the people who "
+                         + "made it.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
