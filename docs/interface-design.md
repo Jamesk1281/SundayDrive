@@ -1,11 +1,17 @@
 # The interface, designed again
 
-**Status:** proposal, drawn 2026-09-20 against `main` at `d11344d`
-(`docs/interface-design-brief.md` is the commission). **Nothing here is built** —
-`git show --stat` on the commit that adds this file lists only `docs/`. The
-rendered screens are in [interface-design-mockups.html](interface-design-mockups.html),
-which opens offline in any browser. Where a proposal needs something the API does
-not return today, it says so at the point of use and is listed again in §12.
+**Status: built.** Drawn 2026-09-20 against `main` at `d11344d`
+(`docs/interface-design-brief.md` is the commission) and **implemented the same
+day** at the owner's instruction. `PlanningView.swift`, `HomeView.swift`,
+`DirectionsView.swift`, `LoopView.swift`, `NavView.swift`, `ArrivalView.swift`,
+`BeforeYouDriveView.swift`, `PlanningMap.swift`, `PlaceField.swift`,
+`Recents.swift` and `Theme.swift` are this document; `RoutePanel.swift` and
+`LoopPanel.swift` are gone. 241 iOS tests pass and every screen below has been
+run on a booted iPhone 17 Pro. **Two claims here were falsified by building
+them** and are corrected in place, marked **Measured** — §2.3 and §4.3. The drawn
+version is in [interface-design-mockups.html](interface-design-mockups.html),
+which opens offline in any browser; where it and the code differ, the code is
+right.
 
 ---
 
@@ -70,13 +76,25 @@ the bottom **48 pt above the safe-area inset** is empty. On a heading-up
 navigation map, the bottom of the screen is the road *already driven* — the
 least valuable pixels on the display, so reserving them costs nothing.
 
-There is a second, independent protection on the driving screen: because the
-furniture is composed with `.safeAreaInset` on the `Map` rather than presented
-as a `.sheet`, MapKit lays its attribution out inside the reduced safe area and
-lifts the logo itself. I am not relying on that — the keep-out is specified
-without it — but it means the two mechanisms would have to fail together.
-**Verify on device before ship:** screenshot both modes, light and dark, at
-default and xxxLarge text, and read the logo in each.
+I expected a second, independent protection here: that because the furniture is
+composed with `.safeAreaInset` on the `Map` rather than presented as a `.sheet`,
+MapKit would lay its attribution out inside the reduced safe area and lift the
+logo above the furniture by itself.
+
+**Measured, on a booted iPhone 17 Pro: it does not.** With `.ignoresSafeArea()`
+on the `Map` and the controls added back through `.safeAreaInset(edge: .bottom)`,
+MapKit draws the logo and the legal link at the bottom-left of the *full-bleed*
+view — about 42 pt up from the screen's bottom edge, inside the reserved strip,
+underneath the trip card rather than above it. The belt did not hold. **The
+reserved strip is the only thing protecting the logo on the driving screen**,
+which makes `Metric.appleKeep` load-bearing rather than belt-and-braces and its
+48 pt a number not to trim. Screenshot and read the logo after any change to the
+driving screen's furniture.
+
+The planning side is unaffected either way: there the map is a bounded card and
+the page starts underneath it, so the corner is protected by geometry and not by
+a framework behaviour that has now been observed to differ from the obvious
+reading of it.
 
 ### 2.4 What rejecting the drawer buys, beyond compliance
 
@@ -222,13 +240,25 @@ so every quarter of the travel does comparable work and `0` and `1` survive the
 round trip bit-for-bit. **That mathematics is not up for redesign; it is
 measured, and it is right.** What changes is only what the caption says.
 
-**Mid-drag, the readout does not show a number**, because the route has not been
-recomputed and any number would be a lie for the half-second it is on screen.
-Instead it shows the name of the region of the track the handle is in —
-*Direct · A little scenic · Scenic · Most scenic* — and resolves to
-the real figures when the finger lifts and the response lands. This is the
-honest version of a live readout: the app never prints a number it has not
-earned.
+**While the figures are stale the readout shows a name, not a number**, because
+the route has not been recomputed and any number would be a lie for as long as it
+is on screen. It shows the name of the region of the track the handle is in —
+*Direct · A little scenic · Scenic · Most scenic* — and resolves to the real
+figures when the response lands.
+
+**Measured.** The first implementation keyed this on the slider's own
+`onEditingChanged`, which is the obvious way and is wrong twice. It latched: on a
+drag whose end-of-edit callback did not arrive, the caption stayed on the name
+with the correct figures sitting in the ledger directly beneath it. And even
+working, it covered only the gesture and not the request in flight *after* the
+finger lifts — so for the second the route takes to come back, the old figures
+were shown as though they described the new setting.
+
+What shipped asks the question of the data instead: `RouteModel.responsePref`
+records the `pref` the response on screen was computed at, and `routeIsStale` is
+`isLoading || responsePref != pref`. That is exactly *is what is drawn the answer
+to what is being asked*, it depends on no callback, and it closes the in-flight
+gap the gesture version could not see.
 
 **3. The ledger.** Three columns; the big figure is this drive, the small grey
 figure beneath it is the fastest route.

@@ -566,6 +566,14 @@ final class NavigationModel {
     /// this is only feedback.
     private(set) var marksRecorded = 0
 
+    /// How long this drive has been running, in minutes.
+    ///
+    /// The arrival card reports what the drive actually took rather than what
+    /// the router predicted — those are different numbers, and the difference
+    /// is most of why drives are recorded at all. Reads the `startedAt` the
+    /// recording indicator already keeps; there is only one start.
+    var elapsedMinutes: Double { Date().timeIntervalSince(startedAt) / 60 }
+
     /// Whether a verdict tapped now would actually be written down.
     ///
     /// Deliberately not the same condition as `recordingProblem`. That one goes

@@ -11,6 +11,21 @@ extension MKCoordinateRegion {
         span: MKCoordinateSpan(latitudeDelta: 2.6, longitudeDelta: 2.6)
     )
 
+    /// All six states the app serves — **the opening map camera, and nothing
+    /// else.**
+    ///
+    /// The camera and the search bias want different boxes, and conflating them
+    /// is why this was a single constant. The camera answers "where am I, and
+    /// does this app cover me?", and the honest answer is New England, not one
+    /// state of six (`roadmap.md`). The *bias* must stay tight for the reason
+    /// `around(_:)` records below: completions rank by distance from the box's
+    /// centre, so widening it is how "main street" starts offering a main
+    /// street four towns away.
+    static let newEngland = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 43.6, longitude: -71.3),
+        span: MKCoordinateSpan(latitudeDelta: 6.4, longitudeDelta: 6.4)
+    )
+
     /// A box roughly `meters` across, centered on a point.
     ///
     /// Search results are ranked by distance from the bias region's center, and

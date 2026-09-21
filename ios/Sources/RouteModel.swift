@@ -86,6 +86,26 @@ final class RouteModel {
     }
 
     var response: RouteResponse?
+
+    /// The `pref` `response` was computed at.
+    ///
+    /// This is what lets the dial know whether the numbers on screen describe
+    /// where the handle actually is. The route recomputes only when the user
+    /// lets go — mid-drag is a request per tick at ~0.65 s of server work each
+    /// — so between the first movement of the handle and the arrival of the new
+    /// route, everything on screen is a price for a setting the user has left.
+    ///
+    /// Reading the *gesture* instead is not equivalent and was the first
+    /// attempt: `onEditingChanged` covers the drag but not the request in
+    /// flight after it, and it leaves the display depending on a callback
+    /// rather than on the data. This is the honest question — is what is drawn
+    /// the answer to what is asked? — and it is answerable from state.
+    private(set) var responsePref: Double?
+
+    /// True when the figures on screen do not describe the current setting:
+    /// either a request is running, or the handle has moved since the last one.
+    var routeIsStale: Bool { isLoading || responsePref != pref }
+
     var isLoading = false
     var errorText: String?
 
@@ -152,7 +172,19 @@ final class RouteModel {
             let name = PlaceNaming.displayName(for: match, fallback: label)
             switch role {
             case .start: start = coordinate; startQuery = name
-            case .end:   end = coordinate;   endQuery = name
+            case .end:
+                end = coordinate
+                endQuery = name
+                // Destinations only, not trips: a start point is usually where
+                // you happen to be and is worth nothing tomorrow. See `Recents`.
+                Recents.remember(Recent(
+                    name: name,
+                    subtitle: [match.placemark.locality, match.placemark.administrativeArea]
+                        .compactMap { $0 }
+                        .filter { !name.localizedCaseInsensitiveContains($0) }
+                        .joined(separator: ", "),
+                    latitude: coordinate.latitude,
+                    longitude: coordinate.longitude))
             }
             errorText = nil
             if start != nil, end != nil { await computeRoute() }
@@ -212,7 +244,7 @@ final class RouteModel {
     func clear() {
         start = nil; end = nil
         startQuery = ""; endQuery = ""
-        response = nil; errorText = nil
+        response = nil; responsePref = nil; errorText = nil
     }
 
     /// Put every beauty type back to where it started, then re-route.
@@ -316,9 +348,11 @@ final class RouteModel {
             let result = try await RouteService.route(from: a, to: b, pref: pref, weights: weights)
             guard generation == requestGeneration else { return }   // a newer request superseded us
             response = result
+            responsePref = pref
         } catch {
             guard generation == requestGeneration else { return }
             response = nil
+            responsePref = nil
             errorText = error.localizedDescription
         }
         isLoading = false

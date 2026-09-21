@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 /// One user-tunable scenery type, mirroring the server's `BEAUTY_TYPES`
 /// (pipeline/router.py).
@@ -63,4 +63,49 @@ struct BeautyType: Identifiable {
     /// The slider's range. The midpoint is `neutralWeight`, so "centered" reads
     /// as "no preference"; left ignores the type, right leans into it.
     static let weightRange = 0.0...2.0
+
+    /// This type's colour, used in three places that have to agree: the slider
+    /// on the *What you like* sheet, its bar in the route breakdown, and the
+    /// swatches on the chip that opens the sheet. One language, so the bars
+    /// read as a key rather than as an unrelated chart.
+    var hue: Color { BeautyType.hue(for: apiName) }
+
+    /// Mid-chroma so six of them can sit together without any one shouting,
+    /// and lifted in dark mode so they still separate against `#121110`.
+    ///
+    /// `forest` is the old `Color.brand` — `rgb(0.22, 0.83, 0.62)` — deepened
+    /// until it works as text. The green did not survive as the app's accent
+    /// (see `Color.amber`), but it was the only visual equity the project had,
+    /// and the honest place for it is the one thing it literally names.
+    static func hue(for apiName: String) -> Color {
+        switch apiName {
+        case "coast":  return .adaptiveHue(light: 0x2F7E8C, dark: 0x4FA8B8)
+        case "forest": return .adaptiveHue(light: 0x2F8A63, dark: 0x4FB287)
+        case "water":  return .adaptiveHue(light: 0x3D6BA8, dark: 0x6E9AD6)
+        case "hills":  return .adaptiveHue(light: 0x7A6A9E, dark: 0xA091C4)
+        case "farm":   return .adaptiveHue(light: 0xA8903C, dark: 0xC9B057)
+        case "town":   return .adaptiveHue(light: 0x8A7F74, dark: 0xAFA396)
+        default:       return .slate
+        }
+    }
+
+    /// The backend names the breakdown buckets `forest/park`, `farmland`,
+    /// `town`; the tune sheet calls the same things *Forest & parks*,
+    /// *Farmland*, *Town centers*. Two vocabularies for one set of six was a
+    /// small thing on separate screens and is a visible one now that the bars
+    /// carry the sheet's colours. The backend's key stays the key; this is only
+    /// what a reader sees.
+    ///
+    /// Keep in sync with `SCENERY_BREAKDOWN` in `pipeline/router.py` and with
+    /// `RouteProps.sceneryBreakdown`.
+    static func forBreakdown(_ key: String) -> (label: String, hue: Color) {
+        let apiName: String
+        switch key {
+        case "forest/park": apiName = "forest"
+        case "farmland":    apiName = "farm"
+        default:            apiName = key
+        }
+        let label = all.first { $0.apiName == apiName }?.label ?? key.capitalized
+        return (label, hue(for: apiName))
+    }
 }

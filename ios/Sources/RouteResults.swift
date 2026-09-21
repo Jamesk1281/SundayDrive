@@ -1,48 +1,90 @@
 import SwiftUI
 
-/// The fastest/scenic summary cards, the delta sentence, and the scenery bars
-/// shown in the bottom sheet once a route is computed.
-struct RouteResults: View {
+/// The **ledger**: three columns, the big figure is this drive, the small slate
+/// figure under it is the fastest route.
+///
+/// It replaces two equal-weight summary cards plus a sentence. The two cards
+/// implied a choice between two products — but the fastest route is not a
+/// product on this screen. **You cannot start it.** It is the reference price,
+/// and it should be typeset like one. (A driver who wants it has it already:
+/// the dial's left end *is* the fastest route, exactly — `server/app.py`
+/// short-circuits at `pref == 0`.)
+///
+/// The sentence that used to sit under the cards is gone with them. It was
+/// careful, correct prose covering five cases, and all five are legible in the
+/// ledger without prose because both numbers are on screen with their
+/// comparison directly underneath. The one case that still needs words is the
+/// degenerate one, and it replaces the dial's readout rather than annotating
+/// the ledger — see `PrefDial`.
+struct RouteLedger: View {
     let response: RouteResponse
 
     var body: some View {
         let fastest = response.fastest.properties
         let scenic = response.scenic.properties
-        let comparison = RouteComparison(fastest: fastest, scenic: scenic)
-        let maxKm = max(1, scenic.sceneryBreakdown.map(\.km).max() ?? 1)
+        let c = RouteComparison(fastest: fastest, scenic: scenic)
 
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                card("Fastest", minutes: comparison.fastestMinutes,
-                     km: fastest.km, detail: comparison.fastestDetail, tint: .gray)
-                card("Scenic", minutes: comparison.scenicMinutes,
-                     km: scenic.km, detail: comparison.scenicDetail, tint: .brand)
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .top, spacing: 10) {
+                column("Time", value: "\(c.scenicMinutes) min",
+                       under: "\(c.fastestMinutes)", tint: .ink)
+                column("Distance", value: "\(scenic.km.wholeMilesFromKm) mi",
+                       under: "\(fastest.km.wholeMilesFromKm)", tint: .ink)
+                if let miles = c.beautifulMiles {
+                    column("Beautiful", value: "\(miles.scenic) mi",
+                           under: "\(miles.fastest)", tint: .amberText)
+                } else {
+                    // Older backend, no `beautiful_km`. The 0-10 mean is what
+                    // the cards printed before the miles existed, and an app in
+                    // the store talks to whichever backend is deployed.
+                    column("Scenery", value: c.printedScenicScore,
+                           under: c.printedFastestScore, tint: .amberText)
+                }
             }
-            Text(comparison.attributedSummary)
-                .font(.caption)
-            ForEach(scenic.sceneryBreakdown, id: \.label) { item in
-                SceneryBar(label: item.label, km: item.km, maxKm: maxKm)
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 15)
+            .background(Color.card, in: RoundedRectangle(cornerRadius: Metric.cardRadius))
+
+            legend(scenic)
         }
     }
 
-    /// One route summary card: big minutes, distance and beautiful miles
-    /// beneath.
-    ///
-    /// The minutes and the `detail` half are both handed in already formatted
-    /// rather than formatted here, so the card and the sentence under it are
-    /// reading the same numbers — see `RouteComparison`.
-    private func card(_ title: String, minutes: Int, km: Double,
-                      detail: String, tint: Color) -> some View {
+    private func column(_ head: String, value: String, under: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(title.uppercased()).font(.caption2).foregroundStyle(.secondary)
-            Text("\(minutes) min").font(.title3.bold())
-            Text("\(km.wholeMilesFromKm) mi · \(detail)")
-                .font(.caption2).foregroundStyle(.secondary)
+            Text(head).sectionLabel()
+            Text(value)
+                .font(.figure(26))
+                .foregroundStyle(tint)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+            Text(under)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.slate)
+                .monospacedDigit()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        // Read as one fact. Left to itself VoiceOver announces three
+        // unconnected numbers.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(head): \(value). Fastest route: \(under).")
+    }
+
+    /// What the two small numbers are, and what "beautiful" was measured
+    /// against — the threshold comes from the response rather than being
+    /// hardcoded, so the app cannot claim a bar the backend is not using.
+    private func legend(_ scenic: RouteProps) -> some View {
+        let bar = scenic.beautiful_score.map { " · beautiful = road scoring \(Int($0))+ of 10" } ?? ""
+        return HStack(spacing: 6) {
+            Rectangle()
+                .fill(Color.slate)
+                .frame(width: 14, height: 2)
+                .opacity(0.7)
+            Text("the fastest route" + bar)
+                .font(.system(size: 11.5))
+                .foregroundStyle(Color.slate)
+        }
     }
 }
 
@@ -220,10 +262,15 @@ struct RouteComparison {
     }
 }
 
-/// One labeled bar in the scenery breakdown ("forest  22 mi"), filled in
-/// proportion to the longest feature so lengths are easy to compare.
+/// One row of the scenery breakdown, in its own type's colour.
+///
+/// The colours are the point of the change: all six bars used to be the brand
+/// green, which made the block a bar chart of unrelated quantities. Keyed to
+/// the same six hues the *What you like* sheet uses, it reads as a legend
+/// instead.
 struct SceneryBar: View {
-    let label: String
+    /// The backend's bucket key — `forest/park`, `farmland`, `town`.
+    let key: String
     let km: Double
     let maxKm: Double
 
@@ -231,25 +278,36 @@ struct SceneryBar: View {
     // clips its own text as soon as the user raises the system text size.
     // @ScaledMetric grows them with it, so the column survives and the bars stay
     // aligned.
-    @ScaledMetric(relativeTo: .caption2) private var labelWidth: CGFloat = 74
-    @ScaledMetric(relativeTo: .caption2) private var valueWidth: CGFloat = 40
+    @ScaledMetric(relativeTo: .caption) private var labelWidth: CGFloat = 96
+    @ScaledMetric(relativeTo: .caption) private var valueWidth: CGFloat = 42
 
     var body: some View {
-        HStack(spacing: 8) {
-            Text(label).font(.caption2).foregroundStyle(.secondary)
+        let display = BeautyType.forBreakdown(key)
+        HStack(spacing: 9) {
+            Text(display.label)
+                .font(.system(size: 12.5))
+                .foregroundStyle(Color.ink2)
+                .lineLimit(1)
                 .frame(width: labelWidth, alignment: .leading)
             GeometryReader { geo in
-                Capsule().fill(Color.brand)
-                    .frame(width: geo.size.width * (km / maxKm), height: 6)
-                    .frame(maxHeight: .infinity, alignment: .center)
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.sunk)
+                    Capsule().fill(display.hue)
+                        .frame(width: max(6, geo.size.width * (km / maxKm)))
+                }
+                .frame(height: 7)
+                .frame(maxHeight: .infinity, alignment: .center)
             }
             .frame(height: 10)
-            Text("\(km.wholeMilesFromKm) mi").font(.caption2)
+            Text("\(km.wholeMilesFromKm) mi")
+                .font(.system(size: 12.5))
+                .foregroundStyle(Color.ink)
+                .monospacedDigit()
                 .frame(width: valueWidth, alignment: .trailing)
         }
         // Read as one fact. Left to itself VoiceOver announces the label, then a
         // decorative bar, then the number, as three separate stops.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label), \(km.wholeMilesFromKm) miles")
+        .accessibilityLabel("\(display.label), \(km.wholeMilesFromKm) miles")
     }
 }

@@ -38,9 +38,39 @@ final class LoopModel {
     /// The bounds match the server's clamp. They are not graph limits — the
     /// longest available loop from a Massachusetts start is over 500 km — they
     /// are the range where the answer is a drive rather than an expedition.
-    var targetKm: Double = 40
+    /// Restored from the last session, so "Loop" on the home screen is one tap
+    /// to a finished drive rather than one tap to a form.
+    ///
+    /// Written back in `fetch`, when a loop has actually come back at this
+    /// length — not from a `didSet`. Two reasons: what is worth remembering is
+    /// the length the driver *drove*, not every position the slider passed
+    /// through under a thumb; and a `didSet` would make every unit test that
+    /// touches this property write to the app's real `UserDefaults`, which is
+    /// exactly how the home screen came to offer a 6-minute loop after a test
+    /// run left `targetKm` at the 5 km minimum.
+    var targetKm: Double = UserDefaults.standard.object(forKey: LoopModel.targetKey) as? Double ?? 40
+    private static let targetKey = "lastLoopTargetKm"
     static let minKm: Double = 5
     static let maxKm: Double = 200
+
+    /// Minutes per kilometre, for labelling the distance dial in time.
+    ///
+    /// **Nobody has 48 kilometres; they have an afternoon.** The request still
+    /// goes to `/api/loop` in kilometres, because that is what it takes — this
+    /// only changes what the dial *says*. What keeps the label honest is that
+    /// the factor is measured rather than assumed: every response carries its
+    /// real `minutes` and `km`, so each loop that comes back re-fits the
+    /// estimate for the next one, on this driver's roads rather than on an
+    /// average of everybody's.
+    ///
+    /// 1.2 is the seed, from a 40 km loop taking a little under 50 minutes. It
+    /// is replaced by a measurement the first time a loop lands.
+    private(set) var minutesPerKm: Double = 1.2
+
+    /// What a given distance is likely to take, in minutes. An estimate, and
+    /// labelled as one ("about 1 hr 30") — the loop's own `minutes` replaces it
+    /// the moment there is a real answer.
+    func estimatedMinutes(forKm km: Double) -> Double { km * minutesPerKm }
 
     var response: LoopResponse?
     var isLoading = false
@@ -204,10 +234,17 @@ final class LoopModel {
             let result = try await fetchLoop(origin, targetKm, sector, weights)
             guard generation == requestGeneration else { return }
             response = result
+            // Re-fit the time estimate on what the router actually returned.
+            // Guarded against a degenerate loop so one odd answer cannot make
+            // the dial's label nonsense for the rest of the session.
+            if result.meta.km > 1, result.meta.minutes > 1 {
+                minutesPerKm = min(3.0, max(0.6, result.meta.minutes / result.meta.km))
+            }
             // The server clamps the distance to its own range; show what it
             // actually used rather than what was asked for, so the slider and
             // the result never disagree.
             targetKm = result.meta.target_km
+            UserDefaults.standard.set(targetKm, forKey: Self.targetKey)
         } catch {
             guard generation == requestGeneration else { return }
             // A failed regenerate leaves the loop that is already on screen
