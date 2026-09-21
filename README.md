@@ -92,6 +92,58 @@ The iOS app (`ios/`, open in Xcode) reads its backend URL from the
 `VictoryLapAPIBaseURL` Info.plist key in `ios/project.yml`, overridable at
 runtime with a `VICTORYLAP_API` environment variable.
 
+### Running the app on sample data
+
+The real server needs the New England graph, several gigabytes of RAM and a
+build. To *look at the app* — drag the dial, watch the ledger move, open the
+scenery weights, take a drive — there is a fixture that needs none of that:
+
+```sh
+python3 tools/fake_api.py            # 127.0.0.1:5099, stdlib only, no venv
+```
+
+**Every number it returns is invented.** It is not a router and nothing it
+prints is evidence of anything; see its docstring. What it does reproduce is the
+behaviour the interface depends on: `strength = pref ** 2`, so the dial bites
+where the real one bites; `pref == 0` returning the fastest route exactly; the
+1.61x ceiling on travel time; and `w_*` actually moving kilometres between
+scenery types, so the *What you like* sheet is testable.
+
+Point the app at it one of two ways.
+
+**In Xcode** — Product ▸ Scheme ▸ Edit Scheme ▸ Run ▸ Arguments, add an
+environment variable `VICTORYLAP_API` = `http://127.0.0.1:5099`, then run. This
+is the one to use day to day, because the value survives every
+`xcodegen generate` (the scheme is regenerated, but Xcode keeps user scheme
+settings in `xcuserdata`).
+
+**From the command line**, which needs no Xcode window:
+
+```sh
+cd ios && xcodegen generate
+xcodebuild build -project VictoryLap.xcodeproj -scheme VictoryLap \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+
+xcrun simctl boot 'iPhone 17 Pro'        # `simctl create` one first if there is none
+xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/VictoryLap.app
+SIMCTL_CHILD_VICTORYLAP_API=http://127.0.0.1:5099 \
+  xcrun simctl launch booted app.victorylap
+```
+
+`SIMCTL_CHILD_` is the prefix that passes a variable *through* `simctl` into the
+app; plain `--setenv` does not reach it.
+
+**Give the simulator a location**, or *Loop*, *My Location* and the whole
+driving screen have nothing to work with:
+
+```sh
+xcrun simctl location booted set 42.2809,-71.2378      # Needham, MA
+```
+
+Setting it again mid-drive is how to walk the car along a route: the arrival
+card and the two scenery marks need the drive to actually progress.
+
 ## Tests
 
 ```sh
