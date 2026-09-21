@@ -1,4 +1,4 @@
-# Deploying the Scenic API to Oracle Cloud Always Free — end to end
+# Deploying the Sunday Drive API to Oracle Cloud Always Free — end to end
 
 **Status: written 2026-09-19 against `main` at `2d6fbc0`. Nothing here has been
 executed — no Oracle account exists and nothing was provisioned.** Every command
@@ -92,7 +92,7 @@ Run the suite locally now, so you have a baseline to compare the box against
 rather than a number from a document:
 
 ```bash
-SCENIC_DATA="$PWD/data/processed-ne" .venv/bin/python -m pytest tests/ -q
+SUNDAYDRIVE_DATA="$PWD/data/processed-ne" .venv/bin/python -m pytest tests/ -q
 ```
 
 Write down the pass/skip/fail counts. **379 tests collect** as of 2026-09-19.
@@ -237,7 +237,7 @@ re-run the identical command until it completes clean.
 ## Part 7 — Verify before exposing anything
 
 ```bash
-cd ~/Scenic && .venv/bin/python -m pip install pytest && SCENIC_DATA=~/Scenic/data/processed-ne .venv/bin/python -m pytest tests/ -q
+cd ~/Scenic && .venv/bin/python -m pip install pytest && SUNDAYDRIVE_DATA=~/Scenic/data/processed-ne .venv/bin/python -m pytest tests/ -q
 ```
 
 **Compare against the baseline you took in [0.3](#03-record-what-a-good-box-looks-like), not against a number in a document.**
@@ -257,7 +257,7 @@ What each outcome means:
 Then load the graph by hand once, to see the startup cost with your own eyes:
 
 ```bash
-cd ~/Scenic && SCENIC_HOST=127.0.0.1 SCENIC_DATA=~/Scenic/data/processed-ne .venv/bin/python server/serve.py
+cd ~/Scenic && SUNDAYDRIVE_HOST=127.0.0.1 SUNDAYDRIVE_DATA=~/Scenic/data/processed-ne .venv/bin/python server/serve.py
 ```
 
 In a second SSH session:
@@ -282,9 +282,9 @@ systemd takes over next.
 ## Part 8 — systemd
 
 ```bash
-sudo tee /etc/systemd/system/scenic-api.service >/dev/null <<'EOF'
+sudo tee /etc/systemd/system/sundaydrive-api.service >/dev/null <<'EOF'
 [Unit]
-Description=Scenic routing API
+Description=Sunday Drive routing API
 After=network-online.target
 Wants=network-online.target
 
@@ -292,8 +292,8 @@ Wants=network-online.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/Scenic
-Environment=SCENIC_HOST=127.0.0.1
-Environment=SCENIC_DATA=/home/ubuntu/Scenic/data/processed-ne
+Environment=SUNDAYDRIVE_HOST=127.0.0.1
+Environment=SUNDAYDRIVE_DATA=/home/ubuntu/Scenic/data/processed-ne
 ExecStart=/home/ubuntu/Scenic/.venv/bin/python /home/ubuntu/Scenic/server/serve.py
 Restart=always
 RestartSec=5
@@ -301,12 +301,12 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo systemctl daemon-reload && sudo systemctl enable --now scenic-api
+sudo systemctl daemon-reload && sudo systemctl enable --now sundaydrive-api
 ```
 
 Three things about this unit:
 
-- **`SCENIC_HOST=127.0.0.1`** — `serve.py` defaults to `0.0.0.0` so a phone can
+- **`SUNDAYDRIVE_HOST=127.0.0.1`** — `serve.py` defaults to `0.0.0.0` so a phone can
   reach a dev server. On a deployed box, `cloudflared` reaches it over loopback
   and nothing else should.
 - **`Restart=always`** is the thing the Windows setup never actually had. This
@@ -317,8 +317,8 @@ Three things about this unit:
   a failure because `curl` refuses for the first two minutes.
 
 ```bash
-systemctl status scenic-api --no-pager
-journalctl -u scenic-api -f
+systemctl status sundaydrive-api --no-pager
+journalctl -u sundaydrive-api -f
 ```
 
 ---
@@ -387,7 +387,7 @@ load-balance between the laptop and a box that may not be warm. Go to Part 10.
 ## Part 10 — Cut over
 
 **Order matters.** On the **laptop** first, stop the tunnel (close the
-`Scenic Tunnel` window, or stop its service/scheduled task).
+`Sunday Drive Tunnel` window, or stop its service/scheduled task).
 
 Confirm the old connector is gone — from anywhere:
 
@@ -409,7 +409,7 @@ curl -s https://api.jameskouvlis.com/api/health
 ```
 
 `{"status":"ok","nodes":794685,...}` through the public hostname means you are
-done. The iOS app needs **no new build** — `ScenicAPIBaseURL` names the
+done. The iOS app needs **no new build** — `SundayDriveAPIBaseURL` names the
 hostname, and the tunnel is the switch.
 
 ---
@@ -437,7 +437,7 @@ CPU 95th percentile < 20%, network < 20%, **and** memory < 20% (A1 only). A
 single-user routing API is unambiguously idle on the first two, so **memory is
 the only thing keeping the box alive.**
 
-| instance memory | Scenic at ~4.4 GB | verdict |
+| instance memory | Sunday Drive at ~4.4 GB | verdict |
 |---|---|---|
 | 12 GB (the full entitlement) | 37% | safe |
 | **8 GB (what you built)** | **55%**, 60% warm | **safe, with margin** |
@@ -447,7 +447,7 @@ RAM lowers the percentage and moves the box towards reclamation.** Keep the
 Oracle Cloud Agent monitoring plugin enabled — an instance that reports no
 memory metric is not one that reports high memory.
 
-**Do not fake load to defeat this.** Scenic genuinely holds the working set; a
+**Do not fake load to defeat this.** Sunday Drive genuinely holds the working set; a
 cron job burning CPU to look busy is both unnecessary and the sort of thing that
 reads badly in an account review.
 
@@ -468,7 +468,7 @@ Alert to an address you read.
 ## Part 13 — Measure it, and write the numbers down
 
 ```bash
-systemctl status scenic-api --no-pager | grep Memory
+systemctl status sundaydrive-api --no-pager | grep Memory
 ps -o rss= -p $(pgrep -f 'serve.py') | awk '{printf "%.2f GB\n", $1/1048576}'
 time curl -s "https://api.jameskouvlis.com/api/route?from=42.3601,-71.0589&to=44.3106,-69.7795&pref=0.5" -o /dev/null
 ```
@@ -504,8 +504,8 @@ Oracle box can sit there stopped while you decide.
 
 | symptom | almost certainly | fix |
 |---|---|---|
-| `HTTP 530` from the public hostname | Tunnel up, **no origin** — the service is down or still loading | Wait 2 min for the graph, then `journalctl -u scenic-api -n 50` |
-| `HTTP 502` | `cloudflared` reached the box but the app is not on `:5057` | `systemctl status scenic-api`; an `ImportError` at startup looks exactly like this |
+| `HTTP 530` from the public hostname | Tunnel up, **no origin** — the service is down or still loading | Wait 2 min for the graph, then `journalctl -u sundaydrive-api -n 50` |
+| `HTTP 502` | `cloudflared` reached the box but the app is not on `:5057` | `systemctl status sundaydrive-api`; an `ImportError` at startup looks exactly like this |
 | `KeyError: 'c_green'` or similar at startup | **Old code, new parquets** | Compare `git log --oneline -1` at both ends |
 | `/api/health` reports a node count that is not 794685 | Wrong or partial parquets | Re-run Part 6; `--append-verify` makes it safe to repeat |
 | 8 skips in the test suite | The two optional access parquets did not arrive | Re-run Part 6 |

@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// What the planning screen is holding once a drive is over.
 ///

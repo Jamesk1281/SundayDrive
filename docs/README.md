@@ -1,6 +1,6 @@
 # What is in here
 
-Victory Lap scores every road in New England for beauty and routes across that
+Sunday Drive scores every road in New England for beauty and routes across that
 score.
 Almost none of the numbers it uses are guesses — `BETA`, `CONTROL_SECONDS`,
 `SPEED_FACTOR`, `RELIEF_FULL`, `PREF_CURVE` and the scoring weights were each
@@ -18,12 +18,14 @@ document carries a blockquote at the top pointing at the answer. Read the pointe
 first — the body below it is a historical record, not a description of today.
 
 **The app was renamed from Scenic to Victory Lap on 2026-09-20**
-([`victory-lap-naming.md`](victory-lap-naming.md)), and the rename was applied
-to code, configuration and the currently-descriptive documents only. Everything
-here written before that date says "Scenic" and is left as written, for the
-reason in the paragraph above. The word also survives on purpose wherever it is
-the right English one — the *scenic route*, the *scenic score*, the *scenic
-arm* — and in `route-census/`, where it is a column value in published data.
+([`victory-lap-naming.md`](victory-lap-naming.md)) **and from Victory Lap to
+Sunday Drive on 2026-09-21** ([`sunday-drive-naming.md`](sunday-drive-naming.md)),
+each time applied to code, configuration and the currently-descriptive documents
+only. Everything here written before those dates says "Scenic" or "Victory Lap"
+and is left as written, for the reason in the paragraph above. The word "scenic"
+also survives on purpose wherever it is the right English one — the *scenic
+route*, the *scenic score*, the *scenic arm* — and in `route-census/`, where it
+is a column value in published data.
 
 ---
 
@@ -96,6 +98,7 @@ arm* — and in `route-census/`, where it is a column value in published data.
 | [branding-brainstorm.md](branding-brainstorm.md) | The name has to change; candidates and how to check them. **Three of its four survivors are since knocked out** — corrected at the top |
 | [trademark-knockout-brief.md](trademark-knockout-brief.md) → [trademark-knockout-findings.md](trademark-knockout-findings.md) | The free knockout screen, run against the live federal register and the open web. **Eight names screened to the same depth, four blocked and four clear** — Camber by a registration, Aimless, Detourist and Sunday Drive by common-law use; **Victory Lap (§15) is the one that shipped**. Carries the positive control that shows the register alone cannot clear a name, and what the paid clearance costs |
 | [victory-lap-naming-brief.md](victory-lap-naming-brief.md) → [victory-lap-naming.md](victory-lap-naming.md) | "Victory Lap" put through the knockout screen, and the App Store listing it justifies. Survives the screen. The brief's "six Navigation/Travel apps named Scenic" is corrected to 25 — and the subtitle recommendation that followed from it was **overruled by the owner**, whose choice §6a records alongside the evidence against it. Companion to the four-name screen in `trademark-knockout-findings.md` |
+| [sunday-drive-naming.md](sunday-drive-naming.md) | **The name as it stands.** "Sunday Drive" screened and adopted 2026-09-21, bundle id `app.sundaydrive`. Overrules `trademark-knockout-findings.md` §14, which invited it: the 2009 class 9 application died procedurally, and the class 42 mapping registration it was refused over has been cancelled since 2014. Zero live marks in 9/39/42, zero apps in Navigation/Travel, no descriptiveness refusal ever — the opposite of Scenic. Records the worst domain position of any candidate, and the three-layer env fallback |
 | [privacy-and-submission-brief.md](privacy-and-submission-brief.md) → [app-store-submission.md](app-store-submission.md) | The four things answered in App Store Connect and nowhere else: the custom EULA, the nutrition label, the policy URL, export compliance. **Read §1 before touching the route-guidance notice — it already shipped** |
 | [privacy-policy.md](privacy-policy.md) | **A draft, published nowhere, not cleared by a lawyer.** Every factual claim cites the file that makes it true; §7 lists what a lawyer has to clear and §8 what would make the document wrong |
 | [driving-app-features-brief.md](driving-app-features-brief.md) → [driving-app-features-cost.md](driving-app-features-cost.md) | Seven candidate features, costed. Neither document chooses what ships |

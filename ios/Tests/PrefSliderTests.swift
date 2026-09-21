@@ -1,5 +1,5 @@
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The map between where the preference slider's handle sits and the `pref`
 /// the API is asked for.

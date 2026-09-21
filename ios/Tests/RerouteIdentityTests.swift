@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// Two defects the 2026-08-26 trace audit found, and the pair of smaller ones
 /// beside them. Kept out of `RerouteTests` because they are about a reroute

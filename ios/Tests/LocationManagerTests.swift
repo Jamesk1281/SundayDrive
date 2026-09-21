@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The settings that decide whether a drive is recorded at all.
 ///

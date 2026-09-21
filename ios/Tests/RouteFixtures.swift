@@ -1,6 +1,6 @@
 import CoreLocation
 import Foundation
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// Routes built the way the app really gets them — decoded from the backend's
 /// JSON — so these tests exercise the decoding path too, and a field renamed on

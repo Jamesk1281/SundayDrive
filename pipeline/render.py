@@ -3,7 +3,7 @@
 Usage: python render.py <processed_dir> <out_dir>
 
 The heatmap's title names the region being rendered. It comes from
-VICTORYLAP_REGION, the same variable `server/app.py` reads, so the picture and
+SUNDAYDRIVE_REGION, the same variable `server/app.py` reads, so the picture and
 API can never disagree about what is covered.
 """
 
@@ -24,9 +24,11 @@ MAJOR = {"motorway", "trunk", "primary", "secondary", "tertiary"}
 
 # Named by the same variable the API reports, so a rebuild over a wider
 # extract cannot leave a stale state name burned into the picture.
-# `SCENIC_REGION` is the pre-rename name, read for one release (see app.py).
-REGION = os.environ.get("VICTORYLAP_REGION") or os.environ.get(
-    "SCENIC_REGION", "New England")
+# `VICTORYLAP_REGION` and `SCENIC_REGION` are the two pre-rename names, read
+# for one release (see app.py).
+REGION = (os.environ.get("SUNDAYDRIVE_REGION")
+          or os.environ.get("VICTORYLAP_REGION")
+          or os.environ.get("SCENIC_REGION", "New England"))
 
 # Showcase regions as (west, south, east, north) in lon/lat
 REGIONS = {

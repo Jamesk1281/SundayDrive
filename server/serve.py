@@ -1,4 +1,4 @@
-"""Run the Victory Lap routing API.
+"""Run the Sunday Drive routing API.
 
 Uses waitress — a production WSGI server that runs the same on Windows, macOS,
 Linux, and in Docker (unlike gunicorn, which is Unix-only). One worker process
@@ -16,7 +16,7 @@ graph — the trade to make deliberately, not to assume away.
 
     python server/serve.py                          # 0.0.0.0:5057
     PORT=8080 python server/serve.py                # custom port
-    VICTORYLAP_HOST=127.0.0.1 python server/serve.py    # localhost only
+    SUNDAYDRIVE_HOST=127.0.0.1 python server/serve.py    # localhost only
 
 Importing `app` below loads the graph immediately, so the server is warm before
 it accepts the first request.
@@ -32,12 +32,13 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5057"))
     # 0.0.0.0 by default so a phone on the same Wi-Fi can reach a dev server.
     # Behind a tunnel, nothing off-box ever connects directly — cloudflared
-    # reaches the app over loopback — so VICTORYLAP_HOST=127.0.0.1 is worth
-    # setting
-    # on a deployed box: it keeps the local network out and sidesteps the
-    # Windows Firewall prompt entirely.
-    # `SCENIC_HOST` is the pre-rename name, read for one release (see app.py).
-    host = os.environ.get("VICTORYLAP_HOST") or os.environ.get(
-        "SCENIC_HOST", "0.0.0.0")
-    print(f"Victory Lap API serving on http://{host}:{port}")
+    # reaches the app over loopback — so SUNDAYDRIVE_HOST=127.0.0.1 is worth
+    # setting on a deployed box: it keeps the local network out and sidesteps
+    # the Windows Firewall prompt entirely.
+    # `VICTORYLAP_HOST` and `SCENIC_HOST` are the two pre-rename names, read
+    # for one release (see app.py).
+    host = (os.environ.get("SUNDAYDRIVE_HOST")
+            or os.environ.get("VICTORYLAP_HOST")
+            or os.environ.get("SCENIC_HOST", "0.0.0.0"))
+    print(f"Sunday Drive API serving on http://{host}:{port}")
     serve(app, host=host, port=port, threads=4)

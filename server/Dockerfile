@@ -1,6 +1,6 @@
-# Victory Lap routing API. Build context is the repo root:
-#   docker build -f server/Dockerfile -t victorylap-api .
-#   docker run -p 5057:5057 victorylap-api
+# Sunday Drive routing API. Build context is the repo root:
+#   docker build -f server/Dockerfile -t sundaydrive-api .
+#   docker run -p 5057:5057 sundaydrive-api
 #
 # Expects the prebuilt graph (data/processed/graph_*.parquet) to be present in
 # the build context — generate it locally with the pipeline first, or mount it

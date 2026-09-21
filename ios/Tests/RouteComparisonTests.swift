@@ -1,5 +1,5 @@
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The two summary cards and the sentence beneath them, which used to
 /// contradict each other by a minute.

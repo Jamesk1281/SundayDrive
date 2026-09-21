@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// `progress` is what every number on the drive screen is built from — how far
 /// off the line the driver is, and how much road is left.

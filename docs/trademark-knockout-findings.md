@@ -723,6 +723,19 @@ done its job and the remaining question belongs to a professional.
 
 ## 14. Sunday Drive — added 2026-09-20, screened to the same depth
 
+> **This section's "blocked, drop it" verdict was overruled on 2026-09-21 and
+> the app now ships under this name** —
+> [`sunday-drive-naming.md`](sunday-drive-naming.md). The Verdict below invites
+> exactly that, and three of the four facts it rests on did not survive
+> re-checking: the 2009 class 9 application died **procedurally** ("abandoned
+> due to incomplete response"), the mark it was refused over — `SUNDAY DRIVES`,
+> reg. 3410292, class 42, internet map and geography information — has been
+> **cancelled since 2014-11-14**, and "App Store: zero" is two apps, both
+> outside Navigation and Travel. What stands is the domain position and the
+> crowded automotive field. **One method note:** `wordmark:(SUNDAY AND DRIVE)`
+> does not match the plural `SUNDAY DRIVES` — the index does not stem — which
+> is why the decisive cancelled registration was invisible to the table below.
+
 The plainest phrase in American English for what this app is for, which turns
 out to be the problem.
 
