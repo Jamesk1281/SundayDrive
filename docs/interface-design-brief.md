@@ -49,7 +49,11 @@ that. So: no inheritance, including from its good parts.
 
 ## 2. What the app is
 
-**Victory Lap.** Subtitle, decided and final: *The scenic route, on purpose.*
+**Sunday Drive.** Subtitle, decided and final: *The scenic route, on purpose.*
+
+*(The app was renamed Victory Lap → **Sunday Drive** on 2026-09-21, after this
+brief was written — `docs/sunday-drive-naming.md`. The subtitle is
+name-independent and is unchanged.)*
 
 It is a **driving navigation app for people who do not want the fastest route.**
 Pick a destination; it returns two routes — the fastest one, and a scenic one —
@@ -166,8 +170,11 @@ read them as material rather than as a fence.
    from the panel header, the About screen and the location purpose string on
    2026-09-20, deliberately, because the name is *"not as descriptive or
    mood-adjacent to the rest of it"*. The only place a user should read
-   "Victory Lap" is the home-screen icon label. Designing a splash screen or a
-   branded header would undo a decision taken two days ago.
+   "Sunday Drive" is the home-screen icon label. Designing a splash screen or a
+   branded header would undo a decision taken two days ago. **The instruction
+   survived the 2026-09-21 rename unchanged** — the removal was of *a* product
+   name, not of that one, and `ios/project.yml:21`'s purpose string still names
+   no app at all.
 5. **If you propose an icon: SF Symbols may not be used in app icons, logos or
    trademarks** under the Xcode and Apple SDK licence. Inside the app,
    `systemImage:` is fine. Also worth knowing: the current `icon-1024.png` is
@@ -284,7 +291,7 @@ numbers from §2 rather than lorem ipsum.
 - **Add both new documents to the `docs/README.md` index**, under "The app".
 - **No build or test run is needed** — nothing you touch is compiled. The
   backend suite is **379 passed** as of `0c967e2` and you should leave it there.
-  If you somehow need it: `VICTORYLAP_DATA=<main checkout>/data/processed-ne
+  If you somehow need it: `SUNDAYDRIVE_DATA=<main checkout>/data/processed-ne
   .venv/bin/python -m pytest tests/ -q`, from the *main* checkout, where the
   data and the venv live. The project path contains spaces, so always
   `.venv/bin/python -m <tool>`, never the console script.

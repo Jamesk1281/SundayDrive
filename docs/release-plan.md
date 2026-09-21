@@ -1,5 +1,18 @@
 # Release plan: what shipping needs, in what order
 
+> **§6b — the rename — has since been executed, twice.** Scenic → **Victory
+> Lap** on 2026-09-20 (`098ff8f`, `14efbf6`) and Victory Lap → **Sunday Drive**
+> on 2026-09-21 (`c75ce1d`, `docs/sunday-drive-naming.md`). So the header's
+> checkable fact below — that `ios/project.yml:66` reads
+> `PRODUCT_BUNDLE_IDENTIFIER: app.scenic.demo` — was true when written and is
+> not true now: at `5aff398` that line reads **`app.sundaydrive`**, with
+> `app.sundaydrive.tests` at `:101`. `ScenicApp.swift` is now
+> `SundayDriveApp.swift` and the Info.plist key is `SundayDriveAPIBaseURL`.
+> **§6b's method is what stands, not its identifiers** — it is the record of
+> how the rename was done by reading every hit, and the traps it names are
+> still the traps. Everything below is left as written; only this pointer is
+> new. Nothing is claimed here about §6a, §6c–§6f or §7.
+
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
 two unmerged branches named in §2, and **revised the same day** with three owner
 decisions recorded in §8. **Nothing was executed** — no rename, no `LICENSE`, no

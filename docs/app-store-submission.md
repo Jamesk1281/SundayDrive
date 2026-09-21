@@ -5,6 +5,11 @@
 deliverable here that is code, `ios/Sources/PrivacyInfo.xcprivacy`, is asserted
 present in the built bundle by `ios/Tests/PrivacyManifestTests.swift`.
 
+**The app name, bundle identifier and product name were brought up to date
+2026-09-21** — the app is **Sunday Drive**, `app.sundaydrive`, and the built
+bundle is `SundayDrive.app` (`docs/sunday-drive-naming.md`). §6, §7.1 and row 8
+of §8 were what carried the old ones.
+
 **What this document is for.** Four things that gate an App Store submission are
 answered in a web console and recorded nowhere else: the licence agreement, the
 privacy nutrition label, the privacy policy URL, and export compliance. A web
@@ -252,8 +257,9 @@ code fact.)*
 ## 6. Version and identity fields
 
 These are still development values and are wrong for a submission
-(`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.victorylap`
-(renamed 2026-09-20, **still provisional — see the gate below**),
+(`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.sundaydrive`
+(renamed 2026-09-20 to `app.victorylap` and again 2026-09-21 to this,
+**still provisional — see the gate below**),
 marketing version `0.1`, build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
 deployment target iOS 17.0. **Each is an owner decision.**
 
@@ -284,11 +290,20 @@ than by default.
 Both from `docs/legal-and-ip-audit.md`; neither is fixed, and neither is fixed
 by this document.
 
-1. ~~**The name.**~~ **Resolved 2026-09-20.** Item 1 — "Scenic" taken by a
-   senior direct competitor in the same category *and* merely descriptive — is
-   answered: the app is **Victory Lap** (`victory-lap-naming.md`), and the
-   identifiers were renamed to match. Nothing public-facing has gone out under
-   either name.
+1. ~~**The name.**~~ **Resolved 2026-09-20, and re-decided 2026-09-21.** Item 1
+   — "Scenic" taken by a senior direct competitor in the same category *and*
+   merely descriptive — is answered: the app is **Sunday Drive**
+   (`sunday-drive-naming.md`), renamed from Victory Lap
+   (`victory-lap-naming.md`), and the identifiers were renamed to match.
+   Nothing public-facing has gone out under any of the three names.
+
+   **The App Store `Name` field answer is `Sunday Drive` — 12 characters of
+   30.** The listing copy in `victory-lap-naming.md` §6–§8 still carries the
+   old name in its `Name` row and its own forward pointer says so; the
+   subtitle it decided, *The scenic route, on purpose*, is name-independent and
+   stands. Note that the `Name - Subtitle` combined form does **not** carry
+   over: `Victory Lap - The Scenic Route` was exactly 30 characters, and
+   `Sunday Drive - The Scenic Route` is **31**, one over the limit.
 2. **Apple's map attribution is obscured** by the planning sheet. Item 2, ADPLA
    Attachment 6 §2.1, confirmed breach, unfixed. Submitting with a clipped Apple
    logo is submitting a known contract breach.
@@ -305,13 +320,13 @@ so it is its own piece of work.
 
 | # | Item | State |
 | --- | --- | --- |
-| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done** — `ios/Sources/PrivacyInfo.xcprivacy`, verified at the root of the built `VictoryLap.app` and guarded by `ios/Tests/PrivacyManifestTests.swift` |
+| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done** — `ios/Sources/PrivacyInfo.xcprivacy`, verified at the root of the built `SundayDrive.app` and guarded by `ios/Tests/PrivacyManifestTests.swift` |
 | 2 | Route-guidance notice in the app | **Done** — `AboutView.swift:100-102`, shipped 2026-09-19 |
 | 3 | Custom EULA filed in App Store Connect | **Open** — §1; needs a lawyer and an owner decision |
 | 4 | Privacy policy drafted | **Done, as a draft** — `docs/privacy-policy.md` |
 | 5 | Privacy policy cleared and published, URL entered | **Open** — §2; needs a lawyer, a host, and a contact address |
 | 6 | Nutrition label answers decided | **Done** — §3; enter them when submitting |
 | 7 | Export compliance answer decided | **Done** — §4; the declaration itself is the owner's to make |
-| 8 | Name settled | **Blocked** — §7.1 |
+| 8 | Name settled | **Done** — §7.1, `Sunday Drive` as of 2026-09-21 |
 | 9 | Apple attribution unobscured | **Blocked** — §7.2 |
 | 10 | Bundle ID, version, territories | **Open** — §6, owner input |
