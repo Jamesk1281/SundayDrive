@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Who the app owes credit to, and in the words their licences ask for.
 ///
-/// Victory Lap draws OpenStreetMap-derived road geometry on the map, names OSM
+/// Sunday Drive draws OpenStreetMap-derived road geometry on the map, names OSM
 /// streets in its maneuvers and speaks them aloud, and every score it shows is
 /// built from two more open datasets. All three require attribution in the
 /// thing that reaches the user — a private repo's README discharges nothing.
@@ -200,7 +200,7 @@ enum DataSources {
     )
 }
 
-/// The "Data sources" sheet: what Victory Lap is built from, and the credit each of
+/// The "Data sources" sheet: what Sunday Drive is built from, and the credit each of
 /// those licences asks for.
 ///
 /// Presented the way "Tune scenery" is — a `NavigationStack` in a sheet with a

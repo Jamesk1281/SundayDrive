@@ -1,6 +1,6 @@
 import AVFoundation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// Which voices get offered, and what choosing one does to the schedule.
 ///

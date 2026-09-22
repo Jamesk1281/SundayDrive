@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// An end-to-end drive: the real backend, the real decode, the real navigation
 /// logic, over real Massachusetts geometry.
@@ -12,14 +12,15 @@ import XCTest
 /// getting stuck or the trip ending early.
 ///
 /// Skips unless a server is reachable, so it costs nothing in a plain checkout:
-///     VICTORYLAP_DATA=... python server/serve.py
-///     cd ios && xcodebuild test -scheme VictoryLap -destination '...'
+///     SUNDAYDRIVE_DATA=... python server/serve.py
+///     cd ios && xcodebuild test -scheme SundayDrive -destination '...'
 @MainActor
 final class LiveDriveTests: XCTestCase {
 
     private static let env = ProcessInfo.processInfo.environment
     private static let baseURL =
-        env["VICTORYLAP_API"] ?? env["SCENIC_API"] ?? "http://127.0.0.1:5057"
+        env["SUNDAYDRIVE_API"] ?? env["VICTORYLAP_API"] ?? env["SCENIC_API"]
+            ?? "http://127.0.0.1:5057"
 
     private func liveRoute(from: String, to: String, pref: Double,
                            weights: String = "") async throws -> RouteResponse {
@@ -35,7 +36,7 @@ final class LiveDriveTests: XCTestCase {
             // the two sides disagree about the shape — which is the one thing
             // these tests exist to catch, and which a blanket `catch` reported
             // as a green skip indistinguishable from "no server running".
-            throw XCTSkip("no Victory Lap API at \(Self.baseURL) — start "
+            throw XCTSkip("no Sunday Drive API at \(Self.baseURL) — start "
                           + "server/serve.py (\(error.code))")
         }
     }

@@ -55,7 +55,7 @@ both.
 
 The per-class breakdown needs the built graph (`graph_edges.parquet`); the
 signals-vs-traffic split additionally needs the OSM extract (found in data/raw,
-or set VICTORYLAP_PBF). Without either, the rest still works — pass `-` as the data
+or set SUNDAYDRIVE_PBF). Without either, the rest still works — pass `-` as the data
 directory.
 """
 
@@ -1546,13 +1546,13 @@ def main(argv):
         control = traffic_control(_find_pbf(), Path(data_dir) / "traffic_control.parquet")
         if control is None:
             print("no OSM extract found — stops won't be split into signals vs "
-                  "traffic. Put the .pbf in data/raw or set VICTORYLAP_PBF.")
+                  "traffic. Put the .pbf in data/raw or set SUNDAYDRIVE_PBF.")
     report(paths, edges, control)
     return 0
 
 
 def _find_pbf():
-    """The OSM extract, from VICTORYLAP_PBF or the usual place in data/raw.
+    """The OSM extract, from SUNDAYDRIVE_PBF or the usual place in data/raw.
 
     This used to take the alphabetically first match, which is silent and wrong
     the moment `data/raw` holds more than one extract: with the six New England
@@ -1566,8 +1566,11 @@ def _find_pbf():
     """
     import os
 
-    # `SCENIC_PBF` is the pre-rename name, read for one release.
-    override = os.environ.get("VICTORYLAP_PBF") or os.environ.get("SCENIC_PBF")
+    # `VICTORYLAP_PBF` and `SCENIC_PBF` are the two pre-rename names, read
+    # for one release.
+    override = (os.environ.get("SUNDAYDRIVE_PBF")
+                or os.environ.get("VICTORYLAP_PBF")
+                or os.environ.get("SCENIC_PBF"))
     if override:
         return Path(override)
     root = Path(__file__).resolve().parent.parent
@@ -1577,7 +1580,7 @@ def _find_pbf():
         return None
     if len(found) > 1:
         print(f"NOTE: {len(found)} extracts in data/raw; using the largest, "
-              f"{found[0].name}. Set VICTORYLAP_PBF to override.")
+              f"{found[0].name}. Set SUNDAYDRIVE_PBF to override.")
     return found[0]
 
 

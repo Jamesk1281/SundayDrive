@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// Rerouting a loop, which is the one thing about driving a loop that is not
 /// simply driving a route.

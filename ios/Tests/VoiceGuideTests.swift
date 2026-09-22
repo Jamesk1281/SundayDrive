@@ -1,7 +1,7 @@
 import AVFoundation
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The announcement schedule, and the latch that stops a reroute re-speaking
 /// the drive.

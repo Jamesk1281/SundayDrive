@@ -21,7 +21,7 @@ def client():
         pytest.skip(f"built graph missing ({', '.join(missing)}) — "
                     "run the pipeline first")
     import os
-    os.environ.setdefault("VICTORYLAP_DATA", str(DATA))
+    os.environ.setdefault("SUNDAYDRIVE_DATA", str(DATA))
     sys.path.insert(0, str(ROOT / "server"))
     import app as server_app
     server_app.app.config["TESTING"] = True
@@ -43,7 +43,7 @@ def test_root_describes_the_service(client):
     response = client.get("/")
     assert response.status_code == 200
     body = response.get_json()
-    assert body["service"] == "victorylap-api"
+    assert body["service"] == "sundaydrive-api"
     assert "/api/route" in body["endpoints"]
     assert "coast" in body["beauty_types"]
 

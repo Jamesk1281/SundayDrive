@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The recorder that turns a test drive into data. Worth testing precisely
 /// because its failures are silent and expensive: you find out the file was

@@ -32,10 +32,37 @@ already passed.
 The standing workaround is to skip it:
 
 ```sh
-xcodebuild test -project Scenic.xcodeproj -scheme Scenic -destination 'id=<UDID>' \
-  -skip-testing:ScenicTests/LiveDriveTests \
-  -skip-testing:ScenicTests/VoiceCatalogueTests
+xcodebuild test -project SundayDrive.xcodeproj -scheme SundayDrive -destination 'id=<UDID>' \
+  -skip-testing:SundayDriveTests/LiveDriveTests \
+  -skip-testing:SundayDriveTests/VoiceCatalogueTests
 ```
+
+> **Identifiers updated 2026-09-21** — this block read `Scenic.xcodeproj`,
+> `-scheme Scenic` and `ScenicTests/…` until then, and had been unrunnable since
+> the 2026-09-20 rename.
+>
+> **The hang is not fixed, but it is runtime-dependent and did not occur on
+> 2026-09-21.** The full suite was run without either skip: **249 passed, 7
+> skipped, 0 failures** in 39 s, and `VoiceCatalogueTests` ran all 8 in
+> **2.843 s** with the 1.0–2.5 s band in §1 holding. On iOS 26.4 the Samantha
+> asset was present, so there was no fetch to time out — and the device was
+> created fresh for that run, which suggests the asset ships inside the runtime
+> image rather than being downloaded on demand.
+>
+> **The guard at `VoiceCatalogueTests.swift:23-26` cannot prevent this**, which
+> is worth knowing before anyone treats it as the fix: it skips only when
+> Samantha is absent from `AVSpeechSynthesisVoice.speechVoices()`, and it has
+> been in the file since `0b1f240` (2026-08-30), *before* the stall. The failing
+> condition is Samantha **listed but not downloaded** — exactly what `:28-30`
+> describes — and that call cannot tell the two apart. So a machine whose
+> runtime lacks the asset can still stall for 13 minutes. **Re-measure before
+> removing the skip permanently.**
+>
+> Separately: `LiveDriveTests` is unrelated to this. It needs a server, not a
+> voice, and with nothing on `127.0.0.1:5057` its 7 tests skipped in 0.053 s
+> (connection *refused*, `Code(rawValue: -1004)`, caught at `:34-41`) — no
+> stall. And skipping `VoiceCatalogueTests` is what makes the documented iOS
+> baseline **241** rather than 249. See `sunday-drive-rename-audit.md` §6.
 
 That returns `** TEST SUCCEEDED **` over 19 suites. **It also means the voice
 catalogue's 143 lines of tests are unverified on every run, and a clean result
@@ -80,7 +107,12 @@ what that drive should test *is*.
 ## Traps
 
 **1. Touch no file under `ios/`. A rename is in flight across the entire
-target.** `claude/…rename…` is rewriting `PRODUCT_BUNDLE_IDENTIFIER`,
+target.** *(Spent, 2026-09-21: that rename landed as `098ff8f`/`14efbf6`, and a
+second one — Victory Lap → **Sunday Drive**, `c75ce1d` — landed the next day.
+The target, scheme and module are `SundayDrive` and the import is
+`@testable import SundayDrive`. The paragraph below is left as the record of
+what was in flight when this brief was written.)* `claude/…rename…` is rewriting
+`PRODUCT_BUNDLE_IDENTIFIER`,
 `ScenicApp.swift`, the `.scenic` tokens and the `SCENIC_*` prefix — and **all 19
 test files carry `import Scenic`**, so every one of them changes. The voice files
 are directly in its path: `VoiceGuide.swift` has 3 occurrences of the old name,

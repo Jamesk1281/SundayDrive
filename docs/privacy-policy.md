@@ -1,10 +1,12 @@
 # Privacy policy — DRAFT, NOT PUBLISHED
 
-**Status: drafted 2026-09-19, published nowhere.** Checkable: `git grep -l
-'privacy polic'` finds no URL in `ios/`, and App Store Connect has never been
-given one. The app itself is `PRODUCT_BUNDLE_IDENTIFIER: app.victorylap` at
-`MARKETING_VERSION: "0.1"` (`ios/project.yml:66`, `:74`) — the identifier
-changed with the 2026-09-20 rename and is **not** final — it locks at the
+**Status: drafted 2026-09-19, published nowhere; name and identifier brought
+up to date 2026-09-21.** Checkable: `git grep -l 'privacy polic'` finds no URL
+in `ios/`, and App Store Connect has never been given one. The app itself is
+`PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "0.1"`
+(`ios/project.yml:66`, `:74`) — the identifier changed with the 2026-09-20
+rename and **again** with the 2026-09-21 rename to Sunday Drive
+(`docs/sunday-drive-naming.md`), and is **not** final — it locks at the
 first build upload, TestFlight included, not at submission
 (`docs/app-store-submission.md` §6). Nothing has been uploaded.
 
@@ -26,14 +28,14 @@ first build upload, TestFlight included, not at submission
 
 ## 0. What this app is
 
-Victory Lap plans and narrates driving routes that prefer scenic roads over
+Sunday Drive plans and narrates driving routes that prefer scenic roads over
 fast ones. It runs on iPhone, it talks to one routing server the developer operates,
 and it uses Apple's Maps services for the map, for address search and for place
 names. There is no account, no sign-in, and no way to create one.
 
 **The app is not published.** At the time of writing it is a single-user
 research instrument (`docs/legal-and-ip-audit.md`; the bundle identifier is
-`app.victorylap` and the marketing version `0.1`). This document is
+`app.sundaydrive` and the marketing version `0.1`). This document is
 written as the policy it would need if it were published, which is the only way
 to find out what would have to change first.
 
@@ -73,8 +75,16 @@ of them the app reading back its own preferences:
 **The app uses your location for one thing: following the route you asked for.**
 It requests *when in use* authorization only (`LocationManager.swift:145`,
 `:218`) — never "always" — and the purpose string the system shows you is the
-one at `ios/project.yml:21`: "Victory Lap uses your location to follow your
-route, turn by turn, while you drive."
+one at `ios/project.yml:21`: "Your location is used to follow the route, turn
+by turn, while you drive."
+
+**That string does not name the app, deliberately** — iOS already titles the
+alert *Allow "Sunday Drive" to use your location?*, so naming the app in the
+body said it twice. The name was removed on 2026-09-20 and this quotation was
+re-read against `ios/project.yml` at `5aff398` on 2026-09-21. Do not "restore"
+a product name to it: neither *"Victory Lap uses your location…"* (what this
+document quoted until 2026-09-21) nor a Sunday Drive equivalent exists anywhere
+in the project.
 
 **Location continues while the app is in the background, and the blue bar shows
 whenever it does.** `UIBackgroundModes` includes `location`
@@ -234,10 +244,12 @@ characterisations are not mine to make. In order of how much turns on them:
    approximate location. The policy should not describe behaviour that has not
    been observed. **Test it, then write what happens.**
 7. **The contact address (§6).**
-8. ~~**The app's name.**~~ **Resolved 2026-09-20.** The app is **Victory
-   Lap** (`docs/victory-lap-naming.md`), and this document was updated with it.
+8. ~~**The app's name.**~~ **Resolved 2026-09-20, and again 2026-09-21.** The
+   app is **Sunday Drive** (`docs/sunday-drive-naming.md`), renamed from Victory
+   Lap (`docs/victory-lap-naming.md`), and this document was updated with it.
    The audit's item 1 — "Scenic" being taken by a senior direct competitor, and
-   descriptive — is what the rename answers.
+   descriptive — is what the first rename answered; the second was a change of
+   fit, not of risk.
 
 ## 8. What would make this document wrong
 

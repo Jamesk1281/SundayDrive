@@ -15,10 +15,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 sys.path.insert(0, str(ROOT / "tools"))
 
-# `SCENIC_DATA` is the pre-rename name, read for one release (see
-# `server/app.py`) so commands written before the rename still point the
-# suite at a built graph instead of silently skipping every test that needs one.
-DATA = Path(os.environ.get("VICTORYLAP_DATA")
+# `VICTORYLAP_DATA` and `SCENIC_DATA` are the two pre-rename names, read for
+# one release (see `server/app.py`) so commands written before the renames
+# still point the suite at a built graph instead of silently skipping every
+# test that needs one.
+DATA = Path(os.environ.get("SUNDAYDRIVE_DATA")
+            or os.environ.get("VICTORYLAP_DATA")
             or os.environ.get("SCENIC_DATA", ROOT / "data" / "processed"))
 
 # Everything `Router.__init__` reads. It raises on any one of them being

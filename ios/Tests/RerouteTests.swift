@@ -1,6 +1,6 @@
 import CoreLocation
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// Two reroutes can genuinely be in flight at once: `switchToFastest` does not
 /// wait for an off-route reroute to finish. These drive that race deliberately,

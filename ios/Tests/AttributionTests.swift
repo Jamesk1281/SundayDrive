@@ -1,5 +1,5 @@
 import XCTest
-@testable import VictoryLap
+@testable import SundayDrive
 
 /// The attribution the app owes its data sources.
 ///

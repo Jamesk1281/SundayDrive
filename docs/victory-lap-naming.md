@@ -1,5 +1,13 @@
 # "Victory Lap": the screen, and the listing it justifies
 
+> **Superseded as the name on 2026-09-21 — the app is now **Sunday Drive**
+> ([`sunday-drive-naming.md`](sunday-drive-naming.md)), bundle id
+> `app.sundaydrive`.** Nothing below was found to be *wrong*: Victory Lap
+> survived its screen and survives it still (re-checked 2026-09-21 — zero live
+> marks in 9/39/42, and zero App Store hits even under the corrected
+> union-count method). It was dropped on fit, not on risk. The listing copy
+> here still needs its name swapped before use.
+
 **Status: screened and drafted 2026-09-20, against `main` at `2d6fbc0`. Nothing
 was filed, bought, reserved or renamed.** No identifier in the codebase was
 touched — that is [`release-plan.md`](release-plan.md) §6b and it is a separate

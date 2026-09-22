@@ -1,4 +1,4 @@
-"""Victory Lap routing API (backend for the iOS app).
+"""Sunday Drive routing API (backend for the iOS app).
 
 Loads the routing graph once at startup and serves:
   GET  /api/route?from=LAT,LON&to=LAT,LON&pref=0.5[&heading=DEG][&via=LAT,LON]
@@ -72,14 +72,16 @@ LOOP_RETRACE_NOTE = 0.15
 # over. Read from the environment so a rollback to a different region's parquets
 # does not need a code change to stay honest.
 #
-# The `SCENIC_*` names are the pre-rename spelling, still read after the
-# `VICTORYLAP_*` ones for one release. They are set by hand on the deployed
-# box and in every command written before the rename, and dropping them
-# outright fails silently in the worst way available: the server would come
-# up serving the default region and the default data directory, and answer
-# every request as though that were correct.
-REGION = os.environ.get("VICTORYLAP_REGION") or os.environ.get(
-    "SCENIC_REGION", "New England")
+# `VICTORYLAP_*` and `SCENIC_*` are the two pre-rename spellings, still read
+# after the `SUNDAYDRIVE_*` ones for one release. They are set by hand on the
+# deployed box and in every command written before the renames, and dropping
+# them outright fails silently in the worst way available: the server would
+# come up serving the default region and the default data directory, and
+# answer every request as though that were correct. Delete both legacy names
+# at the first release, not before.
+REGION = (os.environ.get("SUNDAYDRIVE_REGION")
+          or os.environ.get("VICTORYLAP_REGION")
+          or os.environ.get("SCENIC_REGION", "New England"))
 
 # Reject a request whose endpoint lies farther than this from any road — it's
 # outside the covered region (see REGION), and the "nearest" road would be in an
@@ -89,8 +91,9 @@ SNAP_MAX_M = 5000.0
 # Where the prebuilt graph lives. An env var (not a CLI arg) so it works
 # identically whether run directly (python server/app.py) or via the waitress
 # entrypoint (server/serve.py). Defaults to the repo's data/processed.
-PROCESSED = os.environ.get("VICTORYLAP_DATA") or os.environ.get(
-    "SCENIC_DATA", str(ROOT / "data" / "processed"))
+PROCESSED = (os.environ.get("SUNDAYDRIVE_DATA")
+             or os.environ.get("VICTORYLAP_DATA")
+             or os.environ.get("SCENIC_DATA", str(ROOT / "data" / "processed")))
 
 app = Flask(__name__, static_folder=None)
 CORS(app)
@@ -407,7 +410,7 @@ def index():
     query shape for anyone poking at the API by hand.
     """
     return jsonify(
-        service="victorylap-api",
+        service="sundaydrive-api",
         status="ok",
         nodes=len(ROUTER.nodes),
         routing_slots=ROUTER.n,

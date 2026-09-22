@@ -1,4 +1,4 @@
-"""Generate the Victory Lap app icon (1024x1024 PNG) with Pillow.
+"""Generate the Sunday Drive app icon (1024x1024 PNG) with Pillow.
 
 A winding road climbing through rolling hills under a soft sky — the scenic
 drive, reduced to a clean, recognizable mark. Reproducible so the icon can be
