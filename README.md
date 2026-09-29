@@ -79,9 +79,15 @@ R=data/raw/new-england-latest.osm.pbf; D=data/processed-ne
 .venv/bin/python server/app.py        # dev server on http://127.0.0.1:5057
 ```
 
-`GET /api/route?from=LAT,LON&to=LAT,LON&pref=0..1[&avoid_unpaved=0..2]` is the
-one endpoint that matters; `GET /` describes the service and doubles as a
-liveness check. Hosting it behind a tunnel: [`server/DEPLOY.md`](server/DEPLOY.md).
+`/api/route` with `from=LAT,LON&to=LAT,LON&pref=0..1[&avoid_unpaved=0..2]` is
+the one endpoint that matters (`/api/loop` takes `from`, `km` and `sector`).
+The app sends those parameters as `POST` with an
+`application/x-www-form-urlencoded` body, so a driver's coordinates never
+appear in a URL
+([`docs/coordinates-out-of-the-url-brief.md`](docs/coordinates-out-of-the-url-brief.md)).
+`GET` with the same parameters in the query string is still accepted, for older
+builds and for curl. `GET /` describes the service and doubles as a liveness
+check. Hosting it behind a tunnel: [`server/DEPLOY.md`](server/DEPLOY.md).
 Command-line equivalent:
 
 ```sh

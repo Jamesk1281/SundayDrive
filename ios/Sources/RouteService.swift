@@ -140,9 +140,24 @@ enum RouteService {
         weights: [String: Double] = [:],
         heading: CLLocationDirection? = nil
     ) async throws -> RouteResponse {
-        // Build the URL: /api/route?from=lat,lon&to=lat,lon&pref=0.50&w_coast=...
-        var components = URLComponents(string: "\(baseURL)/api/route")!
-        components.queryItems = [
+        try await send(routeRequest(from: start, to: end, via: via, pref: pref,
+                                    weights: weights, heading: heading))
+    }
+
+    /// The request `route(...)` sends, built without sending it so the one
+    /// property this app promises about it — no coordinate in the URL — has a
+    /// test. `base` is only for tests and must otherwise stay the default.
+    static func routeRequest(
+        from start: CLLocationCoordinate2D,
+        to end: CLLocationCoordinate2D,
+        via: CLLocationCoordinate2D? = nil,
+        pref: Double,
+        weights: [String: Double] = [:],
+        heading: CLLocationDirection? = nil,
+        base: String = baseURL
+    ) -> URLRequest {
+        // The body: from=lat,lon&to=lat,lon&pref=0.50&w_coast=...
+        formRequest("\(base)/api/route", [
             URLQueryItem(name: "from", value: "\(start.latitude),\(start.longitude)"),
             URLQueryItem(name: "to", value: "\(end.latitude),\(end.longitude)"),
             URLQueryItem(name: "pref", value: String(format: "%.2f", pref)),
@@ -152,9 +167,7 @@ enum RouteService {
             [URLQueryItem(name: "heading", value: headingParameter($0))]
         } ?? []) + (via.map {
             [URLQueryItem(name: "via", value: "\($0.latitude),\($0.longitude)")]
-        } ?? [])
-
-        return try await get(components.url!)
+        } ?? []))
     }
 
     /// Request one scenic loop from a start point, of about `km`.
@@ -190,28 +203,67 @@ enum RouteService {
         pref: Double = 1.0,
         weights: [String: Double] = [:]
     ) async throws -> LoopResponse {
-        var components = URLComponents(string: "\(baseURL)/api/loop")!
-        components.queryItems = [
+        try await send(loopRequest(from: start, km: km, sector: sector,
+                                   pref: pref, weights: weights))
+    }
+
+    /// The request `loop(...)` sends; see `routeRequest(...)`.
+    static func loopRequest(
+        from start: CLLocationCoordinate2D,
+        km: Double,
+        sector: String? = nil,
+        pref: Double = 1.0,
+        weights: [String: Double] = [:],
+        base: String = baseURL
+    ) -> URLRequest {
+        formRequest("\(base)/api/loop", [
             URLQueryItem(name: "from", value: "\(start.latitude),\(start.longitude)"),
             URLQueryItem(name: "km", value: String(format: "%.1f", km)),
             URLQueryItem(name: "pref", value: String(format: "%.2f", pref)),
         ] + weights.map { type, weight in
             URLQueryItem(name: "w_\(type)", value: String(format: "%.2f", weight))
-        } + (sector.map { [URLQueryItem(name: "sector", value: $0)] } ?? [])
-
-        return try await get(components.url!)
+        } + (sector.map { [URLQueryItem(name: "sector", value: $0)] } ?? []))
     }
 
-    /// One GET, decoded — with every way it can fail turned into a
+    /// A POST carrying `items` as a form body, and nothing on the URL.
+    ///
+    /// The parameters are the driver's position and destination, and the API
+    /// sits behind a proxy that terminates TLS: whatever is in a URL is in that
+    /// proxy's access log by default, so they travel in the body instead.
+    /// Same keys and value formats the query string carried, which is why the
+    /// server's parsing did not change. See
+    /// docs/coordinates-out-of-the-url-brief.md.
+    ///
+    /// Setting POST is not the fix; leaving the query off the URL is. The server
+    /// reads only the body on a POST, so a request that kept both would fail
+    /// there rather than quietly working, and `RouteServiceRequestTests` checks
+    /// the URL directly.
+    static func formRequest(_ endpoint: String, _ items: [URLQueryItem]) -> URLRequest {
+        var request = URLRequest(url: URL(string: endpoint)!)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded",
+                         forHTTPHeaderField: "Content-Type")
+        var body = URLComponents()
+        body.queryItems = items
+        // `URLComponents` leaves "+" alone, which is right in a query and wrong
+        // in a form body, where it decodes as a space. Nothing sent today holds
+        // one, so this only keeps that true if something ever does.
+        request.httpBody = body.percentEncodedQuery?
+            .replacingOccurrences(of: "+", with: "%2B")
+            .data(using: .utf8)
+        return request
+    }
+
+    /// One request, decoded — with every way it can fail turned into a
     /// `ServiceError` whose text is worth showing a driver.
     ///
     /// Shared because `route` and `loop` carried the same status-check block
     /// verbatim, and it was wrong in both.
-    private static func get<T: Decodable>(_ url: URL) async throws -> T {
+    private static func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.data(from: url)
+            (data, response) = try await session.data(for: request)
         } catch is URLError {
             // Thrown before any status code exists, so nothing answered.
             throw ServiceError.offline

@@ -3,7 +3,8 @@
 **Status: drafted 2026-09-19, published nowhere; name and identifier brought
 up to date 2026-09-21; hosting brought up to date 2026-09-29, when the routing
 server moved from the developer's laptop to an Oracle Cloud virtual machine
-(§2.1(a), §7 item 9).** Checkable: `git grep -l 'privacy polic'` finds no URL
+(§2.1(a), §7 item 9); coordinates moved out of the request URL 2026-09-29
+(§2.1(a), §7 item 1).** Checkable: `git grep -l 'privacy polic'` finds no URL
 in `ios/`, and App Store Connect has never been given one. The app itself is
 `PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "0.1"`
 (`ios/project.yml:66`, `:74`) — the identifier changed with the 2026-09-20
@@ -109,11 +110,13 @@ is also the most precise location iOS will give an app.
 Three destinations, and no others.
 
 **(a) To the routing server, to compute a route.** Your start and destination
-coordinates are sent as query parameters to `/api/route`
-(`RouteService.swift:135-146`), and your start point to `/api/loop`
-(`RouteService.swift:185-192`). While you are driving, a reroute sends your
-current position and heading the same way. Nothing else goes with them: no
-identifier, no timestamp, no trace, no history.
+coordinates are sent in the body of a POST request to `/api/route`
+(`RouteService.swift:150-170`), and your start point to `/api/loop`
+(`RouteService.swift:211-225`), never in the URL (`formRequest`,
+`RouteService.swift:241`, and `RouteServiceRequestTests`, which checks the
+built request). While you are driving, a reroute sends your current position
+and heading the same way. Nothing else goes with them: no identifier, no
+timestamp, no trace, no history.
 
 **The server stores nothing.** `server/app.py` has no database, no log file and
 no request logging — it prints two startup lines and nothing per request
@@ -151,15 +154,21 @@ running on 2026-09-29 were:
 None of these is directed at route requests. Which of them this policy has to
 name is a §7 question.
 
-**The request also passes through Cloudflare, which can see the URL.** The
+**The request also passes through Cloudflare, which can still read it.** The
 deployed backend is reached through a Cloudflare tunnel that terminates TLS
-(`server/DEPLOY.md:8-14`, `:118-123`), so the coordinates — which are in the query
-string, not the body — are visible to Cloudflare at its edge and subject to
-Cloudflare's own logging and retention. **Cloudflare's edge is the one place
-where location is visible to a third party in transit, outside the developer's
-control.** Oracle is the other third party, because it hosts the machine. See
-§7. The Cloudflare exposure is both a disclosure item and a design defect worth
-fixing.
+(`server/DEPLOY.md:8-14`, `:118-123`). The coordinates travel in the request
+body, not the URL, so they are not in the URLs that access logs record by
+default. That narrows the exposure; it does not remove Cloudflare from the
+path. Terminating TLS means Cloudflare's edge can technically read the body as
+well as the URL, and what it does with either is subject to Cloudflare's own
+logging and retention. **Cloudflare's edge is still the one place where
+location passes through a third party in transit, outside the developer's
+control**, and this policy still names Cloudflare for that reason. Oracle is the
+other third party, because it hosts the machine. See §7.
+
+App builds made before 2026-09-29 sent the coordinates in the URL query string.
+The server still accepts that form so those builds keep working, but the app
+described here does not send it.
 
 **(b) To Apple, for the map, search and place names.** The map is Apple's
 (`MapKit`). Typing an address sends it to Apple's search service
@@ -251,13 +260,16 @@ characterisations are not mine to make. In order of how much turns on them:
 
 1. **The Cloudflare edge disclosure (§2.1(a)).** The claim "the server stores
    nothing" is true of the code and false of the *system*, because coordinates
-   travel in a URL query string through a third party that terminates TLS. A
-   lawyer needs to decide whether Cloudflare is a processor to be named, and
-   whether this wording discloses it adequately. **Engineering can shrink this
-   problem rather than argue it: move the coordinates from the query string into
-   a POST body.** That is a small change to `RouteService` and `server/app.py`
-   and it is out of scope for this document, but it is the cheapest available
-   privacy improvement in the project.
+   still pass through a third party that terminates TLS. **The
+   engineering half is done (2026-09-29):** the app now sends coordinates in a
+   POST body rather than the URL query string
+   (`docs/coordinates-out-of-the-url-brief.md`), so they are no longer in the
+   URLs that access logs record by default. What is left is the legal half.
+   Cloudflare can still technically read the body, so a lawyer still needs to
+   decide whether Cloudflare is a processor to be named (this draft names it)
+   and whether the §2.1(a) wording discloses it adequately. The privacy
+   manifest is unchanged by this: precise location stays declared as
+   collected (item 2).
 2. **Whether precise location counts as "collected".** Apple's definition turns
    on retention beyond servicing the request in real time. On the code alone the
    answer is no; with Cloudflare in the path it is arguably yes. The privacy
@@ -321,8 +333,12 @@ Re-check it if any of these change, because each one is load-bearing above:
   package — it is the test target depending on the app target.)
 - **Any upload, share or sync feature for drive traces.** §3 rests on there
   being none.
-- **A move off the Cloudflare tunnel, or a move of coordinates out of the query
-  string.** Either one changes §2.1(a) and §7.1.
+- **A move off the Cloudflare tunnel, or any coordinate put back into a
+  request URL.** Either one changes §2.1(a) and §7.1. The move of coordinates
+  out of the query string into a POST body happened on 2026-09-29, and those
+  two sections were rewritten with it; `RouteServiceRequestTests` fails if
+  one comes back. Removing the server's GET support, kept for older builds,
+  would not change this document.
 - **A change of the machine behind the tunnel.** This includes a new hosting
   provider, a new region, or a second origin such as the developer's laptop
   rejoining as a second connector, which `server/DEPLOY-oracle.md` Part 10

@@ -292,6 +292,12 @@ qualify.
 
 ### 6e. Move the coordinates out of the query string — an hour, and now required
 
+**Done in code 2026-09-29** (branch `claude/coordinates-out-of-url`, per
+[`coordinates-out-of-the-url-brief.md`](coordinates-out-of-the-url-brief.md)),
+with the privacy policy's §2.1(a), §7 item 1 and §8 rewritten in the same
+commit. **Not yet deployed:** the box has to be updated before any build that
+sends POST goes on a phone (`server/DEPLOY-oracle.md`).
+
 **Promoted from "nice to have" by §8 decision 3.** Route requests put start and
 destination in the **URL query string**, and the Cloudflare tunnel terminates
 TLS — so *"the server stores nothing"* is true of `server/app.py`, which has no
