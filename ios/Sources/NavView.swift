@@ -2,12 +2,35 @@ import MapKit
 import SwiftUI
 import UIKit
 
-/// The live navigation screen: a heading-up map that follows the driver, the
-/// next maneuver up top, and a trip bar at the bottom (arrival time, time left,
-/// distance left) with the drive controls either side of it.
+/// The drive. Five things, floating, clear of the bottom-left.
+///
+/// In priority order: the next maneuver, am I nearly there, this road is
+/// lovely / this road is dull, where am I now, and get me out of this.
+/// Everything else is a diagnostic and sits below the fold of attention.
+///
+/// Two things changed structurally from the screen this replaces.
+///
+/// **The banner is opaque.** It was `.ultraThinMaterial`, and the codebase had
+/// already learned this lesson one control down: the verdict buttons were moved
+/// to `.regularMaterial` because glass over a `Map` is a tint, not a
+/// background, and the POI labels underneath read straight through it. The
+/// maneuver is the one thing on this screen a driver reads at 50 mph in direct
+/// sun, so it gets ink. The basemap also drops its points of interest for the
+/// duration, so nothing competes with the route line for the brightest thing
+/// on screen.
+///
+/// **Nothing opaque enters the bottom-left.** All the furniture sits in the
+/// bottom safe-area inset, which means MapKit lays its own attribution out
+/// *above* it rather than behind it, and a further `Metric.appleKeep` of clear
+/// space sits under everything as a second, independent guarantee. On a
+/// heading-up map that strip is the road already driven, so it costs the driver
+/// nothing. See `docs/interface-design.md` §2.2.
 struct NavView: View {
     @Bindable var nav: NavigationModel
     let locationManager: LocationManager
+    /// What to call the place at the end, for the arrival card. The drive does
+    /// not know it; the plan does.
+    var destinationName: String
     var onEnd: () -> Void
 
     /// Follows the user's location and turns with their heading, like any
@@ -23,11 +46,11 @@ struct NavView: View {
 
     /// Tap target for the two corner buttons. Scaled, so the glyph inside still
     /// fits when the driver runs a larger system text size.
-    @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 30
+    @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 34
 
     /// Height of the scenery-verdict buttons. Well over the 44 pt minimum,
     /// because these are meant to be hit by a driver who is not looking at them.
-    @ScaledMetric(relativeTo: .body) private var verdictHeight: CGFloat = 52
+    @ScaledMetric(relativeTo: .body) private var verdictHeight: CGFloat = 58
 
     /// Watched so the drive trace can mark where the app went away and came
     /// back, and flush on the way out — a hole in the fixes otherwise looks the
@@ -37,31 +60,37 @@ struct NavView: View {
     var body: some View {
         Map(position: $camera) {
             MapPolyline(coordinates: nav.coordinates)
-                .stroke(nav.followingFastest ? .gray : Color.brand, lineWidth: 6)
-            Marker("Destination", coordinate: nav.destination).tint(.red)
+                .stroke(nav.followingFastest ? Color.slate : Color.amber,
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+            Marker("Destination", coordinate: nav.destination).tint(Color.endPin)
             UserAnnotation()
         }
+        // Nothing on a driving basemap should compete with the route line. The
+        // POI pins are the only thing on it with comparable contrast, and a
+        // driver has no use for a coffee shop they are passing at 50 mph.
+        .mapStyle(.standard(pointsOfInterest: .excludingAll))
         // North stops being obvious the moment the map turns with the car, and
         // on a scenic drive "which way am I actually pointing" is a question
         // worth answering without leaving the app. MapKit's own compass hides
         // itself at north-up and appears as soon as the map rotates, which in
         // a heading-up drive means it is simply always there.
-        //
-        // Placed by `.mapControls`, so it sits inside the map's safe area —
-        // which the insets below have already pushed clear of the banner.
         .mapControls { MapCompass() }
         .ignoresSafeArea()
         .safeAreaInset(edge: .top) { banner }
-        .safeAreaInset(edge: .bottom) { controls }
+        .safeAreaInset(edge: .bottom) { furniture }
+        .overlay(alignment: .bottom) {
+            if nav.arrived {
+                ArrivalView(nav: nav, destinationName: destinationName, onDone: onEnd)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, Metric.appleKeep + 10)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.smooth(duration: 0.4), value: nav.arrived)
         .onAppear {
             locationManager.start()
             // Keep the screen awake for the whole drive, so the map stays
-            // visible without the driver reaching for the phone. (Location
-            // itself no longer depends on this: the app now declares
-            // `UIBackgroundModes: location` and `LocationManager` opts into
-            // background updates, so a locked phone keeps delivering fixes.
-            // Before that, locking stopped the stream and the app appeared to
-            // hang a couple of minutes into every drive.)
+            // visible without the driver reaching for the phone.
             UIApplication.shared.isIdleTimerDisabled = true
         }
         .onDisappear {
@@ -69,12 +98,10 @@ struct NavView: View {
             UIApplication.shared.isIdleTimerDisabled = false
         }
         // Arrival ends the drive, so release the hardware then rather than
-        // waiting for a tap on End. `nav.update` early-returns once `arrived`
-        // latches, so nothing is being recorded or displayed — but the session
-        // would otherwise keep running at 1 Hz, in the background, with the
-        // screen held awake, until the driver happened to come back to the
-        // phone. Locking it used to be the implicit backstop; declaring the
-        // background mode is exactly what removed that.
+        // waiting for a tap. `nav.update` early-returns once `arrived` latches,
+        // so nothing is being recorded or displayed — but the session would
+        // otherwise keep running at 1 Hz, in the background, with the screen
+        // held awake, until the driver happened to come back to the phone.
         .onChange(of: nav.arrived) { _, arrived in
             guard arrived else { return }
             locationManager.stop()
@@ -99,10 +126,6 @@ struct NavView: View {
         .confirmationDialog("Switch to the fastest route?",
                             isPresented: $confirmingFastest,
                             titleVisibility: .visible) {
-            // No `if let` around this. There used to be one, with no `else`, so
-            // confirming the switch with no usable fix in hand did nothing at
-            // all and said nothing about it. `switchToFastest` takes the
-            // optional now and answers for itself.
             Button("Switch to fastest", role: .destructive) {
                 Task { await nav.switchToFastest(from: locationManager.location) }
             }
@@ -112,76 +135,75 @@ struct NavView: View {
         }
     }
 
-    /// The maneuver banner — distance + instruction, or whatever else the driver
-    /// most needs to know right now.
+    // MARK: - The maneuver
+
     @ViewBuilder private var banner: some View {
-        HStack(spacing: 8) {
-            Group {
-                if nav.arrived {
-                    Text("You've arrived 🎉").font(.title2.bold())
-                        .frame(maxWidth: .infinity)
-                } else if locationManager.authorization == .denied
-                            || locationManager.authorization == .restricted {
-                    // Without location we can't follow the drive at all — say so
-                    // instead of sitting silently on the first instruction.
-                    Label("Location access is off — allow it in Settings to navigate.",
-                          systemImage: "location.slash")
-                        .font(.subheadline).frame(maxWidth: .infinity)
-                } else if nav.isRerouting {
-                    Label("Rerouting…", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.headline).frame(maxWidth: .infinity)
-                } else if !nav.hasJoinedRoute {
-                    // The trip was planned from somewhere the driver isn't yet. Say
-                    // so plainly rather than reading out a first instruction that
-                    // belongs to a road miles away.
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(distanceText(nav.distanceToRouteStart)) away")
-                            .font(.subheadline).foregroundStyle(.secondary)
-                        Text("Head to the start of your route").font(.title3.bold())
+        if !nav.arrived {
+            HStack(spacing: 13) {
+                Group {
+                    if locationManager.authorization == .denied
+                        || locationManager.authorization == .restricted {
+                        // Without location we can't follow the drive at all — say
+                        // so instead of sitting silently on the first instruction.
+                        bannerBody(symbol: "location.slash", tint: .alert,
+                                   over: "Location is off",
+                                   main: "Allow it in Settings to navigate")
+                    } else if nav.isRerouting {
+                        bannerBody(symbol: "arrow.triangle.2.circlepath", tint: .alert,
+                                   over: "Off route", main: "Finding a way back…")
+                    } else if !nav.hasJoinedRoute {
+                        // The trip was planned from somewhere the driver isn't
+                        // yet. Say so plainly rather than reading out a first
+                        // instruction that belongs to a road miles away.
+                        bannerBody(symbol: "location.north.fill", tint: .amber,
+                                   over: "\(distanceText(nav.distanceToRouteStart)) away",
+                                   main: "Head to the start of your route")
+                    } else {
+                        bannerBody(symbol: nav.currentSymbol, tint: .amber,
+                                   over: distanceText(nav.distanceToNext),
+                                   main: nav.currentInstruction)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    HStack(spacing: 12) {
-                        // The maneuver glyph, ahead of the words. A driver reads
-                        // the arrow long before the sentence, and an exit should
-                        // not look like a left turn.
-                        Image(systemName: nav.currentSymbol)
-                            .font(.title2.bold())
-                            .foregroundStyle(Color.brand)
-                            .accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(distanceText(nav.distanceToNext))
-                                .font(.subheadline).foregroundStyle(.secondary)
-                            Text(nav.currentInstruction).font(.title3.bold())
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                muteButton
             }
-            muteButton
+            .padding(.horizontal, 15)
+            .padding(.vertical, 14)
+            .background(Color.card, in: RoundedRectangle(cornerRadius: 19))
+            .shadow(color: .black.opacity(0.22), radius: 12, y: 4)
+            .padding(.horizontal, 14)
         }
-        .padding()
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal)
+    }
+
+    private func bannerBody(symbol: String, tint: Color, over: String, main: String) -> some View {
+        HStack(spacing: 13) {
+            Image(systemName: symbol)
+                .font(.system(size: 27, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 34)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(over)
+                    .font(.figure(17, .medium))
+                    .foregroundStyle(tint == .alert ? Color.alert : Color.ink2)
+                    .monospacedDigit()
+                Text(main)
+                    .font(.figure(25, .bold))
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     /// Silence the spoken directions — and, held down, choose the voice.
     ///
-    /// In the banner, and deliberately not in `controlRow`. The banner is the
-    /// only thing on this screen that is always on it — the verdict buttons
-    /// vanish before joining and after arriving, `Fastest` vanishes once taken,
-    /// and `recenterButton` only appears when the map has been moved. A control
-    /// that moves mid-drive is one the driver has to hunt for. `controlRow`'s
-    /// layout is load-bearing besides: the stats sit in the middle because that
-    /// is where a resting thumb lands, and a `Color.clear` of exactly this size
-    /// holds them centred once `Fastest` goes, so a fourth control there either
-    /// unbalances the row or shifts everything when the third disappears.
-    ///
-    /// It is also, plainly, next to the words it governs.
-    ///
-    /// The reach to the top of the screen is longer. That is the right trade
-    /// for a once-a-drive action, and the same reasoning that puts the
-    /// destructive `End` button in a corner rather than under the thumb.
+    /// In the banner, and deliberately not in the trip card. The banner is the
+    /// only thing on this screen that is always on it; a control that moves
+    /// mid-drive is one the driver has to hunt for. It is also, plainly, next
+    /// to the words it governs.
     ///
     /// Voice selection hides behind a long press rather than taking a control
     /// of its own, because it is a once-ever choice sharing the one affordance
@@ -198,9 +220,6 @@ struct NavView: View {
                         Button {
                             nav.useVoice(option)
                         } label: {
-                            // A checkmark rather than a separate selected
-                            // state: `Menu` gives no free way to show one, and
-                            // a glyph beside the name reads at a glance.
                             Label(option.label,
                                   systemImage: option.identifier == nav.selectedVoiceIdentifier
                                   ? "checkmark" : "speaker.wave.1")
@@ -208,12 +227,9 @@ struct NavView: View {
                     }
                 }
             } label: {
-                Image(systemName: nav.voiceMuted
-                      ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                    .font(.title3)
-                    .foregroundStyle(nav.voiceMuted ? Color.secondary : Color.brand)
-                    // A generous tap target around a small glyph, so this is
-                    // hittable without aiming.
+                Image(systemName: nav.voiceMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 19, weight: .medium))
+                    .foregroundStyle(nav.voiceMuted ? Color.ink3 : Color.amberText)
                     .frame(width: controlSize, height: controlSize)
                     .contentShape(Rectangle())
             } primaryAction: {
@@ -223,280 +239,182 @@ struct NavView: View {
                                 ? "Turn spoken directions on"
                                 : "Turn spoken directions off")
             .accessibilityHint("Press and hold to change the voice")
-            // Measured once and cached, so this is instant on every drive after
-            // the first. Off the first fix's critical path either way: the
-            // menu cannot be open before the map is.
             .task { voices = await VoiceCatalogue.usable() }
         }
     }
 
-    /// Trip stats front and center, with End and the fastest-route escape hatch
-    /// tucked into the corners.
-    ///
-    /// The stats take the middle on purpose. That's where a thumb lands, and the
-    /// numbers aren't tappable — so resting a hand on the phone mid-drive can't
-    /// trigger anything.
-    private var controls: some View {
-        VStack(spacing: 8) {
-            // Above the bar and outside its material, so it reads as a map
-            // control rather than a trip control — and only while the map is
-            // somewhere the driver put it, which is the only time it does
-            // anything.
+    // MARK: - The bottom
+
+    private var furniture: some View {
+        VStack(spacing: 10) {
             if camera.positionedByUser {
                 HStack {
                     Spacer()
                     recenterButton
                 }
-                .padding(.horizontal)
             }
-
-            sceneryVerdict
-
-            VStack(spacing: 6) {
-                currentRoadLabel
-                controlRow
-                // Under the controls, not in the banner: the banner is where
-                // the next maneuver goes, and no diagnostic outranks the turn
-                // you are about to miss. Unmissable, but never in the way.
-                if let problem = nav.recordingProblem {
-                    Label(problem, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                // The reply to a tap, which is a different thing from the state
-                // of the recording above it — a refused "switch to fastest"
-                // must not read as a broken trace. Same place, because it is
-                // the same question ("did that do anything?"), and same rule:
-                // never above the maneuver the driver is about to miss.
-                if let problem = nav.actionProblem {
-                    Label(problem, systemImage: "exclamationmark.circle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .transition(.opacity)
-                }
+            if !nav.arrived {
+                sceneryVerdict
+                tripCard
             }
-            .padding(.horizontal)
-            .padding(.vertical, 10)
-            .background(.ultraThinMaterial)
-            .animation(.snappy, value: nav.actionProblem)
+            // The keep. Nothing opaque below this line, ever.
+            Color.clear.frame(height: Metric.appleKeep)
         }
-    }
-
-    /// The road under the car, across the top of the trip bar.
-    ///
-    /// Here rather than in the banner because the banner is for the maneuver
-    /// ahead, and this is the opposite question — where am I *now*. It reads as
-    /// a caption to the trip stats below it, which is about the attention it
-    /// deserves: useful continuously, urgent never.
-    ///
-    /// The off-route wording is the point of the whole readout as much as the
-    /// name is. `RouteModel.nameCurrentLocation` already spends a
-    /// reverse-geocode on labelling the start, on the grounds that "My
-    /// Location" alone gives the driver no way to notice we have put them on
-    /// the wrong road; the same is true at 60 km/h, and this is the line that
-    /// says so. A stale street name would be worse than nothing, so
-    /// `NavigationModel.currentRoad` returns one only while the step list still
-    /// describes where the car is.
-    @ViewBuilder private var currentRoadLabel: some View {
-        switch nav.currentRoad {
-        case .named(let road):
-            // One line, truncated rather than wrapped: a long road name must
-            // not reflow the controls underneath it mid-drive.
-            Text(road)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .frame(maxWidth: .infinity)
-                .accessibilityLabel("On \(road)")
-        case .offRoute:
-            Text("Off route")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.orange)
-                .frame(maxWidth: .infinity)
-                .accessibilityLabel("Off your route")
-        case .unknown:
-            EmptyView()
-        }
+        .padding(.horizontal, 14)
     }
 
     /// The two buttons that make a drive worth taking twice.
     ///
     /// Everything else on this screen measures the car. These measure the road,
-    /// and they are the only instrument in the project that can: the scenic score
-    /// has been calibrated against its own distribution and against two byways
-    /// named in `score.py`, which tests that it is self-consistent, not that it
-    /// is right. Whether these roads are actually beautiful is a question only
-    /// the person driving them can answer, and only while they are there.
+    /// and they are the only instrument in the project that can: the scenic
+    /// score has been calibrated against its own distribution and against two
+    /// byways named in `score.py`, which tests that it is self-consistent, not
+    /// that it is right. Whether these roads are actually beautiful is a
+    /// question only the person driving them can answer, and only while they
+    /// are there.
     ///
-    /// Sized and placed for a driver, which drove every choice here:
+    /// Two targets, no scale: a five-point rating needs aiming and aiming needs
+    /// looking, and the calibration wants a rank statistic over many marks
+    /// anyway. The haptics differ — `success` for nice, `warning` for dull — so
+    /// the driver feels *which* one they hit without looking up to check.
     ///
-    /// - **Two targets, no scale.** A five-point rating needs aiming and aiming
-    ///   needs looking. The calibration wants a rank statistic over many marks
-    ///   anyway, so precision on any single one buys nothing.
-    /// - **Above the trip bar, hard against the edges.** `tripStats` sits in the
-    ///   middle because that is where a thumb rests — the same reasoning that
-    ///   keeps the numbers untappable puts these where a resting hand isn't. The
-    ///   `End` button is small, bordered and in the corner *below* them, so the
-    ///   destructive control and the frequent one never sit side by side.
-    /// - **Haptics that differ.** `success` for nice and `warning` for dull are
-    ///   distinct patterns, so the driver feels *which* one they hit and never
-    ///   has to look up to check. This is the whole confirmation; there is no
-    ///   toast to read and no count to watch.
-    ///
-    /// Only while there is something to judge: before joining the route the
-    /// driver is on some other road entirely, and after arriving they are parked.
+    /// **They stop short of the bottom-left corner**, which is the one place on
+    /// this screen where the licence costs the driver something real: in a
+    /// centre windscreen mount a US driver's hand comes at the phone from the
+    /// lower left, so the most reachable corner is the one Apple reserves. It
+    /// is worth about 15 mm of reach.
     @ViewBuilder private var sceneryVerdict: some View {
-        if nav.hasJoinedRoute && !nav.arrived && nav.canRecordMarks {
-            HStack(spacing: 12) {
+        if nav.hasJoinedRoute && nav.canRecordMarks {
+            HStack(spacing: 11) {
                 verdictButton(.nice, symbol: "hand.thumbsup.fill",
-                              tint: Color.brand, label: "Lovely road")
+                              tint: .amberText, border: .amber, label: "Lovely road")
                 verdictButton(.dull, symbol: "hand.thumbsdown.fill",
-                              tint: .secondary, label: "Nothing to see")
+                              tint: .ink2, border: .hairline, label: "Nothing to see")
             }
-            .padding(.horizontal)
         }
     }
 
     private func verdictButton(_ verdict: SceneryVerdict, symbol: String,
-                               tint: Color, label: String) -> some View {
+                               tint: Color, border: Color, label: String) -> some View {
         Button {
             nav.mark(verdict)
             // Distinct patterns per verdict — the point is to be told apart by
             // feel. Generated fresh rather than kept around: a driver taps a
-            // handful of times in an hour, so there is nothing to warm up for,
-            // and holding one costs a strong reference for the whole drive.
+            // handful of times in an hour, so there is nothing to warm up for.
             UINotificationFeedbackGenerator()
                 .notificationOccurred(verdict == .nice ? .success : .warning)
         } label: {
             // The words, not only the glyph. A thumbs-down on a map is as
-            // easily read as "hide this" or "worse route" as "dull road", and
-            // the two sentences these buttons actually mean lived only in an
-            // `accessibilityLabel` — visible to VoiceOver and to nobody else.
+            // easily read as "hide this" or "worse route" as "dull road".
             Label(label, systemImage: symbol)
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: 15.5, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .foregroundStyle(tint)
-                // Tall, and as wide as half the screen. The generous frame *is*
-                // the feature: this has to be hittable without aiming.
+                // The generous frame *is* the feature: this has to be hittable
+                // without aiming.
                 .frame(maxWidth: .infinity)
                 .frame(height: verdictHeight)
-                // `.ultraThinMaterial` over a `Map` is not a background, it is a
-                // tint: mid-drive over light tiles the POI labels underneath
-                // ("Beth Israel", "Needham Coin and…") read straight through
-                // both buttons, which made the only control on this screen that
-                // collects data the hardest one on it to see. `.regularMaterial`
-                // is opaque enough to stop that, and the stroke gives each
-                // button an edge over a map whose own colours it cannot predict.
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14)
-                    .stroke(tint.opacity(0.55), lineWidth: 1))
+                .background(Color.card, in: RoundedRectangle(cornerRadius: 17))
+                .overlay(RoundedRectangle(cornerRadius: 17).stroke(border, lineWidth: 1))
+                .shadow(color: .black.opacity(0.18), radius: 10, y: 3)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
         .accessibilityHint("Records how this stretch of road looks, for calibrating the scenic score")
     }
 
-    /// Puts the camera back on the driver, heading-up.
+    /// Arrival time, time left, distance left, and the road under the car —
+    /// with End and the fastest-route escape tucked into the corners.
     ///
-    /// Without it, panning the map is a one-way door: `MapCameraPosition` stops
-    /// following the moment the user drags it, and nothing here ever set it
-    /// back — so a driver who nudged the map to see what was coming spent the
-    /// rest of the drive with a map that no longer tracked them, and no way
-    /// short of ending the drive to get it back.
-    ///
-    /// It restores `followsHeading` rather than merely centring, because
-    /// heading-up is what the drive started in; recentring to a north-up map
-    /// mid-drive would be its own surprise.
-    private var recenterButton: some View {
-        Button {
-            withAnimation {
-                camera = .userLocation(followsHeading: true, fallback: .automatic)
-            }
-        } label: {
-            Label("Recenter", systemImage: "location.fill")
-                .labelStyle(.iconOnly)
-                .frame(width: controlSize, height: controlSize)
-        }
-        .buttonStyle(.borderedProminent)
-        .clipShape(Circle())
-        .accessibilityLabel("Recenter the map on your location")
-    }
-
-    private var controlRow: some View {
-        HStack(alignment: .center) {
-            Button(role: .destructive) { onEnd() } label: {
-                Label("End", systemImage: "xmark").labelStyle(.iconOnly)
-                    .frame(width: controlSize, height: controlSize)
-            }
-            .buttonStyle(.bordered)
-            .accessibilityLabel("End the drive")
-
-            Spacer(minLength: 8)
-
-            if nav.arrived {
-                Text("Arrived").font(.headline)
-            } else {
+    /// The stats take the middle on purpose. That's where a thumb lands, and
+    /// the numbers aren't tappable, so resting a hand on the phone mid-drive
+    /// can't trigger anything.
+    private var tripCard: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 10) {
+                cornerButton(systemImage: "xmark", label: "End the drive",
+                             tint: .ink2, action: onEnd)
+                Spacer(minLength: 6)
                 tripStats
+                Spacer(minLength: 6)
+                // Hidden once taken: there's no second fastest route to switch
+                // to. The clear spacer keeps the stats centred when it goes.
+                if !nav.followingFastest {
+                    cornerButton(systemImage: "bolt.fill",
+                                 label: "Switch to the fastest route",
+                                 tint: .ink2) { confirmingFastest = true }
+                } else {
+                    Color.clear.frame(width: controlSize, height: controlSize)
+                }
             }
 
-            Spacer(minLength: 8)
+            currentRoadLabel
 
-            // Hidden once taken: there's no second fastest route to switch to.
-            if !nav.followingFastest && !nav.arrived {
-                Button { confirmingFastest = true } label: {
-                    Label("Fastest", systemImage: "bolt.fill").labelStyle(.iconOnly)
-                        .frame(width: controlSize, height: controlSize)
-                }
-                .buttonStyle(.bordered)
-                .tint(.secondary)
-                .accessibilityLabel("Switch to the fastest route")
-            } else {
-                // Keep the stats centered when the button isn't there.
-                Color.clear.frame(width: controlSize, height: controlSize)
+            // Under the controls, not in the banner: the banner is where the
+            // next maneuver goes, and no diagnostic outranks the turn you are
+            // about to miss. Unmissable, but never in the way.
+            if let problem = nav.recordingProblem ?? nav.actionProblem {
+                Label(problem, systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.alert)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 7)
+                    .transition(.opacity)
             }
         }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 10)
+        .background(Color.card, in: RoundedRectangle(cornerRadius: 19))
+        .shadow(color: .black.opacity(0.22), radius: 12, y: 4)
+        .animation(.snappy, value: nav.actionProblem)
     }
 
-    /// Arrival time, time left, distance left — the three numbers a driver
-    /// actually watches.
+    private func cornerButton(systemImage: String, label: String, tint: Color,
+                              action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: controlSize, height: controlSize)
+                .background(Color.sunk, in: RoundedRectangle(cornerRadius: 11))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
     private var tripStats: some View {
         VStack(spacing: 1) {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 // A drive is unrepeatable — that light was that colour, that
                 // traffic was that thick, once — so whether it is being recorded
-                // has to be answerable at a glance, before pulling away rather
-                // than after getting home. Silence would look identical to
-                // working.
-                Image(systemName: nav.recordingProblem == nil
-                      ? "record.circle" : "exclamationmark.triangle.fill")
-                    .font(.caption2)
-                    .foregroundStyle(nav.recordingProblem == nil ? .red : .orange)
+                // has to be answerable at a glance. Silence would look identical
+                // to working.
+                Circle()
+                    .fill(nav.recordingProblem == nil ? Color.endPin : Color.alert)
+                    .frame(width: 8, height: 8)
                 Text(nav.eta, format: .dateTime.hour().minute())
-                    .font(.title3.bold())
+                    .font(.figure(23, .bold))
+                    .foregroundStyle(Color.ink)
                     .monospacedDigit()
                 // How many verdicts have been logged. The haptic is the primary
-                // confirmation, but a driver who has haptics switched off system
-                // wide — or is in Low Power Mode — gets nothing back from a tap
-                // at all, and would have no way to tell a registered verdict
-                // from a missed button until they got home. Small, and outside
-                // the tap targets, because it is a receipt rather than a number
-                // anybody drives by.
+                // confirmation, but a driver with haptics off system-wide gets
+                // nothing back from a tap at all. Small, and outside the tap
+                // targets, because it is a receipt rather than a number anybody
+                // drives by.
                 if nav.marksRecorded > 0 {
                     Text("\(nav.marksRecorded)")
-                        .font(.caption2.bold())
+                        .font(.system(size: 12, weight: .bold))
                         .monospacedDigit()
-                        .foregroundStyle(Color.brand)
+                        .foregroundStyle(Color.amberText)
                         .contentTransition(.numericText())
                 }
             }
             .animation(.snappy, value: nav.marksRecorded)
             Text("\(timeText(nav.remainingMinutes)) · \(milesText(nav.remainingMeters))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12.5))
+                .foregroundStyle(Color.ink2)
                 .monospacedDigit()
         }
         .accessibilityElement(children: .combine)
@@ -507,6 +425,61 @@ struct NavView: View {
             + (nav.marksRecorded > 0 ? " \(nav.marksRecorded) scenery marks logged." : "")
         )
     }
+
+    /// The road under the car.
+    ///
+    /// Here rather than in the banner because the banner is for the maneuver
+    /// ahead, and this is the opposite question — where am I *now*. It reads as
+    /// a caption to the trip stats above it, which is about the attention it
+    /// deserves: useful continuously, urgent never.
+    @ViewBuilder private var currentRoadLabel: some View {
+        switch nav.currentRoad {
+        case .named(let road):
+            // One line, truncated rather than wrapped: a long road name must
+            // not reflow the controls underneath it mid-drive.
+            Text(road)
+                .font(.system(size: 13.5, weight: .semibold))
+                .foregroundStyle(Color.ink2)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 7)
+                .accessibilityLabel("On \(road)")
+        case .offRoute:
+            Text("Off your route")
+                .font(.system(size: 13.5, weight: .semibold))
+                .foregroundStyle(Color.alert)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 7)
+        case .unknown:
+            EmptyView()
+        }
+    }
+
+    /// Puts the camera back on the driver, heading-up.
+    ///
+    /// Without it, panning the map is a one-way door: `MapCameraPosition` stops
+    /// following the moment the user drags it, so a driver who nudged the map
+    /// to see what was coming would spend the rest of the drive with a map that
+    /// no longer tracked them.
+    private var recenterButton: some View {
+        Button {
+            withAnimation {
+                camera = .userLocation(followsHeading: true, fallback: .automatic)
+            }
+        } label: {
+            Image(systemName: "location.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.amberText)
+                .frame(width: 44, height: 44)
+                .background(Color.card, in: Circle())
+                .shadow(color: .black.opacity(0.22), radius: 10, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Recenter the map on your location")
+    }
+
+    // MARK: - Units
 
     /// Distance in friendly US units: feet (rounded to 50) up close, miles after.
     private func distanceText(_ meters: Double) -> String {

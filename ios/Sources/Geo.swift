@@ -126,3 +126,15 @@ func progress(of point: CLLocationCoordinate2D,
                          remaining: max(0, travelled - along),
                          travelled: along)
 }
+
+enum TimeText {
+    /// "48 min", or "1 hr 30" once it is worth splitting. Used by the loop
+    /// dial's estimate, the loop card and the arrival card, so the three cannot
+    /// print the same duration three ways.
+    static func compact(minutes: Double) -> String {
+        let total = max(0, Int(minutes.rounded()))
+        guard total >= 60 else { return "\(total) min" }
+        let h = total / 60, m = total % 60
+        return m == 0 ? "\(h) hr" : "\(h) hr \(m)"
+    }
+}

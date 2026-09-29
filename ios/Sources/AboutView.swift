@@ -85,8 +85,14 @@ enum DataSources {
     /// **Do not reword, sentence-case, or soften this.** It is a fixed string in
     /// a contract, capitals included.
     ///
-    /// Showing it here does **not** by itself discharge §3.3.3(F)(iii), which
-    /// asks for an *end user licence agreement*: a custom EULA carrying this
+    /// **Rendered in exactly one place: `BeforeYouDriveView`,** which is shown
+    /// once at first launch and is permanently reachable from the Sources
+    /// screen. It used to sit at the bottom of the credits sheet, which is
+    /// compliant and read by nobody. Two ways in, one view, one copy — do not
+    /// add a second.
+    ///
+    /// Showing it in the app does **not** by itself discharge §3.3.3(F)(iii),
+    /// which asks for an *end user licence agreement*: a custom EULA carrying this
     /// text still has to be filed in App Store Connect before submission
     /// (Apple's default Licensed Application EULA does not contain it). The
     /// text to paste is in `docs/app-store-submission.md`. It is in the app as
@@ -200,90 +206,142 @@ enum DataSources {
     )
 }
 
-/// The "Data sources" sheet: what Sunday Drive is built from, and the credit each of
-/// those licences asks for.
+/// **Sources** — what the app is built from, and the credit each of those
+/// licences asks for.
 ///
-/// Presented the way "Tune scenery" is — a `NavigationStack` in a sheet with a
-/// Done button — because that is the only sheet idiom this app has, and a
-/// credits screen is not the place to invent a second one.
+/// Every credit string below is reproduced verbatim from
+/// `DataSources`; none of them changed in the redesign, because they are
+/// somebody else's text. What changed is that the sentence explaining *why*
+/// anyone is reading this is now the largest thing on the screen rather than
+/// the smallest, and each source carries the colour of the thing it produces —
+/// the same six hues as the route breakdown and the *What you like* sheet.
+///
+/// The safety notice is no longer on this screen. It has its own,
+/// `BeforeYouDriveView`, reached from the row at the bottom — one copy, two
+/// ways in.
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var showingNotice = false
+    /// The one appearance control. The app is dark by default — see
+    /// `ContentView` for why, and for the one hour of the day that argues the
+    /// other way.
+    @AppStorage("matchSystemAppearance") private var matchSystem = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text("The roads on this map, and the scores they are rated "
-                         + "with, come from open data. These are the people who "
-                         + "made it.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("The roads on this map, and the scores they are rated with, "
+                         + "come from open data. These are the people who made it.")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.bottom, 14)
 
                     ForEach(DataSources.all) { source in
                         entry(for: source)
                     }
 
-                    // Set apart from the credits, because it is not one. The
-                    // credits say who owns the data; this says what the app
-                    // does not promise about it.
-                    Divider()
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("SAFETY")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        Text(DataSources.routeGuidanceNotice)
-                            .font(.caption)
-                            .textSelection(.enabled)
+                    Toggle(isOn: $matchSystem) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Match system appearance")
+                                .font(.system(size: 15.5, weight: .semibold))
+                                .foregroundStyle(Color.ink)
+                            Text("Off, the app stays dark — easier to read from a "
+                                 + "windscreen mount at the ends of the day.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color.ink2)
+                        }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .tint(Color.amber)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.sunk, in: RoundedRectangle(cornerRadius: 15))
+                    .padding(.top, 18)
+
+                    Button { showingNotice = true } label: {
+                        HStack {
+                            Text("Before you drive")
+                                .font(.system(size: 15.5, weight: .semibold))
+                                .foregroundStyle(Color.ink)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Color.ink3)
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(height: 50)
+                        .background(Color.sunk, in: RoundedRectangle(cornerRadius: 15))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 10)
                 }
-                .padding(20)
+                .padding(Metric.margin)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .navigationTitle("Data sources")
+            .background(Color.paper)
+            .navigationTitle("Sources")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button("Done") { dismiss() }.tint(Color.amberText)
                 }
             }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showingNotice) { BeforeYouDriveView() }
     }
 
     /// One source: what it gives us, its verbatim credit, its licence, and a
     /// link out to the licence and the data's own provenance.
     private func entry(for source: DataSource) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(source.role.uppercased())
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 7) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Self.hue(for: source))
+                    .frame(width: 9, height: 9)
+                Text(source.role).sectionLabel()
+            }
             Text(source.name)
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.ink)
 
             // The credit lines themselves. Selectable so the wording can be
             // copied out exactly — it is somebody else's text and a user (or an
             // App Review reader) may want it character for character.
             ForEach(Array(source.credit.enumerated()), id: \.offset) { _, line in
                 Text(line)
-                    .font(.caption)
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Color.ink)
                     .textSelection(.enabled)
             }
 
             if let licence = source.licence {
                 Text(licence)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.ink2)
             }
 
             Link(destination: source.url) {
                 Text(Self.linkLabel(source.url))
-                    .font(.caption)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.amberText)
             }
-            .tint(.brand)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .overlay(alignment: .bottom) { Divider().overlay(Color.hairline) }
+    }
+
+    /// The colour of the thing this source produces, where it produces one the
+    /// breakdown names. Apple and OSM get slate: they are the map and the
+    /// roads, not a scenery component.
+    private static func hue(for source: DataSource) -> Color {
+        if source.name.contains("WorldCover") { return BeautyType.hue(for: "forest") }
+        if source.name.contains("Terrain")    { return BeautyType.hue(for: "hills") }
+        return .slate
     }
 
     /// A link's visible text: host **and path**, scheme and `www.` dropped.

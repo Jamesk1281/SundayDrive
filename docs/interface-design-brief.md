@@ -1,5 +1,13 @@
 # Design the interface again, from nothing
 
+> **Answered 2026-09-20 by [`interface-design.md`](interface-design.md) and
+> [`interface-design-mockups.html`](interface-design-mockups.html).** Both superseded
+> documents are deleted as §6.1 instructs. One finding goes against this brief’s
+> framing: §6.2 asked whether `ui-redesign.md` was inaccurate, and it was not — every
+> citation re-resolved against a *later* tree. The answer locates the defect in that
+> document’s own brief instead, which had ruled the Apple attribution refactor out of
+> scope. See §13.2 there.
+
 **Status: commissioned 2026-09-20 against `main` at `0c967e2`. Nothing in
 `ios/` has been touched and this task must not touch it either** — the
 deliverable is a design, drawn and argued, not Swift. `docs/ui-redesign.md` and

@@ -13,6 +13,22 @@
 > still the traps. Everything below is left as written; only this pointer is
 > new. Nothing is claimed here about §6a, §6c–§6f or §7.
 
+> **2026-09-29: §6c, Decision 4, half of §6d and §7 are overtaken.** The
+> owner adopted the clean-sheet redesign (`interface-redesign-from-nothing`,
+> `4b3171d`) and it is merged to `main`. Planning is now a page with a bounded
+> map card instead of a permanent sheet over a full-bleed map, so nothing can
+> reach the corner where MapKit draws Apple's logo. NavView keeps a reserved
+> 48 pt strip for it (`Metric.appleKeep`, load-bearing). **So the §6c
+> `MKMapView` refactor is no longer needed**, and Decision 4 (where the ornament
+> goes at `.large`) is moot, because that detent no longer exists on the
+> planning screen. The opening camera now shows all six states
+> (`Region.newEngland`), which is the second half of §6d. The first half of §6d
+> (a drive that never joins its route can never end) is **still open**. §7 is
+> done too: the API has served from Oracle since 2026-09-29, per
+> `server/DEPLOY-oracle.md`. **§6e (coordinates in the query string) is
+> dispatched**; see `docs/coordinates-out-of-the-url-brief.md`. Still open:
+> §6d's first half, `MARKETING_VERSION`, and the §10 artifacts.
+
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
 two unmerged branches named in §2, and **revised the same day** with three owner
 decisions recorded in §8. **Nothing was executed** — no rename, no `LICENSE`, no
