@@ -5,8 +5,13 @@ metering). Costs are flat, not per-user: the same box serves 3 or 3,000 people.
 It runs happily on **a spare laptop** (the cheapest option — recommended while
 usership is low) or a VPS (always-on, when you outgrow the laptop).
 
-**Currently deployed** as Option A below: a spare Windows laptop running
-`serve.py` behind a Cloudflare tunnel, serving `api.jameskouvlis.com` over HTTPS.
+**Currently deployed**, since 2026-09-29, on an **Oracle Cloud Always Free A1
+VM** in `us-ashburn-1` (2 OCPU / 8 GB), running `serve.py` under systemd
+behind the same Cloudflare tunnel (`scenic`), serving `api.jameskouvlis.com`
+over HTTPS. [DEPLOY-oracle.md](DEPLOY-oracle.md) is how it was built. Until
+then it was Option A below, a spare Windows laptop, which is now off. **Before
+the laptop is next switched on, disable its tunnel task** (§7), or it rejoins
+the tunnel as an ungated second connector. See DEPLOY-oracle.md, Part 10.
 
 ## What ships
 
@@ -340,9 +345,11 @@ Cloud Always Free (Ampere A1, 2 OCPU / 8 GB, **$0**) as the primary, with Contab
 as the paid exit if Oracle's free-tier terms move again.
 
 **To actually build that box, follow [DEPLOY-oracle.md](DEPLOY-oracle.md)** —
-the end-to-end tutorial, from sign-up to cutover to rollback, including the two
-prerequisites that are Mac-side and the tunnel credentials that only exist on
-the laptop.
+the end-to-end tutorial, from sign-up to cutover to rollback. It was executed
+on 2026-09-28/29 and corrected where it was wrong. In particular, the tunnel
+credentials can be re-issued from the Cloudflare account, so the laptop does
+not need to be on. The Contabo price above omits the US region surcharge. A
+US box is $6.58–7.90/mo.
 
 ## Option D — No Cloudflare
 

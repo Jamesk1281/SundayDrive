@@ -1,7 +1,9 @@
 # Privacy policy — DRAFT, NOT PUBLISHED
 
 **Status: drafted 2026-09-19, published nowhere; name and identifier brought
-up to date 2026-09-21.** Checkable: `git grep -l 'privacy polic'` finds no URL
+up to date 2026-09-21; hosting brought up to date 2026-09-29, when the routing
+server moved from the developer's laptop to an Oracle Cloud virtual machine
+(§2.1(a), §7 item 9).** Checkable: `git grep -l 'privacy polic'` finds no URL
 in `ios/`, and App Store Connect has never been given one. The app itself is
 `PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "0.1"`
 (`ios/project.yml:66`, `:74`) — the identifier changed with the 2026-09-20
@@ -29,9 +31,11 @@ first build upload, TestFlight included, not at submission
 ## 0. What this app is
 
 Sunday Drive plans and narrates driving routes that prefer scenic roads over
-fast ones. It runs on iPhone, it talks to one routing server the developer operates,
-and it uses Apple's Maps services for the map, for address search and for place
-names. There is no account, no sign-in, and no way to create one.
+fast ones. It runs on iPhone, it talks to one routing server the developer
+operates on a virtual machine rented from Oracle Cloud Infrastructure in the
+United States, and it uses Apple's Maps services for the map, for address
+search and for place names. There is no account, no sign-in, and no way to
+create one.
 
 **The app is not published.** At the time of writing it is a single-user
 research instrument (`docs/legal-and-ip-audit.md`; the bundle identifier is
@@ -114,15 +118,48 @@ identifier, no timestamp, no trace, no history.
 **The server stores nothing.** `server/app.py` has no database, no log file and
 no request logging — it prints two startup lines and nothing per request
 (`server/app.py:93`, `:120`), and `serve.py` runs it under `waitress`, which
-does not write an access log by default.
+does not write an access log by default. **Checked on the live machine
+on 2026-09-29.** After real route requests had passed through it, a search for
+a request coordinate found nothing. The search covered the routing server's
+system log, the tunnel client's system log and `/var/log`. The tunnel client
+(`cloudflared`) runs at its default log level, which records connections, not
+requests.
 
-**But the request passes through Cloudflare, which can see the URL.** The
+**The server runs on Oracle's infrastructure.** Since 2026-09-29 the routing
+server has run on a virtual machine that the developer rents from Oracle Cloud
+Infrastructure, on its free tier, in the US East region (Ashburn, Virginia)
+(`server/DEPLOY.md:8-14`, `server/DEPLOY-oracle.md`). Before that it ran on a
+laptop the developer owns. The coordinates in each request are processed in
+that machine's memory to compute the route, and the server software writes
+them nowhere. The machine does have a swap file, so the operating system can
+page memory to disk under pressure, and that could briefly include a request
+in progress. On 2026-09-29, 14.6 MB of the 4 GB swap file was in use.
+
+But Oracle operates the hardware, the virtualisation layer and the network, so
+a third party now runs the machine that handles every coordinate. Oracle's own
+management agent also runs inside the virtual machine. The components actually
+running on 2026-09-29 were:
+
+- **A monitoring component** that reports CPU and memory use to Oracle. It is
+  kept on deliberately. Oracle reclaims free-tier instances that look idle, and
+  this component is what reports the memory use that shows this one is not.
+- **A log collector whose configuration is empty.** It collects nothing unless
+  someone configures it in Oracle's console, and no one has.
+- **Oracle's workload-protection scanner (Cloud Guard).**
+- **A remote-command component.**
+
+None of these is directed at route requests. Which of them this policy has to
+name is a §7 question.
+
+**The request also passes through Cloudflare, which can see the URL.** The
 deployed backend is reached through a Cloudflare tunnel that terminates TLS
-(`server/DEPLOY.md:9`, `:113-120`), so the coordinates — which are in the query
+(`server/DEPLOY.md:8-14`, `:118-123`), so the coordinates — which are in the query
 string, not the body — are visible to Cloudflare at its edge and subject to
-Cloudflare's own logging and retention. **This is the one place where location
-leaves your control and is not under the developer's.** See §7; it is both a
-disclosure item and a design defect worth fixing.
+Cloudflare's own logging and retention. **Cloudflare's edge is the one place
+where location is visible to a third party in transit, outside the developer's
+control.** Oracle is the other third party, because it hosts the machine. See
+§7. The Cloudflare exposure is both a disclosure item and a design defect worth
+fixing.
 
 **(b) To Apple, for the map, search and place names.** The map is Apple's
 (`MapKit`). Typing an address sends it to Apple's search service
@@ -250,6 +287,25 @@ characterisations are not mine to make. In order of how much turns on them:
    The audit's item 1 — "Scenic" being taken by a senior direct competitor, and
    descriptive — is what the first rename answered; the second was a change of
    fit, not of risk.
+9. **Oracle as the host (§2.1(a)).** *Numbered last so that
+   `docs/release-plan.md` Decision 3, which maps these items by number, keeps
+   its numbering. By weight it belongs beside item 1.* Since 2026-09-29 the
+   routing server has run on an Oracle Cloud Infrastructure virtual machine,
+   not on hardware the developer owns. A lawyer needs to decide three things.
+   First, whether Oracle is a processor or service provider that the policy
+   must name. Second, how
+   Oracle's own terms for its free tier bear on that. Third, whether §2.1(a)'s
+   description of Oracle's in-VM agents is enough. Two facts bear on the
+   answer. The region is in the US, which keeps `docs/release-plan.md`
+   decision 3's "US-only at launch" premise intact. (A host established in the
+   EU, such as Contabo GmbH, the planned paid fallback, would reopen it.) And
+   the draft's own §8 trigger ("a move off the Cloudflare tunnel") did not
+   catch this change, because the tunnel stayed the same and only the machine
+   behind it changed. §8 now lists a change of host too. **Engineering can
+   shrink this one as well.** Three of the four agent components in §2.1(a)
+   (the log collector, the workload scanner and the remote-command component)
+   are optional plugins that can be switched off in Oracle's console. The
+   monitoring component cannot be switched off without risking reclamation.
 
 ## 8. What would make this document wrong
 
@@ -267,5 +323,15 @@ Re-check it if any of these change, because each one is load-bearing above:
   being none.
 - **A move off the Cloudflare tunnel, or a move of coordinates out of the query
   string.** Either one changes §2.1(a) and §7.1.
+- **A change of the machine behind the tunnel.** This includes a new hosting
+  provider, a new region, or a second origin such as the developer's laptop
+  rejoining as a second connector, which `server/DEPLOY-oracle.md` Part 10
+  describes. The tunnel and the hostname stay the same, so the trigger above
+  does not fire, but §0, §2.1(a) and §7 item 9 all change. **This line was
+  missing until 2026-09-29, and the move to Oracle is what exposed the gap.**
+- **Enabling request logging anywhere on the serving machine.** That covers
+  `cloudflared` at debug level, and an Oracle log-collection rule pointed at a
+  file that holds requests. §2.1(a)'s "writes them nowhere" was checked
+  against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.

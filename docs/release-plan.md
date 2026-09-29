@@ -394,7 +394,9 @@ conclusion that they do not need a lawyer is a proportionality judgment the owne
 made, not counsel's opinion. It is recorded with its reasoning so that it can be
 re-opened on its merits rather than re-litigated from scratch.
 
-`privacy-policy.md` §7 lists eight items "a lawyer has to clear."
+`privacy-policy.md` §7 lists eight items "a lawyer has to clear." A ninth was
+added on 2026-09-29, when the server moved to Oracle. Its row at the bottom of
+the table was added then too.
 None of them needs one, given four conditions — three of which are decisions or
 tests rather than legal work:
 
@@ -408,6 +410,7 @@ tests rather than legal work:
 | 6. Reduced-accuracy behaviour | The draft says outright this is not a legal question. It is an **untested code path** — test what the app does under approximate location, then write what it does |
 | 7. Contact address | Owner's pick. Use a monitored alias, not a personal address — it is published |
 | 8. The name | Decision 2 and §6b |
+| 9. Oracle hosts the server (added 2026-09-29) | Same shape as item 1: **name Oracle as the host** in the sentence that names Cloudflare. The region is `us-ashburn-1`, so shipping US-only still removes GDPR. **An EU host, or Contabo GmbH anywhere, would reopen item 4.** Optionally switch off the three in-VM agent plugins the free tier does not need |
 
 **Why no lawyer is defensible here, specifically.** What makes a privacy policy
 dangerous is asserting something untrue. This one was written against the code,
@@ -486,7 +489,7 @@ All of these are downstream of Decision 1, and most are already written.
 | Item | State |
 | --- | --- |
 | `PrivacyInfo.xcprivacy` | **Written**, unmerged (§2). Keep precise location declared as collected — §8, decision 3 |
-| Privacy policy **draft** | **Written**, unmerged. No longer needs a lawyer (§8, decision 3). Needs four things: §6e landed, Cloudflare named as a processor, the approximate-location path tested, and a monitored contact alias |
+| Privacy policy **draft** | **Written**, unmerged. No longer needs a lawyer (§8, decision 3). Needs four things: §6e landed, Cloudflare named as a processor and Oracle as the host (added 2026-09-29), the approximate-location path tested, and a monitored contact alias |
 | Privacy policy **URL** | Open, and a **hard submission gate**. It needs somewhere public to live; GitHub Pages off this repo is free and sufficient |
 | **Territories: United States only** | Decided (§8, decision 3). Set at the listing. Reversible later |
 | App Store **name reservation** | Open. Do it the day membership clears and the name is chosen — §3 |
