@@ -206,6 +206,16 @@ The marketing plan's own market facts hold as far as I checked them:
 I did not re-derive any of it. The three findings below are places where the
 product, measured tonight, contradicts a premise the plan relies on.
 
+Two premise questions already have answers, and those answers still stand:
+- **Would a driver notice the dial?** For everyday trips, mostly not.
+  `route-distribution-study.md` Q1 found that at 10–25 km the default buys a
+  median 0.33 beautiful miles, and 32.8% of those trips read "Same as the
+  fastest route". At everyday distances the loop, not the dial, carries the
+  product, which is how the marketing plan pitches its core audience.
+- **What if nobody notices it?** Low use is itself a hosting risk, because
+  memory is what keeps the Oracle box from idle reclamation
+  (`DEPLOY-oracle.md` Part 12). Nothing tonight changes that.
+
 ### M-1. The launch spends its one-shot channels in the week the product's best roads start to close — **Major** (Blocker if C-1 is not fixed)
 
 **Verified** (dates from the OSM tags in C-1).
@@ -910,6 +920,19 @@ Only the entries where I have new evidence.
 | Approximate location on a real phone | Settled in the simulator (§6 item 2). A phone's coarse fixes could differ in detail | Precise Location off, then one short drive | Only the wording. The 65 m gate rejects anything coarse |
 | Which OSM-closed roads are gated, as against merely unplowed | OSM does not say reliably | Local knowledge, or the state DOT seasonal-closure lists | It only changes the wording of C-1's danger, from misled to stranded, not whether it is a Blocker |
 | Dynamic Type at runtime | Neither method of setting AX5 took effect in this simulator | One launch at AX5 on the phone | It confirms K-5. The fixed-size font calls leave little room for doubt |
+
+**What this review did not cover.** I read these only in passing or not at
+all, so no finding about them should be inferred from their absence:
+- `pipeline/score.py` (+352 since `9163cf6`) and `pipeline/landcover.py`.
+  Their output was checked indirectly, through the score distribution in C-1,
+  but they were not code-reviewed line by line.
+- `graph.py`'s changes.
+- `RouteResults.swift`, `Models.swift`, `TuneView.swift`, `BeautyType.swift`
+  and `Geo.swift`.
+- The rest of `DriveTrace.swift`.
+- `tools/`.
+- The Oracle box.
+- Any real drive.
 
 ## 8. Verdict
 
