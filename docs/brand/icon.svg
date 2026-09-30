@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#F3E7CF"/><g transform="translate(512 512) scale(1.12) translate(-512 -512)"><defs><clipPath id="badge"><circle cx="512" cy="512" r="404"/></clipPath></defs>
+<circle cx="512" cy="512" r="404" fill="#F3E7CF"/>
+<g clip-path="url(#badge)">
+<circle cx="512" cy="520" r="230" fill="#F2B04A"/>
+<rect x="250" y="560" width="524" height="14" fill="#F3E7CF"/>
+<rect x="250" y="598" width="524" height="18" fill="#F3E7CF"/>
+<rect x="250" y="640" width="524" height="22" fill="#F3E7CF"/>
+<path d="M60 700 C 230 590, 400 600, 560 668 C 700 615, 850 600, 980 690 V 1000 H 60 Z" fill="#5E8763"/>
+<path d="M60 770 C 250 690, 400 720, 512 786 C 640 720, 800 700, 980 760 V 1000 H 60 Z" fill="#2F5A47"/>
+<path d="M505 786 C 610 850, 440 900, 400 1000 L 640 1000 C 610 900, 680 850, 519 786 Z" fill="#F3E7CF"/>
+</g>
+<circle cx="512" cy="512" r="404" fill="none" stroke="#2B211B" stroke-width="40"/></g></svg>

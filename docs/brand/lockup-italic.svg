@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380"><g transform="translate(40,40) scale(0.31)"><defs><clipPath id="wagon"><circle cx="512" cy="540" r="340"/></clipPath></defs>
+<circle cx="512" cy="540" r="340" fill="#F2B04A"/>
+<g clip-path="url(#wagon)"><rect x="150" y="690" width="724" height="220" fill="#E07B2E"/></g>
+<path d="M232 468 Q520 404 812 468 Q520 494 232 468 Z" fill="#B8502E"/>
+<path d="M300 486 v-14 M720 486 v-14" stroke="#2B211B" stroke-width="10"/>
+<path d="M196 668 L196 526 Q196 488 232 486 L566 486 C604 487 622 504 640 540 L658 574 C742 576 802 586 828 606 C846 620 848 650 842 668 Q838 690 814 690 L220 690 Q196 690 196 668 Z" fill="#2F5A47"/>
+<rect x="196" y="592" width="400" height="68" fill="#C98F52"/>
+<path d="M196 592 H596 V660 H196 M330 592 V660 M462 592 V660" fill="none" stroke="#8A5A33" stroke-width="10"/>
+<rect x="228" y="512" width="100" height="58" rx="10" fill="#F3E7CF"/>
+<rect x="344" y="512" width="104" height="58" rx="10" fill="#F3E7CF"/>
+<rect x="464" y="512" width="100" height="58" rx="10" fill="#F3E7CF"/>
+<path d="M580 512 L598 512 C612 514 624 536 636 570 L580 570 Z" fill="#F3E7CF"/>
+<circle cx="826" cy="628" r="12" fill="#F3E7CF"/>
+<rect x="180" y="664" width="30" height="14" rx="6" fill="#2B211B"/>
+<rect x="826" y="664" width="32" height="14" rx="6" fill="#2B211B"/>
+<path d="M244 690 A84 84 0 0 1 412 690 M630 690 A84 84 0 0 1 798 690 Z" fill="#2F5A47"/>
+<path d="M244 690 A84 84 0 0 1 412 690 M630 690 A84 84 0 0 1 798 690" fill="none" stroke="#24473A" stroke-width="8"/>
+<circle cx="328" cy="690" r="60" fill="#2B211B"/><circle cx="714" cy="690" r="60" fill="#2B211B"/>
+<circle cx="328" cy="690" r="24" fill="#F3E7CF"/><circle cx="714" cy="690" r="24" fill="#F3E7CF"/>
+<rect x="110" y="746" width="804" height="16" rx="8" fill="#2B211B"/></g><text x="390" y="215" font-family="Cochin" font-style="italic" font-size="120" fill="#2B211B">Sunday Drive</text><text x="396" y="275" font-family="Futura" font-weight="500" font-size="30" letter-spacing="10" fill="#B8502E">THE SCENIC ROUTE, ON PURPOSE</text></svg>
