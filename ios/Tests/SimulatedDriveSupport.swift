@@ -40,6 +40,13 @@ enum E2E {
     /// Write a per-fix trace of every drive run. Only sensible with `only`.
     static var tracing: Bool { env["SUNDAYDRIVE_E2E_TRACE"] == "1" }
 
+    /// Whether any drive of this pair is wanted — `urban-007@0.5` wants the
+    /// pair `urban-007` fetched, even though it wants only one of its prefs.
+    static func wantsPair(_ id: String) -> Bool {
+        guard let only else { return true }
+        return only.contains { $0 == id || $0.hasPrefix(id + "@") }
+    }
+
     static func wants(_ key: String) -> Bool {
         guard let only else { return true }
         return only.contains { key == $0 || key.hasPrefix($0 + "@") }

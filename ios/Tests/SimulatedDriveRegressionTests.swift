@@ -77,6 +77,16 @@ final class SimulatedDriveRegressionTests: XCTestCase {
         }
     }
 
+    /// Finding 2b. The same tie at the driveway: a loop whose closing leg
+    /// comes home along the street it left by matches that leg on the second
+    /// fix and latches `arrived` 20 m from the start, with 45 km to go.
+    func test_F2b_a_loop_does_not_arrive_in_its_own_driveway() async throws {
+        let record = try await drive("loop-013", pref: 1.0, .loopPerfect)
+        XCTExpectFailure("Finding 2b: arrival latched on the closing leg at the start", strict: true) {
+            XCTAssertGreaterThan(record.drivenKm, 40, "arrived after \(record.drivenKm) km of a 45 km loop")
+        }
+    }
+
     /// Finding 3. A reroute that opens with a U-turn never says so, and once
     /// it is made the banner holds it, reading "off route", for ~100 m.
     func test_F3_a_reroute_that_opens_with_a_u_turn_says_it_and_moves_on() async throws {

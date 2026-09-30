@@ -36,7 +36,7 @@ final class SimulatedDriveTests: XCTestCase {
         var out: [PlannedRoute] = []
         var log: [[String: Any]] = []
 
-        for pair in file.pairs where E2E.wants(pair.id) {
+        for pair in file.pairs where E2E.wantsPair(pair.id) {
             if pair.category == "loop" {
                 var entry: [String: Any] = ["key": pair.id, "id": pair.id,
                                             "category": pair.category, "state": pair.state,

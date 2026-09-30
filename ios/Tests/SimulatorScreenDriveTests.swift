@@ -330,6 +330,11 @@ final class SimulatorScreenDriveTests: XCTestCase {
         try await Task.sleep(for: .seconds(5))
         model.startNavigation(response.scenic)
         guard let nav = model.nav else { return XCTFail("navigation did not start") }
+        // A parked phone still reports ~1 Hz; a `simctl location set` point
+        // reports once and then nothing, and the stall is only ever decided on
+        // a fix. So a slow circle 3 m across, for six minutes.
+        let circle = (0..<12).map { Earth.offset(away, bearing: Double($0) * 30, meters: 1.5) }
+        try await play(Array(repeating: circle, count: 40).flatMap { $0 }, speed: 0.25)
         try await Task.sleep(for: .seconds(5))
         try await shot("urban-002-stall-waiting")
         let stalled = await wait(330) { nav.stalled }
