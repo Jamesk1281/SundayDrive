@@ -851,17 +851,24 @@ Only the entries where I have new evidence.
    the curve today, so re-check it if that radius or the card's inset changes.
 
 2. **Approximate location, an open gate ("untested", `release-plan.md` §10,
-   `privacy-policy.md` §7 item 6), is now determined, and it fails silently.
-   Major.**
+   `privacy-policy.md` §7 item 6), is now tested, and it fails silently.
+   Major, Verified in the simulator.**
+   - **The experiment.** I made two runs of one drive, Northampton → Amherst,
+     with the simulator moving along the route at 15 m/s
+     (`simctl location start`).
+     - **Precise on (the control):** the banner gave turn instructions, and
+       the footer said "Recording this drive".
+     - **Precise off** (toggled for Sunday Drive in Settings by the UI test,
+       value 1 → 0): after 25 s of driving the screen still said **"50 ft
+       away · Head to the start of your route"** and **"No GPS fixes yet —
+       nothing is being recorded."**
    - **Why fixes are rejected.** `isUsable` rejects any fix worse than 65 m
      (`LocationManager.swift:40`, `:127-131`), and an approximate grant
      reports kilometres. So during a drive no fix ever reaches `onFix`
      (`:283-289`).
-   - **What the screen shows.** I produced the no-fix state in the simulator:
-     the banner reads **"50 ft away · Head to the start of your route"**
-     (`distanceToRouteStart` stays 0, and `distanceText` floors at 50 ft,
-     `NavView.swift:186`, `:515`). Underneath, the footer reads "No GPS fixes
-     yet — nothing is being recorded", for the whole drive.
+   - **Why the screen says "50 ft".** `distanceToRouteStart` stays 0, and
+     `distanceText` floors at 50 ft (`NavView.swift:186`, `:515`). So a drive
+     with no position claims to be 50 ft from its start, for the whole drive.
    - **Planning.** "My Location" falls back after 8 s to the coarse fix
      (`:204-210`), so a loop can start kilometres from the user.
    - **What is missing.** Nothing calls `requestTemporaryFullAccuracyAuthorization`,
@@ -900,7 +907,7 @@ Only the entries where I have new evidence.
 | K-1 on the box | Tonight's load average reached 114, and the box has slower cores and no other tenants | The capacity probe run against a second process on the box, or against a copy of it | It would only shift K-1's ratios. The lock-sharing mechanism does not depend on the machine |
 | AR-1 and AR-2 in App Review's hands | Only App Review can say | Submitting | AR-1's fix costs an hour, so it is in the verdict regardless. AR-2 could turn out to be a Blocker if the reviewer reads 2.5.14 onto a location log |
 | AR-4 legally | This is a statute reading, not advice | A lawyer, or simply removing the in-drive buttons (5 lines) | Removing them makes the question moot |
-| The approximate-location screen on a phone | The simulator cannot grant reduced accuracy from the command line | Precise Location off in Settings, then one drive | It confirms or refutes §6 item 2. The code path is unambiguous |
+| Approximate location on a real phone | Settled in the simulator (§6 item 2). A phone's coarse fixes could differ in detail | Precise Location off, then one short drive | Only the wording. The 65 m gate rejects anything coarse |
 | Which OSM-closed roads are gated, as against merely unplowed | OSM does not say reliably | Local knowledge, or the state DOT seasonal-closure lists | It only changes the wording of C-1's danger, from misled to stranded, not whether it is a Blocker |
 | Dynamic Type at runtime | Neither method of setting AX5 took effect in this simulator | One launch at AX5 on the phone | It confirms K-5. The fixed-size font calls leave little room for doubt |
 
@@ -953,9 +960,11 @@ These are Major, cheap and worth their cost. None blocks the upload.
 - **K-2.** Wire `CFBundleShortVersionString` and `CFBundleVersion` to the build
   settings. Two lines. Do it now, because the *second* upload depends on it.
 - **K-6.** Swap the iOS 18-only symbol. One line.
+- **K-10.** Pluralise "1 miles" before the App Store screenshots are taken.
+  One line.
 
 **Can wait for 1.0.1:** K-5 (Dynamic Type, a mechanical change at 81 sites),
-K-3, K-4, K-8, K-9 and M-3.
+K-3, K-4, K-8, K-9, C-3 and M-3.
 
 **The plan (marketing).** Build the §6.3 lists without closed-in-season roads.
 Point October's one-shot posts at southern New England and at roads open all
