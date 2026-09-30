@@ -206,6 +206,17 @@ enum DataSources {
     )
 }
 
+/// The public privacy policy — App Store Review Guideline 5.1.1(i) wants it
+/// linked from inside the app, not only from App Store Connect.
+///
+/// One constant, and deliberately **not** derived from `SundayDriveAPIBaseURL`:
+/// that is the routing server, and the policy is served by GitHub Pages from
+/// this repo's `site/` (`.github/workflows/pages.yml`). `/Scenic/` is the
+/// repo's old name, kept on purpose. See `docs/privacy-policy-page-brief.md`.
+enum PrivacyPolicy {
+    static let url = URL(string: "https://jamesk1281.github.io/Scenic/privacy/")!
+}
+
 /// **Sources** — what the app is built from, and the credit each of those
 /// licences asks for.
 ///
@@ -266,6 +277,24 @@ struct AboutView: View {
                                 .foregroundStyle(Color.ink)
                             Spacer()
                             Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Color.ink3)
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(height: 50)
+                        .background(Color.sunk, in: RoundedRectangle(cornerRadius: 15))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 10)
+
+                    Link(destination: PrivacyPolicy.url) {
+                        HStack {
+                            Text("Privacy policy")
+                                .font(.system(size: 15.5, weight: .semibold))
+                                .foregroundStyle(Color.ink)
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(Color.ink3)
                         }

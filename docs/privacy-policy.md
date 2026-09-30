@@ -1,4 +1,12 @@
-# Privacy policy — DRAFT, NOT PUBLISHED
+# Privacy policy — the developer's source copy
+
+> **The user-facing version is `site/privacy/index.html`, to be served at
+> <https://jamesk1281.github.io/Scenic/privacy/>** by
+> `.github/workflows/pages.yml` (built 2026-09-29,
+> `docs/privacy-policy-page-brief.md`). It is §§0–6 below rewritten for a
+> driver. **Not live yet:** it waits on a contact address (§6) and on the owner
+> enabling GitHub Pages. This file stays: its citations are what make the page
+> checkable, and a change to §§0–6 here must change the page too (§8).
 
 **Status: drafted 2026-09-19, published nowhere; name and identifier brought
 up to date 2026-09-21; hosting brought up to date 2026-09-29, when the routing
@@ -193,7 +201,12 @@ an approximate-location grant is untested — see §7.)*
 
 ## 3. Drive recordings
 
-The app can record a drive to a file. A recording contains, once per second, the
+**Every navigated drive is recorded** — `RouteModel.startNavigation` and
+`startLoopDrive` open a `DriveTrace` unconditionally (`RouteModel.swift:267-273`,
+`:296`), and there is no setting to turn it off. *(Corrected 2026-09-29. Until
+then this section said the app "can" record and §5 called recording "a
+deliberate act, not a default"; both were wrong from the day the draft was
+written.)* A recording contains, once per second, the
 raw GPS fix and where it fell on the route: latitude, longitude, horizontal
 accuracy, altitude, speed and a timestamp; plus the route being followed, any
 "nice"/"dull" verdicts tapped during the drive, when the app went to the
@@ -234,8 +247,8 @@ Category rules is a §7 item.)*
 
 - **Refuse location.** The app cannot route without it, but nothing else about
   the phone is read.
-- **Don't record.** Recording is a deliberate act, not a default of using the
-  app.
+- ~~**Don't record.**~~ Not a choice the app offers: every navigated drive
+  is recorded (§3). Deleting recordings is the control there is.
 - **Delete recordings** at any time, from the Files app or a Mac (§3).
 - **Reset the three stored settings** by deleting the app.
 
@@ -352,3 +365,7 @@ Re-check it if any of these change, because each one is load-bearing above:
   against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.
+- **An off switch for drive recording.** §3 and §5 say there is none.
+- **A change to anything in §§0–6 must also change `site/privacy/index.html`.**
+  That page is the published copy, and nothing checks the two against each
+  other except this line.

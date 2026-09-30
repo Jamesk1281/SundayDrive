@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Sunday Drive Privacy Policy</title>
+<!--
+  The user-facing copy of docs/privacy-policy.md §§0–6. Every claim here is one
+  that document makes, with the file:line citations that make it checkable.
+  Change the two together (privacy-policy.md §8). No scripts, no fonts, no
+  external assets: tests/test_privacy_page.py checks that.
+-->
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1d1c1a;
+    --ink2: #5b5850;
+    --rule: #e4e0d6;
+    --accent: #8a5a12;
+    --note: #f3eee2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #161513;
+      --ink: #ece8df;
+      --ink2: #a9a499;
+      --rule: #34312b;
+      --accent: #e0a94f;
+      --note: #211f1b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 40rem; margin: 0 auto; padding: 2rem 16px 4rem; }
+  h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 .25rem; }
+  h2 { font-size: 1.2rem; margin: 2.25rem 0 .5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+  h3 { font-size: 1rem; margin: 1.5rem 0 .25rem; }
+  p, ul { margin: 0 0 1rem; }
+  ul { padding-left: 1.25rem; }
+  li { margin-bottom: .4rem; }
+  a { color: var(--accent); }
+  .meta { color: var(--ink2); font-size: .95rem; margin-bottom: 1.5rem; }
+  .summary { background: var(--note); border-radius: 12px; padding: 1rem 1.1rem; margin: 1.5rem 0; }
+  .summary ul { margin: 0; }
+  blockquote { margin: 0 0 1rem; padding-left: 1rem; border-left: 3px solid var(--rule); color: var(--ink2); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Sunday Drive Privacy Policy</h1>
+<p class="meta">Effective date: 29 September 2026</p>
+
+<div class="summary">
+<ul>
+  <li>No account, no sign-in, no analytics, no advertising, and no third-party code in the app.</li>
+  <li>Your location is used to follow your route. It is sent to our routing server to plan the route, and the server does not store it.</li>
+  <li>Two companies are in the path: Cloudflare carries the connection and can read it, and Oracle hosts the server.</li>
+  <li>Every drive you navigate is recorded to a file that stays on your phone. You can delete it at any time.</li>
+</ul>
+</div>
+
+<h2>What this app is</h2>
+<p>Sunday Drive plans and narrates driving routes that prefer scenic roads over fast ones. It runs on iPhone. It talks to one routing server, which the developer runs on a computer rented from Oracle Cloud in the United States. It uses Apple Maps for the map, for address search and for place names.</p>
+<p>There is no account, no sign-in, and no way to create one.</p>
+
+<h2>What the app collects, and what it does not</h2>
+<p><strong>No account and no identity.</strong> The app never asks for your name, email address, phone number or a password. The server has no user records to attach them to, and it neither asks for nor hands out any identifier.</p>
+<p><strong>No tracking, analytics or advertising.</strong> The app contains no third-party code at all: no analytics, no crash reporter, no ad network. It uses only Apple's own frameworks. It does not track you across apps, so it never asks for tracking permission.</p>
+<p><strong>No device identifiers.</strong> The app does not read your phone's advertising identifier, its vendor identifier or its name.</p>
+<p><strong>What is stored on your phone.</strong> Besides drive recordings (below), the app keeps three small settings for itself:</p>
+<ul>
+  <li>the guidance voice you chose,</li>
+  <li>how long each voice takes to speak, so guidance can be timed, and</li>
+  <li>whether voice guidance is muted.</li>
+</ul>
+
+<h2>Location</h2>
+<p><strong>The app uses your location for one thing: following the route you asked for.</strong> It asks for permission only while you are using the app, never "always". The message iOS shows you is:</p>
+<blockquote>Your location is used to follow the route, turn by turn, while you drive.</blockquote>
+<p><strong>Location continues in the background during a drive, and the blue location indicator shows whenever it does.</strong> This is so a locked phone or an incoming call does not end your drive. Background location is switched off when navigation stops.</p>
+<p><strong>Location is precise.</strong> While you drive, the app asks iOS for the most precise location it offers, about once a second. That is what turn-by-turn guidance needs.</p>
+
+<h3>Where your location goes</h3>
+<p>To three places, and no others.</p>
+
+<p><strong>1. To our routing server, to plan a route.</strong> When you ask for a route, the app sends your start and destination coordinates. When you ask for a loop, it sends your start point. If you leave the route while driving, it sends your current position and heading to plan a new one. Nothing goes with them: no identifier, no timestamp, no history of where you have been. The coordinates are sent inside the request itself, not in the web address.</p>
+<p><strong>The server stores nothing.</strong> It has no database and no log file, and it does not log requests. We checked the running server on 29 September 2026: after real route requests had passed through it, none of their coordinates appeared in any of its logs.</p>
+<p><strong>Oracle hosts the server.</strong> The server runs on a virtual machine that the developer rents from Oracle Cloud Infrastructure, in its US East region (Ashburn, Virginia). Your coordinates are held in that machine's memory while your route is worked out, and the server software writes them nowhere. Like any computer, the machine can temporarily move memory to disk when it runs short, and that could briefly include a request being worked on.</p>
+<p>Oracle operates the hardware and the network, so a third party runs the machine that handles your coordinates. Oracle's own management software also runs on the machine: a component that reports processor and memory use to Oracle, a log collector that is set up to collect nothing, a security scanner, and a component for running remote commands. None of these is aimed at route requests.</p>
+<p><strong>Cloudflare carries the connection, and can read it.</strong> The app reaches the server through Cloudflare's network. Cloudflare decrypts the connection on its way through, which means it can technically read the whole request, coordinates included. Because the coordinates are not in the web address, they are not in the addresses that access logs record by default. What Cloudflare does with the traffic it carries is subject to Cloudflare's own logging and retention, not to this policy. It is the one point where your location passes through a third party on its way to the server, outside the developer's control.</p>
+
+<p><strong>2. To Apple, for the map, search and place names.</strong> The map is Apple's. When you type an address, it goes to Apple's search service. To name the place you are starting from, the app sends a coordinate to Apple. Apple handles that data under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>, not this one. <strong>The addresses you type are never sent to our routing server</strong>, only the coordinates Apple turns them into.</p>
+
+<p><strong>3. To a file on your own phone, when a drive is recorded.</strong> See the next section.</p>
+
+<h2>Drive recordings</h2>
+<p><strong>Every drive you navigate is recorded</strong> to a file on your phone. About once a second, a recording notes your GPS position (latitude and longitude, with its accuracy), your altitude, your speed, the time, and where that position fell on the route. It also holds the route you were following, any "nice" or "dull" marks you tapped, when the app went to the background, and how the drive ended. <strong>Taken together, that is a detailed record of where you drove and when.</strong></p>
+<ul>
+  <li><strong>It stays on your phone.</strong> The app has no way to upload, share or send a recording. Its only network use is the route requests described above.</li>
+  <li><strong>You can see and delete recordings yourself</strong>, in the Files app (On My iPhone → Sunday Drive → traces) or from a Mac over a cable. Deleting a file there deletes the recording. The app keeps no other copy.</li>
+  <li><strong>Deleting the app deletes them.</strong></li>
+  <li><strong>They are included in your iPhone backups.</strong> If you back up your phone to iCloud or to a computer, your recordings are in that backup, protected however that backup is protected.</li>
+</ul>
+<p>Recordings are never deleted automatically. A recording stays until you remove it.</p>
+
+<h2>Children</h2>
+<p>Sunday Drive is a driving app. It is not directed at children. It has no social features, nothing you create that other people can see, and no advertising.</p>
+
+<h2>Your choices</h2>
+<ul>
+  <li><strong>Refuse location.</strong> The app cannot plan or follow a route without it, but it reads nothing else about your phone.</li>
+  <li><strong>Delete recordings</strong> at any time, from the Files app or a Mac.</li>
+  <li><strong>Reset the three stored settings</strong> by deleting the app.</li>
+</ul>
+<p>There is no data about you on our server to request, correct or delete, because none is kept.</p>
+
+<h2>Contact</h2>
+<p>Questions or requests about this policy: CONTACT_ADDRESS_TBD</p>
+
+</main>
+</body>
+</html>

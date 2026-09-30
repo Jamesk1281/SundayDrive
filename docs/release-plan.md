@@ -515,7 +515,7 @@ All of these are downstream of Decision 1, and most are already written.
 | --- | --- |
 | `PrivacyInfo.xcprivacy` | **On `main`** (`ios/Sources/PrivacyInfo.xcprivacy`). Keep precise location declared as collected — §8, decision 3 |
 | Privacy policy **draft** | **On `main`**, `docs/privacy-policy.md`. No longer needs a lawyer (§8, decision 3). Of the four things it needed, two are done: §6e landed and deployed, and Cloudflare and Oracle are both named (§2.1(a)). **Still open: the approximate-location path tested (§7 item 6), and a monitored contact alias (§6).** It is also still a developer document, with file citations and a §7 addressed to a lawyer; the published page has to be a user-facing rewrite of §§0–6 |
-| Privacy policy **URL** | Open, and a **hard submission gate**. It needs somewhere public to live; GitHub Pages off this repo is free and sufficient |
+| Privacy policy **URL** | **Built, awaiting contact address and Pages enablement.** A **hard submission gate**. `site/privacy/index.html`, deployed by `.github/workflows/pages.yml` (uploads `site/` only — never serve Pages from `/docs`) to `https://jamesk1281.github.io/Scenic/privacy/`, and linked from the Sources screen (`PrivacyPolicy.url`, `AboutView.swift`). Owner steps are `privacy-policy-page-brief.md` §5; `tests/test_privacy_page.py` XPASSes, and fails, once the placeholder is replaced |
 | **Territories: United States only** | Decided (§8, decision 3). Set at the listing. Reversible later |
 | App Store **name reservation** | Open. Do it the day membership clears and the name is chosen — §3 |
 | The four App Store Connect answers | **On `main`**, `app-store-submission.md` |
