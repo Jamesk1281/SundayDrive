@@ -1,6 +1,6 @@
 # Pre-submission review: verdict
 
-**Status: reviewed `6f26edf`. Verdict: SUBMIT AFTER (three blockers: K-7, AR-1, and C-1 before launch day).**
+**Status: reviewed `6f26edf`. Verdict: SUBMIT AFTER (four blockers: K-7, approximate location, AR-1, and C-1 before launch day).**
 
 Answer to `docs/pre-submission-review-brief.md` (committed alongside). Every
 `file:line` below is at `6f26edf8cc00e8dedebd836a03a6798c34af7b19`, read with
@@ -913,7 +913,7 @@ Only the entries where I have new evidence.
 
 ## 8. Verdict
 
-**SUBMIT AFTER** the three blockers below, and do the "before L" list in the
+**SUBMIT AFTER** the four blockers below, and do the "before L" list in the
 same binary.
 
 **The bar** is the brief's default, in four parts:
@@ -926,9 +926,12 @@ same binary.
 
 **How 6f26edf fares against it:**
 - **Part 1** holds only once AR-1's review notes exist.
-- **Part 2** fails twice. Winter closures (C-1): as shipped, the app would
-  send drivers over roads closed since Oct 15, and more close on Nov 1. On
-  loops, the escape hatch (K-7) does not go home.
+- **Part 2** fails three times.
+  - Winter closures (C-1): as shipped, the app would send drivers over roads
+    closed since Oct 15, and more close on Nov 1.
+  - On loops, the escape hatch (K-7) does not go home.
+  - With Precise Location off, the drive shows "50 ft away" and never
+    navigates (§6.2).
 - **Part 3** holds. The Apple logo is clear (§5, §6.1), and the route-guidance
   notice is in-app. The EULA field and the §2.5 stores are known, low-risk
   items.
@@ -941,6 +944,7 @@ same binary.
 |---|---|---|---|---|
 | 1 | **K-7.** On a loop, "Switch to fastest" drives to the far point: 4.4–6.3× longer than the fastest way home | **Build** | In `switchToFastest`, drop the loop waypoint and word the dialog "Head home the fastest way" | About 3 lines and one test. Under an hour |
 | 2 | **AR-1.** A reviewer outside New England meets only an error on both front doors | **Package**, plus a server copy change | App Review notes with a test route and a loop start, the reason the region is limited, and a screen recording. Server copy that says what works: "Type a town there as your start" (marketing plan §5.10.2, reworded) | Notes: an hour. Copy: minutes, with no build |
+| 2b | **§6.2, approximate location.** Precise Location off means no fix is ever accepted. The drive shows "50 ft away · Head to the start of your route" and never navigates (reproduced) | **Build** | When `accuracyAuthorization == .reducedAccuracy`, request temporary full accuracy with an `NSLocationTemporaryUsageDescriptionDictionary` purpose, or show "Turn on Precise Location to navigate" with a Settings link. Draw "Waiting for GPS" instead of a distance when there is no fix | About 25 lines. An hour |
 | 3 | **C-1.** Routes, loops and reroutes use roads OSM marks closed for winter, and the score prefers them | **Server** (gates L, not the upload) | A startup mask in `Router.__init__`: the 190 flagged ways, joined to edges by geometry, set to `+inf` in `_weights` during their closed months. Add "seasonal roads" to "What it does not do". The ALT bound stays admissible, because closing edges only lengthens true costs | About 60 lines, a small side table, one test (for example, Stowe → Jeffersonville in January avoids VT‑108). Half a day. Deploy before L |
 
 ### Before L, in the same binary where it is a build change
@@ -952,8 +956,6 @@ These are Major, cheap and worth their cost. None blocks the upload.
   destinations". Minutes for the page, about 15 lines for the control.
 - **AR-4 and C-2.** Hide the in-drive rating buttons while moving. About 5
   lines.
-- **§6.2.** Handle approximate location: ask for full accuracy, and stop
-  showing "50 ft away" with no fix. About 25 lines.
 - **K-1.** Give loop rejoins their own lock, answer 503 instead of queueing,
   and fix the timeout message. About 30 lines, split between server and
   client.
@@ -971,7 +973,7 @@ Point October's one-shot posts at southern New England and at roads open all
 year. Keep the northern mountains for the spring opener (M-1). Change the
 captions to "type the town you'll start from" (M-2).
 
-**Can this happen before L?** Yes. Blockers 1 and 2 are an afternoon, and
+**Can this happen before L?** Yes. Blockers 1, 2 and 2b are an afternoon, and
 blocker 3 is a server change that can be deployed while the build is in
 review. That leaves the package items `release-plan.md` §10 already lists: the
 EULA field, export compliance, screenshots, description, category and the name
