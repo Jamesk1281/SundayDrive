@@ -167,6 +167,35 @@ asking every driver to do the work.
   decision (`release-plan.md` Decision 3), so it is the owner's call. The
   legal side of the in-drive buttons is AR-4.
 
+### C-3. Maine's travel times are priced on stop-sign data four to five times sparser than its neighbours' — **Minor**
+
+**Hypothesis.** It would be disproved by a Maine drive whose trace shows
+stops the graph does not have, or by a state inventory that matches the
+graph's count.
+
+The junction charges that cut ETA error from 22% to 5.7%
+(`junction-timing-plan.md`) were calibrated on Massachusetts drives. I counted
+the controls baked into `graph_edges` (`n_stop_*`, `n_signal_*`) inside
+interior boxes for each state, away from the borders. Stop-sign passes per
+1,000 km of road:
+
+| CT | RI | MA | VT | NH | ME |
+|---|---|---|---|---|---|
+| 591 | 161 | 381 | 152 | 185 | **36** |
+
+Vermont and New Hampshire are as rural as Maine and carry 4–5 times more.
+That pattern looks like mapping density, not road design. It is the pattern
+`geodata-sources-findings.md` found for green areas: 3.3× thinner in Maine.
+
+If so, Maine ETAs silently fall back towards the free-flow optimism the
+junction work removed.
+
+**Prior art.** OSM's uneven coverage is known for green areas and scores. For
+traffic controls and ETAs it is not written down.
+
+**Fix direction.** Not for launch. Put a per-state control density in the
+analysis tools, and send the first Maine drive through `tools/analyze_trace.py`.
+
 ## 2. Market
 
 The marketing plan's own market facts hold as far as I checked them:
