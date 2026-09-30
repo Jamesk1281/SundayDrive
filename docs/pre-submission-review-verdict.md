@@ -238,8 +238,8 @@ the town you'll start from".
 - **Setup.** I requested every offered direction at 30, 40, 50 and 60 km, and
   counted loops as distinct when they share less than half their ~100 m
   cells with any other.
-- **Result.** Each start offered 24–28 loops but held only 7–10 distinct drives
-  (full numbers in *Reproducing this*).
+- **Result.** Each start offered 24–32 loops but held only **5–12 distinct
+  drives, median 8** (per start: 10, 7, 9, 6, 6, 5, 12, 9).
 - **Why they never change.** The planner is deterministic, and `/api/loop`
   caches by request (`server/app.py:354-360`), so the same loops come back
   every week.
@@ -264,6 +264,41 @@ The success case, one clip that takes off, is K-1: planning traffic delays
 every driver's reroute, and overload is reported as the user's network failing.
 
 ## 3. Code
+
+### K-7. On a loop, "Switch to fastest" does not take you home: it takes you to the far point — **Blocker** (3 lines)
+
+**Verified** (by reading the code, then measured on the local server). Listed
+first because it misleads drivers on a main path, loop reroutes.
+
+**What the code does.**
+- The driver taps the bolt button and confirms **"Switch to the fastest
+  route? … This gives up the scenic route for the rest of the drive."**
+  (`NavView.swift:149-158`).
+- `switchToFastest` sets `pref = 0` and calls `reroute(…, reason: "fastest")`
+  (`NavigationModel.swift:1269-1296`).
+- `reroute` pins every loop request through the far point for as long as
+  `loopWaypoint` is non-nil (`:1345-1349`), and that stays true until the far
+  point has been passed (`:311`).
+
+So on a loop, "fastest" means *the fastest way to finish the loop*.
+
+**Measured.** Six 60 km loops: Stowe, Concord and four seeded random starts.
+From a point 8 km in, the app's own request (`via` the turnaround, `pref=0`)
+comes back as **47–73 km / 47–59 min**. The fastest way home from the same
+point is **7.3–8.2 km / 8–14 min**, so the app's version is **4.4–6.3 times
+longer**.
+
+A driver who wants to go home has no way to ask for it:
+- **The escape hatch keeps them on the loop.**
+- **"End the drive" drops navigation.**
+- **Directions needs a destination.** The loop's start is not offered as one.
+
+**Prior art.** None. `LoopRerouteTests` covers off-route rejoins. No test and
+no document covers the switch on a loop.
+
+**Fix.** In `switchToFastest`, set `passedTurnaround = true`, or bypass
+`loopWaypoint` when `reason == "fastest"`. For a loop, change the dialog to
+"Head home the fastest way". That is about 3 lines and one test.
 
 ### K-1. Planning traffic starves driving traffic, and an overloaded server tells the driver their network is broken — **Major**
 
@@ -681,6 +716,22 @@ code or data.
 **`LiveDriveTests` are real.** 7 of 7 passed against my server with 5057
 empty.
 
+**The A\* fastest arm's tests bite.** In a scratch copy I inflated
+`_alt_bound` by 20%, which makes the bound inadmissible. That failed 5 of the 8
+`TestFastestArm` tests, including admissibility over every node and cost
+equality against Dijkstra on 25 random pairs. The mutant's Boston → Worcester
+came back 46.0 min where the true fastest is 44.8, which is the silent failure
+those tests exist for.
+
+**The never-joined pause and the voice schedule are guarded.** In a scratch
+copy of `ios/` I made two mutations:
+- `stallSeconds` from 5 to 50 minutes
+- `VoiceGuide.referenceFinalAt` from 6 to 20 s
+
+Exactly 11 tests failed. Seven were on the pause (`NavigationModelTests` ×5,
+`DriveTraceTests` ×2) and four on the voice (`VoiceGuideTests` ×3,
+`VoiceGuideIntegrationTests` ×1). Nothing else failed.
+
 **Guidelines that apply and hold:**
 - **2.5.4** (location and audio background modes, used for navigation and
   spoken guidance).
@@ -767,7 +818,9 @@ the night is for checking them. The blockers so far:
 
 1. **C-1, seasonal closures.** Mask the winter-closed ways at startup. About 60
    lines and a side table.
-2. **AR-1, a reviewer outside New England.** Write App Review notes (an hour,
+2. **K-7, on a loop "Switch to fastest" goes to the far point rather than
+   home.** About 3 lines.
+3. **AR-1, a reviewer outside New England.** Write App Review notes (an hour,
    no build) and replace the out-of-region sentence (about 10 lines).
 
 ## Reproducing this
