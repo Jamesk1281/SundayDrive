@@ -23,7 +23,7 @@ Measured 2026-09-30, 00:40–00:55 EDT, from a worktree at `6f26edf` with a clea
 | Live API | `GET /api/health`: HTTP 200 in 0.12 s, `{"nodes":794685,"routing_slots":801719,"status":"ok"}`. It serves the same graph as the local build. I sent it only that request and the two Pages requests. Nothing tonight probed it |
 | RDAP | `jameskouvlis.com` expires **2026-10-28T18:52:52Z**, last changed 2026-08-12, **not renewed**. This is a known status item (brief §2), not a finding |
 | Pages | `/SundayDrive/` and `/SundayDrive/privacy/` both returned 200 |
-| What else was running | At least eight other Claude Code sessions, one running its own `pytest` over the whole suite, a booted simulator (`e2e-overnight`) belonging to another session, and an unrelated Python app. All timings below are therefore quoted as ratios or as order-of-magnitude figures |
+| What else was running | At least eight other Claude Code sessions. Among them: one running its own `pytest` over the whole suite; one running `tools/audit_directions.py` on `processed-ne` (97% CPU); a scratch server from another worktree on port 5173 (90% CPU); `mediaanalysisd` (185%); and a booted simulator (`e2e-overnight`) that is not mine. Load average reached **114** at 01:15. Another session also wrote `forbidden_movements.parquet` into `<main>/data/processed-ne/` at 01:15. The router does not read that file, and `graph_edges`, `graph_nodes` and `turn_restrictions` still carry their 2026-08-29 timestamps, so the build I served did not change during the review. All timings below are quoted as ratios or ranges |
 
 ## 1. Conceptual
 
@@ -486,6 +486,26 @@ row shows an empty amber square. I could not reproduce this, because only the
 iOS 26.4 runtime is installed.
 
 **Fix.** Use `arrow.clockwise`, or raise the target to 18.0. One line.
+
+### K-8. The served graph can be rebuilt only from files on one Mac — **Minor**
+
+**Verified.** The README builds from Geofabrik's moving
+`new-england-latest.osm.pbf` (`README.md:65-67`). No committed document
+records a snapshot date or checksum for the PBF, the Terrarium tiles or the
+WorldCover tiles; `git grep -iE "sha256|checksum"` finds only a trace-identity
+hash. The 782 MB PBF behind the served graph (downloaded 2026-08-25, graph
+written 2026-08-29) exists only in `<main>/data/raw/`. The box has the
+processed parquets, but not the inputs.
+
+A rebuild from the README today would use different OSM data.
+`route-distribution-study.md` already records that a rebuild moves the
+published numbers ("that rebuild has already moved published separations
+once"), so that part is known. The new part is its consequence for
+C-1: fixing closures in `extract.py` forces exactly that rebuild, and is why I
+recommend the startup mask for launch.
+
+**Fix.** Record the input files' sha256 and download dates in
+`docs/data-sources.md`, and copy `data/raw/*.pbf` somewhere other than the Mac.
 
 ## 4. App Review
 
