@@ -736,6 +736,45 @@ shrug: **above 5.5 GB** (something is holding more than the graph) and **below
 
 ---
 
+## Updating the box
+
+Nothing on the box pulls code or data by itself, and the server reads the
+graph once at startup. So every change goes through one script, run on the
+Mac from any checkout:
+
+```bash
+server/deploy-oracle.sh --dry-run
+```
+
+```bash
+server/deploy-oracle.sh
+```
+
+The dry run says what would change and touches nothing. The real run does the
+following, and stops at the first step that fails:
+
+1. Checks with `git ls-remote` that local `main` is on GitHub (Part 0.1).
+2. Hashes the five parquets at both ends. It copies only the ones that differ,
+   from the main checkout, then checks the hashes again (Part 6).
+3. Fast-forwards the box to `main`. If the lock file changed, it reinstalls
+   the dependencies.
+4. Restarts `sundaydrive-api` once, **only if** server code or data changed.
+   A docs-only change is pulled and nothing restarts. `--restart` forces one.
+5. Waits up to 180 s for `/api/health`. Then it checks that the node count
+   equals `graph_nodes.parquet`'s row count, reports memory against the
+   reclaim floor, and checks the public hostname.
+
+Code and data both arrive before the single restart. That is what prevents
+the `KeyError: 'c_green'` crash. A restart still means about 66 s of `502`
+while the graph loads, because only one box is serving. If a rebuild changes
+the node count, the script tells you to update the UptimeRobot keyword.
+
+The ssh key must be in the agent (Part 0.2). Once there are two gated
+connectors (Part 10), this script covers one box, and the rolling deploy
+described there is still unwritten.
+
+---
+
 ## Rollback
 
 At any point, including after cutover:
@@ -797,7 +836,7 @@ and the two unit files above.
 ## What this does not cover
 
 - **Rebuilding the graph.** The pipeline never runs on this box — you build
-  parquets on the Mac and `rsync` them. See the top-level README.
+  parquets on the Mac and ship them with `deploy-oracle.sh` ([Updating the box](#updating-the-box)). See the top-level README.
 - **A second worker.** The box peaked at 4.06 GB with one process, so two need
   about 8 GB and **do not fit in 8 GB** alongside the OS. That corrects the old
   "around two workers" figure, which came from a 3.53 GB measurement that
