@@ -16,6 +16,9 @@ struct LoopPanel: View {
 
     @State private var completer = SearchCompleter()
     @FocusState private var startFocused: Bool
+    /// Whether the scenery bars are showing, matching `RouteResults`: the
+    /// sentence is what a loop gets read for, the bars are the working.
+    @State private var showingBreakdown = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -168,22 +171,41 @@ struct LoopPanel: View {
 
     // MARK: - Results
 
+    /// The same shape `RouteResults` uses, minus the price: the drive, what it
+    /// buys, what it is like, then the working.
+    ///
+    /// A loop has no fastest arm to be compared against — the distance slider
+    /// has already fixed the length — so where a route prints `+38 min · 25
+    /// beautiful miles` this prints only the second half. Nothing is being
+    /// traded, so nothing is being priced.
     private func results(_ response: LoopResponse) -> some View {
         let meta = response.meta
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                card("Loop", value: "\(Int(meta.minutes.rounded())) min",
-                     detail: "\(meta.km.wholeMilesFromKm) mi · heading \(meta.sector)",
-                     tint: .scenic)
-                // The legible number. The mean score separates a scenic loop
-                // from a fast one of the same length by about a point; this
-                // separates them five-fold, so it leads.
-                card("Beautiful road",
-                     value: "\(meta.beautiful_km.wholeMilesFromKm) mi",
-                     detail: "scoring \(Int(meta.beautiful_score))+ of 10",
-                     tint: .gray)
+        let described = RouteDescription(response.loop.properties)
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(Int(meta.minutes.rounded())) min · \(meta.km.wholeMilesFromKm) mi")
+                    .font(.title2.weight(.semibold))
+                    // Tabular figures, so shuffling to another direction does
+                    // not shift the line sideways under the reader's eye.
+                    .monospacedDigit()
+                Text(summary(meta))
+                    .font(.subheadline)
+                    .foregroundStyle(Color.scenic)
             }
-            Text(summary(meta)).font(.caption)
+            .accessibilityElement(children: .combine)
+
+            // What the loop is like, and where it goes. `heading` rides on the
+            // via line rather than taking a row of its own — and stands alone
+            // when no road carries enough of the drive to be named, which is
+            // exactly when a compass direction is all there is to say.
+            VStack(alignment: .leading, spacing: 2) {
+                if let character = described.character {
+                    Text(character).font(.subheadline)
+                }
+                Text(described.via.map { "\($0) · heading \(meta.sector)" }
+                     ?? "Heading \(meta.sector)")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
 
             // Always shown, not only when bad: it is the one number that tells a
             // driver their loop is really an out-and-back.
@@ -202,37 +224,48 @@ struct LoopPanel: View {
                 Text(note).font(.caption2).foregroundStyle(.orange)
             }
 
-            ForEach(response.loop.properties.sceneryBreakdown, id: \.label) { item in
-                SceneryBar(label: item.label, km: item.km,
-                           maxKm: max(1, response.loop.properties.sceneryBreakdown
-                               .map(\.km).max() ?? 1))
+            breakdown(of: response.loop.properties, beautifulScore: meta.beautiful_score)
+        }
+    }
+
+    /// The per-feature mileage, folded away — and carrying the definition of
+    /// "beautiful" on its label, which is where the word is finally cashed out
+    /// into a number. It used to sit under a card as "scoring 7+ of 10"; it
+    /// belongs with the working, not with the headline.
+    @ViewBuilder private func breakdown(of props: RouteProps,
+                                        beautifulScore: Double) -> some View {
+        let items = props.sceneryBreakdown
+        if !items.isEmpty {
+            let maxKm = max(1, items.map(\.km).max() ?? 1)
+            DisclosureGroup(isExpanded: $showingBreakdown) {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(items, id: \.label) { item in
+                        SceneryBar(label: item.label, km: item.km, maxKm: maxKm)
+                    }
+                }
+                .padding(.top, 6)
+            } label: {
+                Text("Scenery breakdown · beautiful is \(Int(beautifulScore))+ of 10")
             }
+            .font(.caption)
+            .tint(.secondary)
         }
     }
 
-    private func card(_ title: String, value: String, detail: String,
-                      tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(title.uppercased()).font(.caption2).foregroundStyle(.secondary)
-            Text(value).font(.title3.bold())
-            Text(detail).font(.caption2).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    /// "19 of your 25 mi on beautiful road, back where you started."
+    /// "19 beautiful miles, back where you started."
     ///
-    /// The 0–10 mean used to be the middle clause. It is gone because the
-    /// BEAUTIFUL ROAD card two rows up already leads with the mile count, and
-    /// the planning tab's cards now do too — a second scale on the same screen
-    /// asks the driver to hold two rulers at once, and the mean is the one
-    /// nobody has a feel for. `mean_score` is still decoded and still what the
-    /// traces are calibrated against; it is just no longer printed here.
+    /// The 0–10 mean used to be the middle clause. It is gone because a second
+    /// scale on the same screen asks the driver to hold two rulers at once, and
+    /// the mean is the one nobody has a feel for. `mean_score` is still decoded
+    /// and still what the traces are calibrated against; it is just not printed.
+    ///
+    /// "of your 25 mi" went with the cards. The total is now the line directly
+    /// above this one, so restating it here made the same number appear twice
+    /// in two adjacent rows — and this row is the only place the beautiful
+    /// count appears at all, so it leads with it.
     private func summary(_ meta: LoopMeta) -> AttributedString {
-        let markdown = "**\(meta.beautiful_km.wholeMilesFromKm) of your "
-            + "\(meta.km.wholeMilesFromKm) mi** on beautiful road, "
+        let miles = meta.beautiful_km.wholeMilesFromKm
+        let markdown = "**\(miles) beautiful \(miles == 1 ? "mile" : "miles")**, "
             + "back where you started"
         return (try? AttributedString(markdown: markdown)) ?? AttributedString(markdown)
     }

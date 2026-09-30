@@ -70,9 +70,9 @@ enum PrefSlider {
 /// that at the default text size — so "scenery preference 0.50" was bisected by
 /// the sheet's bottom edge on the first screen of every cold launch, before the
 /// user had touched an accessibility setting. Raising the literal would only
-/// move the failure one text size along: the title, the hint, the picker, both
-/// fields and the slider caption are all typed, so the block grows with Dynamic
-/// Type and no constant can follow it.
+/// move the failure one text size along: the title, the hint, the picker and
+/// both fields are all typed, so the block grows with Dynamic Type and no
+/// constant can follow it.
 ///
 /// A `custom` detent rather than a computed `.height(x)` because a custom
 /// detent's *identity is its type*: `RoutePanel` compares `detent ==
@@ -95,6 +95,14 @@ struct PlanningCompactDetent: CustomPresentationDetent {
     ///
     /// Scaling the whole 311 would overshoot instead: most of it is padding,
     /// gaps and control chrome that don't grow with text at all.
+    ///
+    /// Both figures were measured while the slider still printed "scenery
+    /// strength 0.50" beneath itself. That caption is gone, so the solved
+    /// height is now generous by about one `caption2` line — slack under the
+    /// block rather than a clipped one, which is the direction this may err in.
+    /// Left as measured rather than re-derived by arithmetic: the numbers above
+    /// came off a booted device, and an adjustment reasoned out on paper is not
+    /// the same kind of number.
     static let fixedPoints: CGFloat = 147
     static let textPoints: CGFloat = 164
 
@@ -434,21 +442,25 @@ struct RoutePanel: View {
 
     /// Fastest-to-scenic slider. Re-routes only when the user lets go, so we
     /// don't hammer the backend mid-drag.
+    ///
+    /// It used to print its own position underneath — "scenery strength 0.50".
+    /// That caption is gone, and nothing replaced it *here*: what the handle is
+    /// buying is now stated in the results below as `+38 min · 25 beautiful
+    /// miles` (`RouteComparison.tradeLine`), which is the same fact in units a
+    /// driver can act on. A number belonging to `PrefSlider` and `router.py`
+    /// told them what the router had been asked for, and nothing about the
+    /// drive.
+    ///
+    /// The handle keeps its own coordinate for the reasons `PrefSlider`
+    /// documents — that mapping is load-bearing whether or not it is printed.
     private var prefSlider: some View {
-        VStack(spacing: 2) {
-            HStack {
-                Text("Fastest").font(.caption2)
-                Slider(value: prefPosition, in: 0...1) { editing in
-                    if !editing { Task { await model.computeRoute() } }
-                }
-                Text("Scenic").font(.caption2)
+        HStack {
+            Text("Fastest").font(.caption2)
+            Slider(value: prefPosition, in: 0...1) { editing in
+                if !editing { Task { await model.computeRoute() } }
             }
-            // The position, not `model.pref` — after the mapping those are two
-            // different numbers and printing the one the handle is not at is
-            // how the caption would start lying. "Strength" because under the
-            // mapping the position *is* the router's `strength`.
-            Text("scenery strength \(prefPosition.wrappedValue, format: .number.precision(.fractionLength(2)))")
-                .font(.caption2).foregroundStyle(.secondary)
+            .accessibilityLabel("Trade travel time for scenery")
+            Text("Scenic").font(.caption2)
         }
     }
 

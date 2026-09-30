@@ -167,23 +167,24 @@ final class RouteComparisonTests: XCTestCase {
 
     // MARK: - Miles of beautiful road, where the backend reports them
 
-    func test_the_cards_lead_with_miles_when_the_backend_sends_them() {
+    func test_the_price_tag_leads_with_miles_when_the_backend_sends_them() {
         // Worcester -> Boston off the live graph: 0 mi of beautiful road on the
         // fastest arm, 3 on the scenic one.
         let c = comparison(fastest: 26.0, scenic: 52.0,
                            fastestBeautifulKm: km(miles: 0.2),
                            scenicBeautifulKm: km(miles: 3.1))
 
-        XCTAssertEqual(c.fastestDetail, "0 mi beautiful")
-        XCTAssertEqual(c.scenicDetail, "3 mi beautiful")
+        XCTAssertEqual(c.tradeLine, "+26 min · **3 beautiful miles**")
+        XCTAssertFalse(c.tradeLine.contains("/10"), "the 0-10 scale is off this screen")
+        // The sentence is no longer what the panel shows, but it is still the
+        // fallback for a backend that sends no miles, so it stays under test.
         XCTAssertEqual(c.summary,
                        "Scenic adds **26 min** and turns **0 mi** of beautiful road into **3 mi**")
-        XCTAssertFalse(c.summary.contains("/10"), "the 0-10 scale is off this screen")
     }
 
-    func test_the_sentence_prints_the_same_integers_as_the_cards() {
+    func test_the_price_tag_prints_the_same_integers_as_the_sentence() {
         // The property this whole type exists for, now on the mile counts:
-        // whatever the cards say, the sentence says the same. 0.4 mi either
+        // whatever one readout says, the other says the same. 0.4 mi either
         // side of the half is where rounding twice could ever have disagreed.
         for fastestMiles in stride(from: 0.0, through: 20.0, by: 0.1) {
             let scenicMiles = fastestMiles + 4.5
@@ -193,8 +194,7 @@ final class RouteComparisonTests: XCTestCase {
             guard let miles = c.beautifulMiles else {
                 return XCTFail("both arms carried a count")
             }
-            XCTAssertEqual(c.fastestDetail, "\(miles.fastest) mi beautiful")
-            XCTAssertEqual(c.scenicDetail, "\(miles.scenic) mi beautiful")
+            XCTAssertTrue(c.tradeLine.contains("**\(miles.scenic) beautiful"), c.tradeLine)
             XCTAssertTrue(c.summary.contains("**\(miles.fastest) mi**"), c.summary)
             XCTAssertTrue(c.summary.contains("**\(miles.scenic) mi**"), c.summary)
         }
@@ -289,11 +289,12 @@ final class RouteComparisonTests: XCTestCase {
 
         XCTAssertNil(c.fastestBeautifulMiles)
         XCTAssertNil(c.beautifulMiles)
-        XCTAssertEqual(c.fastestDetail, "4.4/10")
-        XCTAssertEqual(c.scenicDetail, "6.1/10")
         XCTAssertEqual(c.summary,
                        "Scenic adds **48 min** and raises scenery **4.4** → **6.1**")
         XCTAssertEqual(c.summary, c.scoreSummary)
+        // Nothing to price, so the price tag hands over to the sentence rather
+        // than inventing a mile count the backend never sent.
+        XCTAssertEqual(c.tradeLine, c.summary)
     }
 
     func test_one_arm_alone_does_not_put_two_scales_on_screen() {
@@ -304,9 +305,10 @@ final class RouteComparisonTests: XCTestCase {
                            scenicBeautifulKm: km(miles: 9.0))
 
         XCTAssertNil(c.beautifulMiles)
-        XCTAssertEqual(c.fastestDetail, "4.4/10")
-        XCTAssertEqual(c.scenicDetail, "6.1/10")
         XCTAssertEqual(c.summary, c.scoreSummary)
+        XCTAssertEqual(c.tradeLine, c.scoreSummary)
+        XCTAssertFalse(c.tradeLine.contains("beautiful mile"),
+                       "one arm's count is not a price")
     }
 
     func test_the_fallback_can_still_say_the_score_went_down() {
@@ -319,4 +321,88 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertTrue(c.summary.contains("lowers"), c.summary)
         XCTAssertFalse(c.summary.contains("raises"), c.summary)
     }
+
+    // MARK: - The headline: the trip, and what taking it costs
+
+    func test_the_total_line_is_the_scenic_route_not_the_fastest_one() {
+        // The fastest arm lost its card in the redesign. What the driver is
+        // about to do is the scenic route's own minutes and miles; the fastest
+        // arm survives only as the `+`.
+        let c = comparison(fastest: 57.6, scenic: 106.4,
+                           fastestBeautifulKm: km(miles: 3.0),
+                           scenicBeautifulKm: km(miles: 25.0))
+
+        XCTAssertEqual(c.totalLine, "106 min · 6 mi")
+        XCTAssertEqual(c.tradeLine, "+48 min · **25 beautiful miles**")
+    }
+
+    func test_the_price_tag_and_the_total_agree_on_the_fastest_time() {
+        // The subtraction the reader can do in their head, on the new layout:
+        // total minus the `+` has to be the fastest route's own minutes.
+        for fastest in stride(from: 5.0, through: 120.0, by: 0.25) {
+            let c = comparison(fastest: fastest, scenic: fastest + 30.4,
+                               fastestBeautifulKm: km(miles: 1.0),
+                               scenicBeautifulKm: km(miles: 9.0))
+            XCTAssertEqual(c.scenicMinutes - c.extraMinutes, c.fastestMinutes)
+            XCTAssertTrue(c.totalLine.hasPrefix("\(c.scenicMinutes) min"), c.totalLine)
+            XCTAssertTrue(c.tradeLine.hasPrefix("+\(c.extraMinutes) min"), c.tradeLine)
+        }
+    }
+
+    func test_scenery_for_free_is_not_priced_at_zero_minutes() {
+        // The best news this screen ever delivers, and "+0 min" is the wrong
+        // way to deliver it.
+        let c = comparison(fastest: 57.6, scenic: 58.2,
+                           fastestBeautifulKm: km(miles: 1.0),
+                           scenicBeautifulKm: km(miles: 9.0))
+
+        XCTAssertEqual(c.extraMinutes, 0)
+        XCTAssertEqual(c.tradeLine, "No extra time · **9 beautiful miles**")
+        XCTAssertFalse(c.tradeLine.contains("+0"), c.tradeLine)
+    }
+
+    func test_a_route_that_loses_beautiful_road_is_not_sold_as_a_purchase() {
+        // 3.1% of 983 sampled trips: the scenic arm comes back slower *and*
+        // with less beautiful road. A price tag reading "+2 min · 1 beautiful
+        // mile" would be true and would still be a lie by omission.
+        let c = comparison(fastest: 40.0, scenic: 42.0,
+                           fastestBeautifulKm: km(miles: 12.0),
+                           scenicBeautifulKm: km(miles: 1.0))
+
+        XCTAssertTrue(c.isWorseThanFastest)
+        XCTAssertEqual(c.tradeLine,
+                       "+2 min · **11 fewer** beautiful miles than the fastest route")
+        XCTAssertEqual(c.tradeTint, .orange, "a loss is not painted in the accent")
+    }
+
+    func test_the_same_route_twice_is_not_given_a_price() {
+        // At pref 0 the server answers with the same route on both arms.
+        let c = comparison(fastest: 57.6, scenic: 57.6,
+                           fastestScore: 4.4, scenicScore: 4.4,
+                           fastestBeautifulKm: km(miles: 4.0),
+                           scenicBeautifulKm: km(miles: 4.2))
+
+        XCTAssertTrue(c.isSameDrive)
+        XCTAssertEqual(c.tradeLine, "Same as the fastest route")
+        XCTAssertEqual(c.tradeTint, .secondary)
+    }
+
+    func test_a_single_beautiful_mile_is_not_plural() {
+        let c = comparison(fastest: 20.0, scenic: 30.0,
+                           fastestBeautifulKm: 0.0,
+                           scenicBeautifulKm: km(miles: 1.0))
+
+        XCTAssertEqual(c.tradeLine, "+10 min · **1 beautiful mile**")
+    }
+
+    func test_the_price_tag_renders_without_showing_its_markdown() {
+        let c = comparison(fastest: 26.0, scenic: 52.0,
+                           fastestBeautifulKm: 0.0,
+                           scenicBeautifulKm: km(miles: 3.0))
+        let rendered = String(c.attributedTradeLine.characters)
+
+        XCTAssertFalse(rendered.contains("**"), rendered)
+        XCTAssertTrue(rendered.contains("3 beautiful miles"), rendered)
+    }
+
 }

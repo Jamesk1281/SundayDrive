@@ -1,63 +1,120 @@
 import SwiftUI
 
-/// The fastest/scenic summary cards, the delta sentence, and the scenery bars
-/// shown in the bottom sheet once a route is computed.
+/// What the route comes back as, in the bottom sheet: the drive itself, what
+/// choosing it costs, what it is like, and — for whoever wants them — the
+/// numbers behind that.
+///
+/// It used to be two summary cards side by side (FASTEST 58 min / SCENIC 96
+/// min), a sentence about the difference, and six scenery bars always open.
+/// Three readouts of the same trip, none of which said what the drive was
+/// *like*. What replaced them:
+///
+///   96 min · 61 mi                              the trip, once
+///   +38 min · 25 beautiful miles                the price of taking it
+///   Mostly forest, with 8 miles along the water what it is
+///   via Route 2 and the Mohawk Trail
+///   ▸ Scenery breakdown                          the instrument, folded away
+///
+/// The fastest arm is no longer given a card of its own. It has not gone
+/// anywhere — it is the `+38 min`, which is the only thing about it anyone was
+/// reading, and the slider above already has "Fastest" written at the end of
+/// the track that produces it.
 struct RouteResults: View {
     let response: RouteResponse
 
-    var body: some View {
-        let fastest = response.fastest.properties
-        let scenic = response.scenic.properties
-        let comparison = RouteComparison(fastest: fastest, scenic: scenic)
-        let maxKm = max(1, scenic.sceneryBreakdown.map(\.km).max() ?? 1)
+    /// Whether the scenery bars are showing. Closed on arrival: the bars are
+    /// the instrument, and the sentence above them is what most drives get
+    /// read for.
+    @State private var showingBreakdown = false
 
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                card("Fastest", minutes: comparison.fastestMinutes,
-                     km: fastest.km, detail: comparison.fastestDetail, tint: .gray)
-                card("Scenic", minutes: comparison.scenicMinutes,
-                     km: scenic.km, detail: comparison.scenicDetail, tint: .scenic)
-            }
-            Text(comparison.attributedSummary)
-                .font(.caption)
-            ForEach(scenic.sceneryBreakdown, id: \.label) { item in
-                SceneryBar(label: item.label, km: item.km, maxKm: maxKm)
+    var body: some View {
+        let scenic = response.scenic.properties
+        let comparison = RouteComparison(fastest: response.fastest.properties,
+                                         scenic: scenic)
+        VStack(alignment: .leading, spacing: 12) {
+            headline(comparison)
+            description(of: scenic)
+            breakdown(of: scenic)
+        }
+    }
+
+    /// The trip, then its price. Both built from `RouteComparison`'s rounded
+    /// integers, so the two lines cannot disagree with each other or with the
+    /// bars below.
+    private func headline(_ comparison: RouteComparison) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(comparison.totalLine)
+                .font(.title2.weight(.semibold))
+                // Tabular figures: the slider re-routes under this label, and
+                // proportional digits make the whole line jump sideways every
+                // time a minute count changes width.
+                .monospacedDigit()
+            Text(comparison.attributedTradeLine)
+                .font(.subheadline)
+                .foregroundStyle(comparison.tradeTint)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// What the drive is like, and which roads it goes down. Absent rather than
+    /// blank when the route has nothing to say — see `RouteDescription`.
+    @ViewBuilder private func description(of props: RouteProps) -> some View {
+        let described = RouteDescription(props)
+        if !described.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                if let character = described.character {
+                    Text(character).font(.subheadline)
+                }
+                if let via = described.via {
+                    Text(via).font(.caption).foregroundStyle(.secondary)
+                }
             }
         }
     }
 
-    /// One route summary card: big minutes, distance and beautiful miles
-    /// beneath.
+    /// The per-feature mileage, behind a disclosure.
     ///
-    /// The minutes and the `detail` half are both handed in already formatted
-    /// rather than formatted here, so the card and the sentence under it are
-    /// reading the same numbers — see `RouteComparison`.
-    private func card(_ title: String, minutes: Int, km: Double,
-                      detail: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(title.uppercased()).font(.caption2).foregroundStyle(.secondary)
-            Text("\(minutes) min").font(.title3.bold())
-            Text("\(km.wholeMilesFromKm) mi · \(detail)")
-                .font(.caption2).foregroundStyle(.secondary)
+    /// Kept, not deleted: it is the only place the app shows its own working,
+    /// and the sentence above it is a summary of exactly these numbers. Hidden
+    /// entirely — rather than shown as an empty disclosure — when the route
+    /// passes nothing that clears the one-mile floor.
+    @ViewBuilder private func breakdown(of props: RouteProps) -> some View {
+        let items = props.sceneryBreakdown
+        if !items.isEmpty {
+            let maxKm = max(1, items.map(\.km).max() ?? 1)
+            DisclosureGroup("Scenery breakdown", isExpanded: $showingBreakdown) {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(items, id: \.label) { item in
+                        SceneryBar(label: item.label, km: item.km, maxKm: maxKm)
+                    }
+                }
+                .padding(.top, 6)
+            }
+            .font(.caption)
+            .tint(.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 
-/// The arithmetic behind the two summary cards and the sentence beneath them.
+/// The arithmetic behind every number on the results panel.
 ///
-/// It exists so the two cannot disagree, which they did: each card rounded its
-/// own minutes while the delta was rounded from the raw values, so 57.6 and
-/// 106.4 rendered as "58 min", "106 min" and "Scenic adds 49 min" — three
-/// individually correct roundings that cannot all be true at once, over a
-/// subtraction the reader can do in their head. Everything below is derived
-/// from the same two rounded integers, so the sentence is arithmetic that
-/// checks out against what is on screen.
+/// It exists so they cannot disagree, which they did: back when the panel was
+/// two summary cards, each card rounded its own minutes while the delta was
+/// rounded from the raw values, so 57.6 and 106.4 rendered as "58 min",
+/// "106 min" and "Scenic adds 49 min" — three individually correct roundings
+/// that cannot all be true at once, over a subtraction the reader can do in
+/// their head. Everything below is derived from the same rounded integers, so
+/// what is printed is arithmetic that checks out against what is beside it.
+///
+/// The cards are gone (see `RouteResults`); this is not. `totalLine` and
+/// `tradeLine` are two readings of the same trip sitting one above the other,
+/// which is exactly the arrangement that produced the original bug.
 struct RouteComparison {
     let fastestMinutes: Int
     let scenicMinutes: Int
+    /// How far the scenic route actually is, in the whole miles `totalLine`
+    /// prints. Rounded once here for the same reason the minutes are.
+    let scenicMiles: Int
     let fastestScore: Double
     let scenicScore: Double
     /// Whole miles of road scoring 7+ on each arm, rounded once here so the
@@ -69,6 +126,7 @@ struct RouteComparison {
     init(fastest: RouteProps, scenic: RouteProps) {
         fastestMinutes = Int(fastest.minutes.rounded())
         scenicMinutes = Int(scenic.minutes.rounded())
+        scenicMiles = scenic.km.wholeMilesFromKm
         fastestScore = fastest.mean_score
         scenicScore = scenic.mean_score
         fastestBeautifulMiles = fastest.beautiful_km?.wholeMilesFromKm
@@ -95,15 +153,82 @@ struct RouteComparison {
     var printedFastestScore: String { String(format: "%.1f", fastestScore) }
     var printedScenicScore: String { String(format: "%.1f", scenicScore) }
 
-    /// What each card prints to the right of its distance: beautiful miles
-    /// where the backend reports them, the 0–10 mean where it does not. The
-    /// sentence below is built from the same values, for this type's whole
-    /// reason to exist — it has to check out against what is on screen.
-    var fastestDetail: String {
-        beautifulMiles.map { "\($0.fastest) mi beautiful" } ?? "\(printedFastestScore)/10"
+    /// The drive as it will be driven: "96 min · 61 mi".
+    ///
+    /// The scenic arm's own totals, not a difference — the first thing anyone
+    /// needs off this screen is how long they will be in the car and how far
+    /// they are going. The fastest arm's totals are not here because nobody is
+    /// driving them; what is worth knowing about that route is what it would
+    /// have saved, and that is `tradeLine`.
+    var totalLine: String { "\(scenicMinutes) min · \(scenicMiles) mi" }
+
+    /// The price tag: "+38 min · 25 beautiful miles".
+    ///
+    /// This replaces the caption that used to sit under the slider, "scenery
+    /// strength 0.50". A strength is a *parameter* — it says what the router
+    /// was asked for, in units belonging to `PrefSlider` and `router.py`, and
+    /// there is no action a driver can take on the number 0.50. The same fact
+    /// stated as a cost and a thing bought is the whole of what the slider is
+    /// for, and it is legible without knowing anything about the app.
+    ///
+    /// Built from the same rounded integers as `totalLine` and the scenery
+    /// bars, for the reason this type exists at all: two numbers on one screen
+    /// that disagree by a minute are worse than either of them alone.
+    ///
+    /// Three cases it must not sell:
+    ///
+    /// - **The same drive.** At `pref` 0 the server answers with the same route
+    ///   twice, and "+0 min · 25 beautiful miles" would price a choice nobody
+    ///   made.
+    /// - **A route that costs nothing.** The best news this screen ever has is
+    ///   scenery for free, and "+0 min" is the wrong way to deliver it.
+    /// - **A scenic arm carrying *less* beautiful road than the fastest one** —
+    ///   3.1% of 983 sampled trips, the case `summary` documents at length. It
+    ///   is not a purchase and must not be phrased as one, so the line states
+    ///   what was lost and `tradeTint` stops colouring it like a gain.
+    ///
+    /// Falls back to `summary` when the backend sends no `beautiful_km`: there
+    /// is nothing to price then, and the sentence already says everything a
+    /// 0–10 mean supports. See `RouteProps.beautiful_km` — the deployed backend
+    /// predates the field, and an app in the store talks to whichever backend
+    /// is deployed.
+    var tradeLine: String {
+        if isSameDrive { return "Same as the fastest route" }
+        guard let miles = beautifulMiles else { return summary }
+
+        let cost = extraMinutes > 0 ? "+\(extraMinutes) min" : "No extra time"
+        if isWorseThanFastest {
+            let lost = miles.fastest - miles.scenic
+            return "\(cost) · **\(lost) fewer** beautiful "
+                + "\(lost == 1 ? "mile" : "miles") than the fastest route"
+        }
+        return "\(cost) · **\(miles.scenic) beautiful "
+            + "\(miles.scenic == 1 ? "mile" : "miles")**"
     }
-    var scenicDetail: String {
-        beautifulMiles.map { "\($0.scenic) mi beautiful" } ?? "\(printedScenicScore)/10"
+
+    /// Whether the scenic arm comes back with less beautiful road than the
+    /// fastest one — the one outcome on this screen that is bad news.
+    ///
+    /// On the whole-mile counts the cards and the sentence print, not the raw
+    /// kilometres: a fall too small to change the printed integers is a fall
+    /// nobody can see, and warning about one would contradict the numbers next
+    /// to it.
+    var isWorseThanFastest: Bool {
+        guard let miles = beautifulMiles else { return false }
+        return miles.scenic < miles.fastest
+    }
+
+    /// `tradeLine` with its markdown bold resolved, for display.
+    var attributedTradeLine: AttributedString {
+        (try? AttributedString(markdown: tradeLine)) ?? AttributedString(tradeLine)
+    }
+
+    /// What colour the price tag is. The accent is the app saying "this is what
+    /// you came for", so it is spent only where the trade is one — never on a
+    /// route that lost beautiful road, and never on one that is not a choice.
+    var tradeTint: Color {
+        if isSameDrive { return .secondary }
+        return isWorseThanFastest ? .orange : .scenic
     }
 
     /// Whether the mean score moves at all, at the precision it *would* be
@@ -116,7 +241,7 @@ struct RouteComparison {
     /// contradicted; 4.949 and 4.951 are 0.002 apart and print "4.9" and "5.0",
     /// so it called them the same while the cards visibly disagreed.
     ///
-    /// Since the cards moved to miles this no longer describes what is on
+    /// Since the panel moved to miles this no longer describes what is on
     /// screen — it rounds a number the driver is not shown. That is deliberate
     /// and it is the *only* thing left reading the score: `isSameDrive` is
     /// defined on it, and that definition is measured (see below), so rebuilding
@@ -126,9 +251,9 @@ struct RouteComparison {
     var scoreMoves: Bool { printedFastestScore != printedScenicScore }
 
     /// Whether the printed mile counts differ — the on-screen question the
-    /// sentence is actually built from. Compares the rounded integers the cards
-    /// show, so "turns 3 mi into 4 mi" can never appear over two cards reading
-    /// the same number.
+    /// sentence is actually built from. Compares the rounded integers the panel
+    /// shows, so "turns 3 mi into 4 mi" can never appear above a breakdown
+    /// summing to the same number.
     var beautifulMilesMove: Bool {
         guard let miles = beautifulMiles else { return false }
         return miles.fastest != miles.scenic
@@ -138,7 +263,7 @@ struct RouteComparison {
     /// answers with the same route twice, and two routes both labelled 4.4 have
     /// nothing to say to each other about scenery whatever their raw scores are.
     ///
-    /// Still `mean_score`-based after the cards moved to miles, on purpose. The
+    /// Still `mean_score`-based after the panel moved to miles, on purpose. The
     /// 983-pair census replayed *this exact definition*: it fires on 11.5% of
     /// trips, catches 105 of the 106 where the scenic arm genuinely is the
     /// fastest arm, and across all 113 it fires on the largest gain is **0.22
@@ -147,7 +272,13 @@ struct RouteComparison {
     /// Redefining it on the mile counts would need a new census.
     var isSameDrive: Bool { extraMinutes <= 0 && !scoreMoves }
 
-    /// The sentence under the cards, as markdown.
+    /// The trade as a sentence, in markdown.
+    ///
+    /// No longer the primary readout — `tradeLine` is — but still what the
+    /// screen falls back to for a backend that sends no `beautiful_km`, which
+    /// is the deployed one. Every case below is therefore still reachable, and
+    /// the fall it handles is the same fall `tradeLine` handles in its own
+    /// phrasing.
     ///
     /// Four shapes past "same drive". "Scenic adds 0 min and turns 3 mi of
     /// beautiful road into 3 mi" is a sentence about nothing; a scenic route

@@ -40,14 +40,13 @@ struct ContentView: View {
         Map(position: $camera) {
             switch model.mode {
             case .directions:
-                // Fastest route (gray, dashed) sits under the scenic route (green).
+                // Fastest route (dashed) sits under the scenic route (green).
                 if let fastest = model.response?.fastest {
-                    MapPolyline(coordinates: fastest.coordinates)
-                        .stroke(.gray, style: StrokeStyle(lineWidth: 4, dash: [6, 5]))
+                    routeLine(fastest.coordinates, color: .white, width: 4,
+                              dash: [6, 5])
                 }
                 if let scenic = model.response?.scenic {
-                    MapPolyline(coordinates: scenic.coordinates)
-                        .stroke(Color.scenic, lineWidth: 6)
+                    routeLine(scenic.coordinates, color: .scenic, width: 6)
                 }
                 if let start = model.start {
                     Marker("Start", coordinate: start).tint(.green)
@@ -59,8 +58,7 @@ struct ContentView: View {
                 // One closed line, and the far point marked — which is the only
                 // thing a loop has to say about its shape that the line doesn't.
                 if let loop = model.loops.response?.loop {
-                    MapPolyline(coordinates: loop.coordinates)
-                        .stroke(Color.scenic, lineWidth: 6)
+                    routeLine(loop.coordinates, color: .scenic, width: 6)
                 }
                 if let start = model.loops.start {
                     Marker("Start and finish", coordinate: start).tint(.green)
@@ -72,6 +70,18 @@ struct ContentView: View {
             }
             UserAnnotation()
         }
+        // Satellite imagery with the road network and labels drawn over it.
+        //
+        // The standard basemap is a diagram: it draws a park as a flat green
+        // polygon and a reservoir as a flat blue one, at which point the app is
+        // asking the driver to take its word for what the drive looks like.
+        // Every feature the score is built out of — tree cover, water,
+        // farmland, the shape of the terrain — is *visible* in imagery, so the
+        // hybrid map is the one basemap that lets someone check the claim the
+        // panel underneath is making. `.realistic` elevation is the same
+        // argument for `c_relief`, which is otherwise the one component with
+        // nothing to show for itself on a flat map.
+        .mapStyle(.hybrid(elevation: .realistic))
         .mapControls { MapUserLocationButton() }
         .ignoresSafeArea()
         // Rank search results around whatever the user is looking at. Apple's
@@ -107,6 +117,32 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
                 .interactiveDismissDisabled()   // it's the main UI — never dismiss
         }
+    }
+
+    /// A route line drawn twice: a dark casing, then the colour on top.
+    ///
+    /// Needed the moment the basemap became imagery. A 6 pt mint line is
+    /// unmistakable over the standard map's flat greens and greys, which are
+    /// few and pale by design. Over photography one route crosses sand, snow,
+    /// bare granite and glare off open water, and against the bright ones the
+    /// line stops being the highest-contrast thing on screen — which is the
+    /// only job it has. A casing fixes that for any imagery, in either
+    /// direction, without tuning a colour per landscape.
+    ///
+    /// The casing carries the dash pattern too, so a dashed line gets a cased
+    /// dash rather than a solid shadow under a broken line.
+    @MapContentBuilder
+    private func routeLine(_ coordinates: [CLLocationCoordinate2D],
+                           color: Color, width: CGFloat,
+                           dash: [CGFloat] = []) -> some MapContent {
+        MapPolyline(coordinates: coordinates)
+            .stroke(Color.black.opacity(0.45),
+                    style: StrokeStyle(lineWidth: width + 4, lineCap: .round,
+                                       lineJoin: .round, dash: dash))
+        MapPolyline(coordinates: coordinates)
+            .stroke(color,
+                    style: StrokeStyle(lineWidth: width, lineCap: .round,
+                                       lineJoin: .round, dash: dash))
     }
 
     /// Fit the scenic route into the map, biased toward the top so the sheet
