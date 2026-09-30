@@ -1,7 +1,7 @@
 # Privacy policy — the developer's source copy
 
 > **The user-facing version is `site/privacy/index.html`, to be served at
-> <https://jamesk1281.github.io/Scenic/privacy/>** by
+> <https://jamesk1281.github.io/SundayDrive/privacy/>** by
 > `.github/workflows/pages.yml` (built 2026-09-29,
 > `docs/privacy-policy-page-brief.md`). It is §§0–6 below rewritten for a
 > driver. **Not live yet:** it waits on a contact address (§6) and on the owner

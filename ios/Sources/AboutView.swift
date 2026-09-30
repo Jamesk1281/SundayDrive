@@ -211,10 +211,11 @@ enum DataSources {
 ///
 /// One constant, and deliberately **not** derived from `SundayDriveAPIBaseURL`:
 /// that is the routing server, and the policy is served by GitHub Pages from
-/// this repo's `site/` (`.github/workflows/pages.yml`). `/Scenic/` is the
-/// repo's old name, kept on purpose. See `docs/privacy-policy-page-brief.md`.
+/// this repo's `site/` (`.github/workflows/pages.yml`). The path is the repo's
+/// name, and Pages does **not** redirect after a rename: renaming the repo
+/// again breaks this link. See `docs/privacy-policy-page-brief.md`.
 enum PrivacyPolicy {
-    static let url = URL(string: "https://jamesk1281.github.io/Scenic/privacy/")!
+    static let url = URL(string: "https://jamesk1281.github.io/SundayDrive/privacy/")!
 }
 
 /// **Sources** — what the app is built from, and the credit each of those

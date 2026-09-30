@@ -7,7 +7,7 @@ final class PrivacyPolicyLinkTests: XCTestCase {
 
     func test_the_link_is_the_published_policy_page() {
         XCTAssertEqual(PrivacyPolicy.url.absoluteString,
-                       "https://jamesk1281.github.io/Scenic/privacy/")
+                       "https://jamesk1281.github.io/SundayDrive/privacy/")
     }
 
     func test_the_link_is_not_built_from_the_api_host() {

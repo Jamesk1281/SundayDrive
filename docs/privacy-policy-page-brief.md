@@ -16,7 +16,11 @@ without a policy URL.
 A user-facing privacy policy at a stable public URL, and a link to it inside the
 app.
 
-- **The URL:** `https://jamesk1281.github.io/Scenic/privacy/`. The repo is
+- **Superseded 2026-09-29:** the repo has since been renamed to
+  `Jamesk1281/SundayDrive`, and Pages does not redirect a renamed project
+  site, so the URL is `https://jamesk1281.github.io/SundayDrive/privacy/`.
+  The paragraph below is as briefed.
+- **The URL (as briefed):** `https://jamesk1281.github.io/Scenic/privacy/`. The repo is
   `Jamesk1281/Scenic` and is public (it has been since 2026-09-19), so a
   project Pages site is free. The `/Scenic/` in the path is the old name. It
   stays **on purpose**: the repo keeps its old name, and renaming the repo to
