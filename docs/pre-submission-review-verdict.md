@@ -604,10 +604,13 @@ error.
 - Say why the region is limited.
 - Attach a short screen recording of a real drive.
 
-Add a build fix alongside, because this is also the first screen for the
-marketing plan's second audience (M-2). When the server says "outside",
-replace the sentence with "Sunday Drive covers New England. Type a town there
-to plan from it", and focus the start field. That is about 10 lines.
+Change the message too, because this is also the first screen for the
+marketing plan's second audience (M-2). The marketing plan's §5.10 item 2
+already proposes changing this copy server-side, which takes minutes and needs
+no build or App Review. But its wording ("Sunday Drive only covers New England
+for now") still leaves the reader stuck. Make it say what works: "Sunday Drive
+covers New England. Type a town there as your start, and plan from anywhere."
+Optionally, focus the start field in the app, which is about 10 lines.
 
 ### AR-2. Every drive is recorded to a location log, with no consent step and no way to turn it off — **Major**
 
@@ -897,7 +900,7 @@ same binary.
 | # | Finding | Where the fix lives | Cheapest fix | Size |
 |---|---|---|---|---|
 | 1 | **K-7.** On a loop, "Switch to fastest" drives to the far point: 4.4–6.3× longer than the fastest way home | **Build** | In `switchToFastest`, drop the loop waypoint and word the dialog "Head home the fastest way" | About 3 lines and one test. Under an hour |
-| 2 | **AR-1.** A reviewer outside New England meets only an error on both front doors | **Package**, plus a small build change | App Review notes with a test route and a loop start, the reason the region is limited, and a screen recording. In-app: "Sunday Drive covers New England. Type a town there" | Notes: an hour. Message: about 10 lines |
+| 2 | **AR-1.** A reviewer outside New England meets only an error on both front doors | **Package**, plus a server copy change | App Review notes with a test route and a loop start, the reason the region is limited, and a screen recording. Server copy that says what works: "Type a town there as your start" (marketing plan §5.10.2, reworded) | Notes: an hour. Copy: minutes, with no build |
 | 3 | **C-1.** Routes, loops and reroutes use roads OSM marks closed for winter, and the score prefers them | **Server** (gates L, not the upload) | A startup mask in `Router.__init__`: the 190 flagged ways, joined to edges by geometry, set to `+inf` in `_weights` during their closed months. Add "seasonal roads" to "What it does not do". The ALT bound stays admissible, because closing edges only lengthens true costs | About 60 lines, a small side table, one test (for example, Stowe → Jeffersonville in January avoids VT‑108). Half a day. Deploy before L |
 
 ### Before L, in the same binary where it is a build change
