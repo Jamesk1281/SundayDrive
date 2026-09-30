@@ -1,6 +1,6 @@
 # Pre-submission review: verdict
 
-**Status: reviewed `6f26edf`. Verdict: PROVISIONAL (baselines, conceptual and code drafted; App Review and market in progress).**
+**Status: reviewed `6f26edf`. Verdict: PROVISIONAL — SUBMIT AFTER (all sections drafted; checking continues).**
 
 Answer to `docs/pre-submission-review-brief.md` (committed alongside). Every
 `file:line` below is at `6f26edf8cc00e8dedebd836a03a6798c34af7b19`, read with
@@ -160,7 +160,108 @@ asking every driver to do the work.
 
 ## 2. Market
 
-Not started.
+The marketing plan's own market facts hold as far as I checked them:
+- The empty 2026 field.
+- Short video as the engine.
+- The free, no-account message, apart from AR-3.
+
+I did not re-derive any of it. The three findings below are places where the
+product, measured tonight, contradicts a premise the plan relies on.
+
+### M-1. The launch spends its one-shot channels in the week the product's best roads start to close — **Major** (Blocker if C-1 is not fixed)
+
+**Verified** (dates from the OSM tags in C-1).
+- **The plan.** It fixes L on Thursday 2026-10-22 and spends press, one post
+  per subreddit, Show HN and the featuring nomination there. None of those can
+  be run again.
+- **The tagged closure dates.**
+  - Lincoln Gap closed Oct 15, before L.
+  - Mt Greylock's summit roads are open to cars only `May 20–Oct 29`.
+  - VT‑108 Smugglers' Notch, Hazens Notch and Route 58 close `Nov–Apr`.
+  - Hurricane Mountain Road closes `Nov–May`.
+- **Where they are.** 90% of the winter-closed km (149.7 of 165.5) is north of
+  43°N, which is Vermont, New Hampshire and Maine. The loops the plan's second
+  audience comes for (M-2) are in those states.
+- **The flagship list.** "The ten best-scoring drives in Vermont" (§6.3),
+  ranked by the plan's own method, would publish the Mt Washington Auto Road,
+  ME 113 and Park Loop Road (C-1) to people who will try them in the following
+  weeks, when all three are closed or about to close.
+
+**What the tags say about spring.** In the north, the plan's spring fallback,
+Memorial Day weekend (29–31 May 2027), is not a consolation. It is the week
+those roads reopen: `May 15`, `May 20`. The fallback is the better date for
+the northern product. The October date suits southern New England.
+
+**Prior art.** The plan's §7 treats season as demand ("Foliage is the peak …
+winter is the trough") and does not know that the roads themselves close. No
+committed document mentions a closure.
+
+**Fix.**
+- Fix C-1 before L.
+- Build the §6.3 lists with closed-in-season roads left out or labelled "open
+  May–Oct".
+- In October, aim the one-shot posts at southern New England and at roads
+  that stay open all year, such as the Kancamagus (#4 on the list, not
+  tagged). Keep the northern mountain content for the spring opener.
+
+### M-2. The plan's second audience meets AR-1's red sentence at home, and cannot plan the trip that brings them here — **Major**
+
+**Verified.** The plan's second priority is "Leaf-peepers and visitors, many
+from New York, New Jersey and further", reached on TikTok, where "a national
+audience is *useful*" (§4). On the local server:
+- Times Square → Stowe returns **"point is outside the covered road network
+  (currently New England)"**.
+- Albany → Pittsfield returns the same.
+- A loop from Times Square returns the same.
+
+`SNAP_MAX_M = 5000` (`server/app.py:89`) rejects any endpoint more than 5 km
+from a New England road. So the visitor's natural first session, on the evening
+they see the video, is the screen in AR-1. That means tapping **Loop** or
+**My Location**, then reading one lowercase sentence with no next step.
+
+The captions' "New England only" warns them about the region. It does not tell
+them the app works from home if they type the town they will start from, which
+it does.
+
+**Prior art.** The plan's §10 risk (one-star reviews from outside the region)
+and its §5.10 ask for a friendlier message. The new point is that the plan
+*targets* this audience, and that the fix AR-1 needs anyway makes the at-home
+session work: "covers New England, type a town there" plus a focused start
+field.
+
+**Fix.** The AR-1 message. Captions should say "plan it from anywhere: type
+the town you'll start from".
+
+### M-3. From one home, the loop catalogue is small, fixed and blind to what you already drove — **Minor**
+
+**Verified** (n=8 seeded random starts).
+- **Setup.** I requested every offered direction at 30, 40, 50 and 60 km, and
+  counted loops as distinct when they share less than half their ~100 m
+  cells with any other.
+- **Result.** Each start offered 24–28 loops but held only 7–10 distinct drives
+  (full numbers in *Reproducing this*).
+- **Why they never change.** The planner is deterministic, and `/api/loop`
+  caches by request (`server/app.py:354-360`), so the same loops come back
+  every week.
+- **Why the app cannot help.** It keeps no memory of what you drove. `Recents`
+  holds only destinations, and traces are never read back. So "Try another
+  direction (8)" will offer last month's drive as though it were new.
+
+At the marketing plan's weekly cadence ("It's Sunday. Ninety minutes, nowhere
+to be?", §5.10), novelty from one home runs out in about two to three months.
+That is roughly one season. It is a retention ceiling, not a defect, so the
+rating is Minor, but it answers "why would they open it a second time" with
+"about eight times".
+
+**Prior art.** `loop-routes-design.md` measures that eight sectors share a
+median 1% of roads, so they are different from each other. It does not measure
+how many drives one home has across lengths, or repeats over time.
+
+**Fix direction.** Not for launch. Later, a "roads I've driven" penalty fed
+from the local traces, which never leave the phone.
+
+The success case, one clip that takes off, is K-1: planning traffic delays
+every driver's reroute, and overload is reported as the user's network failing.
 
 ## 3. Code
 
@@ -298,27 +399,376 @@ consequence is not written down.
 **Fix.** Race each measurement against a 3 s timeout and write the cache per
 voice.
 
+### K-5. No text in the app follows the user's text size — **Major**
+
+**Verified in the code. Not reproduced at runtime.** Every font in
+`ios/Sources` is fixed-size:
+- 81 call sites across 13 files use `.font(.system(size:))` or `.figure(_:)`.
+- `.figure` is itself `.system(size:weight:design:)` (`Theme.swift:121-123`).
+- The small-caps `sectionLabel` is a fixed 11 pt (`Theme.swift:129-134`).
+- Nothing uses a `Font.TextStyle` or `relativeTo:`.
+
+SwiftUI's `.system(size:)` does not scale with Dynamic Type. Only four
+`@ScaledMetric` frames do (`NavView.swift:49`, `:53`, `RouteResults.swift:281-282`).
+
+So the promise in `interface-design.md` §7.7 cannot happen. It says "large
+text lengthens [the page] and nothing is cut", and the comments at
+`PlanningView.swift:25-29` and `:162-171` reason about accessibility sizes. At
+the largest setting the app renders exactly as at the default. That includes
+the driving screen's remaining time and distance (12.5 pt), the road name
+(13.5 pt) and every section label (11 pt).
+
+Both of my attempts to set AX5 on the simulator (the
+`-UIPreferredContentSizeCategoryName` launch argument, and `simctl ui
+content_size`) failed to take effect: even the `@ScaledMetric` frames stayed
+34 pt. So I have no runtime screenshot. The finding rests on the font calls,
+which are unambiguous.
+
+**Who it hurts.** Drivers who set large text. The marketing plan's core
+audience runs to 65, and its Facebook audience "skews older".
+
+**Prior art.** `interface-design.md` §7.7 specifies this, and the brief notes
+that accessibility was never audited.
+
+**Fix.** Either use text styles
+(`.system(.title2, design: .rounded, weight: .bold)` and so on), or keep the
+design sizes and scale them with one `@ScaledMetric`-backed helper in
+`Theme.swift`. It is a mechanical change at the 81 call sites, then one pass at
+AX5 on a device.
+
+### K-6. The Loop row's icon does not exist on iOS 17, the deployment target — **Minor**
+
+**Verified** against the system's own SF Symbols availability table
+(`CoreGlyphs.bundle/…/name_availability.plist`).
+- `arrow.trianglehead.clockwise` (`HomeView.swift:33`) first shipped in iOS
+  18.0.
+- The app targets iOS 17.0 (`ios/project.yml:5`).
+- Every other symbol literal in `ios/Sources` (31 checked) dates from iOS 14
+  or earlier.
+
+On iOS 17 `Image(systemName:)` renders nothing, so the first screen's Loop
+row shows an empty amber square. I could not reproduce this, because only the
+iOS 26.4 runtime is installed.
+
+**Fix.** Use `arrow.clockwise`, or raise the target to 18.0. One line.
+
 ## 4. App Review
 
-Not started.
+I read the current guidelines end to end from `developer.apple.com` ("Last
+Updated: June 8, 2026") against the built app, rather than citing them piece by
+piece. What survived is below. Sections that apply and hold are listed in §5.
+
+### AR-1. The reviewer will not be in New England, and from where they sit, both of the app's front doors fail — **Blocker** (cheap)
+
+**Verified in the simulator.** The run was a fresh install, location at Apple
+Park, the app pointed at the local NE server, and driven by a scratch UI test
+kept outside the repo:
+- **Loop.** The home screen's Loop row is "one tap to a finished drive"
+  (`HomeView.swift:5-10`, `:31-42`). Tapped from Cupertino, it gives a blank
+  page with one red line: **"point is outside the covered road network
+  (currently New England)"**. That is the server's own lowercase string
+  (`server/app.py:261-263`), passed through verbatim (`RouteService.swift:57`,
+  `:71`).
+- **Directions.** From **My Location** to a searched "Coffee", Directions gives
+  the same sentence.
+- **Nothing on screen says what to do next.** It does not say that typing a
+  New England town into the start field works, and it does.
+
+**Why a rejection is likely.**
+- **2.1(a) and Before You Submit** ask the developer to *"Provide App Review
+  with full access to your app … plus any other hardware or resources that
+  might be needed to review your app"*, and to *"Include detailed explanations
+  of non-obvious features … in the App Review notes"*.
+- **3.2.2(v)** lists *"Arbitrarily restricting who may use the app, such as by
+  location"* as unacceptable.
+
+The restriction is not arbitrary: the graph covers six states. But nothing in
+the package tells the reviewer that. `release-plan.md` §10 lists the EULA,
+export compliance, screenshots, description, category and the name, and **no
+review notes**. `app-store-submission.md` §5 answers the background-mode
+questions and nothing about region. The only places a reviewer's region comes
+up are network latency to Cupertino (`hosting-options-findings.md:806-808`)
+and which box Cloudflare picks (`hosting-independent-review.md:144`).
+
+**Reproduce.**
+1. `xcrun simctl location <udid> set 37.3349,-122.0090`.
+2. Launch with `SIMCTL_CHILD_SUNDAYDRIVE_API=<local>`.
+3. Tap **Loop**.
+
+**Prior art.**
+- The marketing plan's §10 risk (one-star reviews from out-of-region installs)
+  and §5.10 ask (a friendlier out-of-region message). Both are about ratings
+  after launch.
+- `release-plan.md` §7, whose "most likely rejection" is the backend being
+  down.
+
+This finding is the backend being *up* and the reviewer still seeing only an
+error.
+
+**Cheapest fix.** An hour, no build:
+- Write App Review notes (4,000 bytes max) naming a test route, for example
+  Start *Concord, MA* → Destination *Rockport, MA*, and a loop start, for
+  example *Stowe, VT*.
+- Say why the region is limited.
+- Attach a short screen recording of a real drive.
+
+Add a build fix alongside, because this is also the first screen for the
+marketing plan's second audience (M-2). When the server says "outside",
+replace the sentence with "Sunday Drive covers New England. Type a town there
+to plan from it", and focus the start field. That is about 10 lines.
+
+### AR-2. Every drive is recorded to a location log, with no consent step and no way to turn it off — **Major**
+
+**Verified** (by reading the code, and against the published policy).
+- **Recording is unconditional.** `startNavigation` and `startLoopDrive` open a
+  `DriveTrace` every time (`RouteModel.swift:271-284`, `:294-305`). It logs
+  one GPS fix per second, plus the driver's taps.
+- **The privacy draft admits there is no off switch.** It says so in its own
+  words: ~~"Don't record."~~ *"Not a choice the app offers"*
+  (`docs/privacy-policy.md:250-251`).
+- **The first-launch screen never mentions it** (`BeforeYouDriveView.swift`).
+- **The purpose string does not mention it.** Location is used *"to follow
+  the route, turn by turn"* (`ios/project.yml:28`).
+- **The on-screen indication is an unlabelled 8 pt dot** next to the arrival
+  time (`NavView.swift:421-423`), explained only to VoiceOver (`:451`).
+
+**The guidelines this runs into.**
+- **2.5.14**: *"Apps must request explicit user consent and provide a clear
+  visual and/or audible indication when recording, logging, or otherwise
+  making a record of user activity."*
+- **5.1.1(ii)**: *"Ensure your purpose strings clearly and completely describe
+  your use of the data"*, and *"provide the customer with an easily accessible
+  and understandable way to withdraw consent."*
+- **5.1.1(iii)** on data minimisation: the recording is not needed to
+  navigate. It serves the owner's calibration, and C-3 shows it can never
+  serve that either.
+
+The privacy page states the recording plainly (*"Every drive you navigate is
+recorded"*), and App Review reads privacy pages. Whether a reviewer applies
+2.5.14 to a location log, as opposed to a camera or microphone, is a judgement
+call, so I have not rated this a Blocker.
+
+**Prior art.** `privacy-policy.md` §3 and §5 disclose it (corrected
+2026-09-29). No committed document cites 2.5.14 or data minimisation.
+
+**Cheapest fix.** Either choice works:
+- Record only after an explicit, default-off switch on the first-launch
+  screen: "Keep a record of my drives on this phone". Relabel the dot as
+  "Recording".
+- Or do not record in release builds at all. This also removes C-3's
+  buttons from consumers.
+
+Either way, update the purpose string and the policy. That is about 40 lines.
+
+### AR-3. The published privacy policy says the app stores three settings; it stores a history of where you have been going — **Major**
+
+**Verified.** The live page (`site/privacy/index.html:78-83`) says: *"Besides
+drive recordings (below), the app keeps three small settings for itself"*, and
+names the voice, voice durations and mute. At `6f26edf` the app also stores:
+- **The last five destinations** you searched, with their names and
+  coordinates (`Recents.swift:13-50`, written at `RouteModel.swift:182-189`),
+  shown on the home screen.
+- `lastLoopTargetKm` (`LoopModel.swift:52`).
+- `hasSeenBeforeYouDrive` (`PlanningView.swift:47`).
+- `matchSystemAppearance` (`ContentView.swift:23`).
+
+Nothing in the app can clear the recent destinations. `Recents.clear()`
+(`Recents.swift:52`) has no caller, so deleting the app is the only way.
+
+How it happened: the page was built on 2026-09-29 (`b6fe06d`) from a draft
+written before the redesign added `Recents` (`4b3171d`, merged 2026-09-29).
+`git grep -i recent` over both policy files finds nothing. It breaches no Apple
+term, but it is a specific, false statement in a public privacy policy. It also
+undercuts the marketing plan's own rule for the free-app message (§3.3, "Keep
+it true").
+
+**Fix.**
+- Add one bullet to the policy: "your five most recent destinations, on this
+  phone only, so the home screen can offer them again".
+- Add a "Clear recent destinations" row on the Sources screen.
+- Have `tests/test_privacy_page.py` assert the list of keys against `ios/Sources`.
+
+### AR-4. The in-drive rating buttons invite a tap that Massachusetts law does not allow — **Major**
+
+**Plausible.** This is a reading of the statute; I am not a lawyer.
+
+**The law.** M.G.L. c.90 §13B: *"No operator of a motor vehicle shall use a
+mobile electronic device unless the device is being used in hands-free mode"*.
+The one exception is *"view[ing] a map generated by a navigation system"* on a
+mounted device (malegislature.gov, read 2026-09-30). "Hands-free mode" is
+voice or audio operation, where the device *"may require a single tap or swipe
+to activate, deactivate or initiate the hands-free mode feature"* (c.90 §1, as
+amended in 2019).
+
+**The buttons.** Tapping "Lovely road" is neither viewing a map nor starting
+hands-free mode. The buttons exist to be tapped while moving:
+- They are *"meant to be hit by a driver who is not looking at them"*
+  (`NavView.swift:51-53`).
+- The mark is *"read and answered at 45 mph"* (`DriveTrace.swift:41-46`).
+- They are the biggest controls on the driving screen.
+
+**Guideline 1.4.5**: *"Apps should not urge customers to … use their devices
+in a way that risks physical harm"*. The preamble to §5: apps that *"solicit,
+promote, or encourage criminal or clearly reckless behavior will be
+rejected."*
+
+A reviewer is unlikely to see the buttons, because they appear only after
+joining a route, which AR-1 makes hard. The exposure is really after launch:
+the marketing plan's content system screen-records drives (§6.1), and a clip
+of the buttons in use is an advertisement for the tap. The marketing plan
+knows all six states ban holding a phone (§6.4), but applies that only to
+filming.
+
+**Prior art.** None on the buttons. `git grep -iE "hands.free|13B|distract"`
+over `docs/` is empty.
+
+**Fix.** Show the pair only when `speed < 1 m/s` (the same `parkedSpeed` the
+model already has, `NavigationModel.swift:157`). Keep the arrival card. That
+is about 5 lines.
 
 ## 5. Attacked and held
 
-Not started.
+What I tried to break and could not, so nobody needs to repeat it.
+
+**The public API's input handling.** About 40 malformed requests went to a
+local server. Nothing returned a 500 or hung.
+- **Coordinates.** NaN, `-nan`, `inf` and `1e309` all return the out-of-region
+  400. `snap` gives them an infinite offset, so `max(s_off, t_off) > SNAP_MAX_M`
+  holds even for NaN.
+- **Out-of-range values.** Headings of NaN, 360, `-0.0` and `abc` are dropped,
+  folded or rejected with a 400. `pref`, `w_*`, `km` and `avoid_unpaved` of
+  ±inf or NaN all clamp.
+- **Malformed input.** Three-part coordinates and hex floats return 400. `via`
+  equal to either end is fine. A lowercase sector returns 400.
+- **Size.** A 2 MB form body returns **413** (Werkzeug's form limit). A
+  duplicate `from` takes the first value.
+- **CORS.** It is wide open (`server/app.py:99`), but tightening it would not
+  help. Form-encoded POSTs are CORS "simple requests" that browsers send
+  anyway, so CORS is not a lever here. The rate limit is (K-1).
+
+**Server memory is bounded.**
+- `LOOP_RESULTS` keeps 16 entries (`server/app.py:130`, `:408-410`).
+- `LoopPlanner` keeps 4 field sets and 2 cost models (`looper.py:305-310`,
+  `:599-601`, `:681-683`).
+- Nothing grows per request.
+
+**Loop length.** 30 seeded random New England junctions at 40 km gave 211
+loops, one per direction offered.
+- **The first loop:** median error +0.1%, worst +13.2%, and none off by more
+  than 25%.
+- **Other directions:** 4 of 181 are more than 25% long, the worst +65% (a
+  rural start). The card prints the real minutes, so nothing is hidden.
+- **Doubling back:** eight loops trip the "doubles back" note, and all eight
+  carry it.
+- **Cost:** a cold first loop took a median 2.3 s on this Mac.
+
+**Apple's logo and Legal link are clear everywhere I could reach.** I have
+screenshots at `6f26edf` of:
+- home
+- directions with a route
+- the loop stage
+- the driving screen (both route and loop, and with no GPS fix)
+
+In every one the logo and "Legal" sit clear in the bottom-left. See §6.
+
+**The deploy script.** `server/deploy-oracle.sh` ships every file the router
+reads: `graph_edges`, `graph_nodes`, `turn_restrictions`, `access_ways` and
+`access_entries` (`router.py:397-398`, `:428-439`, `:518-526`). It refuses a
+dirty box or a non-ancestor, verifies by hash rather than by rsync's exit code,
+and checks the node count against the file. I found nothing that ships stale
+code or data.
+
+**`LiveDriveTests` are real.** 7 of 7 passed against my server with 5057
+empty.
+
+**Guidelines that apply and hold:**
+- **2.5.4** (location and audio background modes, used for navigation and
+  spoken guidance).
+- **2.5.5** (IPv6: a hostname behind Cloudflare).
+- **4.2** (not a repackaged website).
+- **5.1.1(i)** (policy linked in-app at `AboutView.swift:302`).
+- **5.1.1(iv)** (with location refused, the user can type both ends).
+- **5.1.1(v)** (no login).
+- **5.1.2** (no tracking and no third-party code).
+- **3.1** (free, no purchases).
+- **1.5** (contact). This is satisfied only if the planned landing page
+  carries the contact address (marketing plan §5.7). Today's
+  `site/index.html` is a title and one link.
 
 ## 6. Prior conclusions revisited
 
-Not started.
+Only the entries where I have new evidence.
+
+1. **Apple's logo: `app-store-submission.md` §7.2 and §8 row 9 ("Blocked") are
+   stale, and `release-plan.md`'s 2026-09-29 header is right.** The new
+   evidence is runtime screenshots at `6f26edf` of every planning stage and
+   the driving screen (§5). One caveat stays: the map card's bottom corners
+   are clipped at a 22 pt radius (`PlanningView.swift:53-54`). The logo clears
+   the curve today, so re-check it if that radius or the card's inset changes.
+
+2. **Approximate location, an open gate ("untested", `release-plan.md` §10,
+   `privacy-policy.md` §7 item 6), is now determined, and it fails silently.
+   Major.**
+   - **Why fixes are rejected.** `isUsable` rejects any fix worse than 65 m
+     (`LocationManager.swift:40`, `:127-131`), and an approximate grant
+     reports kilometres. So during a drive no fix ever reaches `onFix`
+     (`:283-289`).
+   - **What the screen shows.** I produced the no-fix state in the simulator:
+     the banner reads **"50 ft away · Head to the start of your route"**
+     (`distanceToRouteStart` stays 0, and `distanceText` floors at 50 ft,
+     `NavView.swift:186`, `:515`). Underneath, the footer reads "No GPS fixes
+     yet — nothing is being recorded", for the whole drive.
+   - **Planning.** "My Location" falls back after 8 s to the coarse fix
+     (`:204-210`), so a loop can start kilometres from the user.
+   - **What is missing.** Nothing calls `requestTemporaryFullAccuracyAuthorization`,
+     and there is no `NSLocationTemporaryUsageDescriptionDictionary`.
+   - **Fix, about 25 lines.** Check `accuracyAuthorization`. Ask for temporary
+     full accuracy, or say "Turn on Precise Location" in the banner. Draw
+     "Waiting for GPS" instead of a distance when there is no fix.
+
+3. **Attachment 6 §2.5 (`legal-and-ip-audit.md` item 5).** The fix
+   ("record snapped coordinates, not geocoder output") never landed:
+   `DriveTrace.swift:121` and `:126` still write the geocoder's point. The
+   redesign then added a second store the audit never saw, the permanent,
+   user-facing `Recents` list of `MKLocalSearch` coordinates
+   (`Recents.swift:17-18`, `RouteModel.swift:182-189`). The enforcement risk is
+   still low, but there are now two stores. The cheapest fix for both is to
+   persist the route endpoint the server returned (OSM-derived) instead of the
+   geocoder's coordinate.
+
+4. **"The rate limit is fine" (`hosting-options-findings.md:819-822`).** The
+   premise has moved. That sizing counted requests. A cold loop costs about 6–7× a
+   two-arm route (2.0–6.2 s against 0.34–0.93 s tonight), and its rejoin shares a lock
+   with planning. See K-1.
+
+5. **`release-plan.md` §10 "`MARKETING_VERSION` … Done".** It was a no-op. See
+   K-2.
+
+6. **`LoopModel.swift:44-50`**, "the home screen came to offer a 6-minute loop
+   after a test run": it still does. See K-3.
 
 ## 7. Undetermined
 
-Not started.
+| Item | Why tonight cannot settle it | What would | Which way it moves the verdict |
+|---|---|---|---|
+| Background and locked-phone guidance, recording and rerouting | The simulator lets background audio and location through (brief trap 5) | One real drive on the phone with the screen locked, reading the trace's `phase` records | A failure would add a Blocker: silent guidance on the main path. `voice-guidance-plan.md` measured 23/23 on the phone on 2026-08-30, so I expect it to hold |
+| Whether Cloudflare's 60/min rule is live | Probing production is out of scope, and a block would land on the owner's own IP | Look at the WAF rule in the dashboard | If it is not live, K-1 gets worse: one script is a denial of service |
+| K-1 on the box | Tonight's load average reached 114, and the box has slower cores and no other tenants | The capacity probe run against a second process on the box, or against a copy of it | It would only shift K-1's ratios. The lock-sharing mechanism does not depend on the machine |
+| AR-1 and AR-2 in App Review's hands | Only App Review can say | Submitting | AR-1's fix costs an hour, so it is in the verdict regardless. AR-2 could turn out to be a Blocker if the reviewer reads 2.5.14 onto a location log |
+| AR-4 legally | This is a statute reading, not advice | A lawyer, or simply removing the in-drive buttons (5 lines) | Removing them makes the question moot |
+| The approximate-location screen on a phone | The simulator cannot grant reduced accuracy from the command line | Precise Location off in Settings, then one drive | It confirms or refutes §6 item 2. The code path is unambiguous |
+| Which OSM-closed roads are gated, as against merely unplowed | OSM does not say reliably | Local knowledge, or the state DOT seasonal-closure lists | It only changes the wording of C-1's danger, from misled to stranded, not whether it is a Blocker |
+| Dynamic Type at runtime | Neither method of setting AX5 took effect in this simulator | One launch at AX5 on the phone | It confirms K-5. The fixed-size font calls leave little room for doubt |
 
 ## 8. Verdict (provisional)
 
-**PROVISIONAL.** No section is finished, so there is no verdict yet. If this
-line is still here in the morning, the session ran out before any section
-finished and nothing below it should be read as a result.
+**PROVISIONAL: SUBMIT AFTER.** All four headings have findings, and the rest of
+the night is for checking them. The blockers so far:
+
+1. **C-1, seasonal closures.** Mask the winter-closed ways at startup. About 60
+   lines and a side table.
+2. **AR-1, a reviewer outside New England.** Write App Review notes (an hour,
+   no build) and replace the out-of-region sentence (about 10 lines).
 
 ## Reproducing this
 
