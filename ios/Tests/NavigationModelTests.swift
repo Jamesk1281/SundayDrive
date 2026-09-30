@@ -385,4 +385,150 @@ final class NavigationModelTests: XCTestCase {
         XCTAssertTrue(model.arrived)
         XCTAssertEqual(model.remainingMeters, 0)
     }
+
+    // MARK: - A drive that never reaches its route
+
+    /// A clock the test moves by hand, shared with the model's `now`. A class,
+    /// because a captured `var` passed `inout` to a helper would be read by
+    /// `now()` mid-access and trap on exclusivity.
+    private final class Clock {
+        var date = Date()
+        func advance(_ seconds: TimeInterval) { date = date.addingTimeInterval(seconds) }
+    }
+
+    /// 150 m east of the fixture line and 200 m up it: off the line by more
+    /// than `offRouteMeters`, so a car parked here never joins. The shape of
+    /// 2026-08-25, which sat 116–156 m off its line.
+    private let setBack = Fixture.offset(east: 150, north: 200)
+
+    private func clocked(_ model: NavigationModel) -> Clock {
+        let clock = Clock()
+        model.now = { clock.date }
+        return clock
+    }
+
+    /// Fixes at `place(t)` every ten seconds, for `t` from `from` through
+    /// `through` seconds after `start`.
+    private func sit(_ model: NavigationModel, _ clock: Clock, from: TimeInterval = 0,
+                     through: TimeInterval, start: Date,
+                     place: (TimeInterval) -> CLLocation) {
+        for t in stride(from: from, through: through, by: 10) {
+            clock.date = start.addingTimeInterval(t)
+            model.update(place(t))
+        }
+    }
+
+    func test_a_car_standing_still_before_its_route_is_paused_at_five_minutes() {
+        let model = nav()
+        let clock = clocked(model)
+        let start = clock.date
+        sit(model, clock, through: 290, start: start) { _ in Fixture.fix(self.setBack) }
+        XCTAssertFalse(model.stalled, "4 min 50 s is not five minutes")
+
+        sit(model, clock, from: 300, through: 300, start: start) { _ in Fixture.fix(self.setBack) }
+        XCTAssertTrue(model.stalled)
+        // A pause, not an arrival: nothing was driven, and `arrived` would
+        // announce it and never let go.
+        XCTAssertFalse(model.arrived)
+        XCTAssertFalse(model.hasJoinedRoute, "and the join gate is left exactly as it was")
+    }
+
+    func test_gps_speed_jitter_does_not_stop_a_parked_car_being_paused() {
+        // Trap 1 of the brief, as a value. The real parked car's GPS speed
+        // crossed 1.0 m/s 11 times in 8.7 minutes, so a timer on
+        // `trackStopping` never saw more than 203 s. Here it crosses every
+        // 30 s, and the car wanders up to 40 m, as that one did — so a
+        // speed-based rule would never get past 30 s and this would not pause.
+        let model = nav()
+        let clock = clocked(model)
+        let start = clock.date
+        let speeds: [CLLocationSpeed] = [0, 0.3, 2.6]
+        sit(model, clock, through: 300, start: start) { t in
+            let i = Int(t / 10)
+            let wobble = Double(i % 5) * 10 - 20            // -20 ... +20 m
+            return Fixture.movingFix(Fixture.offset(east: 150 + wobble, north: 200),
+                                     course: 0, speed: speeds[i % speeds.count])
+        }
+        XCTAssertTrue(model.stalled, "within 50 m for five minutes is stood still, "
+                      + "whatever the speedometer says")
+    }
+
+    func test_a_car_creeping_sixty_metres_every_two_minutes_is_not_paused() {
+        // Displacement is the rule, so movement has to restart it: each 60 m
+        // hop lands outside the 50 m anchor and starts a fresh clock.
+        let model = nav()
+        model.fetchRoute = { _, _, _, _, _ in throw CancellationError() }
+        let clock = clocked(model)
+        let start = clock.date
+        sit(model, clock, through: 12 * 60, start: start) { t in
+            Fixture.fix(Fixture.offset(east: 150, north: 200 + 60 * (t / 120).rounded(.down)))
+        }
+        XCTAssertFalse(model.stalled)
+    }
+
+    func test_a_joined_car_parked_mid_route_for_ten_minutes_is_not_paused() {
+        // Trap 4 of the brief. A joined car stopped at an overlook is the
+        // product working, and whether a long joined stop should pause is an
+        // owner decision that has not been made. Gated strictly on not joined.
+        let model = nav()
+        let clock = clocked(model)
+        let start = clock.date
+        model.update(Fixture.fixAt(500))
+        XCTAssertTrue(model.hasJoinedRoute)
+        sit(model, clock, through: 10 * 60, start: start) { _ in
+            Fixture.movingFix(Fixture.north(2000), course: 0, speed: 0)
+        }
+        XCTAssertFalse(model.stalled)
+        XCTAssertFalse(model.arrived, "3 km of trip still ahead")
+    }
+
+    func test_keep_navigating_starts_a_fresh_five_minutes() {
+        let model = nav()
+        let clock = clocked(model)
+        let start = clock.date
+        sit(model, clock, through: 300, start: start) { _ in Fixture.fix(self.setBack) }
+        XCTAssertTrue(model.stalled)
+
+        model.resumeAfterStall()
+        XCTAssertFalse(model.stalled)
+
+        // Same place, and the old anchor is five minutes old: if it survived
+        // the resume, the first fix back would pause the drive again at once.
+        let resumed = clock.date
+        sit(model, clock, through: 290, start: resumed) { _ in Fixture.fix(self.setBack) }
+        XCTAssertFalse(model.stalled, "a fresh clock, not the one that already ran out")
+        sit(model, clock, from: 300, through: 300, start: resumed) { _ in Fixture.fix(self.setBack) }
+        XCTAssertTrue(model.stalled, "and it does run out again")
+    }
+
+    func test_a_fix_arriving_while_paused_changes_nothing() {
+        // Location is stopped while paused, so a fix then is a straggler. One
+        // that joined the route under the paused card would resume as a joined
+        // drive the driver never saw begin.
+        let model = nav()
+        let clock = clocked(model)
+        sit(model, clock, through: 300, start: clock.date) { _ in Fixture.fix(self.setBack) }
+        XCTAssertTrue(model.stalled)
+
+        model.update(Fixture.fixAt(500))                 // squarely on the line
+        XCTAssertFalse(model.hasJoinedRoute)
+        XCTAssertTrue(model.stalled)
+    }
+
+    func test_a_loop_parked_at_its_start_off_the_line_is_paused() {
+        // A loop's first fixes can match its *closing* segment, and those are
+        // discarded before the join test runs — so a loop parked by its own
+        // start never joins, and without the watch on that path it could never
+        // pause either. 300 m along the closing leg and 100 m off it.
+        let model = NavigationModel(route: Fixture.closedLoopRoute(),
+                                    destination: Fixture.origin, pref: 1.0, weights: [:],
+                                    turnaround: Fixture.closedLoopTurnaround())
+        let clock = clocked(model)
+        sit(model, clock, through: 300, start: clock.date) { _ in
+            Fixture.fix(Fixture.offset(east: 300, north: -100))
+        }
+        XCTAssertFalse(model.hasJoinedRoute)
+        XCTAssertTrue(model.stalled)
+        XCTAssertFalse(model.arrived, "a loop's destination is its start; parked there is not arrived")
+    }
 }

@@ -110,6 +110,65 @@ final class DriveReplayTests: XCTestCase {
                                     + "which is the case the latch exists for")
     }
 
+    /// How each recording ends with the stall in place, against how it ended
+    /// before the stall existed.
+    ///
+    /// The stall's whole risk is firing on a real drive that was on its way to
+    /// its route. Every legitimate pre-join stretch recorded is at most
+    /// 3.5 minutes and moving, so none of these should pause — and the one
+    /// that never joined, parked 116–156 m off its line for 8.7 minutes, must.
+    ///
+    /// `endedToday` was measured by this same replay on `9d99638`, before the
+    /// stall was written: whether each drive arrived, and after how many
+    /// fixes. A row changing here means some drive now ends differently, which
+    /// is a finding to report, not a number to update.
+    func test_only_the_drive_that_never_joined_pauses_and_the_rest_end_as_before() async throws {
+        let drives = try recordings()
+        let neverJoined = "drive-2026-08-25-222344.ndjson"
+        let endedToday: [String: (arrived: Bool, fixes: Int)] = [
+            "drive-2026-08-14-155019.ndjson": (true, 2512),
+            "drive-2026-08-14-192546.ndjson": (true, 2829),
+            "drive-2026-08-22-171307.ndjson": (false, 327),
+            "drive-2026-08-22-171905.ndjson": (false, 4),
+            "drive-2026-08-22-171920.ndjson": (true, 1615),
+            "drive-2026-08-22-183419.ndjson": (true, 2066),
+            "drive-2026-08-22-202700.ndjson": (true, 1917),
+            "drive-2026-08-22-222623.ndjson": (true, 2268),
+            "drive-2026-08-25-180813.ndjson": (false, 7956),
+            "drive-2026-08-25-202122.ndjson": (false, 3394),
+            "drive-2026-08-25-211808.ndjson": (true, 3851),
+        ]
+        try XCTSkipUnless(drives.contains { $0.name == neverJoined },
+                          "\(neverJoined), the one recording that never joined, is not here")
+
+        var checked = 0
+        for drive in drives {
+            let outcome = await DriveReplay.run(drive, speaker: VoiceGuideTests.FakeSpeaker())
+            if drive.name == neverJoined {
+                // At about five minutes: it never went 50 m from its first fix,
+                // so the first anchor holds and the clock is never restarted.
+                let after = try XCTUnwrap(outcome.stalledAfter,
+                                          "the parked car that never joined must pause")
+                XCTAssertEqual(after, 300, accuracy: 10,
+                               "paused after \(after) s, not at about five minutes")
+                // Fix 301, 300.0 s in, 40.2 m at most from the first: computed
+                // from the raw trace, independently of the model.
+                XCTAssertEqual(outcome.fixesFed, 301)
+                XCTAssertFalse(outcome.arrived, "a drive that never set off did not arrive")
+                checked += 1
+            } else if let today = endedToday[drive.name] {
+                XCTAssertNil(outcome.stalledAfter,
+                             "\(drive.name) paused after \(outcome.stalledAfter ?? 0) s")
+                XCTAssertEqual(outcome.arrived, today.arrived, "\(drive.name) arrival changed")
+                XCTAssertEqual(outcome.fixesFed, today.fixes, "\(drive.name) ended somewhere else")
+                checked += 1
+            }
+            // A recording outside the table says nothing either way: a new
+            // drive that pauses may be right to.
+        }
+        XCTAssertEqual(checked, endedToday.count + 1, "not every known recording was replayed")
+    }
+
     /// The walk-up, and the skip that depends on it.
     ///
     /// Worth its own test because the failure is silent in the worst way: if

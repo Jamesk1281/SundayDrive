@@ -90,17 +90,28 @@ measured; `[ ]` is open, with what it is waiting on.
       `Region.massachusetts` is the iOS map's starting camera and its address
       search bias (`ios/Sources/Region.swift`), so a Vermont trip is harder to
       search for than it should be.
-- [ ] **A drive that never joins its route can never end.** All three arrival
-      tests are gated on `hasJoinedRoute`
-      (`ios/Sources/NavigationModel.swift:849-857`), so a car that is snapped
-      onto the wrong road, or parked beside a line it never reached, stays in
-      navigation indefinitely — holding GPS at 1 Hz with the screen awake. Found
-      on the 2026-08-25 drives and flagged as out of scope by three documents
-      since (`reroute-audit.md`, `reroute-step-offset.md`,
-      `docs/archive/stale-plan-after-arrival.md`); it belongs to none of them. The fix is not
-      to clear `hasJoinedRoute` — it also gates the backtrack floor and
-      off-route recovery — so it needs an arrival path that does not depend on
-      having joined
+- [x] **A drive that never joins its route can never end.** Done 2026-09-29,
+      per [`never-joined-drive-brief.md`](never-joined-drive-brief.md). All
+      three arrival tests are gated on `hasJoinedRoute`, so a car parked more
+      than 60 m from a line it never reached held GPS at 1 Hz with the screen
+      awake indefinitely: measured once, `drive-2026-08-25-222344`, parked
+      within 40 m for 8.7 min and 116–156 m off its line. The fix is a second,
+      **non-arrival** ending, `NavigationModel.stalled`. An unjoined car that
+      stays within 50 m of one fix for 5 minutes is *paused*: location stops,
+      the screen may sleep, and a card offers *Keep navigating* or *End drive*
+      (recorded as `never-joined`). It is a displacement rule, not the 1.0 m/s
+      speed rule, because that one never saw more than 203 s on the real parked
+      car. Replayed over all twelve traces, 222344 pauses at 300 s and the
+      other eleven end exactly as before. `hasJoinedRoute` is untouched.
+      **Two exclusions, both deliberate and not oversights:**
+      - *No "arrived near the pin even if unjoined" rule.* The one real
+        never-joined car sat 176 m from its own pin, so a proximity rule would
+        have announced arrival on a drive that never happened, and a loop's
+        destination is its start, so every parked loop would arrive at once.
+        No trace has a car that reached its destination without joining.
+      - *Joined drives never pause.* A joined car stopped at an overlook is
+        the product working. Whether a long *joined* stop should also pause is
+        an owner decision, and it has not been made.
 - [ ] **Remaining distance and ETA credit route the driver has not driven.** The
       banner half of this was fixed 2026-08-25; the odometer half was not. A
       driver matched 229.6 m along a line they have not started still has

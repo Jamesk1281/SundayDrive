@@ -52,6 +52,44 @@ final class NavigationModel {
     /// Meters from the driver to the next maneuver, refreshed each update.
     private(set) var distanceToNext: Double = 0
     private(set) var arrived = false
+
+    /// True while a drive that never reached its route has been paused for
+    /// standing still — see `watchForStall`.
+    ///
+    /// The drive's second ending, and deliberately not a kind of arrival.
+    /// `arrived` is the only other thing that releases GPS and the screen lock,
+    /// and every way of setting it needs `hasJoinedRoute`: a car parked more
+    /// than `offRouteMeters` from a line it never reached held location at
+    /// 1 Hz with the screen awake until someone came back to the phone. On
+    /// 2026-08-25 that was 8.7 minutes of a parked car, 116–156 m off the line
+    /// and 176 m from its own pin, ended only by killing the app. Arriving
+    /// would have been false (nothing was driven) and permanent (`arrived`
+    /// never un-latches), so this says "paused" and can be undone:
+    /// `resumeAfterStall`. See `docs/never-joined-drive-brief.md`.
+    private(set) var stalled = false
+
+    /// How far the car may wander from where it stopped and still count as
+    /// standing still, for `watchForStall`.
+    ///
+    /// Displacement and not speed, which is the whole of the design. The 2026-08-25
+    /// car never moved further than 40 m from its first fix, yet its GPS speed
+    /// crossed `parkedSpeed` 11 times in 8.7 minutes, so `trackStopping` never
+    /// saw more than 203 s in a row. A timer built on that rule never fires on
+    /// the one real case. 50 m and not 30: at 30 m that car's longest still
+    /// stretch is 4.3 minutes.
+    private static let stallMeters: Double = 50
+
+    /// How long standing still, before the route is reached, pauses the drive.
+    ///
+    /// Every real drive that joined late did so within 3.5 minutes, and moving
+    /// (1.3 km, up to 593 m off the line). A false pause costs one tap on
+    /// "Keep navigating"; a missed one costs a battery.
+    private static let stallSeconds: TimeInterval = 5 * 60
+
+    /// The fix the car has stayed within `stallMeters` of, and when it landed.
+    /// Re-anchored on any fix further out, which restarts the clock.
+    private var stallAnchor: (location: CLLocation, since: Date)?
+
     /// True once the user has bailed to the fastest route.
     private(set) var followingFastest = false
     /// True while a re-route request is in flight (off-route or switch).
@@ -152,6 +190,38 @@ final class NavigationModel {
     private var parkedLongEnough: Bool {
         guard let since = stoppedSince else { return false }
         return now().timeIntervalSince(since) >= Self.arrivalStopSeconds
+    }
+
+    /// Watch a car that has not reached its route for standing still, and
+    /// pause the drive once it has for `stallSeconds`. True on the fix that
+    /// pauses it.
+    ///
+    /// Only ever called before joining — see the call sites. A joined car
+    /// parked mid-route is at an overlook, or at lunch, which is the product
+    /// working; whether a long *joined* stop should also pause is an owner
+    /// decision that has not been made.
+    private func watchForStall(_ location: CLLocation) -> Bool {
+        guard let anchor = stallAnchor,
+              location.distance(from: anchor.location) <= Self.stallMeters else {
+            stallAnchor = (location, now())
+            return false
+        }
+        guard now().timeIntervalSince(anchor.since) >= Self.stallSeconds else { return false }
+        stalled = true
+        return true
+    }
+
+    /// Pick a paused drive back up, from "Keep navigating".
+    ///
+    /// On a fresh clock, so the next pause takes another full `stallSeconds`
+    /// of standing still rather than firing on the first fix back. `NavView`
+    /// restarts location on the change, as it stopped it.
+    func resumeAfterStall() {
+        guard stalled else { return }
+        stalled = false
+        stallAnchor = nil
+        resumedAt = Date()
+        trace?.phase("resumed")
     }
 
     /// How far the match may slide backwards along the route between fixes.
@@ -540,10 +610,15 @@ final class NavigationModel {
 
     /// Close out the drive — called when the user leaves navigation, however it
     /// ended. Only the trace cares; everything else is thrown away with `self`.
-    func finish(reason: String = "ended") {
+    ///
+    /// Left to default, a drive ended while paused says so: "never-joined"
+    /// rather than "ended", so the analysis can tell a drive that never set off
+    /// from one the driver stopped. Decided here rather than by the button,
+    /// because every way off the nav screen comes through `RouteModel`.
+    func finish(reason: String? = nil) {
         watchdog?.cancel()
         watchdog = nil
-        trace?.end(reason: reason)
+        trace?.end(reason: reason ?? (stalled ? "never-joined" : "ended"))
     }
 
     /// Note the app going to the background or coming back, and flush.
@@ -611,6 +686,11 @@ final class NavigationModel {
     private let startedAt = Date()
     private(set) var lastFixAt: Date?
 
+    /// When a paused drive was last picked back up. The fixes stopped on
+    /// purpose while it was paused, so the silence before this is not the
+    /// stream dying and must not be read as it.
+    private var resumedAt: Date?
+
     /// Ticked every couple of seconds purely so SwiftUI re-evaluates the banner.
     /// "No fixes are arriving" is the one condition that cannot trigger its own
     /// redraw — every other change to this model is driven *by* a fix — so
@@ -675,8 +755,12 @@ final class NavigationModel {
         _ = watchdogTick        // observed, so silence still redraws the banner
         guard let trace else { return "Not recording — couldn't open a trace file." }
         if let failure = trace.failure { return "Recording stopped — \(failure)" }
-        guard !arrived else { return nil }
-        let silence = Date().timeIntervalSince(lastFixAt ?? startedAt)
+        // Location is off on purpose once the drive has ended or paused, so
+        // silence then is not a fault. Left in, a paused screen would soon read
+        // "No GPS fixes for 40 s — nothing is being recorded", which is false.
+        guard !arrived, !stalled else { return nil }
+        let silence = Date().timeIntervalSince(
+            max(lastFixAt ?? startedAt, resumedAt ?? startedAt))
         guard silence > Self.fixSilenceSeconds else { return nil }
         return lastFixAt == nil
             ? "No GPS fixes yet — nothing is being recorded."
@@ -801,7 +885,10 @@ final class NavigationModel {
         // anchor is worthless then and the record says so (`joined`), but the
         // raw fix is the evidence that makes it recoverable.
         lastFix = location
-        guard !steps.isEmpty, !arrived, coordinates.count >= 2 else { return }
+        // `stalled` too: location is stopped while paused, so a fix arriving
+        // then is a straggler, and one that joined the route or started a
+        // reroute under the paused card would change the drive unseen.
+        guard !steps.isEmpty, !arrived, !stalled, coordinates.count >= 2 else { return }
 
         // Match forwards from where the driver already is, with a little slack
         // for GPS jitter — see `progress`. Before they have joined the route
@@ -825,6 +912,10 @@ final class NavigationModel {
             guard here.travelled <= loop.along else {
                 trace?.fix(location, progress: here,
                            joined: hasJoinedRoute, step: currentStep)
+                // A loop parked at its own start can match the closing segment
+                // on every fix, and so never join: exactly the car the stall
+                // exists for, so it is watched on this path too.
+                if !hasJoinedRoute, watchForStall(location) { trace?.phase("stalled") }
                 return
             }
             seenBeforeTurnaround = true
@@ -837,6 +928,15 @@ final class NavigationModel {
                 distanceToRouteStart = location.distance(to: lineStart)
                 closestToRouteStart = min(closestToRouteStart, distanceToRouteStart)
             }
+        }
+        // After the join test, so the fix that reaches the line can never be
+        // the one that pauses the drive. The rest of `update` is skipped from
+        // this fix on: before joining there are no steps to advance and nothing
+        // to say, and the guard at the top keeps it skipped until resumed.
+        if !hasJoinedRoute, watchForStall(location) {
+            trace?.fix(location, progress: here, joined: hasJoinedRoute, step: currentStep)
+            trace?.phase("stalled")
+            return
         }
         if hasJoinedRoute {
             travelled = max(travelled, here.travelled)
@@ -1269,7 +1369,11 @@ final class NavigationModel {
         // never corrected: the map redraws a fresh multi-kilometre line under
         // "You've arrived", and `remainingMeters` goes from 0 back to a whole
         // new trip, with no fix left to undo either.
-        guard !arrived else { return .ended }
+        //
+        // Paused, likewise: a route landing then would set `hasJoinedRoute` by
+        // hand under the paused card, and the drive resumed would be a joined
+        // one the driver never saw begin.
+        guard !arrived, !stalled else { return .ended }
 
         let replacement = wantFastest ? response.fastest : response.scenic
         // The server is entitled to hand back the route the driver is already

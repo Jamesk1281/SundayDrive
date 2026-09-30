@@ -23,12 +23,13 @@
 > goes at `.large`) is moot, because that detent no longer exists on the
 > planning screen. The opening camera now shows all six states
 > (`Region.newEngland`), which is the second half of §6d. The first half of §6d
-> (a drive that never joins its route can never end) is **still open**. §7 is
+> (a drive that never joins its route can never end) was done later the same
+> day; see §6d. §7 is
 > done too: the API has served from Oracle since 2026-09-29, per
 > `server/DEPLOY-oracle.md`. **§6e (coordinates in the query string) is
 > merged and deployed** (checked against the live box 2026-09-29, §6e).
-> `MARKETING_VERSION` is `"1.0"` as of 2026-09-29. Still open: §6d's first
-> half, and the §10 artifacts. §10's states were brought up to date and §11's
+> `MARKETING_VERSION` is `"1.0"` as of 2026-09-29. Still open: the §10
+> artifacts. §10's states were brought up to date and §11's
 > table given a state column, both 2026-09-29.
 
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
@@ -279,6 +280,18 @@ about when the breach occurs.
 Judged on release relevance, not on backlog rank. See §9 for the ten that do not
 qualify.
 
+- **Done 2026-09-29**, per
+  [`never-joined-drive-brief.md`](never-joined-drive-brief.md). An unjoined car
+  that stays within 50 m of one fix for 5 minutes now *pauses* the drive
+  (`NavigationModel.stalled`). That stops location, releases the screen lock,
+  and shows *Keep navigating* / *End drive*. It is not an arrival and it does
+  not touch `hasJoinedRoute`. Over the twelve real traces, only
+  `drive-2026-08-25-222344` pauses (at 300 s), and the other eleven end as they
+  did. **Deliberately excluded, not overlooked:** an "arrived near the pin even
+  if unjoined" rule (the real phantom sat 176 m from its pin, and a loop's
+  destination is its start), and pausing *joined* drives (an overlook stop is
+  the product working, and that is an owner decision not yet made). The
+  original entry follows.
 - **A drive that never joins its route can never end**
   (`NavigationModel.swift:849-857`). Holds GPS at 1 Hz with the screen awake,
   indefinitely, when the car is snapped to the wrong road or parked beside a line
@@ -546,7 +559,7 @@ else:
 | Merge the two finished branches (§6a) | minutes | **Done** |
 | The rename (§6b), including the in-product copy pass | half a day | **Done**, twice (header note) |
 | **MapKit attribution refactor (§6c)** | **one to two days** | **Not needed**: the redesign keeps the logo clear by construction |
-| The two roadmap defects (§6d) | about a day | Opening camera **done**; never-joined drive **briefed** (`never-joined-drive-brief.md`), in progress |
+| The two roadmap defects (§6d) | about a day | **Done**: opening camera, and the never-joined pause (§6d) |
 | Coordinates to a POST body (§6e) | an hour | **Done and deployed** |
 | Hosting: keep the laptop up, or migrate (§7) | an evening, or a weekend | **Done**: Oracle, since 2026-09-29 |
 | Submission artifacts, screenshots, listing (§10) | a day | Open. `MARKETING_VERSION` done; the policy URL, approximate-location test and contact alias are the gates |
