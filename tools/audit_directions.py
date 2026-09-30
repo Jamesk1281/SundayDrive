@@ -1,6 +1,16 @@
 """How wrong can the turn-by-turn directions be? Measure every way at once.
 
     .venv/bin/python tools/audit_directions.py data/processed [routes]
+    .venv/bin/python tools/audit_directions.py data/processed-ne \
+        --pairs tools/e2e_od_pairs.json [--out audit.ndjson]
+
+The second form audits a fixed O/D list instead of a random sample — the
+same pairs the overnight simulated drives run (`SimulatedDriveTests`), so
+every route driven there has illegal-turn, fork and offset numbers here. It
+snaps and routes the way `/api/route` does rather than the way the random
+sample does: `snap_destination` for the pin, both arms, and the scenic arm
+replaced by the fastest when it scores lower (`_no_worse_than_fastest`). Loop
+pairs are skipped; the loop planner is not the router.
 
 "Accurate directions" is not one property, so this checks the separable ways a
 route can mislead a driver and reports each on its own. A single pass/fail
@@ -309,6 +319,81 @@ def audit(router, banned, only, n_routes, seed=5):
     return routes, stats, np.array(start_off), np.array(end_off)
 
 
+# `/api/route` refuses a request with either end further than this from a
+# road. Same number as `server/app.py`, repeated rather than imported because
+# importing the app builds a second graph.
+SNAP_MAX_M = 5000.0
+
+
+def audit_pairs(router, banned, only, pairs_file, out=None):
+    """The random-sample audit, over a committed pair list.
+
+    One record per (pair, pref), so a route in the drive results can be looked
+    up here by the same key (`<id>@<pref>`).
+    """
+    import json
+
+    spec = json.loads(Path(pairs_file).read_text())
+    node_osm = router.nodes["node_id"].to_numpy()
+    stats = Counter()
+    start_off, end_off, records = [], [], []
+    for pair in spec["pairs"]:
+        if pair["category"] == "loop" or "destination" not in pair:
+            continue
+        a, b = tuple(pair["origin"]), tuple(pair["destination"])
+        s, s_off = router.snap(*a)
+        t, t_off = router.snap_destination(*b)
+        for pref in spec["prefs"]:
+            key = f"{pair['id']}@{pref:.1f}"
+            rec = dict(key=key, id=pair["id"], category=pair["category"],
+                       state=pair["state"], pref=pref, expect=pair["expect"])
+            if max(s_off, t_off) > SNAP_MAX_M or s == t:
+                rec["status"] = "refused"
+                stats["refused"] += 1
+                records.append(rec)
+                continue
+            fastest = router.route(s, t, 0.0)
+            scenic = fastest if pref == 0.0 else router.route(s, t, pref)
+            if fastest is None or scenic is None:
+                rec["status"] = "no route"
+                stats["no route"] += 1
+                records.append(rec)
+                continue
+            if scenic.mean_score < fastest.mean_score:
+                scenic = fastest
+            result = scenic
+            steps = result.steps()
+            bad = illegal_turns(result, node_osm, banned, only)
+            misleading, ambiguous = silent_forks(router, result, steps)
+            head, tail = result.line.coords[0], result.line.coords[-1]
+            rec.update(status="ok", km=round(float(result.km), 1),
+                       steps=len(steps), illegal=len(bad),
+                       misleading=len(misleading), ambiguous=len(ambiguous),
+                       junctions=max(len(result.edge_coords) - 1, 0),
+                       start_offset_m=round(_dist_m((a[1], a[0]), head)),
+                       end_offset_m=round(_dist_m((b[1], b[0]), tail)),
+                       illegal_at=[int(n) for n in bad][:5],
+                       misleading_at=[int(n) for n in misleading][:5])
+            records.append(rec)
+            if pair["expect"] != "route":
+                stats["unexpected route"] += 1
+                continue
+            stats["routes"] += 1
+            stats["illegal turns"] += len(bad)
+            stats["routes with an illegal turn"] += bool(bad)
+            stats["misleading forks"] += len(misleading)
+            stats["routes with a misleading fork"] += bool(misleading)
+            stats["ambiguous forks"] += len(ambiguous)
+            stats["routes with an ambiguous fork"] += bool(ambiguous)
+            stats["junctions"] += rec["junctions"]
+            stats["steps"] += len(steps)
+            start_off.append(rec["start_offset_m"])
+            end_off.append(rec["end_offset_m"])
+    if out:
+        Path(out).write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in records))
+    return stats["routes"], stats, np.array(start_off), np.array(end_off)
+
+
 def _find_pbf():
     """The OSM extract, from SUNDAYDRIVE_PBF or the usual place in data/raw.
 
@@ -332,7 +417,9 @@ def main(argv):
         print(__doc__)
         return 1
     data = Path(argv[1])
-    n = int(argv[2]) if len(argv) > 2 else 60
+    pairs = argv[argv.index("--pairs") + 1] if "--pairs" in argv else None
+    out = argv[argv.index("--out") + 1] if "--out" in argv else None
+    n = int(argv[2]) if len(argv) > 2 and not pairs else 60
 
     cache = data / "forbidden_movements.parquet"
     pbf = _find_pbf()
@@ -348,7 +435,13 @@ def main(argv):
     print(f"router: {router.n:,} node slots ({len(router.nodes):,} junctions, "
           f"{len(router.node_copies):,} split for restrictions)\n")
 
-    routes, stats, start_off, end_off = audit(router, banned, only, n)
+    if pairs:
+        routes, stats, start_off, end_off = audit_pairs(router, banned, only, pairs, out)
+        for label in ("refused", "no route", "unexpected route"):
+            if stats[label]:
+                print(f"  {label}: {stats[label]}")
+    else:
+        routes, stats, start_off, end_off = audit(router, banned, only, n)
 
     print(f"AUDITED {routes} routes, {stats['junctions']:,} junctions, "
           f"{stats['steps']:,} instructions\n")
