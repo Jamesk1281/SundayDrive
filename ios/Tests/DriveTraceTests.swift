@@ -466,6 +466,77 @@ final class DriveTraceTests: XCTestCase {
         XCTAssertEqual(written.filter { $0["t"] as? String == "end" }.count, 1)
     }
 
+    /// A car parked 150 m off a line it never reaches, fed a fix every ten
+    /// seconds on the model's own clock until it pauses.
+    private func standStillUntilPaused(_ model: NavigationModel, from start: Date) {
+        var clock = start
+        model.now = { clock }
+        let parked = Fixture.fix(Fixture.offset(east: 150, north: 200))
+        for _ in 0...30 {
+            model.update(parked)
+            clock = clock.addingTimeInterval(10)
+        }
+        XCTAssertTrue(model.stalled, "five minutes stood still before the route should pause")
+    }
+
+    func test_a_pause_and_a_resume_are_recorded_and_ending_one_says_never_joined() {
+        // The analysis has to be able to tell a drive that never set off from
+        // one that was driven and ended, and a hole left by a pause from one
+        // left by a tunnel. `phase` rather than a new record type: its schema
+        // is `{t, ts, phase}` in analyze_trace.py, which only ever filters it
+        // for "background" and "inactive", so a new name reads as neither.
+        let trace = self.trace()
+        let model = NavigationModel(route: Fixture.straightRoute(),
+                                    destination: Fixture.north(5000),
+                                    pref: 0.8, weights: [:], trace: trace)
+        standStillUntilPaused(model, from: Date())
+        model.resumeAfterStall()
+        standStillUntilPaused(model, from: Date().addingTimeInterval(3600))
+        model.finish()   // End drive, which is the same path as leaving the screen
+
+        let written = records(of: trace)
+        let phases = written.filter { $0["t"] as? String == "phase" }
+            .compactMap { $0["phase"] as? String }
+        XCTAssertEqual(phases, ["stalled", "resumed", "stalled"])
+        XCTAssertEqual(written.last?["t"] as? String, "end")
+        XCTAssertEqual(written.last?["reason"] as? String, "never-joined",
+                       "not \"ended\", which is a drive someone stopped, "
+                       + "and never \"arrived\"")
+        // The fix that paused the drive is on the record, so the pause can be
+        // placed against the fixes around it.
+        let pausedAt = written.lastIndex { $0["phase"] as? String == "stalled" }!
+        XCTAssertEqual(written[pausedAt - 1]["t"] as? String, "fix")
+    }
+
+    func test_a_paused_drive_does_not_claim_its_gps_has_gone_quiet() async throws {
+        // Location is off on purpose while paused. Without the guard the
+        // watchdog turns the paused card into "No GPS fixes for 40 s — nothing
+        // is being recorded", which is false and alarming; and after a resume
+        // the silence it was paused through must not be counted either.
+        //
+        // On the wall clock and not the model's `now`, because that is what the
+        // watchdog reads. Ten and a half seconds is just past its 10 s bar.
+        func drive() -> NavigationModel {
+            NavigationModel(route: Fixture.straightRoute(), destination: Fixture.north(5000),
+                            pref: 0.8, weights: [:], trace: trace())
+        }
+        let paused = drive()
+        let resumed = drive()
+        let control = drive()
+        standStillUntilPaused(paused, from: Date())
+        standStillUntilPaused(resumed, from: Date())
+        control.update(Fixture.fix(Fixture.offset(east: 150, north: 200)))
+
+        try await Task.sleep(for: .seconds(10.5))
+        resumed.resumeAfterStall()
+
+        XCTAssertNotNil(control.recordingProblem,
+                        "the control: the wait is long enough to read as silence")
+        XCTAssertNil(paused.recordingProblem, "paused is not the stream dying")
+        XCTAssertNil(resumed.recordingProblem,
+                     "the silence it was paused through was on purpose")
+    }
+
     func test_a_reroute_is_recorded_so_travelled_can_be_read_against_the_right_line() async {
         // `travelled` restarts at zero on a new line. A trace that didn't know
         // the line had been replaced would read that reset as the car

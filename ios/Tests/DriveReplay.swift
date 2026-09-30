@@ -195,6 +195,12 @@ enum DriveReplay {
         /// that is quiet with this high is not.
         var describableFixes = 0
         var arrived = false
+        /// Seconds from the first fix to the one that paused the drive, or nil
+        /// if it never paused. See `NavigationModel.stalled`.
+        var stalledAfter: TimeInterval?
+        /// How many fixes were fed before the drive ended or paused itself, or
+        /// all of them if it did neither.
+        var fixesFed = 0
     }
 
     /// Mutable replay state, in a class because `fetchRoute` is called from a
@@ -260,6 +266,7 @@ enum DriveReplay {
         var describable = 0
 
         for fix in drive.fixes {
+            outcome.fixesFed += 1
             clock = fix.timestamp
             let before = model.route.coordinates
             model.update(fix)
@@ -304,6 +311,12 @@ enum DriveReplay {
 
             deepestStep = max(deepestStep, model.currentStep)
             if model.arrived { break }
+            // The app stops location when a drive pauses, so no fix after this
+            // one would ever have reached the model.
+            if model.stalled {
+                outcome.stalledAfter = fix.timestamp.timeIntervalSince(drive.fixes[0].timestamp)
+                break
+            }
         }
 
         outcome.said = speaker.said

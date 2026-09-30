@@ -23,11 +23,12 @@
 > goes at `.large`) is moot, because that detent no longer exists on the
 > planning screen. The opening camera now shows all six states
 > (`Region.newEngland`), which is the second half of §6d. The first half of §6d
-> (a drive that never joins its route can never end) is **still open**. §7 is
+> (a drive that never joins its route can never end) was done later the same
+> day; see §6d. §7 is
 > done too: the API has served from Oracle since 2026-09-29, per
 > `server/DEPLOY-oracle.md`. **§6e (coordinates in the query string) is
 > dispatched**; see `docs/coordinates-out-of-the-url-brief.md`. Still open:
-> §6d's first half, `MARKETING_VERSION`, and the §10 artifacts.
+> `MARKETING_VERSION` and the §10 artifacts.
 
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
 two unmerged branches named in §2, and **revised the same day** with three owner
@@ -277,6 +278,18 @@ about when the breach occurs.
 Judged on release relevance, not on backlog rank. See §9 for the ten that do not
 qualify.
 
+- **Done 2026-09-29**, per
+  [`never-joined-drive-brief.md`](never-joined-drive-brief.md). An unjoined car
+  that stays within 50 m of one fix for 5 minutes now *pauses* the drive
+  (`NavigationModel.stalled`). That stops location, releases the screen lock,
+  and shows *Keep navigating* / *End drive*. It is not an arrival and it does
+  not touch `hasJoinedRoute`. Over the twelve real traces, only
+  `drive-2026-08-25-222344` pauses (at 300 s), and the other eleven end as they
+  did. **Deliberately excluded, not overlooked:** an "arrived near the pin even
+  if unjoined" rule (the real phantom sat 176 m from its pin, and a loop's
+  destination is its start), and pausing *joined* drives (an overlook stop is
+  the product working, and that is an owner decision not yet made). The
+  original entry follows.
 - **A drive that never joins its route can never end**
   (`NavigationModel.swift:849-857`). Holds GPS at 1 Hz with the screen awake,
   indefinitely, when the car is snapped to the wrong road or parked beside a line

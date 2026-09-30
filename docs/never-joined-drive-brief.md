@@ -1,8 +1,10 @@
 # Brief: a drive that never joins its route can never end (release-plan §6d)
 
-**Status: diagnosed and decided, not fixed.** Written 2026-09-29 against `main`
-at `4ef3e11`. Nothing in `ios/` has been touched for this. Line numbers are
-from that commit, and each comes with its anchor text.
+**Status: fixed 2026-09-29** on branch `claude/never-joined-stall`, as decided
+below: `NavigationModel.stalled`, `StalledView`, and a replay assertion over all
+twelve traces. What follows is the brief as written, against `main` at
+`4ef3e11`. Line numbers are from that commit, and each comes with its anchor
+text.
 
 Answers `docs/roadmap.md` ("A drive that never joins its route can never
 end") and the first half of `docs/release-plan.md` §6d. The second half of

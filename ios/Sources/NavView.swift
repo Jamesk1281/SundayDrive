@@ -84,9 +84,18 @@ struct NavView: View {
                     .padding(.horizontal, 14)
                     .padding(.bottom, Metric.appleKeep + 10)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if nav.stalled {
+                // The same place and the same keep as the arrival card: this
+                // overlay ignores the furniture's inset, so the clear strip
+                // under Apple's logo is reserved here again, by hand.
+                StalledView(onKeepNavigating: { nav.resumeAfterStall() }, onEnd: onEnd)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, Metric.appleKeep + 10)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.smooth(duration: 0.4), value: nav.arrived)
+        .animation(.smooth(duration: 0.4), value: nav.stalled)
         .onAppear {
             locationManager.start()
             // Keep the screen awake for the whole drive, so the map stays
@@ -106,6 +115,20 @@ struct NavView: View {
             guard arrived else { return }
             locationManager.stop()
             UIApplication.shared.isIdleTimerDisabled = false
+        }
+        // A drive that never reached its route and has stood still is paused,
+        // and released for the same reason as arrival: otherwise a car parked
+        // back from the road it was routed along runs GPS with the screen awake
+        // forever. Unlike arrival it can be undone, so the resume is here too
+        // and puts back exactly what `onAppear` set up.
+        .onChange(of: nav.stalled) { _, stalled in
+            if stalled {
+                locationManager.stop()
+                UIApplication.shared.isIdleTimerDisabled = false
+            } else {
+                locationManager.start()
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
         }
         // No `onChange` feeding `nav.update` here on purpose. The drive is wired
         // straight to CoreLocation in `RouteModel.startNavigation`, because a
@@ -137,8 +160,12 @@ struct NavView: View {
 
     // MARK: - The maneuver
 
+    /// Whether the drive is still being followed. The banner and the controls
+    /// describe a live drive, and neither an ended nor a paused one is.
+    private var isLive: Bool { !nav.arrived && !nav.stalled }
+
     @ViewBuilder private var banner: some View {
-        if !nav.arrived {
+        if isLive {
             HStack(spacing: 13) {
                 Group {
                     if locationManager.authorization == .denied
@@ -253,7 +280,7 @@ struct NavView: View {
                     recenterButton
                 }
             }
-            if !nav.arrived {
+            if isLive {
                 sceneryVerdict
                 tripCard
             }
