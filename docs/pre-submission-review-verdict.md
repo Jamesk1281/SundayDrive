@@ -943,9 +943,9 @@ same binary.
 | # | Finding | Where the fix lives | Cheapest fix | Size |
 |---|---|---|---|---|
 | 1 | **K-7.** On a loop, "Switch to fastest" drives to the far point: 4.4–6.3× longer than the fastest way home | **Build** | In `switchToFastest`, drop the loop waypoint and word the dialog "Head home the fastest way" | About 3 lines and one test. Under an hour |
-| 2 | **AR-1.** A reviewer outside New England meets only an error on both front doors | **Package**, plus a server copy change | App Review notes with a test route and a loop start, the reason the region is limited, and a screen recording. Server copy that says what works: "Type a town there as your start" (marketing plan §5.10.2, reworded) | Notes: an hour. Copy: minutes, with no build |
-| 2b | **§6.2, approximate location.** Precise Location off means no fix is ever accepted. The drive shows "50 ft away · Head to the start of your route" and never navigates (reproduced) | **Build** | When `accuracyAuthorization == .reducedAccuracy`, request temporary full accuracy with an `NSLocationTemporaryUsageDescriptionDictionary` purpose, or show "Turn on Precise Location to navigate" with a Settings link. Draw "Waiting for GPS" instead of a distance when there is no fix | About 25 lines. An hour |
-| 3 | **C-1.** Routes, loops and reroutes use roads OSM marks closed for winter, and the score prefers them | **Server** (gates L, not the upload) | A startup mask in `Router.__init__`: the 190 flagged ways, joined to edges by geometry, set to `+inf` in `_weights` during their closed months. Add "seasonal roads" to "What it does not do". The ALT bound stays admissible, because closing edges only lengthens true costs | About 60 lines, a small side table, one test (for example, Stowe → Jeffersonville in January avoids VT‑108). Half a day. Deploy before L |
+| 2 | **§6.2, approximate location.** Precise Location off means no fix is ever accepted. The drive shows "50 ft away · Head to the start of your route" and never navigates (reproduced) | **Build** | When `accuracyAuthorization == .reducedAccuracy`, request temporary full accuracy with an `NSLocationTemporaryUsageDescriptionDictionary` purpose, or show "Turn on Precise Location to navigate" with a Settings link. Draw "Waiting for GPS" instead of a distance when there is no fix | About 25 lines. An hour |
+| 3 | **AR-1.** A reviewer outside New England meets only an error on both front doors | **Package**, plus a server copy change | App Review notes with a test route and a loop start, the reason the region is limited, and a screen recording. Server copy that says what works: "Type a town there as your start" (marketing plan §5.10.2, reworded) | Notes: an hour. Copy: minutes, with no build |
+| 4 | **C-1.** Routes, loops and reroutes use roads OSM marks closed for winter, and the score prefers them | **Server** (gates L, not the upload) | A startup mask in `Router.__init__`: the 190 flagged ways, joined to edges by geometry, set to `+inf` in `_weights` during their closed months. Add "seasonal roads" to "What it does not do". The ALT bound stays admissible, because closing edges only lengthens true costs | About 60 lines, a small side table, one test (for example, Stowe → Jeffersonville in January avoids VT‑108). Half a day. Deploy before L |
 
 ### Before L, in the same binary where it is a build change
 
@@ -973,8 +973,8 @@ Point October's one-shot posts at southern New England and at roads open all
 year. Keep the northern mountains for the spring opener (M-1). Change the
 captions to "type the town you'll start from" (M-2).
 
-**Can this happen before L?** Yes. Blockers 1, 2 and 2b are an afternoon, and
-blocker 3 is a server change that can be deployed while the build is in
+**Can this happen before L?** Yes. Blockers 1–3 are an afternoon, and
+blocker 4 is a server change that can be deployed while the build is in
 review. That leaves the package items `release-plan.md` §10 already lists: the
 EULA field, export compliance, screenshots, description, category and the name
 reservation. There is also membership, which is not code.
