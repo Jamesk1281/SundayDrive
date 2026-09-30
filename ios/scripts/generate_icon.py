@@ -39,6 +39,7 @@ import json
 import pathlib
 import subprocess
 import tempfile
+import zlib
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 BRAND = REPO / "docs" / "brand"
@@ -130,19 +131,81 @@ def lockup(style, name_fill=INK):
     return svg(mark + text, "0 0 1200 380")
 
 
+def _read_png(path):
+    """8-bit RGB/RGBA, non-interlaced — what qlmanage writes — as rows of RGB."""
+    data = path.read_bytes()
+    pos, idat, width = 8, b"", 0
+    while pos < len(data):
+        length = int.from_bytes(data[pos:pos + 4], "big")
+        kind, body = data[pos + 4:pos + 8], data[pos + 8:pos + 8 + length]
+        if kind == b"IHDR":
+            width, height = int.from_bytes(body[:4], "big"), int.from_bytes(body[4:8], "big")
+            depth, colour, interlace = body[8], body[9], body[12]
+            assert depth == 8 and colour in (2, 6) and interlace == 0, (depth, colour, interlace)
+            bpp = 4 if colour == 6 else 3
+        elif kind == b"IDAT":
+            idat += body
+        pos += 12 + length
+    raw, stride, rows, prev = zlib.decompress(idat), width * bpp, [], bytearray(width * bpp)
+    for y in range(height):
+        f, line = raw[y * (stride + 1)], bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
+        for i in range(stride):
+            a = line[i - bpp] if i >= bpp else 0
+            b, c = prev[i], prev[i - bpp] if i >= bpp else 0
+            if f == 1: line[i] = (line[i] + a) & 255
+            elif f == 2: line[i] = (line[i] + b) & 255
+            elif f == 3: line[i] = (line[i] + (a + b) // 2) & 255
+            elif f == 4:
+                pa, pb, pc = abs(b - c), abs(a - c), abs(a + b - 2 * c)
+                line[i] = (line[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
+        rows.append([line[x * bpp:x * bpp + 3] for x in range(width)])
+        prev = line
+    return rows
+
+
+def _write_png(path, rows):
+    """Rows of (r, g, b, a) as an RGBA PNG."""
+    height, width = len(rows), len(rows[0])
+    raw = b"".join(b"\0" + bytes(v for px in row for v in px) for row in rows)
+    def chunk(kind, body):
+        return (len(body).to_bytes(4, "big") + kind + body
+                + zlib.crc32(kind + body).to_bytes(4, "big"))
+    path.write_bytes(b"\x89PNG\r\n\x1a\n"
+                     + chunk(b"IHDR", width.to_bytes(4, "big") + height.to_bytes(4, "big")
+                             + bytes([8, 6, 0, 0, 0]))
+                     + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
 def render(svg_text, px, png_path, crop=None):
-    """Rasterise an SVG to a square `px` PNG with its alpha kept, optionally
-    cropped (centred) to `(height, width)`: qlmanage only draws squares."""
+    """Rasterise an SVG to a `px`-wide PNG with real transparency, optionally
+    cropped (centred) to `(height, width)`: qlmanage only draws squares.
+
+    qlmanage paints onto opaque white whatever the SVG says, so each mark is
+    drawn twice — on white and on black — and the alpha is read off the
+    difference: a pixel that is the same on both grounds is opaque, one that
+    follows the ground is clear. Exact, including the anti-aliased edges that
+    keying out white would leave as a halo on dark paper."""
+    grounds = {}
     with tempfile.TemporaryDirectory() as tmp:
-        src = pathlib.Path(tmp) / "mark.svg"
-        src.write_text(svg_text)
-        subprocess.run(["qlmanage", "-t", "-s", str(px), "-o", tmp, str(src)],
-                       check=True, capture_output=True)
-        thumb = pathlib.Path(tmp) / "mark.svg.png"
-        if crop:
-            subprocess.run(["sips", "-c", str(crop[0]), str(crop[1]), str(thumb)],
+        for ground in ("white", "black"):
+            src = pathlib.Path(tmp) / f"{ground}.svg"
+            src.write_text(svg_text.replace(">", f'><rect width="100%" height="100%" fill="{ground}"/>', 1))
+            subprocess.run(["qlmanage", "-t", "-s", str(px), "-o", tmp, str(src)],
                            check=True, capture_output=True)
-        png_path.write_bytes(thumb.read_bytes())
+            thumb = pathlib.Path(tmp) / f"{ground}.svg.png"
+            if crop:
+                subprocess.run(["sips", "-c", str(crop[0]), str(crop[1]), str(thumb)],
+                               check=True, capture_output=True)
+            grounds[ground] = _read_png(thumb)
+    rows = []
+    for on_white, on_black in zip(grounds["white"], grounds["black"]):
+        row = []
+        for w, b in zip(on_white, on_black):
+            alpha = 255 - max(0, min(255, round(sum(w[i] - b[i] for i in range(3)) / 3)))
+            row.append((0, 0, 0, 0) if alpha == 0 else
+                       tuple(min(255, round(b[i] * 255 / alpha)) for i in range(3)) + (alpha,))
+        rows.append(row)
+    _write_png(png_path, rows)
 
 
 def imageset(name, variants, points):
