@@ -98,7 +98,7 @@ road.
 fixed property of a road. The things that decide whether a scenic drive works
 all run on a calendar and a clock:
 - the road being open
-- the leaves
+- the leaves (the E4 point above)
 - the daylight
 - the plowing
 
@@ -110,9 +110,18 @@ close.
 `from=44.4654,-72.6874&to=44.6437,-72.8290&pref=0.5` to a local `/api/route`
 and read the step names.
 
-**Prior art.** None. `git grep -iE "seasonal|winter|conditional|barrier"` over
-`docs/` and `pipeline/` finds only the turn-restriction comment. The marketing
-plan (§1, §7) treats seasonality as demand, not as road access.
+**Prior art.** Two partial items.
+- `directions-accuracy.md` §5 lists "Node-level access. `barrier=gate`,
+  `access=private` on a *node* are not read" under **known, unmeasured**. The
+  barrier row above is that item, now measured: 418 ways and 141.9 km.
+- `scenery-grading-verdict.md` E4 notes the score is blind to foliage season.
+  That is about beauty, not access.
+
+`git grep -iE "seasonal|winter|:conditional|road clos|closed for"` over
+`docs/` and `pipeline/` finds nothing on way-level seasonal access. The
+marketing plan (§1, §7) treats season as demand. What is new: roads the
+router uses close for winter, the score prefers them, and every main path,
+the fastest arm included, drives them.
 
 **Cheapest fix.**
 1. For launch, add a startup mask in `Router.__init__`. Load a small side
@@ -188,13 +197,14 @@ product, measured tonight, contradicts a premise the plan relies on.
   weeks, when all three are closed or about to close.
 
 **What the tags say about spring.** In the north, the plan's spring fallback,
-Memorial Day weekend (29–31 May 2027), is not a consolation. It is the week
-those roads reopen: `May 15`, `May 20`. The fallback is the better date for
-the northern product. The October date suits southern New England.
+Memorial Day weekend (29–31 May 2027), is not a consolation. It is the first
+holiday weekend after those roads reopen (`May 15`, `May 20` in their tags).
+The fallback is the better date for the northern product. The October date
+suits southern New England.
 
 **Prior art.** The plan's §7 treats season as demand ("Foliage is the peak …
 winter is the trough") and does not know that the roads themselves close. No
-committed document mentions a closure.
+committed document mentions a seasonal road closure; see C-1's prior art.
 
 **Fix.**
 - Fix C-1 before L.
@@ -313,7 +323,7 @@ Separately, the new A\* fastest arm is a pure-Python heap loop
 for the GIL with the long C Dijkstras that loop builds run. That is the path
 "Switch to fastest" takes.
 
-Here is what one probe (`capacity.py` in *Reproducing this*) measured. Tonight's
+Here is what the probe in *Reproducing this* (step 6) measured. Tonight's
 load average reached 114, and the idle route alone varied 0.08–0.93 s between
 runs, so read these as ranges and mechanisms, not as box numbers:
 
@@ -478,8 +488,8 @@ AX5 on a device.
 - `arrow.trianglehead.clockwise` (`HomeView.swift:33`) first shipped in iOS
   18.0.
 - The app targets iOS 17.0 (`ios/project.yml:5`).
-- Every other symbol literal in `ios/Sources` (31 checked) dates from iOS 14
-  or earlier.
+- Every other symbol-shaped literal in `ios/Sources` (31 checked) is
+  available on iOS 17.
 
 On iOS 17 `Image(systemName:)` renders nothing, so the first screen's Loop
 row shows an empty amber square. I could not reproduce this, because only the
@@ -523,6 +533,16 @@ becomes a fastest one. What they see is what they drive, so this is Minor.
 
 **Fix.** Disable the button while `routeIsStale`, or start the route with
 `responsePref` rather than `pref`. One line.
+
+### K-10. "1 miles of it beautiful" — **Minor**
+
+**Verified** (screenshot). The loop card builds its line as
+`"\(meta.beautiful_km.wholeMilesFromKm) miles of it beautiful"`
+(`LoopView.swift:148`), so a short loop reads **"1 miles of it beautiful"**.
+The dial's VoiceOver value has the same bug (`DirectionsView.swift:249`).
+It matters only because the App Store screenshots are still to be taken.
+
+**Fix.** Pluralise, for example with `^[\(n) mile](inflect: true)`. One line.
 
 ## 4. App Review
 
@@ -863,9 +883,9 @@ same binary.
 
 **How 6f26edf fares against it:**
 - **Part 1** holds only once AR-1's review notes exist.
-- **Part 2** fails twice. Winter closures (C-1) have misled drivers since
-  Oct 15, and more roads close on Nov 1. On loops, the escape hatch (K-7)
-  does not go home.
+- **Part 2** fails twice. Winter closures (C-1): as shipped, the app would
+  send drivers over roads closed since Oct 15, and more close on Nov 1. On
+  loops, the escape hatch (K-7) does not go home.
 - **Part 3** holds. The Apple logo is clear (§5, §6.1), and the route-guidance
   notice is in-app. The EULA field and the §2.5 stores are known, low-risk
   items.
