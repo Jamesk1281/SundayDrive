@@ -262,21 +262,38 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlparse(self.path)
-        q = parse_qs(url.query)
+        if url.path == "/":
+            self._send({"service": "sunday-drive fake api",
+                        "warning": "every number here is invented; see tools/fake_api.py"})
+        else:
+            self._answer(url.path, parse_qs(url.query))
+
+    def do_POST(self):
+        """The app's call: the same parameters as a GET, but as a form body, so
+        coordinates stay out of the URL. Mirrors `server/app.py`, which reads
+        only the body on a POST — a query string left on the URL is ignored
+        here too, so a half-converted client fails against this fixture rather
+        than quietly working."""
+        url = urlparse(self.path)
+        if url.path not in ("/api/route", "/api/loop"):
+            self._send({"error": f"POST not accepted on {url.path}"}, status=405)
+            return
+        length = int(self.headers.get("Content-Length") or 0)
+        body = self.rfile.read(length).decode("utf-8", errors="replace")
+        self._answer(url.path, parse_qs(body))
+
+    def _answer(self, path, q):
         try:
-            if url.path == "/":
-                self._send({"service": "sunday-drive fake api",
-                            "warning": "every number here is invented; see tools/fake_api.py"})
-            elif url.path == "/api/route":
+            if path == "/api/route":
                 self._send(route(latlon(q["from"][0]), latlon(q["to"][0]),
                                  float(q.get("pref", ["0.5"])[0]), weights_from(q)))
-            elif url.path == "/api/loop":
+            elif path == "/api/loop":
                 self._send(loop(latlon(q["from"][0]),
                                 float(q.get("km", ["40"])[0]),
                                 (q.get("sector") or [None])[0],
                                 weights_from(q)))
             else:
-                self._send({"error": f"no such endpoint: {url.path}"}, status=404)
+                self._send({"error": f"no such endpoint: {path}"}, status=404)
         except (KeyError, ValueError) as exc:
             # The app renders a backend's own `error` verbatim, so say something
             # a person could act on.

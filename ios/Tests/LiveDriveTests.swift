@@ -22,14 +22,20 @@ final class LiveDriveTests: XCTestCase {
         env["SUNDAYDRIVE_API"] ?? env["VICTORYLAP_API"] ?? env["SCENIC_API"]
             ?? "http://127.0.0.1:5057"
 
-    private func liveRoute(from: String, to: String, pref: Double,
-                           weights: String = "") async throws -> RouteResponse {
-        let url = URL(string: "\(Self.baseURL)/api/route?from=\(from)&to=\(to)"
-                      + "&pref=\(pref)\(weights)")!
+    /// Through `RouteService.routeRequest`, so this drives the POST the app
+    /// actually sends rather than a URL built by hand. Its own session and base
+    /// URL, though: the app's fall back to the deployed backend baked into
+    /// Info.plist, and these must skip, not drive against production, when no
+    /// local server is running.
+    private func liveRoute(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D,
+                           pref: Double,
+                           weights: [String: Double] = [:]) async throws -> RouteResponse {
+        let request = RouteService.routeRequest(from: from, to: to, pref: pref,
+                                                weights: weights, base: Self.baseURL)
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 10
         do {
-            let (data, _) = try await URLSession(configuration: configuration).data(from: url)
+            let (data, _) = try await URLSession(configuration: configuration).data(for: request)
             return try JSONDecoder().decode(RouteResponse.self, from: data)
         } catch let error as URLError {
             // `URLError` only. A decode failure means the server answered and
@@ -41,10 +47,10 @@ final class LiveDriveTests: XCTestCase {
         }
     }
 
-    private let worcester = "42.2626,-71.8023"
-    private let boston = "42.3551,-71.0657"
-    private let buzzardsBay = "41.6362,-70.9342"
-    private let rockport = "42.6559,-70.6206"
+    private let worcester = CLLocationCoordinate2D(latitude: 42.2626, longitude: -71.8023)
+    private let boston = CLLocationCoordinate2D(latitude: 42.3551, longitude: -71.0657)
+    private let buzzardsBay = CLLocationCoordinate2D(latitude: 41.6362, longitude: -70.9342)
+    private let rockport = CLLocationCoordinate2D(latitude: 42.6559, longitude: -70.6206)
 
     /// Walk the route's own geometry at `metresPerFix`, which is what a GPS
     /// stream looks like: fixes at a cadence, not at the maneuvers.
@@ -190,7 +196,7 @@ final class LiveDriveTests: XCTestCase {
         // Longer, and shaped by a tune slider, so the drive is over a route the
         // weights actually chose.
         let response = try await liveRoute(from: boston, to: buzzardsBay, pref: 0.8,
-                                           weights: "&w_coast=4&w_town=0&w_farm=0")
+                                           weights: ["coast": 4, "town": 0, "farm": 0])
         let model = drive(response,
                           to: Fixture.fix(response.scenic.coordinates.last!).coordinate,
                           metresPerFix: 29, dropEvery: 4)
@@ -226,7 +232,7 @@ final class LiveDriveTests: XCTestCase {
     func test_the_reported_scenery_reflects_the_weights_that_were_sent() async throws {
         let plain = try await liveRoute(from: boston, to: rockport, pref: 0.8)
         let coastal = try await liveRoute(from: boston, to: rockport, pref: 0.8,
-                                          weights: "&w_coast=4&w_town=0&w_farm=0")
+                                          weights: ["coast": 4, "town": 0, "farm": 0])
         // The whole point of the tune screen: asking for coast finds more coast.
         let plainCoast = plain.scenic.properties.scenery_km["coast"] ?? 0
         let coastalCoast = coastal.scenic.properties.scenery_km["coast"] ?? 0

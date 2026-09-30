@@ -718,6 +718,15 @@ ps -o rss= -p $(systemctl show -p MainPID --value sundaydrive-api) | awk '{print
 curl -s -o /dev/null -w "%{time_total}s\n" "https://api.jameskouvlis.com/api/route?from=42.3601,-71.0589&to=44.3106,-69.7795&pref=0.5"
 ```
 
+That is a GET, which the server still accepts. The app sends the same
+parameters as a POST form body (see
+[Updating the code](#updating-the-code-server-before-phone)), and this is the
+check that the box speaks it:
+
+```bash
+curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -d "from=42.3601,-71.0589&to=44.3106,-69.7795&pref=0.5" https://api.jameskouvlis.com/api/route
+```
+
 | measure | **measured on the box, 2026-09-29** | measured on the Mac, 2026-09-19 | guessed for A1 on 2026-09-19 |
 |---|---|---|---|
 | peak memory | **4.06 GB** (cgroup `MemoryPeak`); RSS 3.49 GB cold, 3.65 GB after routing | 4.39 GB peak RSS | 4.2–5.0 GB |
@@ -772,6 +781,32 @@ the node count, the script tells you to update the UptimeRobot keyword.
 The ssh key must be in the agent (Part 0.2). Once there are two gated
 connectors (Part 10), this script covers one box, and the rolling deploy
 described there is still unwritten.
+
+---
+
+## Updating the code: server before phone
+
+**Added 2026-09-29 with the move of coordinates out of the URL
+(`docs/coordinates-out-of-the-url-brief.md`).** From that commit on, the app
+sends `/api/route` and `/api/loop` as `POST` with the parameters in a form
+body. The server accepts both `POST` and `GET`, but a box running older code
+answers only `GET`, and a `POST` to it gets a `405` that the app shows as "the
+routing service isn't reachable". So the order is fixed:
+
+1. **The box first.** On the Mac, `ssh-add --apple-use-keychain
+   ~/.ssh/scenic_oracle` (the key has a passphrase, and only the owner can
+   type it). Then run `server/deploy-oracle.sh`, as in
+   [Updating the box](#updating-the-box). It pulls, restarts and waits for
+   the graph. Then run the `POST` check in
+   [Part 13](#part-13--measure-it-and-write-the-numbers-down). It must print
+   `200`. A `405` means the box is still on the old code.
+2. **Then the phone.** Only after step 1 answers `200` does a build containing
+   the change go onto a phone or TestFlight. A build installed before the change
+   keeps sending `GET` and keeps working throughout, so the box can go first
+   with nothing to coordinate.
+
+Getting the order wrong breaks every route and loop request from the new build
+until the box is updated. It does not break the old build.
 
 ---
 

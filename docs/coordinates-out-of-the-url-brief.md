@@ -1,6 +1,11 @@
 # Brief: take the coordinates out of the URL (release-plan §6e)
 
-**Status: diagnosed and decided, not fixed.** Written 2026-09-29 against `main`
+**Status: fixed in code 2026-09-29 on branch `claude/coordinates-out-of-url`,
+not deployed.** The server change has to reach the Oracle box before a build
+that sends POST reaches a phone (`server/DEPLOY-oracle.md`, "Updating the
+code: server before phone"). What follows is the brief as written, unchanged.
+
+Diagnosed and decided before the fix. Written 2026-09-29 against `main`
 just after the redesign merge (`interface-redesign-from-nothing`). Nothing in
 `ios/Sources`, `server/`, `tools/` or `tests/` has been touched for this. Every
 `file:line` below is from that tree, and each one comes with its anchor text so

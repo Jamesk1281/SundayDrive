@@ -515,3 +515,74 @@ def test_loop_accepts_the_surface_preference(client):
     r = client.get(f"/api/loop?from={NEEDHAM}&km=40&avoid_unpaved=0")
     assert r.status_code == 200
     assert "loop" in r.get_json()
+
+
+# --- POST, so coordinates stay out of the URL -------------------------------
+# The app sends its parameters as a form body, because a URL is what a
+# TLS-terminating proxy's access log records by default. GET stays accepted for
+# installed builds and curl, so the 46 GET calls above keep pinning behaviour;
+# these pin that a POST of the same parameters answers identically. See
+# docs/coordinates-out-of-the-url-brief.md.
+
+def _parity(client, path, params):
+    """GET and POST (form) of the same parameters, and their two JSON bodies."""
+    query = "&".join(f"{k}={v}" for k, v in params.items())
+    by_get = client.get(f"{path}?{query}")
+    by_post = client.post(path, data=params)
+    assert by_get.status_code == by_post.status_code == 200
+    return by_get.get_json(), by_post.get_json()
+
+
+def test_a_route_by_post_matches_the_same_route_by_get(client):
+    # Every parameter the app sends, at values that move the answer, so a
+    # parameter the POST path drops shows up as a difference.
+    got, posted = _parity(client, "/api/route", {
+        "from": WORCESTER, "to": BOSTON, "pref": "0.80",
+        "w_coast": "3.00", "w_town": "0.00", "heading": "90.0",
+        "avoid_unpaved": "2.0"})
+    assert got == posted
+
+
+def test_a_via_route_by_post_matches_the_same_route_by_get(client):
+    # `via` is the loop-rejoin reroute: read directly in the handler rather
+    # than through a helper, so it is the read most easily left on the query.
+    to = NEEDHAM.replace("42.2809", "42.2909")
+    got, posted = _parity(client, "/api/route", {
+        "from": NEEDHAM, "to": to, "via": WORCESTER, "pref": "1.00"})
+    assert got == posted
+    plain = client.post("/api/route", data={"from": NEEDHAM, "to": to,
+                                            "pref": "1.00"}).get_json()
+    assert posted["scenic"]["properties"]["km"] > \
+        plain["scenic"]["properties"]["km"] * 5, "POST dropped the waypoint"
+
+
+def test_a_loop_by_post_matches_the_same_loop_by_get(client):
+    first = client.get(f"/api/loop?from={NEEDHAM}&km=40").get_json()
+    sector = first["alternatives"][-1]["sector"]
+    got, posted = _parity(client, "/api/loop", {
+        "from": NEEDHAM, "km": "35.0", "sector": sector, "pref": "1.00",
+        "w_water": "2.50"})
+    assert got == posted
+    # The loop cache is keyed on the parsed request, so equality alone would
+    # also hold if both were served from one entry; the sector says it was
+    # this request's.
+    assert posted["meta"]["sector"] == sector
+
+
+def test_a_bad_request_by_post_is_rejected(client):
+    r = client.post("/api/route", data={"from": WORCESTER})
+    assert r.status_code == 400
+    assert "error" in r.get_json()
+    r = client.post("/api/loop", data={"km": "40"})
+    assert r.status_code == 400
+    assert "error" in r.get_json()
+
+
+def test_a_post_reads_its_body_and_not_its_url(client):
+    """A client that sets POST but leaves the parameters on the URL has fixed
+    nothing, and a server reading `request.values` would answer it happily.
+    Refusing it is what lets the mistake show up anywhere at all."""
+    r = client.post(f"/api/route?from={WORCESTER}&to={BOSTON}", data={})
+    assert r.status_code == 400
+    r = client.post(f"/api/loop?from={NEEDHAM}&km=40", data={})
+    assert r.status_code == 400

@@ -185,7 +185,7 @@ def _parse_avoid_unpaved(args):
 
 
 def _parse_weights(args):
-    """Read the per-beauty-type weights (w_<type>) from the query string. Each
+    """Read the per-beauty-type weights (w_<type>) from the request. Each
     defaults to 1.0 (neutral) and is clamped to [WEIGHT_MIN, WEIGHT_MAX]."""
     weights = {}
     for name, *_ in BEAUTY_TYPES:
@@ -219,16 +219,33 @@ def _no_worse_than_fastest(fastest, scenic):
     return fastest if scenic.mean_score < fastest.mean_score else scenic
 
 
-@app.get("/api/route")
+def _request_params():
+    """The request's parameters: the form body on a POST, the query string on
+    a GET.
+
+    The app sends POST, so the driver's coordinates travel in the body and not
+    in the URL, which is what a TLS-terminating proxy's access log records by
+    default (docs/coordinates-out-of-the-url-brief.md). GET stays accepted for
+    builds already installed and for curl.
+
+    Deliberately not `request.values`, which merges the two. That would make a
+    POST whose parameters were left on the URL work perfectly, and the one
+    client mistake this change exists to rule out could never show up here.
+    """
+    return request.form if request.method == "POST" else request.args
+
+
+@app.route("/api/route", methods=["GET", "POST"])
 def api_route():
+    args = _request_params()
     try:
-        a = _parse_ll(request.args["from"])
-        b = _parse_ll(request.args["to"])
-        pref = float(request.args.get("pref", 0.5))
-        avoid_unpaved = _parse_avoid_unpaved(request.args)
-        heading = _parse_heading(request.args)
-        weights = _parse_weights(request.args)
-        raw_via = request.args.get("via")
+        a = _parse_ll(args["from"])
+        b = _parse_ll(args["to"])
+        pref = float(args.get("pref", 0.5))
+        avoid_unpaved = _parse_avoid_unpaved(args)
+        heading = _parse_heading(args)
+        weights = _parse_weights(args)
+        raw_via = args.get("via")
         via = _parse_ll(raw_via) if raw_via else None
     except (KeyError, ValueError):
         return jsonify(error="need from=lat,lon&to=lat,lon[&pref=0..1]"
@@ -296,7 +313,7 @@ def api_route():
     return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
 
-@app.get("/api/loop")
+@app.route("/api/loop", methods=["GET", "POST"])
 def api_loop():
     """A closed scenic drive of about `km` from one point, and the directions
     that hold another one.
@@ -305,21 +322,22 @@ def api_loop():
     to go is the term that decides whether a drive is good, and here the server
     owns it. See docs/loop-routes-design.md.
     """
+    args = _request_params()
     try:
-        start_ll = _parse_ll(request.args["from"])
-        target_km = float(request.args.get("km", 40.0))
+        start_ll = _parse_ll(args["from"])
+        target_km = float(args.get("km", 40.0))
         # Loops default to full scenery where routes default to 0.5. With the
         # length already pinned by the slider, pref has little left to trade,
         # and the middle of its travel is not monotone for loops — see the
         # docstring in pipeline/looper.py. Clients should leave this alone.
-        pref = max(0.0, min(1.0, float(request.args.get("pref", 1.0))))
-        weights = _parse_weights(request.args)
-        avoid_unpaved = _parse_avoid_unpaved(request.args)
+        pref = max(0.0, min(1.0, float(args.get("pref", 1.0))))
+        weights = _parse_weights(args)
+        avoid_unpaved = _parse_avoid_unpaved(args)
     except (KeyError, ValueError):
         return jsonify(error="need from=lat,lon[&km=5..200][&pref=0..1]"
                              "[&sector=N|NE|E|SE|S|SW|W|NW][&w_<type>=...]"), 400
 
-    sector = request.args.get("sector") or None
+    sector = args.get("sector") or None
     if sector is not None and sector not in SECTORS:
         return jsonify(error=f"sector must be one of {', '.join(SECTORS)}"), 400
 
@@ -423,6 +441,10 @@ def index():
                           "[&avoid_unpaved=0..2]"),
             "/api/health": "liveness check",
         },
+        # How the two routing endpoints take those parameters. The app posts
+        # them, so a driver's coordinates stay out of every URL.
+        parameters=("POST as an application/x-www-form-urlencoded body, "
+                    "or GET as a query string"),
         loop_sectors=list(SECTORS),
         beauty_types=[name for name, *_ in BEAUTY_TYPES],
         region=REGION,
