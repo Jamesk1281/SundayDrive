@@ -234,6 +234,10 @@ was needed either.
 The server was the worktree's `server/serve.py` app behind a scratchpad wrapper
 that writes one access-log line per request, on 127.0.0.1:5173 with 5057 empty.
 It logged 4,598 requests during the tier-1 run. All of them were local; nothing went to production.
+Correction found at cleanup: my first plain `serve.py` launch (same worktree,
+same `processed-ne`) was never stopped and also held `*:5173` beside the
+wrapper's `127.0.0.1:5173`. Both served identical code and data, so no result
+changes, but the access-log count is a lower bound on requests served.
 
 ## What was built
 
