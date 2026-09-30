@@ -805,6 +805,10 @@ code or data.
 **`LiveDriveTests` are real.** 7 of 7 passed against my server with 5057
 empty.
 
+**Traffic-control coverage spans the region** (method 10). Every state's
+interior carries signal and stop counts in `graph_edges`, so no cache was built
+on one state's bounding box. The density differs, as C-3 records.
+
 **The A\* fastest arm's tests bite.** In a scratch copy I inflated
 `_alt_bound` by 20%, which makes the bound inadmissible. That failed 5 of the 8
 `TestFastestArm` tests, including admissibility over every node and cost
