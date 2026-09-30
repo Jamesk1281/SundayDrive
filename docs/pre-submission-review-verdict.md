@@ -852,7 +852,7 @@ Only the entries where I have new evidence.
 
 2. **Approximate location, an open gate ("untested", `release-plan.md` §10,
    `privacy-policy.md` §7 item 6), is now tested, and it fails silently.
-   Major, Verified in the simulator.**
+   Blocker (§8), Verified in the simulator.**
    - **The experiment.** I made two runs of one drive, Northampton → Amherst,
      with the simulator moving along the route at 15 m/s
      (`simctl location start`).
