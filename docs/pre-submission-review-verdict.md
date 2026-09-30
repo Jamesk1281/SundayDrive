@@ -167,7 +167,58 @@ asking every driver to do the work.
   decision (`release-plan.md` Decision 3), so it is the owner's call. The
   legal side of the in-drive buttons is AR-4.
 
-### C-3. Maine's travel times are priced on stop-sign data four to five times sparser than its neighbours' — **Minor**
+### C-3. The dial's headline prices the minutes against the fastest route, and the prize against nothing — **Major**
+
+**Verified** (code, then a replay of the committed census). The line
+`interface-design.md` §4.3 calls "the only number that matters", "the price
+and the prize in one line", is built as follows (`DirectionsView.swift:222-225`):
+
+```swift
+cost(c.extraMinutes) + " · " + "\(miles.scenic) mi of beautiful road"
+```
+
+The price is a *difference* (scenic minus fastest). The prize is the scenic
+route's *total* beautiful miles, not what the extra minutes bought. So "+17 min
+· 5 mi of beautiful road" can describe a trip whose fastest route already has
+5 miles of it.
+
+I replayed that exact readout, with `isSameDrive` and the server's
+`_no_worse_than_fastest` guard, over the 983 shipped-default trips in
+`docs/route-census/census-routes.csv`:
+
+| | trips |
+|---|---|
+| readout charges minutes ("+N min") | 846 |
+| …and the extra minutes buy **no** beautiful road (printed miles ≤ the fastest route's) | **61 (7.2%)** |
+| …of which the scenic route has *less* beautiful road than the fastest | 15 |
+| …the printed miles are at least **twice** the real gain | **163 (19.3%)** |
+| median printed vs median gain: 10–25 / 25–50 / 50–100 / 100–200 km | 3 vs 2 · **6 vs 3** · 12 vs 8 · 27 vs 21 mi |
+
+The worst cases read "+43 min · 10 mi of beautiful road" (the fastest route
+has 11), and "+16 min · 0 mi". The ledger underneath shows both numbers, so
+nothing is hidden. But the headline mixes two baselines, and on the typical
+25–50 km trip it states the prize at twice its size.
+
+**This is a regression of settled design.**
+- The archived `beautiful-miles-and-the-slider-brief.md` chose "adds 49 min,
+  turns **1 mi** of beautiful road into **12**" because *"only the second
+  phrasing says so"*.
+- `RouteComparison`'s sentence (`RouteResults.swift:192-204`) still handles
+  "the scenic route can come back with *less* beautiful road". The redesign
+  calls it only for a backend without `beautiful_km`, so on today's server it
+  never runs.
+
+**Prior art.** `route-distribution-study.md` Q1 and Q2 (3.1% strictly worse;
+12.2% gain under a mile and are told nothing) and the archived brief. The new
+part is that the shipped headline reintroduces the problem, and the replay
+above measures by how much.
+
+**Fix.** Print the gain: "+17 min · +2 mi of beautiful road", or "turns 3 mi
+of beautiful road into 5". When the gain is zero or negative, fall back to
+`RouteComparison.attributedSummary`, which already words those cases. That is
+about 10 lines.
+
+### C-4. Maine's travel times are priced on stop-sign data four to five times sparser than its neighbours' — **Minor**
 
 **Hypothesis.** It would be disproved by a Maine drive whose trace shows
 stops the graph does not have, or by a state inventory that matches the
@@ -817,7 +868,7 @@ empty.
 
 **Traffic-control coverage spans the region** (method 10). Every state's
 interior carries signal and stop counts in `graph_edges`, so no cache was built
-on one state's bounding box. The density differs, as C-3 records.
+on one state's bounding box. The density differs, as C-4 records.
 
 **The A\* fastest arm's tests bite.** In a scratch copy I inflated
 `_alt_bound` by 20%, which makes the bound inadmissible. That failed 5 of the 8
@@ -987,9 +1038,11 @@ These are Major, cheap and worth their cost. None blocks the upload.
 - **K-6.** Swap the iOS 18-only symbol. One line.
 - **K-10.** Pluralise "1 miles" before the App Store screenshots are taken.
   One line.
+- **C-3.** Make the dial's headline print what the minutes buy (the gain, or
+  "turns X into Y"), not the scenic route's total. About 10 lines.
 
 **Can wait for 1.0.1:** K-5 (Dynamic Type, a mechanical change at 81 sites),
-K-3, K-4, K-8, K-9, C-3 and M-3.
+K-3, K-4, K-8, K-9, C-4 and M-3.
 
 **The plan (marketing).** Build the §6.3 lists without closed-in-season roads.
 Point October's one-shot posts at southern New England and at roads open all
