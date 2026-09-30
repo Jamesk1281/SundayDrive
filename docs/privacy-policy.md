@@ -1,4 +1,12 @@
-# Privacy policy — DRAFT, NOT PUBLISHED
+# Privacy policy — the developer's source copy
+
+> **The user-facing version is `site/privacy/index.html`, to be served at
+> <https://jamesk1281.github.io/SundayDrive/privacy/>** by
+> `.github/workflows/pages.yml` (built 2026-09-29,
+> `docs/privacy-policy-page-brief.md`). It is §§0–6 below rewritten for a
+> driver. **Not live until the branch is merged**: the contact address (§6) is
+> in and Pages is set to deploy from GitHub Actions (both 2026-09-29). This file stays: its citations are what make the page
+> checkable, and a change to §§0–6 here must change the page too (§8).
 
 **Status: drafted 2026-09-19, published nowhere; name and identifier brought
 up to date 2026-09-21; hosting brought up to date 2026-09-29, when the routing
@@ -193,7 +201,12 @@ an approximate-location grant is untested — see §7.)*
 
 ## 3. Drive recordings
 
-The app can record a drive to a file. A recording contains, once per second, the
+**Every navigated drive is recorded** — `RouteModel.startNavigation` and
+`startLoopDrive` open a `DriveTrace` unconditionally (`RouteModel.swift:267-273`,
+`:296`), and there is no setting to turn it off. *(Corrected 2026-09-29. Until
+then this section said the app "can" record and §5 called recording "a
+deliberate act, not a default"; both were wrong from the day the draft was
+written.)* A recording contains, once per second, the
 raw GPS fix and where it fell on the route: latitude, longitude, horizontal
 accuracy, altitude, speed and a timestamp; plus the route being followed, any
 "nice"/"dull" verdicts tapped during the drive, when the app went to the
@@ -234,8 +247,8 @@ Category rules is a §7 item.)*
 
 - **Refuse location.** The app cannot route without it, but nothing else about
   the phone is read.
-- **Don't record.** Recording is a deliberate act, not a default of using the
-  app.
+- ~~**Don't record.**~~ Not a choice the app offers: every navigated drive
+  is recorded (§3). Deleting recordings is the control there is.
 - **Delete recordings** at any time, from the Files app or a Mac (§3).
 - **Reset the three stored settings** by deleting the app.
 
@@ -246,11 +259,11 @@ none is kept.
 
 ## 6. Contact
 
-*Placeholder — an email address has to go here, and it has to be one that is
-monitored.* App Store Connect requires a contact route for privacy requests, and
-CPRA and GDPR both assume a way to reach the controller. **This is an owner
-decision:** which address, and whether it should be an alias rather than a
-personal one, given that it will be published.
+**privacy@jameskouvlis.com** — chosen 2026-09-29. It is a Cloudflare Email
+Routing alias on the same domain as the API, forwarding to the owner's inbox,
+and a test message was received through it the same day. An alias rather than
+a personal address because it is published. It dies with the domain, which
+also carries `api.jameskouvlis.com`, so renewing the domain keeps both alive.
 
 ---
 
@@ -293,7 +306,7 @@ characterisations are not mine to make. In order of how much turns on them:
    in this draft: nobody has tested what the app does when iOS grants
    approximate location. The policy should not describe behaviour that has not
    been observed. **Test it, then write what happens.**
-7. **The contact address (§6).**
+7. ~~**The contact address (§6).**~~ **Resolved 2026-09-29:** privacy@jameskouvlis.com.
 8. ~~**The app's name.**~~ **Resolved 2026-09-20, and again 2026-09-21.** The
    app is **Sunday Drive** (`docs/sunday-drive-naming.md`), renamed from Victory
    Lap (`docs/victory-lap-naming.md`), and this document was updated with it.
@@ -352,3 +365,7 @@ Re-check it if any of these change, because each one is load-bearing above:
   against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.
+- **An off switch for drive recording.** §3 and §5 say there is none.
+- **A change to anything in §§0–6 must also change `site/privacy/index.html`.**
+  That page is the published copy, and nothing checks the two against each
+  other except this line.
