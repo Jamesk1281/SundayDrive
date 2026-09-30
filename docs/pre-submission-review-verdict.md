@@ -959,6 +959,17 @@ Only the entries where I have new evidence.
 6. **`LoopModel.swift:44-50`**, "the home screen came to offer a 6-minute loop
    after a test run": it still does. See K-3.
 
+7. **`consumer-polish-brief.md`'s four "open" items no longer describe the
+   tree.**
+   - #3 (the compact sheet) and #4 (the pin behind the sheet) went with the
+     sheet in the redesign.
+   - #5's glass verdict buttons are now opaque cards (`NavView.swift:345`).
+   - #6's stranded location task is fixed in `LocationManager`: waiters are
+     an array (`:70-81`), and a superseded one-shot is answered
+     (`:189-199`).
+
+   Nothing there is left to dispatch.
+
 ## 7. Undetermined
 
 | Item | Why tonight cannot settle it | What would | Which way it moves the verdict |
@@ -1185,3 +1196,24 @@ then compare them with every `"a.b"` string literal under `ios/Sources`.
 - M.G.L. c.90 §13B: `malegislature.gov/Laws/GeneralLaws/PartI/TitleXIV/Chapter90/Section13B`.
 - M.G.L. c.90 §1, the definition of "hands-free mode": `malegislature.gov/Laws/GeneralLaws/PartI/TitleXIV/Chapter90/Section1`.
 - RDAP: `rdap.verisign.com/com/v1/domain/jameskouvlis.com`.
+
+**11. C-3, the census replay.** From `docs/route-census/census-routes.csv`,
+take the `weights == shipped` rows: the `fastest` arm, and the `scenic` arm at
+pref 0.5. Then:
+1. Apply the server guard: when the scenic `mean_score` is below the fastest,
+   the scenic arm becomes the fastest.
+2. Round minutes to whole numbers.
+3. Mark `isSameDrive` when the extra minutes are ≤ 0 and both `mean_score`
+   values agree at one decimal.
+4. Convert beautiful miles to whole miles with `rint(km / 1.609344)`.
+5. The printed figure is the scenic arm's beautiful miles. The gain is scenic
+   minus fastest.
+
+**12. §6.2, Precise Location.** A scratch UI test opens Settings with
+`XCUIApplication(bundleIdentifier: "com.apple.Preferences")`, then walks
+Privacy & Security → Location Services → Sunday Drive. Search does not index
+the app. It turns **Precise Location** off with a coordinate tap near the
+switch's right edge, because a plain `.tap()` on the element did not flip it.
+It then starts Northampton → Amherst while the host plays
+`xcrun simctl location <udid> start --speed=15 42.3190,-72.6310 42.3375,-72.5880 42.3490,-72.5480 42.3700,-72.5200`.
+The control is the same run with Precise on.
