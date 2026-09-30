@@ -14,7 +14,14 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: Sunday Drive
-        UILaunchScreen: {}
+        # The wagon on dark paper, because the first screen is dark unless the
+        # driver has switched on Match system appearance. Both come from
+        # ios/scripts/generate_icon.py. UIImageRespectsSafeAreaInsets keeps the
+        # logo centred on the visible area rather than under the island.
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+          UIImageName: LaunchLogo
+          UIImageRespectsSafeAreaInsets: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         # Shown when navigation asks for location to follow the route.

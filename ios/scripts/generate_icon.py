@@ -21,22 +21,29 @@ writes
     docs/brand/lockup-script.svg         wagon + "Sunday" script / "DRIVE" caps
     docs/brand/lockup-italic.svg         wagon + italic name + subtitle
     ios/Sources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
+    ios/Sources/Assets.xcassets/LaunchLogo.imageset/     the wagon, for the launch screen
+    ios/Sources/Assets.xcassets/Lockup.imageset/         the script lockup, for About
+    ios/Sources/Assets.xcassets/LaunchBackground.colorset/
 
 The lockups set the name in live `<text>` with fonts that ship with macOS
 (Snell Roundhand, Cochin, Futura). That is fine for choosing and for docs; a
 shipped wordmark wants licensed, outlined lettering.
 
-The PNG is rasterised with `qlmanage` (WebKit) and flattened through `sips`,
-because App Store icons must be opaque and qlmanage writes RGBA.
+The icon PNG is rasterised with `qlmanage` (WebKit) and flattened through
+`sips`, because App Store icons must be opaque and qlmanage writes RGBA. The
+in-app marks keep that alpha, and ship as PNGs rather than SVGs because the
+asset catalogue's SVG renderer will not reliably draw the lockup's `<text>`.
 """
 
+import json
 import pathlib
 import subprocess
 import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 BRAND = REPO / "docs" / "brand"
-PNG_OUT = REPO / "ios" / "Sources" / "Assets.xcassets" / "AppIcon.appiconset" / "icon-1024.png"
+ASSETS = REPO / "ios" / "Sources" / "Assets.xcassets"
+PNG_OUT = ASSETS / "AppIcon.appiconset" / "icon-1024.png"
 SIZE = 1024
 
 CREAM = "#F3E7CF"
@@ -105,13 +112,13 @@ def icon():
                f'<g transform="translate(512 512) scale(1.12) translate(-512 -512)">{badge()}</g>')
 
 
-def lockup(style):
+def lockup(style, name_fill=INK):
     if style == "script":
         # Compact: the mark matches the height of the two lines, and DRIVE
         # tucks under "Sund", clear of the y's descender.
         mark = f'<g transform="translate(10,20) scale(0.27)">{wagon()}</g>'
         text = (f'<text x="290" y="170" font-family="Snell Roundhand" font-weight="bold" '
-                f'font-size="150" fill="{INK}">Sunday</text>'
+                f'font-size="150" fill="{name_fill}">Sunday</text>'
                 f'<text x="306" y="252" font-family="Futura" font-weight="bold" '
                 f'font-size="58" letter-spacing="17" fill="{RUST}">DRIVE</text>')
         return svg(mark + text, "0 0 800 300")
@@ -121,6 +128,62 @@ def lockup(style):
             f'<text x="396" y="275" font-family="Futura" font-weight="500" '
             f'font-size="30" letter-spacing="10" fill="{RUST}">THE SCENIC ROUTE, ON PURPOSE</text>')
     return svg(mark + text, "0 0 1200 380")
+
+
+def render(svg_text, px, png_path, crop=None):
+    """Rasterise an SVG to a square `px` PNG with its alpha kept, optionally
+    cropped (centred) to `(height, width)`: qlmanage only draws squares."""
+    with tempfile.TemporaryDirectory() as tmp:
+        src = pathlib.Path(tmp) / "mark.svg"
+        src.write_text(svg_text)
+        subprocess.run(["qlmanage", "-t", "-s", str(px), "-o", tmp, str(src)],
+                       check=True, capture_output=True)
+        thumb = pathlib.Path(tmp) / "mark.svg.png"
+        if crop:
+            subprocess.run(["sips", "-c", str(crop[0]), str(crop[1]), str(thumb)],
+                           check=True, capture_output=True)
+        png_path.write_bytes(thumb.read_bytes())
+
+
+def imageset(name, variants, points):
+    """An imageset of @1x–@3x PNGs, `points` wide. `variants` maps an
+    appearance (None for any, or "dark") to an SVG with an 8:3 or square
+    viewBox; the aspect is read back off the viewBox."""
+    folder = ASSETS / f"{name}.imageset"
+    folder.mkdir(parents=True, exist_ok=True)
+    images = []
+    for appearance, text in variants.items():
+        _, _, w, h = (float(v) for v in text.split('viewBox="')[1].split('"')[0].split())
+        for scale in (1, 2, 3):
+            px = points * scale
+            crop = None if w == h else (round(px * h / w), px)
+            fname = f"{name.lower()}{'-' + appearance if appearance else ''}@{scale}x.png"
+            render(text, px, folder / fname, crop)
+            entry = {"idiom": "universal", "filename": fname, "scale": f"{scale}x"}
+            if appearance:
+                entry["appearances"] = [{"appearance": "luminosity", "value": appearance}]
+            images.append(entry)
+    (folder / "Contents.json").write_text(json.dumps(
+        {"images": images, "info": {"author": "xcode", "version": 1}}, indent=2) + "\n")
+    print(folder.relative_to(REPO))
+
+
+def colorset(name, hex_rgb):
+    folder = ASSETS / f"{name}.colorset"
+    folder.mkdir(parents=True, exist_ok=True)
+    r, g, b = (hex_rgb[i:i + 2] for i in (1, 3, 5))
+    colour = {"color-space": "srgb",
+              "components": {"red": f"0x{r}", "green": f"0x{g}", "blue": f"0x{b}", "alpha": "1.000"}}
+    (folder / "Contents.json").write_text(json.dumps(
+        {"colors": [{"idiom": "universal", "color": colour}],
+         "info": {"author": "xcode", "version": 1}}, indent=2) + "\n")
+    print(folder.relative_to(REPO))
+
+
+# The launch screen's ground: Theme.swift's dark `paper`. One value, not a
+# light/dark pair, because the launch screen resolves against the *system*
+# appearance while the first screen is dark unless the driver has opted out.
+LAUNCH_BACKGROUND = "#15120F"
 
 
 def rasterise(svg_path, png_path):
@@ -148,3 +211,8 @@ if __name__ == "__main__":
         print((BRAND / name).relative_to(REPO))
     rasterise(BRAND / "icon.svg", PNG_OUT)
     print(PNG_OUT.relative_to(REPO))
+    # In-app marks. The lockup's "Sunday" is ink, which vanishes on dark
+    # paper, so the dark variant sets it in cream; the rust caps stay rust.
+    imageset("LaunchLogo", {None: svg(wagon())}, 240)
+    imageset("Lockup", {None: lockup("script"), "dark": lockup("script", CREAM)}, 200)
+    colorset("LaunchBackground", LAUNCH_BACKGROUND)

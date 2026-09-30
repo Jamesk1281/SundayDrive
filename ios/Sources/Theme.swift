@@ -32,19 +32,28 @@ extension Color {
 
     /// The page. Warm off-white, warm near-black — not #FFF and not #000, so
     /// the amber has something to sit against rather than glare off.
-    static let paper    = adaptive(light: 0xFBF8F3, dark: 0x121110)
+    ///
+    /// Both lean toward the app icon's cream (`#F3E7CF`) and ink (`#2B211B`),
+    /// so that tapping the badge lands on the same object. Light paper stops
+    /// short of the cream itself: at `#F3E7CF`, `amberText` falls to 4.41:1,
+    /// and the surfaces moving is cheaper than beauty's colour moving. Dark
+    /// paper takes only a trace of the brown; it must not become a light
+    /// source in a windscreen mount (§7.6).
+    static let paper    = adaptive(light: 0xF8F1E4, dark: 0x15120F)
     /// Anything raised off the page: the ledger, the intent rows, every card
     /// floating over the driving map.
-    static let card     = adaptive(light: 0xFFFFFF, dark: 0x1C1A17)
+    static let card     = adaptive(light: 0xFFFCF5, dark: 0x1F1A15)
     /// Anything sunk into it: fields, tracks, the secondary button.
-    static let sunk     = adaptive(light: 0xF1ECE3, dark: 0x201D19)
-    static let hairline = adaptive(light: 0xE6DFD4, dark: 0x2E2A25)
+    static let sunk     = adaptive(light: 0xF2EADB, dark: 0x241E18)
+    static let hairline = adaptive(light: 0xE6DAC4, dark: 0x362D25)
 
     // MARK: - Text
 
-    static let ink      = adaptive(light: 0x1A1713, dark: 0xF3EFE8)
-    static let ink2     = adaptive(light: 0x6B6459, dark: 0xA8A096)
-    static let ink3     = adaptive(light: 0x7C7568, dark: 0x857D72)
+    /// Every one of these clears 4.5:1 on `paper`, `card` *and* `sunk` — sunk
+    /// is the hard one, because fields and secondary buttons carry text too.
+    static let ink      = adaptive(light: 0x2B211B, dark: 0xF5ECDD)
+    static let ink2     = adaptive(light: 0x64574A, dark: 0xADA08F)
+    static let ink3     = adaptive(light: 0x716453, dark: 0x978A78)
 
     // MARK: - The two quantities
 
