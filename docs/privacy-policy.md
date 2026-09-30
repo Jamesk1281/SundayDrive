@@ -4,8 +4,8 @@
 > <https://jamesk1281.github.io/SundayDrive/privacy/>** by
 > `.github/workflows/pages.yml` (built 2026-09-29,
 > `docs/privacy-policy-page-brief.md`). It is §§0–6 below rewritten for a
-> driver. **Not live yet:** it waits on a contact address (§6) and on the owner
-> enabling GitHub Pages. This file stays: its citations are what make the page
+> driver. **Not live until the branch is merged**: the contact address (§6) is
+> in and Pages is set to deploy from GitHub Actions (both 2026-09-29). This file stays: its citations are what make the page
 > checkable, and a change to §§0–6 here must change the page too (§8).
 
 **Status: drafted 2026-09-19, published nowhere; name and identifier brought
@@ -259,11 +259,11 @@ none is kept.
 
 ## 6. Contact
 
-*Placeholder — an email address has to go here, and it has to be one that is
-monitored.* App Store Connect requires a contact route for privacy requests, and
-CPRA and GDPR both assume a way to reach the controller. **This is an owner
-decision:** which address, and whether it should be an alias rather than a
-personal one, given that it will be published.
+**privacy@jameskouvlis.com** — chosen 2026-09-29. It is a Cloudflare Email
+Routing alias on the same domain as the API, forwarding to the owner's inbox,
+and a test message was received through it the same day. An alias rather than
+a personal address because it is published. It dies with the domain, which
+also carries `api.jameskouvlis.com`, so renewing the domain keeps both alive.
 
 ---
 
@@ -306,7 +306,7 @@ characterisations are not mine to make. In order of how much turns on them:
    in this draft: nobody has tested what the app does when iOS grants
    approximate location. The policy should not describe behaviour that has not
    been observed. **Test it, then write what happens.**
-7. **The contact address (§6).**
+7. ~~**The contact address (§6).**~~ **Resolved 2026-09-29:** privacy@jameskouvlis.com.
 8. ~~**The app's name.**~~ **Resolved 2026-09-20, and again 2026-09-21.** The
    app is **Sunday Drive** (`docs/sunday-drive-naming.md`), renamed from Victory
    Lap (`docs/victory-lap-naming.md`), and this document was updated with it.

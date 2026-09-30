@@ -27,9 +27,7 @@ def test_privacy_page_loads_nothing_external(external):
     assert external not in _page().lower()
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "The owner has not chosen a contact address yet (brief §5, item 1). "
-    "When CONTACT_ADDRESS_TBD is replaced this XPASSes and fails: remove "
-    "this marker."))
 def test_privacy_page_has_a_contact_address():
-    assert "CONTACT_ADDRESS_TBD" not in _page()
+    page = _page()
+    assert "CONTACT_ADDRESS_TBD" not in page
+    assert "privacy@jameskouvlis.com" in page
