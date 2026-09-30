@@ -260,7 +260,7 @@ These are still development values and are wrong for a submission
 (`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.sundaydrive`
 (renamed 2026-09-20 to `app.victorylap` and again 2026-09-21 to this,
 **still provisional — see the gate below**),
-marketing version `0.1`, build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
+marketing version `1.0` (raised from `0.1` 2026-09-29), build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
 deployment target iOS 17.0. **Each is an owner decision.**
 
 **The bundle identifier locks at the first build *upload*, not at submission.**

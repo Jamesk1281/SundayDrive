@@ -26,8 +26,10 @@
 > (a drive that never joins its route can never end) is **still open**. §7 is
 > done too: the API has served from Oracle since 2026-09-29, per
 > `server/DEPLOY-oracle.md`. **§6e (coordinates in the query string) is
-> dispatched**; see `docs/coordinates-out-of-the-url-brief.md`. Still open:
-> §6d's first half, `MARKETING_VERSION`, and the §10 artifacts.
+> merged and deployed** (checked against the live box 2026-09-29, §6e).
+> `MARKETING_VERSION` is `"1.0"` as of 2026-09-29. Still open: §6d's first
+> half, and the §10 artifacts. §10's states were brought up to date and §11's
+> table given a state column, both 2026-09-29.
 
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
 two unmerged branches named in §2, and **revised the same day** with three owner
@@ -295,8 +297,9 @@ qualify.
 **Done in code 2026-09-29** (branch `claude/coordinates-out-of-url`, per
 [`coordinates-out-of-the-url-brief.md`](coordinates-out-of-the-url-brief.md)),
 with the privacy policy's §2.1(a), §7 item 1 and §8 rewritten in the same
-commit. **Not yet deployed:** the box has to be updated before any build that
-sends POST goes on a phone (`server/DEPLOY-oracle.md`).
+commit. **Deployed, checked 2026-09-29:** an empty-bodied POST to
+`https://api.jameskouvlis.com/api/route` gets the handler's own 400
+(`need from=lat,lon&to=…`), not a 405, so the box serves POST.
 
 **Promoted from "nice to have" by §8 decision 3.** Route requests put start and
 destination in the **URL query string**, and the Cloudflare tunnel terminates
@@ -510,17 +513,17 @@ All of these are downstream of Decision 1, and most are already written.
 
 | Item | State |
 | --- | --- |
-| `PrivacyInfo.xcprivacy` | **Written**, unmerged (§2). Keep precise location declared as collected — §8, decision 3 |
-| Privacy policy **draft** | **Written**, unmerged. No longer needs a lawyer (§8, decision 3). Needs four things: §6e landed, Cloudflare named as a processor and Oracle as the host (added 2026-09-29), the approximate-location path tested, and a monitored contact alias |
-| Privacy policy **URL** | Open, and a **hard submission gate**. It needs somewhere public to live; GitHub Pages off this repo is free and sufficient |
+| `PrivacyInfo.xcprivacy` | **On `main`** (`ios/Sources/PrivacyInfo.xcprivacy`). Keep precise location declared as collected — §8, decision 3 |
+| Privacy policy **draft** | **On `main`**, `docs/privacy-policy.md`. No longer needs a lawyer (§8, decision 3). Of the four things it needed, two are done: §6e landed and deployed, and Cloudflare and Oracle are both named (§2.1(a)). **Still open: the approximate-location path tested (§7 item 6), and a monitored contact alias (§6).** It is also still a developer document, with file citations and a §7 addressed to a lawyer; the published page has to be a user-facing rewrite of §§0–6 |
+| Privacy policy **URL** | **Built; contact address in and Pages set to GitHub Actions (2026-09-29). Live once merged.** A **hard submission gate**. `site/privacy/index.html`, deployed by `.github/workflows/pages.yml` (uploads `site/` only — never serve Pages from `/docs`) to `https://jamesk1281.github.io/SundayDrive/privacy/`, and linked from the Sources screen (`PrivacyPolicy.url`, `AboutView.swift`). Owner steps are `privacy-policy-page-brief.md` §5; `tests/test_privacy_page.py` fails if the contact placeholder comes back |
 | **Territories: United States only** | Decided (§8, decision 3). Set at the listing. Reversible later |
 | App Store **name reservation** | Open. Do it the day membership clears and the name is chosen — §3 |
-| The four App Store Connect answers | **Written**, unmerged — `app-store-submission.md` (§2) |
+| The four App Store Connect answers | **On `main`**, `app-store-submission.md` |
 | In-app route-guidance notice | **Shipped, and on `main`** — `AboutView.swift:97-98`, asserted character-for-character in `AttributionTests.swift`. **Do not add it again** — a test asserts there is exactly one. (The audit cites `:100-102`, which is where the §2 merge moves it) |
-| EULA field in App Store Connect | Open. Paste-ready text is in `app-store-submission.md` §1, which arrives with the §2 merge |
+| EULA field in App Store Connect | Open. Paste-ready text is in `app-store-submission.md` §1 |
 | Export-compliance declaration | Open, trivial |
 | Screenshots, description, category | Open, not started |
-| `MARKETING_VERSION` off `0.1` | Open, one line |
+| `MARKETING_VERSION` off `0.1` | **Done 2026-09-29**: `"1.0"` at `ios/project.yml:74` |
 
 ---
 
@@ -538,15 +541,15 @@ serves; the exit, if it is ever outgrown, is ~€5.50/mo (§7).
 **The time is about a week of engineering**, and it is no longer gated by anyone
 else:
 
-| Item | Estimate |
-| --- | --- |
-| Merge the two finished branches (§6a) | minutes |
-| The rename (§6b), including the in-product copy pass | half a day |
-| **MapKit attribution refactor (§6c)** | **one to two days** |
-| The two roadmap defects (§6d) | about a day |
-| Coordinates to a POST body (§6e) | an hour |
-| Hosting: keep the laptop up, or migrate (§7) | an evening, or a weekend |
-| Submission artifacts, screenshots, listing (§10) | a day |
+| Item | Estimate | State, 2026-09-29 |
+| --- | --- | --- |
+| Merge the two finished branches (§6a) | minutes | **Done** |
+| The rename (§6b), including the in-product copy pass | half a day | **Done**, twice (header note) |
+| **MapKit attribution refactor (§6c)** | **one to two days** | **Not needed**: the redesign keeps the logo clear by construction |
+| The two roadmap defects (§6d) | about a day | Opening camera **done**; never-joined drive **briefed** (`never-joined-drive-brief.md`), in progress |
+| Coordinates to a POST body (§6e) | an hour | **Done and deployed** |
+| Hosting: keep the laptop up, or migrate (§7) | an evening, or a weekend | **Done**: Oracle, since 2026-09-29 |
+| Submission artifacts, screenshots, listing (§10) | a day | Open. `MARKETING_VERSION` done; the policy URL, approximate-location test and contact alias are the gates |
 
 Plus the day-one afternoon in §5, and however long Apple takes to approve
 enrolment — usually same-day.

@@ -42,7 +42,8 @@ counsel.
 >   Connect's own reference says the bundle ID *"can't be changed after you
 >   upload a build"* — the trigger is the first **build upload, including
 >   TestFlight**, not App Review. Nothing has been uploaded.
-> - **§7.5 shipped except `MARKETING_VERSION`**, which is still `"0.1"`.
+> - **§7.5 shipped.** `MARKETING_VERSION` was the one exception and went
+>   from `"0.1"` to `"1.0"` on 2026-09-29.
 >   **§7.6 shipped except the `docs/` invocations**, left as written on
 >   purpose — the `SCENIC_*` names are still read as a one-release fallback, so
 >   those commands keep working.
