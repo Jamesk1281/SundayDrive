@@ -6,7 +6,7 @@ server moved from the developer's laptop to an Oracle Cloud virtual machine
 (§2.1(a), §7 item 9); coordinates moved out of the request URL 2026-09-29
 (§2.1(a), §7 item 1).** Checkable: `git grep -l 'privacy polic'` finds no URL
 in `ios/`, and App Store Connect has never been given one. The app itself is
-`PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "0.1"`
+`PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "1.0"`
 (`ios/project.yml:66`, `:74`) — the identifier changed with the 2026-09-20
 rename and **again** with the 2026-09-21 rename to Sunday Drive
 (`docs/sunday-drive-naming.md`), and is **not** final — it locks at the
@@ -40,7 +40,8 @@ create one.
 
 **The app is not published.** At the time of writing it is a single-user
 research instrument (`docs/legal-and-ip-audit.md`; the bundle identifier is
-`app.sundaydrive` and the marketing version `0.1`). This document is
+`app.sundaydrive` and the marketing version `1.0`, raised from `0.1` on
+2026-09-29 for submission). This document is
 written as the policy it would need if it were published, which is the only way
 to find out what would have to change first.
 
