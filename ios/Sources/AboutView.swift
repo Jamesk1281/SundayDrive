@@ -243,6 +243,16 @@ struct AboutView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+                    // The wordmark, as an image and only here: this is the one
+                    // screen about who made the app, and Home deliberately has
+                    // no headline. Never set in live type (§7.5).
+                    Image("Lockup")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 168)
+                        .padding(.bottom, 16)
+                        .accessibilityLabel("Sunday Drive")
+
                     Text("The roads on this map, and the scores they are rated with, "
                          + "come from open data. These are the people who made it.")
                         .font(.system(size: 18, weight: .semibold))
