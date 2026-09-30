@@ -71,7 +71,7 @@ struct BeautyType: Identifiable {
     var hue: Color { BeautyType.hue(for: apiName) }
 
     /// Mid-chroma so six of them can sit together without any one shouting,
-    /// and lifted in dark mode so they still separate against `#121110`.
+    /// and lifted in dark mode so they still separate against dark `paper` (`#15120F`).
     ///
     /// `forest` is the old `Color.brand` — `rgb(0.22, 0.83, 0.62)` — deepened
     /// until it works as text. The green did not survive as the app's accent

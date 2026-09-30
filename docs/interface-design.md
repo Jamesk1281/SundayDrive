@@ -484,18 +484,40 @@ single word is read.
 
 |  | light | dark | used for |
 | --- | --- | --- | --- |
-| Paper | `#FBF8F3` | `#121110` | page background |
-| Card | `#FFFFFF` | `#1C1A17` | raised surfaces |
-| Hairline | `#E6DFD4` | `#2E2A25` | rules, borders |
-| Ink | `#1A1713` | `#F3EFE8` | primary text |
-| Ink-2 | `#6B6459` | `#A8A096` | secondary text |
-| Ink-3 | `#7C7568` | `#857D72` | captions, the credit line |
+| Paper | `#F8F1E4` | `#15120F` | page background |
+| Card | `#FFFCF5` | `#1F1A15` | raised surfaces |
+| Sunk | `#F2EADB` | `#241E18` | fields, tracks, the secondary button |
+| Hairline | `#E6DAC4` | `#362D25` | rules, borders |
+| Ink | `#2B211B` | `#F5ECDD` | primary text |
+| Ink-2 | `#64574A` | `#ADA08F` | secondary text |
+| Ink-3 | `#716453` | `#978A78` | captions, the credit line |
 | **Amber** line | `#E07B2E` | `#F09A4B` | the scenic route, fills |
 | **Amber** text | `#A5541A` | `#F0A462` | beauty figures, primary button |
 | **Slate** | `#5C6771` | `#9AA3AB` | the fastest route, time figures |
 | Alert | `#B3352C` | `#E5675C` | off-route, destructive, real trouble |
 
-Every text pairing above clears 4.5:1 against its background.
+Every text colour above clears 4.5:1 on paper, card *and* sunk, in both
+appearances. Sunk is the binding case (fields and secondary buttons carry text),
+and the lowest pairings are amber text on light sunk at 4.52 and ink-3 on light
+sunk at 4.81.
+
+**The surfaces are the icon's.** The app icon is a cream badge with an ink ring
+(`#F3E7CF`, `#2B211B`), and the app used to open onto a slightly cooler, greyer
+off-white and near-black beside it. Paper, card, sunk and hairline now lean
+toward the cream, ink *is* the brand ink, and the dark surfaces take a trace of
+its brown. Two limits held that move to a slight one. Light paper stops short of
+the cream itself, because at `#F3E7CF` amber text falls to 4.41:1, and the
+surfaces should move before beauty's colour does. Dark paper stays barely lifted
+off black, because §7.6's windscreen argument has not changed. Ink-3 also moved
+more than the rest: the old values were under 4.5:1 on sunk in both appearances
+(3.88 and 4.14), which the old line above did not claim to check.
+
+The logo's pine, moss and marigold are **not** interface colours. Pine is the
+green §7.4 demoted, for the same map reason, and marigold beside amber would be
+a second warm accent making *beauty* ambiguous. They appear only inside the two
+brand images: the wagon on the launch screen and the script lockup at the top
+of Sources, both drawn by `ios/scripts/generate_icon.py`. The wordmark is never
+set in live type (§7.5).
 
 ### 7.3 The six scenery hues
 
@@ -577,11 +599,13 @@ switch is for, and it is why the driving furniture is opaque rather than glass,
 why its type is Rounded and large, and why nothing on that screen is lighter than
 Medium.
 
-Light mode is fully designed, not a fallback: paper is a warm off-white, amber
+Light mode is fully designed, not a fallback: paper is a warm cream-leaning off-white, amber
 darkens to `#A5541A` for text, slate drops to `#5C6771`. Dark is not an inversion
 of it — amber *brightens* to `#F09A4B` because a dark surround makes mid-amber
 muddy, and slate lifts to `#9AA3AB`. The map follows the app rather than the
-system, so the two never disagree on one screen.
+system, so the two never disagree on one screen. The launch screen is dark paper
+with the wagon on it, so a cold launch fades into the first screen instead of
+flashing a different colour.
 
 ### 7.7 Dynamic Type and VoiceOver
 
