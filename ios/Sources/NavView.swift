@@ -146,16 +146,52 @@ struct NavView: View {
             @unknown default: break
             }
         }
-        .confirmationDialog("Switch to the fastest route?",
+        .confirmationDialog(fastestPrompt.title,
                             isPresented: $confirmingFastest,
                             titleVisibility: .visible) {
-            Button("Switch to fastest", role: .destructive) {
+            Button(fastestPrompt.confirm, role: .destructive) {
                 Task { await nav.switchToFastest(from: locationManager.location) }
             }
             Button("Keep the scenic route", role: .cancel) {}
         } message: {
-            Text("This gives up the scenic route for the rest of the drive.")
+            Text(fastestPrompt.message)
         }
+    }
+
+    // MARK: - The escape hatch
+
+    /// What the fastest-route escape says, which depends on what it will do.
+    ///
+    /// On a loop short of its far point the fastest route is the way *home*:
+    /// `switchToFastest` gives up the far point with the scenery. Offering a
+    /// "fastest route" there promised a quicker version of the same drive, and
+    /// the driver who took it was sent to the far point by fast roads. Past the
+    /// far point a loop is heading home anyway, so it keeps the ordinary words,
+    /// as does every other drive.
+    struct FastestPrompt: Equatable {
+        let title: String
+        let message: String
+        let confirm: String
+        /// The bolt button's VoiceOver label.
+        let label: String
+
+        init(loopBeforeFarPoint: Bool) {
+            if loopBeforeFarPoint {
+                title = "Head home the fastest way?"
+                message = "This ends the loop and takes the fastest route back to where you started."
+                confirm = "Head home"
+                label = "Head home the fastest way"
+            } else {
+                title = "Switch to the fastest route?"
+                message = "This gives up the scenic route for the rest of the drive."
+                confirm = "Switch to fastest"
+                label = "Switch to the fastest route"
+            }
+        }
+    }
+
+    private var fastestPrompt: FastestPrompt {
+        FastestPrompt(loopBeforeFarPoint: nav.isLoopBeforeFarPoint)
     }
 
     // MARK: - The maneuver
@@ -369,7 +405,7 @@ struct NavView: View {
                 // to. The clear spacer keeps the stats centred when it goes.
                 if !nav.followingFastest {
                     cornerButton(systemImage: "bolt.fill",
-                                 label: "Switch to the fastest route",
+                                 label: fastestPrompt.label,
                                  tint: .ink2) { confirmingFastest = true }
                 } else {
                     Color.clear.frame(width: controlSize, height: controlSize)
