@@ -225,3 +225,12 @@ enum TimeText {
         return m == 0 ? "\(h) hr" : "\(h) hr \(m)"
     }
 }
+
+enum CountText {
+    /// "1 mile", "3 miles". For the few places a count is spelled out in
+    /// full, which need the plural that the "mi" and "min" abbreviations
+    /// everywhere else do not: a short loop read "1 miles of it beautiful".
+    static func of(_ count: Int, _ unit: String) -> String {
+        "\(count) \(unit)\(count == 1 ? "" : "s")"
+    }
+}

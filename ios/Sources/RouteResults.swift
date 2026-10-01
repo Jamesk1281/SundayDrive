@@ -308,6 +308,6 @@ struct SceneryBar: View {
         // Read as one fact. Left to itself VoiceOver announces the label, then a
         // decorative bar, then the number, as three separate stops.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(display.label), \(km.wholeMilesFromKm) miles")
+        .accessibilityLabel("\(display.label), \(CountText.of(km.wholeMilesFromKm, "mile"))")
     }
 }

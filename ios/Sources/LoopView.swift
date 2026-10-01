@@ -145,7 +145,7 @@ struct LoopView: View {
                     .foregroundStyle(Color.ink2)
                     .monospacedDigit()
             }
-            Text("\(meta.beautiful_km.wholeMilesFromKm) miles of it beautiful")
+            Text("\(CountText.of(meta.beautiful_km.wholeMilesFromKm, "mile")) of it beautiful")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.amberText)
                 .padding(.top, 6)

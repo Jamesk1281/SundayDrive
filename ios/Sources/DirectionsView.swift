@@ -245,7 +245,8 @@ struct PrefDial: View {
         let c = RouteComparison(fastest: response.fastest.properties,
                                 scenic: response.scenic.properties)
         guard let miles = c.beautifulMiles else { return c.summary }
-        let cost = c.extraMinutes <= 0 ? "no extra time" : "plus \(c.extraMinutes) minutes"
-        return "\(cost), \(miles.scenic) miles of beautiful road"
+        let cost = c.extraMinutes <= 0
+            ? "no extra time" : "plus \(CountText.of(c.extraMinutes, "minute"))"
+        return "\(cost), \(CountText.of(miles.scenic, "mile")) of beautiful road"
     }
 }

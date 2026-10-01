@@ -187,6 +187,18 @@ final class GeoTests: XCTestCase {
         XCTAssertEqual(0.9.wholeMilesFromKm, 1)
     }
 
+    func test_a_count_spelled_out_agrees_with_its_number() {
+        // A short loop's card read "1 miles of it beautiful" (K-10), and the
+        // scenery rows' VoiceOver labels said "Farmland, 1 miles".
+        XCTAssertEqual(CountText.of(1, "mile"), "1 mile")
+        XCTAssertEqual(CountText.of(2, "mile"), "2 miles")
+        XCTAssertEqual(CountText.of(0, "mile"), "0 miles")
+        XCTAssertEqual(CountText.of(1, "minute"), "1 minute")
+        // Anything from about 0.8 km rounds to one whole mile (above), so
+        // the singular is reachable on any short loop.
+        XCTAssertEqual(CountText.of(0.9.wholeMilesFromKm, "mile"), "1 mile")
+    }
+
     func test_coordinates_compare_by_value() {
         XCTAssertTrue(Fixture.origin.matches(Fixture.origin))
         XCTAssertFalse(Fixture.origin.matches(Fixture.north(1)))
