@@ -52,6 +52,31 @@ struct RouteProgress {
     let travelled: Double
 }
 
+/// How much further off a segment may be than the nearest one and still be a
+/// candidate, for `progress`'s continuity rule.
+///
+/// Only a genuine tie. Two passes over one OSM way are the same coordinates,
+/// so the offsets to them agree to nanometres, and a maneuver's coordinate is
+/// rounded 3-6 cm off its vertex; a metre covers both. It is deliberately not
+/// wide enough to reach the other carriageway of a divided road. Measured on
+/// a real trace (2026-08-25, a U-turn on Southwest Cutoff), a 10 m window let
+/// a match that had run 88 m ahead on the return carriageway hold the car
+/// there, parked 1.9 m from the outbound one and 8.9 m from the return —
+/// the nearest road is the right answer there, and strict nearest finds it.
+let progressTieMeters: Double = 1
+
+/// Metres of offset that one metre along the line is worth, between the
+/// candidates `progressTieMeters` lets through.
+///
+/// Decisive between passes, which are hundreds of metres apart along the line
+/// with offsets equal to nanometres. Not decisive within one: at a bend, a fix
+/// a few metres off has a nearest point on each of two adjacent segments, 5 m
+/// apart along the line and up to a metre apart in offset, and ranking those
+/// by along-line distance alone took the one behind — measured on the
+/// 2026-08-14 evening trace, where it held the banner on "Turn left to stay on
+/// Washington Street" one fix too long and lost the Pearl Street prepare.
+let progressContinuityWeight: Double = 0.05
+
 /// Project a point onto a polyline: how far off it is, and how much line is
 /// left ahead of it.
 ///
@@ -70,9 +95,38 @@ struct RouteProgress {
 /// twenty minutes ago, and the distance remaining jumps back up. Pass a little
 /// less than the last known value so GPS jitter can nudge backwards; pass 0
 /// before the driver has joined the route, when nothing is known yet.
+///
+/// `notBefore` alone does not separate two passes that are both ahead of it,
+/// and on a road a route drives twice the two passes are the *same
+/// coordinates*: the car is equidistant from both to within floating-point
+/// noise, so "strictly nearest" picks a pass at random. Measured on the
+/// simulated loops (2026-09-30), the first fix matched the closing leg 45 km
+/// on, a maneuver at the start was placed at the end, and a car mid-loop
+/// jumped 10 km to the return pass.
+///
+/// So the nearest segment does not win outright. Every segment within
+/// `progressTieMeters` of the nearest is a candidate, and the one nearest
+/// along the line to `near` — where the driver already is — is taken, with
+/// ground behind it counting double and the offset still weighed in
+/// (`progressContinuityWeight`). That is continuity, not a tie-break:
+/// with real GPS the offsets to two identical passes still agree exactly,
+/// while which one gets "strictly nearer" is decided by float noise, and only
+/// "which one were we on" is stable from fix to fix. Anything further off
+/// than the tolerance is a different road, and the nearest road wins as it
+/// always did.
+///
+/// A gap in the fixes does not trip this up. After a tunnel the driver is
+/// legitimately kilometres on, and the road where they were is not within the
+/// tolerance of where they are now unless the route really does come back to
+/// it — so no forward ceiling is needed, and none is applied.
+///
+/// `near` defaults to `notBefore`, which is right for a caller with a floor
+/// just behind the driver; one asking the unconstrained question passes the
+/// driver's position explicitly.
 func progress(of point: CLLocationCoordinate2D,
               along line: [CLLocationCoordinate2D],
-              notBefore: Double = 0) -> RouteProgress {
+              notBefore: Double = 0,
+              near: Double? = nil) -> RouteProgress {
     guard line.count >= 2 else {
         let here = CLLocation(latitude: point.latitude, longitude: point.longitude)
         let only = line.first.map { here.distance(to: $0) } ?? .infinity
@@ -82,8 +136,11 @@ func progress(of point: CLLocationCoordinate2D,
     let metersPerDegLat = 111_320.0
     var best = Double.infinity
     var travelled = 0.0        // length of the line before the current segment
-    var bestPrefix = 0.0       // ...at the closest segment
-    var bestAlong = 0.0        // how far into the closest segment we project
+    // Per segment: how far off it the point is, and how far along the line its
+    // nearest point sits. Infinity for a segment wholly behind `notBefore`.
+    var distances = [Double](repeating: .infinity, count: line.count - 1)
+    var alongs = [Double](repeating: 0, count: line.count - 1)
+    var ends = [Double](repeating: 0.5, count: line.count - 1)    // the clamped t
 
     for i in 0 ..< line.count - 1 {
         let p = line[i], q = line[i + 1]
@@ -106,23 +163,53 @@ func progress(of point: CLLocationCoordinate2D,
 
         // Segments wholly behind us belong to an earlier pass along the same
         // road, not to where the driver is now.
-        if distance < best, travelled + length >= notBefore {
-            best = distance
-            bestPrefix = travelled
-            bestAlong = t * length
+        if travelled + length >= notBefore {
+            distances[i] = distance
+            alongs[i] = travelled + t * length
+            ends[i] = t
+            best = min(best, distance)
         }
         travelled += length
     }
 
+    // Of the segments that tie for nearest, the one nearest along the line to
+    // where the driver already is — with the offset still counted, so that
+    // within one pass the nearer of two segments a few metres apart wins.
+    // Ground behind the anchor counts double: the driver's position is a
+    // running maximum, so through a U-turn it waits at the turn while the car
+    // drives away from it, and the two legs sit exactly as far either side.
+    let limit = best + progressTieMeters
+    let anchor = near ?? notBefore
+    var chosen = -1            // the matched segment
+    var chosenCost = Double.infinity
+
+    // A segment matched at its far end is matched at the vertex the next
+    // segment starts from, and if that one is at least as near, it is the same
+    // place on the same road and not another pass. Kept as a candidate, it is
+    // the one nearer the anchor, and pins a car just past a maneuver's vertex
+    // to the vertex itself — which `firstStepAhead` reads as not yet past
+    // (measured on the 2026-08-14 traces: a fix late at four maneuvers, and
+    // two prepares lost). Likewise a near end with the previous segment
+    // strictly nearer. Equal on both sides is a car outside a corner, whose
+    // nearest point really is the vertex, so one of the two survives.
+    let last = distances.count - 1
+    for i in distances.indices where distances[i] <= limit {
+        if ends[i] == 1, i < last, distances[i + 1] <= distances[i] { continue }
+        if ends[i] == 0, i > 0, distances[i - 1] < distances[i] { continue }
+        let gap = alongs[i] >= anchor ? alongs[i] - anchor : 2 * (anchor - alongs[i])
+        let cost = distances[i] + progressContinuityWeight * gap
+        if cost < chosenCost { chosen = i; chosenCost = cost }
+    }
+
     // `notBefore` ran past the end of the line: there is nothing ahead to match
     // against, so the driver is at the end of it.
-    guard best.isFinite else {
+    guard chosen >= 0 else {
         let here = CLLocation(latitude: point.latitude, longitude: point.longitude)
         return RouteProgress(offRoute: line.last.map { here.distance(to: $0) } ?? .infinity,
                              remaining: 0, travelled: travelled)
     }
-    let along = bestPrefix + bestAlong
-    return RouteProgress(offRoute: best,
+    let along = alongs[chosen]
+    return RouteProgress(offRoute: distances[chosen],
                          remaining: max(0, travelled - along),
                          travelled: along)
 }

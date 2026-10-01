@@ -892,10 +892,13 @@ final class NavigationModel {
 
         // Match forwards from where the driver already is, with a little slack
         // for GPS jitter — see `progress`. Before they have joined the route
-        // nothing is known, so the whole line is fair game.
+        // nothing is known, so the whole line is fair game. Among passes that
+        // tie, nearest to `travelled` and not to the floor: just past a U-turn
+        // the floor still reaches back onto the outbound leg.
         let floor = hasJoinedRoute ? max(0, travelled - Self.backtrackToleranceMeters) : 0
         let here = reseatIfPinned(progress(of: location.coordinate,
-                                           along: coordinates, notBefore: floor),
+                                           along: coordinates, notBefore: floor,
+                                           near: hasJoinedRoute ? travelled : 0),
                                   at: location)
         lastProgress = here
 
@@ -1063,9 +1066,13 @@ final class NavigationModel {
     /// This cannot skip the driver forwards. Any match later than the floor is
     /// available to the constrained search too, so the two can only differ by
     /// the free one being *earlier*: the worst it can do is admit the driver is
-    /// further back than the floor believed. `currentStep` is re-derived from
-    /// zero because an index read off the wrong pass is wrong too, and
-    /// `advanceSteps` walks it back up on this same fix.
+    /// further back than the floor believed. That survives `progress` choosing
+    /// among ties: a later pass the free search took would be within
+    /// `joinConfirmMeters`, so the constrained one would have come back within
+    /// that plus `progressTieMeters` — under `offRouteMeters`, and this would
+    /// not be running. `currentStep` is re-derived from zero because an index
+    /// read off the wrong pass is wrong too, and `advanceSteps` walks it back
+    /// up on this same fix.
     ///
     /// Deliberately not run while `awaitingJoin`: a freshly adopted route has
     /// `travelled` at 0 and so no floor to be pinned by, and the gap between
@@ -1075,7 +1082,10 @@ final class NavigationModel {
                                 at location: CLLocation) -> RouteProgress {
         guard hasJoinedRoute, !awaitingJoin,
               here.offRoute > Self.offRouteMeters else { return here }
-        let free = progress(of: location.coordinate, along: coordinates, notBefore: 0)
+        // Unconstrained in what it may reach, but still nearest to the driver
+        // among passes that tie: the earliest pass is kilometres back on a loop.
+        let free = progress(of: location.coordinate, along: coordinates,
+                            notBefore: 0, near: travelled)
         guard free.offRoute <= Self.joinConfirmMeters,
               travelled - free.travelled <= Self.reseatWindowMeters else { return here }
         travelled = free.travelled

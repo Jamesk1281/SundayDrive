@@ -1,7 +1,8 @@
 # Brief: loops match the wrong pass of a road they drive twice
 
-**Status: diagnosed, not fixed (2026-09-30).** No product code has been
-touched. The defects were found by the overnight simulated drives: Findings 1,
+**Status: fixed (2026-10-01), on `claude/loop-matching-fix`, not merged.**
+See "What was fixed" at the end. The brief below is as written on 2026-09-30,
+when no product code had been touched. The defects were found by the overnight simulated drives: Findings 1,
 2 and 2b in `docs/overnight-e2e-drives-brief.md`. Each is pinned by a strict
 `XCTExpectFailure` in `ios/Tests/SimulatedDriveRegressionTests.swift`. The
 harness, the regression tests and this brief all live on
@@ -178,3 +179,135 @@ The failure modes are the worst ones on offer:
    legitimate jump without breaking (3), stop. Write up the trade-off with the
    numbers, and leave the decision to the owner, rather than shipping a
    compromise silently.
+
+## What was fixed (2026-10-01)
+
+### The change
+
+All in `progress` (`ios/Sources/Geo.swift`), plus a `near:` anchor at two
+call sites in `NavigationModel.swift`. There is no ceiling, no loop special
+case, and nothing copied from the harness.
+
+1. **Ties are decided by continuity.** Every segment within
+   `progressTieMeters` (**1 m**) of the nearest is a candidate. The one with
+   the lowest `offset + 0.05 × along-line gap to near` wins, and ground behind
+   the anchor counts double.
+   - `update` passes `near: travelled`. Passing the floor instead does not
+     work: just past a U-turn, the floor still reaches the outbound leg.
+   - `reseatIfPinned` passes `near: travelled` with `notBefore: 0`.
+   - `remainingAtEachStep` and the far-point placements (`init`, `adopt`) keep
+     the default, `near = notBefore`.
+2. **A segment matched at its clamped end is dropped when its neighbour is at
+   least as near.** That end is the same vertex, on the same pass.
+3. **`reseatIfPinned`'s "never forwards" guarantee still holds.** The tie
+   window (1 m) is under `offRouteMeters − joinConfirmMeters`. The doc comment
+   says why.
+
+### Why these numbers: four wrong turns, each measured
+
+| attempt | what broke | where |
+|---|---|---|
+| tie 10 m, nearest along the line | U-turn legs are adjacent segments over the same ground; one was dropped by float noise | `loop-017` turnaround |
+| + forward bias | a 10 m window admits other vertices of the *same* road through a tight corner, 7.8 m off | `loop-001`, Pleasant St |
+| + offset weight | a match that had run 88 m ahead on the return carriageway held a car parked 1.9 m from the outbound one (8.9 m from the return) | real trace `08-25-202122`, Southwest Cutoff |
+| tie 1 m, pure gap | (a) a fix 0.3 m past a maneuver's vertex tied with the previous segment's end; (b) at a bend, two adjacent interior minima 0.999 m apart | real traces `08-14-155019`, `08-14-192546` |
+
+The lesson: the tie has to be a *genuine* tie. Identical passes agree to
+nanometres. Anything wider than about a metre is a different road, and
+strict-nearest was right about it. **No escape hatch was needed.** One setting
+passes every check below, and nothing was traded off.
+
+### Loops (20 loops, perfect GPS)
+
+| | before | after |
+|---|---|---|
+| loopPerfect: loops rerouted | 11 | **0** |
+| loopPerfect: ended before 95% driven | 13 (3 in the driveway) | **0** |
+| loopPerfect: banner behind (fixes / loops) | 12,977 / 11 | **4 / 4** |
+| loopPerfect: banner skipped | 170 | **0** |
+| loopPerfect: clean on all three counts | 2 | **16** |
+| loopLate: ended before 95% | 12 | **0** |
+| loopLate: behind / skipped | 10,336 / 170 | 13 / 0 |
+| loopEarly: ended before 95% | 17 | 5 |
+| loopEarly: behind / skipped / same-road adoptions | 5,674 / 806 / 11 | 53 / 0 / 0 |
+
+The loopLate and loopEarly drives reroute once each by design (a missed turn).
+
+**The four remaining loopPerfect exceptions** are `loop-007`, `014`, `016`
+and `017`. Each is a single fix, 3–4 m past the apex of a mid-loop "Make a
+U-turn to stay on …". At the apex the two legs are the same point, so position
+alone cannot say whether the car is 3.5 m before the turn or 3.5 m after it.
+The next fix resolves it. Heading (the fix's `course` against the leg's
+bearing) would separate the two legs. That is not built, and it would be a
+second signal in `progress`.
+
+**`loop-011`'s single "remaining rose 11 m"** comes from the pre-join quote
+(`km × 1000`, rounded to 0.1 km) giving way to the line's true length. It is
+not matching.
+
+**loopEarly's five short drives:**
+
+- **New finding, pre-existing: `002` (52%), `010` (72%), `014` (47%).** These
+  are identical, or nearly, on the base build: 25.3 and 13.8 km both times.
+  - Mechanism, traced on `014`: the via-far-point replacement is adopted
+    while the car is off it (`awaitingJoin`). The new line passes beside the
+    car again 18.9 km on, at about 0 m off, against about 50 m to the line's
+    start. So the first fix matches there.
+  - That is *not* a tie: the far pass really is nearer. `travelled` jumps,
+    `passedTurnaround` latches, and the next reroute goes home.
+  - Suggested fix, not attempted: don't advance `travelled` or
+    `trackTurnaround` from a match taken while `awaitingJoin` and off the
+    line.
+- **`018` (94%) and `019` (89%)** reroute once, via the far point. Presumably
+  the replacement is shorter than the rest of the loop. Not checked.
+
+### Point-to-point (582 drives each; overnight table → now)
+
+| persona | arrivals | reroutes | banner behind (drives) | skipped | missing prompts | hard-fail drives |
+|---|---|---|---|---|---|---|
+| perfect | 582 → 582 | 0 → 0 | 26 (4) → **3 (3)** | 23 → **0** | 3 → 0 | 43 → 37 |
+| dropout | 582 → 582 | 0 → 0 | 19 (3) → **3 (3)** | 23 → **0** | 3 → 0 | 10 → 3 |
+| stopAndGo | 582 → 582 | 0 → 0 | 99 (4) → 3 (3) | 729 → 332 | 4 → 0 | 31 → 18 |
+| earlyStop | 582 → 582 | 0 → 0 | 26 (4) → 3 (3) | 23 → 0 | 3 → 0 | 11 → 5 |
+| noisy | 582 → 582 | 0.001 → 0.001/km | 99 (11) → 86 (8) | 365 → 324 | 34 → 27 | 33 → 28 |
+| missedTurn | 543 → 543 | 0.023 → 0.023/km | 1104 (169) → 1078 (171) | 282 → 230 | 49 → 44 | 213 → 208 |
+
+- **Dropout**, the persona trap 2 was about, is the cleanest. A gap in the
+  fixes does not bring an old pass within 1 m of where the car is now, so no
+  ceiling is needed, and `lastFixAt`/`Date()` was left alone.
+- **The three behind events** in each persona are the same U-turn-apex fix as
+  on the loops: `urban-011@1.0`, `coastal-002@0.5`, `parking-014@0.0`.
+- **perfect's remaining hard fails** are 32 × "arrived on step N of N"
+  (Finding 9) and two 1 m rises at the start.
+- **stopAndGo's remaining 332 skips** are sharp corners where the persona
+  dwells 4–8 m before the vertex.
+- **earlyStop's "3 never arrived while parked"** is `urban-009` at every pref.
+  It is identical on the base build.
+
+### Finding 4, as a side effect
+
+- `test_F4` (`coastal-002@0.5`) went red as an unexpected pass, so it is now
+  a plain assertion.
+- Mid-route U-turn and interchange skips are gone on perfect and dropout
+  (23 → 0), including `urban-011`, `suburban-023`, `coastal-002` and
+  `suburban-013@0.0`.
+- What is left of Finding 4 is the one-fix apex lag above, and stopAndGo's
+  corner dwell.
+
+### Tests
+
+- **Regression class:** F1, F2, F2b and F4 are now plain assertions and pass.
+  F3, F5 and F6 are unchanged and still expected failures.
+- **Default suite, no server:** 300 run / 267 passed / 33 skipped / 0 failed.
+  - The base build on this branch is 291 / 258 / 33; the brief's 290/32 was
+    one off.
+  - The difference is exactly the 9 new `GeoTests`: identical passes, the
+    start of a closed line, U-turn legs, the 1 m tie, the other carriageway,
+    a long jump, the segment behind, just past a vertex, and outside a corner.
+- **With the server:** LiveDriveTests 7/7; SimulatedDriveRegressionTests 7/7.
+- **Real-trace replay:** every one of the 12 traces in the main checkout's
+  `traces/` is identical to the base build on arrival, fixes fed, replies,
+  same-line replies, every utterance, and describable fixes.
+  - Measured with a scratch per-trace dump, not committed. Two intermediate
+    versions of this fix failed that check, which is how attempts 3 and 4 in
+    the table were found.
