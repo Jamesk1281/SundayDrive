@@ -26,6 +26,13 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         # Shown when navigation asks for location to follow the route.
         NSLocationWhenInUseUsageDescription: "Your location is used to follow the route, turn by turn, while you drive."
+        # Shown when Precise Location is off and a drive asks for it anyway
+        # (`LocationManager.precisePurposeKey`). The key has to match exactly: a
+        # purpose CoreLocation cannot find here shows no prompt and says nothing.
+        # Here and not in Generated/Info.plist, which `xcodegen generate`
+        # overwrites.
+        NSLocationTemporaryUsageDescriptionDictionary:
+          Navigation: "Turn-by-turn guidance needs your precise location to follow the route."
         # Keep receiving location while backgrounded. With when-in-use
         # authorization this is allowed for navigation as long as the blue
         # status bar indicator is showing, which LocationManager opts into.

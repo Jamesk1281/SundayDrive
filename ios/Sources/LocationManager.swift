@@ -35,8 +35,44 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     /// Current permission state, so the UI can prompt or explain if denied.
     var authorization: CLAuthorizationStatus
 
+    /// Whether that permission includes Precise Location.
+    ///
+    /// iOS lets someone allow location with Precise switched off, and then
+    /// hands out fixes "on the order of about 5km" (`CLLocationManager.h`) —
+    /// every one of which `isUsable` rejects. So nothing reached the drive at
+    /// all. Reproduced in the simulator, the banner said "50 ft away · Head to
+    /// the start of your route" for as long as the car kept moving. Published
+    /// so the banner can say what is actually wrong.
+    private(set) var accuracyAuthorization: CLAccuracyAuthorization
+
+    /// Location allowed, Precise Location off: the one grant this app can be
+    /// given and still not navigate on.
+    ///
+    /// Read together with the status, as the header says accuracy should be:
+    /// before anyone has answered the permission prompt, it means nothing.
+    var isPreciseLocationOff: Bool {
+        Self.isPreciseLocationOff(authorization, accuracyAuthorization)
+    }
+
+    private static func isPreciseLocationOff(_ status: CLAuthorizationStatus,
+                                             _ accuracy: CLAccuracyAuthorization) -> Bool {
+        (status == .authorizedWhenInUse || status == .authorizedAlways)
+            && accuracy == .reducedAccuracy
+    }
+
+    /// The entry in `NSLocationTemporaryUsageDescriptionDictionary`
+    /// (`ios/project.yml`) that the precise-location prompt shows. A key that
+    /// is not in that dictionary fails silently: CoreLocation shows nothing.
+    static let precisePurposeKey = "Navigation"
+
     /// Worst horizontal accuracy we'll act on, in meters. Roughly "we know which
     /// road you're on"; a good GPS fix in the open is 5–10 m.
+    ///
+    /// Not to be loosened to let approximate location in. A fix kilometres
+    /// wide sits far past `NavigationModel.offRouteCertainMeters` and would
+    /// read as off route, and reroute, on every update — the storms this gate
+    /// ended. With Precise Location off the answer is to ask for it, or say
+    /// so (`isPreciseLocationOff`), never to accept the coarse fix.
     private static let usableAccuracy: Double = 65
     /// Oldest fix we'll act on. Only ever excludes the cached fix delivered at
     /// startup — during a drive, fixes arrive sub-second fresh.
@@ -99,6 +135,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     override init() {
         authorization = manager.authorizationStatus
+        accuracyAuthorization = manager.accuracyAuthorization
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
@@ -143,6 +180,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     func start() {
         navigating = true
         manager.requestWhenInUseAuthorization()
+        // Precise Location off: ask for it for this drive, rather than drive on
+        // fixes `isUsable` will reject. Not waited for — fixes start flowing
+        // once it is allowed, and the banner says so if it is not. One answer
+        // covers the drive: iOS keeps a temporary grant for as long as the
+        // background location indicator below is showing.
+        if Self.isPreciseLocationOff(manager.authorizationStatus, manager.accuracyAuthorization) {
+            manager.requestTemporaryFullAccuracyAuthorization(withPurposeKey: Self.precisePurposeKey)
+        }
         // Only if this build actually declares the capability — see
         // `backgroundLocationDeclared`. Setting it without the entry raises an
         // Objective-C exception that no Swift `catch` can reach.
@@ -183,6 +228,16 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         guard manager.authorizationStatus == .authorizedWhenInUse
                 || manager.authorizationStatus == .authorizedAlways else { return nil }
 
+        // Precise Location off, and the timeout below would answer with the
+        // best coarse fix it saw: a loop planned from kilometres away. Ask
+        // first and wait for the answer, so the timeout cannot run out under
+        // the prompt — the same reason `requestAuthorization` waits. Declined,
+        // it still answers with that coarse fix; whether planning should
+        // refuse it instead has not been decided.
+        if Self.isPreciseLocationOff(manager.authorizationStatus, manager.accuracyAuthorization) {
+            await preciseLocationDecision()
+        }
+
         // A fix we already have in hand, if it's still good, saves the wait.
         if let known = location, Self.isUsable(known) { return known }
 
@@ -210,6 +265,20 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             }
         }
         return fix
+    }
+
+    /// Ask for Precise Location and wait for the answer.
+    ///
+    /// The completion form inside a continuation rather than the imported
+    /// `async` one, so the request is made here on the main actor, like every
+    /// other call on `manager`. CoreLocation always calls it once: with an error
+    /// when it declines to show the prompt, otherwise after the answer.
+    @MainActor
+    private func preciseLocationDecision() async {
+        await withCheckedContinuation { (answered: CheckedContinuation<Void, Never>) in
+            manager.requestTemporaryFullAccuracyAuthorization(
+                withPurposeKey: Self.precisePurposeKey) { _ in answered.resume() }
+        }
     }
 
     /// Ask for permission and wait for the user to answer the system prompt.
@@ -293,7 +362,21 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         // Same isolation as `didUpdateLocations` above, and for the same reason:
         // CoreLocation calls its delegate on the run loop the manager was
         // created on, which for this app is main.
-        MainActor.assumeIsolated { authorizationResolved(manager.authorizationStatus) }
+        //
+        // Accuracy first, so whoever `authorizationResolved` wakes reads the
+        // grant whole. This callback fires on a change to either.
+        MainActor.assumeIsolated {
+            accuracyResolved(manager.accuracyAuthorization)
+            authorizationResolved(manager.authorizationStatus)
+        }
+    }
+
+    /// Publish whether Precise Location is on. Separate from the delegate
+    /// callback for the reason `authorizationResolved` is: a test can neither
+    /// set nor predict the simulator's real grant.
+    @MainActor
+    func accuracyResolved(_ accuracy: CLAccuracyAuthorization) {
+        accuracyAuthorization = accuracy
     }
 
     /// The prompt has an answer: publish it and release everyone waiting.

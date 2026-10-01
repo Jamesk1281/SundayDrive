@@ -203,30 +203,9 @@ struct NavView: View {
     @ViewBuilder private var banner: some View {
         if isLive {
             HStack(spacing: 13) {
-                Group {
-                    if locationManager.authorization == .denied
-                        || locationManager.authorization == .restricted {
-                        // Without location we can't follow the drive at all — say
-                        // so instead of sitting silently on the first instruction.
-                        bannerBody(symbol: "location.slash", tint: .alert,
-                                   over: "Location is off",
-                                   main: "Allow it in Settings to navigate")
-                    } else if nav.isRerouting {
-                        bannerBody(symbol: "arrow.triangle.2.circlepath", tint: .alert,
-                                   over: "Off route", main: "Finding a way back…")
-                    } else if !nav.hasJoinedRoute {
-                        // The trip was planned from somewhere the driver isn't
-                        // yet. Say so plainly rather than reading out a first
-                        // instruction that belongs to a road miles away.
-                        bannerBody(symbol: "location.north.fill", tint: .amber,
-                                   over: "\(distanceText(nav.distanceToRouteStart)) away",
-                                   main: "Head to the start of your route")
-                    } else {
-                        bannerBody(symbol: nav.currentSymbol, tint: .amber,
-                                   over: distanceText(nav.distanceToNext),
-                                   main: nav.currentInstruction)
-                    }
-                }
+                let text = Self.bannerText(nav: nav, location: locationManager)
+                bannerBody(symbol: text.symbol, tint: text.alert ? .alert : .amber,
+                           over: text.over, main: text.main)
                 muteButton
             }
             .padding(.horizontal, 15)
@@ -235,6 +214,65 @@ struct NavView: View {
             .shadow(color: .black.opacity(0.22), radius: 12, y: 4)
             .padding(.horizontal, 14)
         }
+    }
+
+    /// What the banner says, apart from how it is drawn.
+    ///
+    /// A value rather than branches inside `banner`, so the choice can be
+    /// tested, and the case most in need of a test is the one no screenshot of
+    /// a working drive shows: no position at all. The banner used to read
+    /// "50 ft away" with nothing behind it, because `distanceToRouteStart`
+    /// starts at 0 and `distanceText` never prints less than 50 ft.
+    struct BannerText: Equatable {
+        let symbol: String
+        /// Red rather than amber: something is keeping the drive from being
+        /// followed.
+        let alert: Bool
+        let over: String
+        let main: String
+    }
+
+    static func bannerText(nav: NavigationModel, location: LocationManager) -> BannerText {
+        if location.authorization == .denied || location.authorization == .restricted {
+            // Without location we can't follow the drive at all — say so
+            // instead of sitting silently on the first instruction.
+            return BannerText(symbol: "location.slash", alert: true,
+                              over: "Location is off",
+                              main: "Allow it in Settings to navigate")
+        }
+        if location.isPreciseLocationOff {
+            // The same dead end, one switch further in: every approximate fix
+            // is kilometres wide and rejected, so nothing below would ever
+            // move. `LocationManager` asks for precise location when a drive
+            // starts with it off, and this is what stays if the answer is no.
+            // Words only — a driving banner is no place for a tap target.
+            return BannerText(symbol: "location.slash", alert: true,
+                              over: "Precise Location is off",
+                              main: "Turn it on in Settings to navigate")
+        }
+        if nav.isRerouting {
+            return BannerText(symbol: "arrow.triangle.2.circlepath", alert: true,
+                              over: "Off route", main: "Finding a way back…")
+        }
+        // No accepted fix, no position, so no distance to give. Asked of
+        // `lastFixAt` rather than of the distance, because a driver who really
+        // is at the start of the route reads close to 0 as well.
+        let located = nav.lastFixAt != nil
+        if !nav.hasJoinedRoute {
+            // The trip was planned from somewhere the driver isn't yet. Say so
+            // plainly rather than reading out a first instruction that belongs
+            // to a road miles away.
+            return BannerText(symbol: "location.north.fill", alert: false,
+                              over: located ? "\(distanceText(nav.distanceToRouteStart)) away"
+                                            : "Waiting for GPS",
+                              main: "Head to the start of your route")
+        }
+        // Joined with no fix is rare but real: a reroute counts the driver as
+        // joined, and "fastest" reroutes from the location manager's last fix,
+        // which can be the planning screen's.
+        return BannerText(symbol: nav.currentSymbol, alert: false,
+                          over: located ? distanceText(nav.distanceToNext) : "Waiting for GPS",
+                          main: nav.currentInstruction)
     }
 
     private func bannerBody(symbol: String, tint: Color, over: String, main: String) -> some View {
@@ -475,7 +513,7 @@ struct NavView: View {
                 }
             }
             .animation(.snappy, value: nav.marksRecorded)
-            Text("\(timeText(nav.remainingMinutes)) · \(milesText(nav.remainingMeters))")
+            Text("\(timeText(nav.remainingMinutes)) · \(Self.milesText(nav.remainingMeters))")
                 .font(.system(size: 12.5))
                 .foregroundStyle(Color.ink2)
                 .monospacedDigit()
@@ -483,7 +521,7 @@ struct NavView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "Arriving at \(nav.eta.formatted(date: .omitted, time: .shortened)), "
-            + "\(timeText(nav.remainingMinutes)) and \(milesText(nav.remainingMeters)) to go. "
+            + "\(timeText(nav.remainingMinutes)) and \(Self.milesText(nav.remainingMeters)) to go. "
             + (nav.recordingProblem ?? "Recording this drive.")
             + (nav.marksRecorded > 0 ? " \(nav.marksRecorded) scenery marks logged." : "")
         )
@@ -545,7 +583,7 @@ struct NavView: View {
     // MARK: - Units
 
     /// Distance in friendly US units: feet (rounded to 50) up close, miles after.
-    private func distanceText(_ meters: Double) -> String {
+    private static func distanceText(_ meters: Double) -> String {
         let feet = meters * 3.28084
         if feet < 1000 {
             return "\(max(50, Int((feet / 50).rounded()) * 50)) ft"
@@ -554,7 +592,7 @@ struct NavView: View {
     }
 
     /// "0.4 mi" up close, "23 mi" once the decimal stops meaning anything.
-    private func milesText(_ meters: Double) -> String {
+    private static func milesText(_ meters: Double) -> String {
         let miles = meters / 1609.34
         return miles < 10 ? String(format: "%.1f mi", miles) : "\(Int(miles.rounded())) mi"
     }
