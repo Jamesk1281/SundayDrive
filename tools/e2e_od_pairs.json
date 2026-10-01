@@ -1,0 +1,3531 @@
+{
+ "seed": 20260930,
+ "generator": "tools/e2e_od_pairs.py",
+ "prefs": [
+  0.0,
+  0.5,
+  1.0
+ ],
+ "pairs": [
+  {
+   "id": "urban-001",
+   "category": "urban",
+   "state": "VT",
+   "origin": [
+    44.464296,
+    -73.176273
+   ],
+   "note": "within Burlington",
+   "expect": "route",
+   "destination": [
+    44.49104,
+    -73.186106
+   ],
+   "crow_km": 3.1
+  },
+  {
+   "id": "urban-002",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.792043,
+    -72.668711
+   ],
+   "note": "within Hartford",
+   "expect": "route",
+   "destination": [
+    41.740656,
+    -72.633702
+   ],
+   "crow_km": 6.4
+  },
+  {
+   "id": "urban-003",
+   "category": "urban",
+   "state": "ME",
+   "origin": [
+    44.801626,
+    -68.771329
+   ],
+   "note": "within Bangor",
+   "expect": "route",
+   "destination": [
+    44.826182,
+    -68.693367
+   ],
+   "crow_km": 6.7
+  },
+  {
+   "id": "urban-004",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.243604,
+    -71.81678
+   ],
+   "note": "within Worcester",
+   "expect": "route",
+   "destination": [
+    42.268704,
+    -71.835072
+   ],
+   "crow_km": 3.2
+  },
+  {
+   "id": "urban-005",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.297875,
+    -72.887323
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.297597,
+    -72.960103
+   ],
+   "crow_km": 6.1
+  },
+  {
+   "id": "urban-006",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    43.207178,
+    -71.537476
+   ],
+   "note": "within Concord",
+   "expect": "route",
+   "destination": [
+    43.266746,
+    -71.582851
+   ],
+   "crow_km": 7.6
+  },
+  {
+   "id": "urban-007",
+   "category": "urban",
+   "state": "ME",
+   "origin": [
+    43.657361,
+    -70.258662
+   ],
+   "note": "within Portland",
+   "expect": "route",
+   "destination": [
+    43.684249,
+    -70.195881
+   ],
+   "crow_km": 5.9
+  },
+  {
+   "id": "urban-008",
+   "category": "urban",
+   "state": "ME",
+   "origin": [
+    44.096587,
+    -70.22507
+   ],
+   "note": "within Lewiston",
+   "expect": "route",
+   "destination": [
+    44.086105,
+    -70.32074
+   ],
+   "crow_km": 7.7
+  },
+  {
+   "id": "urban-009",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    42.768977,
+    -71.506734
+   ],
+   "note": "within Nashua",
+   "expect": "route",
+   "destination": [
+    42.804809,
+    -71.555069
+   ],
+   "crow_km": 5.6
+  },
+  {
+   "id": "urban-010",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    42.765625,
+    -71.467703
+   ],
+   "note": "within Nashua",
+   "expect": "route",
+   "destination": [
+    42.768977,
+    -71.506734
+   ],
+   "crow_km": 3.2
+  },
+  {
+   "id": "urban-011",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.364365,
+    -71.053953
+   ],
+   "note": "within Boston",
+   "expect": "route",
+   "destination": [
+    42.377875,
+    -70.973105
+   ],
+   "crow_km": 6.8
+  },
+  {
+   "id": "urban-012",
+   "category": "urban",
+   "state": "VT",
+   "origin": [
+    44.49104,
+    -73.186106
+   ],
+   "note": "within Burlington",
+   "expect": "route",
+   "destination": [
+    44.55477,
+    -73.190963
+   ],
+   "crow_km": 7.1
+  },
+  {
+   "id": "urban-013",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.627869,
+    -71.303671
+   ],
+   "note": "within Lowell",
+   "expect": "route",
+   "destination": [
+    42.581482,
+    -71.237002
+   ],
+   "crow_km": 7.5
+  },
+  {
+   "id": "urban-014",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.308707,
+    -72.909967
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.334264,
+    -72.970937
+   ],
+   "crow_km": 5.8
+  },
+  {
+   "id": "urban-015",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    43.237054,
+    -71.535673
+   ],
+   "note": "within Concord",
+   "expect": "route",
+   "destination": [
+    43.266746,
+    -71.582851
+   ],
+   "crow_km": 5.0
+  },
+  {
+   "id": "urban-016",
+   "category": "urban",
+   "state": "RI",
+   "origin": [
+    41.700379,
+    -71.45978
+   ],
+   "note": "within Warwick",
+   "expect": "route",
+   "destination": [
+    41.70613,
+    -71.522145
+   ],
+   "crow_km": 5.2
+  },
+  {
+   "id": "urban-017",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.265371,
+    -71.849517
+   ],
+   "note": "within Worcester",
+   "expect": "route",
+   "destination": [
+    42.252783,
+    -71.770671
+   ],
+   "crow_km": 6.6
+  },
+  {
+   "id": "urban-018",
+   "category": "urban",
+   "state": "ME",
+   "origin": [
+    44.096587,
+    -70.22507
+   ],
+   "note": "within Lewiston",
+   "expect": "route",
+   "destination": [
+    44.086105,
+    -70.32074
+   ],
+   "crow_km": 7.7
+  },
+  {
+   "id": "urban-019",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.364365,
+    -71.053953
+   ],
+   "note": "within Boston",
+   "expect": "route",
+   "destination": [
+    42.42717,
+    -71.066673
+   ],
+   "crow_km": 7.1
+  },
+  {
+   "id": "urban-020",
+   "category": "urban",
+   "state": "RI",
+   "origin": [
+    42.002876,
+    -71.514784
+   ],
+   "note": "within Woonsocket",
+   "expect": "route",
+   "destination": [
+    42.020931,
+    -71.499506
+   ],
+   "crow_km": 2.4
+  },
+  {
+   "id": "urban-021",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.308707,
+    -72.909967
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.274819,
+    -72.89649
+   ],
+   "crow_km": 3.9
+  },
+  {
+   "id": "urban-022",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.105237,
+    -72.621371
+   ],
+   "note": "within Springfield",
+   "expect": "route",
+   "destination": [
+    42.15426,
+    -72.606478
+   ],
+   "crow_km": 5.6
+  },
+  {
+   "id": "urban-023",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.297875,
+    -72.887323
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.243986,
+    -72.89399
+   ],
+   "crow_km": 6.0
+  },
+  {
+   "id": "urban-024",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.308707,
+    -72.909967
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.252122,
+    -72.875943
+   ],
+   "crow_km": 6.9
+  },
+  {
+   "id": "urban-025",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.273982,
+    -71.817572
+   ],
+   "note": "within Worcester",
+   "expect": "route",
+   "destination": [
+    42.275093,
+    -71.741181
+   ],
+   "crow_km": 6.3
+  },
+  {
+   "id": "urban-026",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.326667,
+    -72.933245
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.308214,
+    -72.925052
+   ],
+   "crow_km": 2.2
+  },
+  {
+   "id": "urban-027",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.231779,
+    -71.796716
+   ],
+   "note": "within Worcester",
+   "expect": "route",
+   "destination": [
+    42.258426,
+    -71.848128
+   ],
+   "crow_km": 5.2
+  },
+  {
+   "id": "urban-028",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.297875,
+    -72.887323
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.258079,
+    -72.891395
+   ],
+   "crow_km": 4.4
+  },
+  {
+   "id": "urban-029",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.269034,
+    -71.781481
+   ],
+   "note": "within Worcester",
+   "expect": "route",
+   "destination": [
+    42.231779,
+    -71.796716
+   ],
+   "crow_km": 4.3
+  },
+  {
+   "id": "urban-030",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.101876,
+    -72.588673
+   ],
+   "note": "within Springfield",
+   "expect": "route",
+   "destination": [
+    42.151483,
+    -72.532865
+   ],
+   "crow_km": 7.2
+  },
+  {
+   "id": "urban-031",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.358834,
+    -71.05783
+   ],
+   "note": "within Boston",
+   "expect": "route",
+   "destination": [
+    42.377875,
+    -70.973105
+   ],
+   "crow_km": 7.3
+  },
+  {
+   "id": "urban-032",
+   "category": "urban",
+   "state": "ME",
+   "origin": [
+    44.796795,
+    -68.762157
+   ],
+   "note": "within Bangor",
+   "expect": "route",
+   "destination": [
+    44.826182,
+    -68.693367
+   ],
+   "crow_km": 6.3
+  },
+  {
+   "id": "urban-033",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    42.757311,
+    -71.508122
+   ],
+   "note": "within Nashua",
+   "expect": "route",
+   "destination": [
+    42.765578,
+    -71.439342
+   ],
+   "crow_km": 5.7
+  },
+  {
+   "id": "urban-034",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    43.207178,
+    -71.537476
+   ],
+   "note": "within Concord",
+   "expect": "route",
+   "destination": [
+    43.237054,
+    -71.535673
+   ],
+   "crow_km": 3.3
+  },
+  {
+   "id": "urban-035",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.394817,
+    -73.454011
+   ],
+   "note": "within Danbury",
+   "expect": "route",
+   "destination": [
+    41.432501,
+    -73.473356
+   ],
+   "crow_km": 4.5
+  },
+  {
+   "id": "urban-036",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    42.99564,
+    -71.454789
+   ],
+   "note": "within Manchester",
+   "expect": "route",
+   "destination": [
+    43.003741,
+    -71.392566
+   ],
+   "crow_km": 5.1
+  },
+  {
+   "id": "urban-037",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.380635,
+    -71.039143
+   ],
+   "note": "within Boston",
+   "expect": "route",
+   "destination": [
+    42.432041,
+    -71.086163
+   ],
+   "crow_km": 6.9
+  },
+  {
+   "id": "urban-038",
+   "category": "urban",
+   "state": "CT",
+   "origin": [
+    41.283153,
+    -72.928436
+   ],
+   "note": "within New Haven",
+   "expect": "route",
+   "destination": [
+    41.297597,
+    -72.960103
+   ],
+   "crow_km": 3.1
+  },
+  {
+   "id": "urban-039",
+   "category": "urban",
+   "state": "NH",
+   "origin": [
+    42.99564,
+    -71.454789
+   ],
+   "note": "within Manchester",
+   "expect": "route",
+   "destination": [
+    42.946474,
+    -71.515901
+   ],
+   "crow_km": 7.4
+  },
+  {
+   "id": "urban-040",
+   "category": "urban",
+   "state": "MA",
+   "origin": [
+    42.619536,
+    -71.287004
+   ],
+   "note": "within Lowell",
+   "expect": "route",
+   "destination": [
+    42.610648,
+    -71.234225
+   ],
+   "crow_km": 4.4
+  },
+  {
+   "id": "suburban-001",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.210265,
+    -69.065552
+   ],
+   "note": "out of Camden",
+   "expect": "route",
+   "destination": [
+    44.44313,
+    -69.149206
+   ],
+   "crow_km": 26.7
+  },
+  {
+   "id": "suburban-002",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.796795,
+    -68.762157
+   ],
+   "note": "out of Bangor",
+   "expect": "route",
+   "destination": [
+    44.810091,
+    -68.911539
+   ],
+   "crow_km": 11.9
+  },
+  {
+   "id": "suburban-003",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    43.207178,
+    -71.537476
+   ],
+   "note": "out of Concord",
+   "expect": "route",
+   "destination": [
+    42.976269,
+    -71.692874
+   ],
+   "crow_km": 28.6
+  },
+  {
+   "id": "suburban-004",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    44.46966,
+    -71.18107
+   ],
+   "note": "out of Berlin",
+   "expect": "route",
+   "destination": [
+    44.69428,
+    -71.011264
+   ],
+   "crow_km": 28.4
+  },
+  {
+   "id": "suburban-005",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    43.840744,
+    -69.655988
+   ],
+   "note": "out of Boothbay Harbor",
+   "expect": "route",
+   "destination": [
+    43.763185,
+    -69.320508
+   ],
+   "crow_km": 28.3
+  },
+  {
+   "id": "suburban-006",
+   "category": "suburban",
+   "state": "VT",
+   "origin": [
+    42.883317,
+    -73.213163
+   ],
+   "note": "out of Bennington",
+   "expect": "route",
+   "destination": [
+    42.699035,
+    -73.1119
+   ],
+   "crow_km": 22.1
+  },
+  {
+   "id": "suburban-007",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    43.851252,
+    -69.627804
+   ],
+   "note": "out of Boothbay Harbor",
+   "expect": "route",
+   "destination": [
+    43.760685,
+    -69.976718
+   ],
+   "crow_km": 29.8
+  },
+  {
+   "id": "suburban-008",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.54146,
+    -68.42436
+   ],
+   "note": "out of Ellsworth",
+   "expect": "route",
+   "destination": [
+    44.69174,
+    -68.661975
+   ],
+   "crow_km": 25.2
+  },
+  {
+   "id": "suburban-009",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    42.322312,
+    -72.663424
+   ],
+   "note": "out of Northampton",
+   "expect": "route",
+   "destination": [
+    42.402865,
+    -72.875929
+   ],
+   "crow_km": 19.6
+  },
+  {
+   "id": "suburban-010",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    42.936192,
+    -72.288141
+   ],
+   "note": "out of Keene",
+   "expect": "route",
+   "destination": [
+    43.038135,
+    -72.269808
+   ],
+   "crow_km": 11.4
+  },
+  {
+   "id": "suburban-011",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.405935,
+    -70.790067
+   ],
+   "note": "out of Bethel",
+   "expect": "route",
+   "destination": [
+    44.496995,
+    -70.694275
+   ],
+   "crow_km": 12.7
+  },
+  {
+   "id": "suburban-012",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    42.112283,
+    -72.570853
+   ],
+   "note": "out of Springfield",
+   "expect": "route",
+   "destination": [
+    41.977874,
+    -72.813708
+   ],
+   "crow_km": 25.0
+  },
+  {
+   "id": "suburban-013",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    41.702889,
+    -69.96946
+   ],
+   "note": "out of Chatham",
+   "expect": "route",
+   "destination": [
+    41.742609,
+    -70.161964
+   ],
+   "crow_km": 16.6
+  },
+  {
+   "id": "suburban-014",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    43.704471,
+    -72.301564
+   ],
+   "note": "out of Hanover",
+   "expect": "route",
+   "destination": [
+    43.799209,
+    -72.122674
+   ],
+   "crow_km": 17.8
+  },
+  {
+   "id": "suburban-015",
+   "category": "suburban",
+   "state": "RI",
+   "origin": [
+    41.991209,
+    -71.539229
+   ],
+   "note": "out of Woonsocket",
+   "expect": "route",
+   "destination": [
+    41.909822,
+    -71.300886
+   ],
+   "crow_km": 21.7
+  },
+  {
+   "id": "suburban-016",
+   "category": "suburban",
+   "state": "VT",
+   "origin": [
+    44.47616,
+    -73.212906
+   ],
+   "note": "out of Burlington",
+   "expect": "route",
+   "destination": [
+    44.525462,
+    -72.945113
+   ],
+   "crow_km": 21.9
+  },
+  {
+   "id": "suburban-017",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    41.95838,
+    -70.667385
+   ],
+   "note": "out of Plymouth",
+   "expect": "route",
+   "destination": [
+    41.702409,
+    -70.766087
+   ],
+   "crow_km": 29.6
+  },
+  {
+   "id": "suburban-018",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    43.541365,
+    -71.450642
+   ],
+   "note": "out of Laconia",
+   "expect": "route",
+   "destination": [
+    43.59552,
+    -71.272253
+   ],
+   "crow_km": 15.6
+  },
+  {
+   "id": "suburban-019",
+   "category": "suburban",
+   "state": "CT",
+   "origin": [
+    41.342342,
+    -71.941629
+   ],
+   "note": "out of Mystic",
+   "expect": "route",
+   "destination": [
+    41.512598,
+    -72.165079
+   ],
+   "crow_km": 26.6
+  },
+  {
+   "id": "suburban-020",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    44.46966,
+    -71.18107
+   ],
+   "note": "out of Berlin",
+   "expect": "route",
+   "destination": [
+    44.598977,
+    -71.51123
+   ],
+   "crow_km": 29.9
+  },
+  {
+   "id": "suburban-021",
+   "category": "suburban",
+   "state": "VT",
+   "origin": [
+    43.612164,
+    -72.943118
+   ],
+   "note": "out of Rutland",
+   "expect": "route",
+   "destination": [
+    43.745341,
+    -73.223169
+   ],
+   "crow_km": 27.0
+  },
+  {
+   "id": "suburban-022",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.796795,
+    -68.762157
+   ],
+   "note": "out of Bangor",
+   "expect": "route",
+   "destination": [
+    44.712295,
+    -68.452802
+   ],
+   "crow_km": 26.2
+  },
+  {
+   "id": "suburban-023",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    42.380635,
+    -71.039143
+   ],
+   "note": "out of Boston",
+   "expect": "route",
+   "destination": [
+    42.471762,
+    -71.03144
+   ],
+   "crow_km": 10.2
+  },
+  {
+   "id": "suburban-024",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.405935,
+    -70.790067
+   ],
+   "note": "out of Bethel",
+   "expect": "route",
+   "destination": [
+    44.546005,
+    -70.545842
+   ],
+   "crow_km": 24.9
+  },
+  {
+   "id": "suburban-025",
+   "category": "suburban",
+   "state": "CT",
+   "origin": [
+    41.915309,
+    -71.909256
+   ],
+   "note": "out of Putnam",
+   "expect": "route",
+   "destination": [
+    42.050137,
+    -71.880331
+   ],
+   "crow_km": 15.2
+  },
+  {
+   "id": "suburban-026",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    44.074421,
+    -71.139951
+   ],
+   "note": "out of North Conway",
+   "expect": "route",
+   "destination": [
+    43.907294,
+    -71.350628
+   ],
+   "crow_km": 25.1
+  },
+  {
+   "id": "suburban-027",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.387638,
+    -68.204336
+   ],
+   "note": "out of Bar Harbor",
+   "expect": "route",
+   "destination": [
+    44.408618,
+    -68.026264
+   ],
+   "crow_km": 14.3
+  },
+  {
+   "id": "suburban-028",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    42.933597,
+    -72.278426
+   ],
+   "note": "out of Keene",
+   "expect": "route",
+   "destination": [
+    43.072857,
+    -72.018415
+   ],
+   "crow_km": 26.2
+  },
+  {
+   "id": "suburban-029",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    42.933597,
+    -72.278426
+   ],
+   "note": "out of Keene",
+   "expect": "route",
+   "destination": [
+    42.950637,
+    -72.477311
+   ],
+   "crow_km": 16.3
+  },
+  {
+   "id": "suburban-030",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.210265,
+    -69.065552
+   ],
+   "note": "out of Camden",
+   "expect": "route",
+   "destination": [
+    44.273686,
+    -69.367266
+   ],
+   "crow_km": 25.0
+  },
+  {
+   "id": "suburban-031",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    43.527855,
+    -71.470351
+   ],
+   "note": "out of Laconia",
+   "expect": "route",
+   "destination": [
+    43.53119,
+    -71.268957
+   ],
+   "crow_km": 16.2
+  },
+  {
+   "id": "suburban-032",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    42.765625,
+    -71.467703
+   ],
+   "note": "out of Nashua",
+   "expect": "route",
+   "destination": [
+    42.704257,
+    -71.366174
+   ],
+   "crow_km": 10.7
+  },
+  {
+   "id": "suburban-033",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    44.210265,
+    -69.065552
+   ],
+   "note": "out of Camden",
+   "expect": "route",
+   "destination": [
+    44.211444,
+    -69.274354
+   ],
+   "crow_km": 16.6
+  },
+  {
+   "id": "suburban-034",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    44.074421,
+    -71.139951
+   ],
+   "note": "out of North Conway",
+   "expect": "route",
+   "destination": [
+    43.899365,
+    -71.148834
+   ],
+   "crow_km": 19.5
+  },
+  {
+   "id": "suburban-035",
+   "category": "suburban",
+   "state": "VT",
+   "origin": [
+    44.47616,
+    -73.212906
+   ],
+   "note": "out of Burlington",
+   "expect": "route",
+   "destination": [
+    44.623659,
+    -73.11791
+   ],
+   "crow_km": 18.0
+  },
+  {
+   "id": "suburban-036",
+   "category": "suburban",
+   "state": "NH",
+   "origin": [
+    44.46966,
+    -71.18107
+   ],
+   "note": "out of Berlin",
+   "expect": "route",
+   "destination": [
+    44.651217,
+    -71.320593
+   ],
+   "crow_km": 23.0
+  },
+  {
+   "id": "suburban-037",
+   "category": "suburban",
+   "state": "ME",
+   "origin": [
+    43.655542,
+    -70.259331
+   ],
+   "note": "out of Portland",
+   "expect": "route",
+   "destination": [
+    43.822151,
+    -70.011889
+   ],
+   "crow_km": 27.2
+  },
+  {
+   "id": "suburban-038",
+   "category": "suburban",
+   "state": "CT",
+   "origin": [
+    41.915309,
+    -71.909256
+   ],
+   "note": "out of Putnam",
+   "expect": "route",
+   "destination": [
+    41.698206,
+    -71.970982
+   ],
+   "crow_km": 24.7
+  },
+  {
+   "id": "suburban-039",
+   "category": "suburban",
+   "state": "MA",
+   "origin": [
+    41.945937,
+    -70.646146
+   ],
+   "note": "out of Plymouth",
+   "expect": "route",
+   "destination": [
+    42.018434,
+    -70.970321
+   ],
+   "crow_km": 28.0
+  },
+  {
+   "id": "suburban-040",
+   "category": "suburban",
+   "state": "CT",
+   "origin": [
+    41.524567,
+    -72.074755
+   ],
+   "note": "out of Norwich",
+   "expect": "route",
+   "destination": [
+    41.403762,
+    -72.112397
+   ],
+   "crow_km": 13.8
+  },
+  {
+   "id": "rural-001",
+   "category": "rural",
+   "state": "MA",
+   "origin": [
+    42.4501,
+    -73.2454
+   ],
+   "note": "Pittsfield -> Northampton",
+   "expect": "route",
+   "destination": [
+    42.3251,
+    -72.6412
+   ],
+   "crow_km": 51.5
+  },
+  {
+   "id": "rural-002",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    42.8509,
+    -72.5579
+   ],
+   "note": "Brattleboro -> Rutland",
+   "expect": "route",
+   "destination": [
+    43.6106,
+    -72.9726
+   ],
+   "crow_km": 90.9
+  },
+  {
+   "id": "rural-003",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    43.6106,
+    -72.9726
+   ],
+   "note": "Rutland -> Montpelier",
+   "expect": "route",
+   "destination": [
+    44.2601,
+    -72.5754
+   ],
+   "crow_km": 78.9
+  },
+  {
+   "id": "rural-004",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    44.4759,
+    -73.2121
+   ],
+   "note": "Burlington -> Stowe",
+   "expect": "route",
+   "destination": [
+    44.4654,
+    -72.6874
+   ],
+   "crow_km": 41.7
+  },
+  {
+   "id": "rural-005",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    44.4654,
+    -72.6874
+   ],
+   "note": "Stowe -> St. Johnsbury",
+   "expect": "route",
+   "destination": [
+    44.4192,
+    -72.0151
+   ],
+   "crow_km": 53.6
+  },
+  {
+   "id": "rural-006",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    43.6243,
+    -72.5185
+   ],
+   "note": "Woodstock -> Manchester Center",
+   "expect": "route",
+   "destination": [
+    43.1637,
+    -73.0723
+   ],
+   "crow_km": 68.0
+  },
+  {
+   "id": "rural-007",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    42.8781,
+    -73.1968
+   ],
+   "note": "Bennington -> Rutland",
+   "expect": "route",
+   "destination": [
+    43.6106,
+    -72.9726
+   ],
+   "crow_km": 83.5
+  },
+  {
+   "id": "rural-008",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    42.9337,
+    -72.2781
+   ],
+   "note": "Keene -> Concord",
+   "expect": "route",
+   "destination": [
+    43.2081,
+    -71.5376
+   ],
+   "crow_km": 67.4
+  },
+  {
+   "id": "rural-009",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    43.2081,
+    -71.5376
+   ],
+   "note": "Concord -> North Conway",
+   "expect": "route",
+   "destination": [
+    44.0537,
+    -71.1284
+   ],
+   "crow_km": 99.6
+  },
+  {
+   "id": "rural-010",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    44.0456,
+    -71.6703
+   ],
+   "note": "Lincoln -> Berlin",
+   "expect": "route",
+   "destination": [
+    44.4687,
+    -71.1851
+   ],
+   "crow_km": 60.9
+  },
+  {
+   "id": "rural-011",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    43.5279,
+    -71.4704
+   ],
+   "note": "Laconia -> Lincoln",
+   "expect": "route",
+   "destination": [
+    44.0456,
+    -71.6703
+   ],
+   "crow_km": 59.8
+  },
+  {
+   "id": "rural-012",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    43.7022,
+    -72.2896
+   ],
+   "note": "Hanover -> Lincoln",
+   "expect": "route",
+   "destination": [
+    44.0456,
+    -71.6703
+   ],
+   "crow_km": 62.6
+  },
+  {
+   "id": "rural-013",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.3106,
+    -69.7795
+   ],
+   "note": "Augusta -> Bethel",
+   "expect": "route",
+   "destination": [
+    44.404,
+    -70.7909
+   ],
+   "crow_km": 81.1
+  },
+  {
+   "id": "rural-014",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.404,
+    -70.7909
+   ],
+   "note": "Bethel -> Rangeley",
+   "expect": "route",
+   "destination": [
+    44.9659,
+    -70.6428
+   ],
+   "crow_km": 63.6
+  },
+  {
+   "id": "rural-015",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.1004,
+    -70.2148
+   ],
+   "note": "Lewiston -> Rangeley",
+   "expect": "route",
+   "destination": [
+    44.9659,
+    -70.6428
+   ],
+   "crow_km": 102.0
+  },
+  {
+   "id": "rural-016",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.8016,
+    -68.7712
+   ],
+   "note": "Bangor -> Bar Harbor",
+   "expect": "route",
+   "destination": [
+    44.3876,
+    -68.2039
+   ],
+   "crow_km": 64.3
+  },
+  {
+   "id": "rural-017",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.3106,
+    -69.7795
+   ],
+   "note": "Augusta -> Camden",
+   "expect": "route",
+   "destination": [
+    44.2098,
+    -69.0648
+   ],
+   "crow_km": 58.0
+  },
+  {
+   "id": "rural-018",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.8016,
+    -68.7712
+   ],
+   "note": "Bangor -> Presque Isle",
+   "expect": "route",
+   "destination": [
+    46.6812,
+    -68.0159
+   ],
+   "crow_km": 217.1
+  },
+  {
+   "id": "rural-019",
+   "category": "rural",
+   "state": "CT",
+   "origin": [
+    41.7473,
+    -73.1887
+   ],
+   "note": "Litchfield -> Danbury",
+   "expect": "route",
+   "destination": [
+    41.3948,
+    -73.454
+   ],
+   "crow_km": 45.0
+  },
+  {
+   "id": "rural-020",
+   "category": "rural",
+   "state": "CT",
+   "origin": [
+    41.9151,
+    -71.909
+   ],
+   "note": "Putnam -> Norwich",
+   "expect": "route",
+   "destination": [
+    41.5243,
+    -72.0759
+   ],
+   "crow_km": 45.6
+  },
+  {
+   "id": "rural-021",
+   "category": "rural",
+   "state": "CT",
+   "origin": [
+    41.7658,
+    -72.6734
+   ],
+   "note": "Hartford -> Litchfield",
+   "expect": "route",
+   "destination": [
+    41.7473,
+    -73.1887
+   ],
+   "crow_km": 42.8
+  },
+  {
+   "id": "rural-022",
+   "category": "rural",
+   "state": "MA",
+   "origin": [
+    42.5876,
+    -72.5995
+   ],
+   "note": "Greenfield -> Pittsfield",
+   "expect": "route",
+   "destination": [
+    42.4501,
+    -73.2454
+   ],
+   "crow_km": 55.1
+  },
+  {
+   "id": "rural-023",
+   "category": "rural",
+   "state": "MA",
+   "origin": [
+    42.2626,
+    -71.8023
+   ],
+   "note": "Worcester -> Greenfield",
+   "expect": "route",
+   "destination": [
+    42.5876,
+    -72.5995
+   ],
+   "crow_km": 74.7
+  },
+  {
+   "id": "rural-024",
+   "category": "rural",
+   "state": "MA",
+   "origin": [
+    42.1015,
+    -72.5898
+   ],
+   "note": "Springfield -> Pittsfield",
+   "expect": "route",
+   "destination": [
+    42.4501,
+    -73.2454
+   ],
+   "crow_km": 66.4
+  },
+  {
+   "id": "rural-025",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    44.2601,
+    -72.5754
+   ],
+   "note": "Montpelier -> Brattleboro",
+   "expect": "route",
+   "destination": [
+    42.8509,
+    -72.5579
+   ],
+   "crow_km": 156.7
+  },
+  {
+   "id": "rural-026",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    44.0537,
+    -71.1284
+   ],
+   "note": "North Conway -> Laconia",
+   "expect": "route",
+   "destination": [
+    43.5279,
+    -71.4704
+   ],
+   "crow_km": 64.6
+  },
+  {
+   "id": "rural-027",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    43.6591,
+    -70.2568
+   ],
+   "note": "Portland -> Bethel",
+   "expect": "route",
+   "destination": [
+    44.404,
+    -70.7909
+   ],
+   "crow_km": 93.2
+  },
+  {
+   "id": "rural-028",
+   "category": "rural",
+   "state": "ME",
+   "origin": [
+    44.3106,
+    -69.7795
+   ],
+   "note": "Augusta -> Bangor",
+   "expect": "route",
+   "destination": [
+    44.8016,
+    -68.7712
+   ],
+   "crow_km": 96.8
+  },
+  {
+   "id": "rural-029",
+   "category": "rural",
+   "state": "NH",
+   "origin": [
+    42.9337,
+    -72.2781
+   ],
+   "note": "Keene -> Hanover",
+   "expect": "route",
+   "destination": [
+    43.7022,
+    -72.2896
+   ],
+   "crow_km": 85.5
+  },
+  {
+   "id": "rural-030",
+   "category": "rural",
+   "state": "VT",
+   "origin": [
+    44.4654,
+    -72.6874
+   ],
+   "note": "Stowe -> Burlington",
+   "expect": "route",
+   "destination": [
+    44.4759,
+    -73.2121
+   ],
+   "crow_km": 41.7
+  },
+  {
+   "id": "coastal-001",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    42.6559,
+    -70.6206
+   ],
+   "note": "Rockport -> Gloucester",
+   "expect": "route",
+   "destination": [
+    42.6159,
+    -70.662
+   ],
+   "crow_km": 5.6
+  },
+  {
+   "id": "coastal-002",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    42.6159,
+    -70.662
+   ],
+   "note": "Gloucester -> Boston",
+   "expect": "route",
+   "destination": [
+    42.3601,
+    -71.0589
+   ],
+   "crow_km": 43.2
+  },
+  {
+   "id": "coastal-003",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    41.9584,
+    -70.6673
+   ],
+   "note": "Plymouth -> New Bedford",
+   "expect": "route",
+   "destination": [
+    41.6362,
+    -70.9342
+   ],
+   "crow_km": 42.1
+  },
+  {
+   "id": "coastal-004",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    41.6821,
+    -69.9597
+   ],
+   "note": "Chatham -> Provincetown",
+   "expect": "route",
+   "destination": [
+    42.0526,
+    -70.186
+   ],
+   "crow_km": 45.3
+  },
+  {
+   "id": "coastal-005",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    42.0526,
+    -70.186
+   ],
+   "note": "Provincetown -> Plymouth",
+   "expect": "route",
+   "destination": [
+    41.9584,
+    -70.6673
+   ],
+   "crow_km": 41.1
+  },
+  {
+   "id": "coastal-006",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    41.6362,
+    -70.9342
+   ],
+   "note": "New Bedford -> Newport",
+   "expect": "route",
+   "destination": [
+    41.4901,
+    -71.3128
+   ],
+   "crow_km": 35.4
+  },
+  {
+   "id": "coastal-007",
+   "category": "coastal",
+   "state": "RI",
+   "origin": [
+    41.6771,
+    -71.2662
+   ],
+   "note": "Bristol -> Newport",
+   "expect": "route",
+   "destination": [
+    41.4901,
+    -71.3128
+   ],
+   "crow_km": 21.2
+  },
+  {
+   "id": "coastal-008",
+   "category": "coastal",
+   "state": "RI",
+   "origin": [
+    41.4901,
+    -71.3128
+   ],
+   "note": "Newport -> Narragansett",
+   "expect": "route",
+   "destination": [
+    41.4501,
+    -71.4495
+   ],
+   "crow_km": 12.2
+  },
+  {
+   "id": "coastal-009",
+   "category": "coastal",
+   "state": "RI",
+   "origin": [
+    41.4501,
+    -71.4495
+   ],
+   "note": "Narragansett -> Westerly",
+   "expect": "route",
+   "destination": [
+    41.3776,
+    -71.8273
+   ],
+   "crow_km": 32.5
+  },
+  {
+   "id": "coastal-010",
+   "category": "coastal",
+   "state": "RI",
+   "origin": [
+    41.3776,
+    -71.8273
+   ],
+   "note": "Westerly -> Mystic",
+   "expect": "route",
+   "destination": [
+    41.3543,
+    -71.9665
+   ],
+   "crow_km": 11.9
+  },
+  {
+   "id": "coastal-011",
+   "category": "coastal",
+   "state": "CT",
+   "origin": [
+    41.3543,
+    -71.9665
+   ],
+   "note": "Mystic -> Old Saybrook",
+   "expect": "route",
+   "destination": [
+    41.2918,
+    -72.3762
+   ],
+   "crow_km": 34.9
+  },
+  {
+   "id": "coastal-012",
+   "category": "coastal",
+   "state": "CT",
+   "origin": [
+    41.2918,
+    -72.3762
+   ],
+   "note": "Old Saybrook -> New Haven",
+   "expect": "route",
+   "destination": [
+    41.3083,
+    -72.9279
+   ],
+   "crow_km": 46.1
+  },
+  {
+   "id": "coastal-013",
+   "category": "coastal",
+   "state": "CT",
+   "origin": [
+    41.3083,
+    -72.9279
+   ],
+   "note": "New Haven -> Stamford",
+   "expect": "route",
+   "destination": [
+    41.0534,
+    -73.5387
+   ],
+   "crow_km": 58.4
+  },
+  {
+   "id": "coastal-014",
+   "category": "coastal",
+   "state": "NH",
+   "origin": [
+    43.0718,
+    -70.7626
+   ],
+   "note": "Portsmouth -> Kennebunkport",
+   "expect": "route",
+   "destination": [
+    43.3615,
+    -70.4767
+   ],
+   "crow_km": 39.7
+  },
+  {
+   "id": "coastal-015",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    43.3615,
+    -70.4767
+   ],
+   "note": "Kennebunkport -> Portland",
+   "expect": "route",
+   "destination": [
+    43.6591,
+    -70.2568
+   ],
+   "crow_km": 37.5
+  },
+  {
+   "id": "coastal-016",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    43.6591,
+    -70.2568
+   ],
+   "note": "Portland -> Brunswick",
+   "expect": "route",
+   "destination": [
+    43.9145,
+    -69.9653
+   ],
+   "crow_km": 36.8
+  },
+  {
+   "id": "coastal-017",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    43.9145,
+    -69.9653
+   ],
+   "note": "Brunswick -> Boothbay Harbor",
+   "expect": "route",
+   "destination": [
+    43.8523,
+    -69.6281
+   ],
+   "crow_km": 27.9
+  },
+  {
+   "id": "coastal-018",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    43.8523,
+    -69.6281
+   ],
+   "note": "Boothbay Harbor -> Rockland",
+   "expect": "route",
+   "destination": [
+    44.1037,
+    -69.1089
+   ],
+   "crow_km": 50.1
+  },
+  {
+   "id": "coastal-019",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    44.1037,
+    -69.1089
+   ],
+   "note": "Rockland -> Camden",
+   "expect": "route",
+   "destination": [
+    44.2098,
+    -69.0648
+   ],
+   "crow_km": 12.3
+  },
+  {
+   "id": "coastal-020",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    44.2098,
+    -69.0648
+   ],
+   "note": "Camden -> Ellsworth",
+   "expect": "route",
+   "destination": [
+    44.5434,
+    -68.4195
+   ],
+   "crow_km": 63.3
+  },
+  {
+   "id": "coastal-021",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    44.5434,
+    -68.4195
+   ],
+   "note": "Ellsworth -> Bar Harbor",
+   "expect": "route",
+   "destination": [
+    44.3876,
+    -68.2039
+   ],
+   "crow_km": 24.3
+  },
+  {
+   "id": "coastal-022",
+   "category": "coastal",
+   "state": "ME",
+   "origin": [
+    44.3876,
+    -68.2039
+   ],
+   "note": "Bar Harbor -> Camden",
+   "expect": "route",
+   "destination": [
+    44.2098,
+    -69.0648
+   ],
+   "crow_km": 71.3
+  },
+  {
+   "id": "coastal-023",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    42.6559,
+    -70.6206
+   ],
+   "note": "Rockport -> Portsmouth",
+   "expect": "route",
+   "destination": [
+    43.0718,
+    -70.7626
+   ],
+   "crow_km": 47.7
+  },
+  {
+   "id": "coastal-024",
+   "category": "coastal",
+   "state": "MA",
+   "origin": [
+    41.6821,
+    -69.9597
+   ],
+   "note": "Chatham -> Plymouth",
+   "expect": "route",
+   "destination": [
+    41.9584,
+    -70.6673
+   ],
+   "crow_km": 66.2
+  },
+  {
+   "id": "coastal-025",
+   "category": "coastal",
+   "state": "RI",
+   "origin": [
+    41.3776,
+    -71.8273
+   ],
+   "note": "Westerly -> Narragansett",
+   "expect": "route",
+   "destination": [
+    41.4501,
+    -71.4495
+   ],
+   "crow_km": 32.5
+  },
+  {
+   "id": "cross-001",
+   "category": "cross",
+   "state": "MA->NH",
+   "origin": [
+    42.3601,
+    -71.0589
+   ],
+   "note": "Boston -> Manchester",
+   "expect": "route",
+   "destination": [
+    42.9956,
+    -71.4548
+   ],
+   "crow_km": 77.7
+  },
+  {
+   "id": "cross-002",
+   "category": "cross",
+   "state": "MA->NH",
+   "origin": [
+    42.6334,
+    -71.3162
+   ],
+   "note": "Lowell -> Nashua",
+   "expect": "route",
+   "destination": [
+    42.7654,
+    -71.4676
+   ],
+   "crow_km": 19.2
+  },
+  {
+   "id": "cross-003",
+   "category": "cross",
+   "state": "MA->NH",
+   "origin": [
+    42.2626,
+    -71.8023
+   ],
+   "note": "Worcester -> Keene",
+   "expect": "route",
+   "destination": [
+    42.9337,
+    -72.2781
+   ],
+   "crow_km": 84.2
+  },
+  {
+   "id": "cross-004",
+   "category": "cross",
+   "state": "MA->CT",
+   "origin": [
+    42.1015,
+    -72.5898
+   ],
+   "note": "Springfield -> Hartford",
+   "expect": "route",
+   "destination": [
+    41.7658,
+    -72.6734
+   ],
+   "crow_km": 38.0
+  },
+  {
+   "id": "cross-005",
+   "category": "cross",
+   "state": "MA->RI",
+   "origin": [
+    42.2626,
+    -71.8023
+   ],
+   "note": "Worcester -> Providence",
+   "expect": "route",
+   "destination": [
+    41.824,
+    -71.4128
+   ],
+   "crow_km": 58.4
+  },
+  {
+   "id": "cross-006",
+   "category": "cross",
+   "state": "MA->RI",
+   "origin": [
+    42.3601,
+    -71.0589
+   ],
+   "note": "Boston -> Providence",
+   "expect": "route",
+   "destination": [
+    41.824,
+    -71.4128
+   ],
+   "crow_km": 66.4
+  },
+  {
+   "id": "cross-007",
+   "category": "cross",
+   "state": "CT->RI",
+   "origin": [
+    41.7658,
+    -72.6734
+   ],
+   "note": "Hartford -> Providence",
+   "expect": "route",
+   "destination": [
+    41.824,
+    -71.4128
+   ],
+   "crow_km": 104.7
+  },
+  {
+   "id": "cross-008",
+   "category": "cross",
+   "state": "CT->RI",
+   "origin": [
+    41.5243,
+    -72.0759
+   ],
+   "note": "Norwich -> Westerly",
+   "expect": "route",
+   "destination": [
+    41.3776,
+    -71.8273
+   ],
+   "crow_km": 26.4
+  },
+  {
+   "id": "cross-009",
+   "category": "cross",
+   "state": "CT->RI",
+   "origin": [
+    41.9151,
+    -71.909
+   ],
+   "note": "Putnam -> Woonsocket",
+   "expect": "route",
+   "destination": [
+    42.0029,
+    -71.5148
+   ],
+   "crow_km": 34.0
+  },
+  {
+   "id": "cross-010",
+   "category": "cross",
+   "state": "VT->NH",
+   "origin": [
+    42.8509,
+    -72.5579
+   ],
+   "note": "Brattleboro -> Keene",
+   "expect": "route",
+   "destination": [
+    42.9337,
+    -72.2781
+   ],
+   "crow_km": 24.6
+  },
+  {
+   "id": "cross-011",
+   "category": "cross",
+   "state": "MA->VT",
+   "origin": [
+    42.5876,
+    -72.5995
+   ],
+   "note": "Greenfield -> Brattleboro",
+   "expect": "route",
+   "destination": [
+    42.8509,
+    -72.5579
+   ],
+   "crow_km": 29.5
+  },
+  {
+   "id": "cross-012",
+   "category": "cross",
+   "state": "MA->VT",
+   "origin": [
+    42.4501,
+    -73.2454
+   ],
+   "note": "Pittsfield -> Bennington",
+   "expect": "route",
+   "destination": [
+    42.8781,
+    -73.1968
+   ],
+   "crow_km": 47.8
+  },
+  {
+   "id": "cross-013",
+   "category": "cross",
+   "state": "NH->VT",
+   "origin": [
+    43.7022,
+    -72.2896
+   ],
+   "note": "Hanover -> Woodstock",
+   "expect": "route",
+   "destination": [
+    43.6243,
+    -72.5185
+   ],
+   "crow_km": 20.3
+  },
+  {
+   "id": "cross-014",
+   "category": "cross",
+   "state": "VT->NH",
+   "origin": [
+    44.4192,
+    -72.0151
+   ],
+   "note": "St. Johnsbury -> Lincoln",
+   "expect": "route",
+   "destination": [
+    44.0456,
+    -71.6703
+   ],
+   "crow_km": 49.8
+  },
+  {
+   "id": "cross-015",
+   "category": "cross",
+   "state": "VT->NH",
+   "origin": [
+    44.2601,
+    -72.5754
+   ],
+   "note": "Montpelier -> Hanover",
+   "expect": "route",
+   "destination": [
+    43.7022,
+    -72.2896
+   ],
+   "crow_km": 66.1
+  },
+  {
+   "id": "cross-016",
+   "category": "cross",
+   "state": "NH->ME",
+   "origin": [
+    43.0718,
+    -70.7626
+   ],
+   "note": "Portsmouth -> Portland",
+   "expect": "route",
+   "destination": [
+    43.6591,
+    -70.2568
+   ],
+   "crow_km": 77.0
+  },
+  {
+   "id": "cross-017",
+   "category": "cross",
+   "state": "NH->ME",
+   "origin": [
+    44.0537,
+    -71.1284
+   ],
+   "note": "North Conway -> Bethel",
+   "expect": "route",
+   "destination": [
+    44.404,
+    -70.7909
+   ],
+   "crow_km": 47.3
+  },
+  {
+   "id": "cross-018",
+   "category": "cross",
+   "state": "NH->ME",
+   "origin": [
+    44.4687,
+    -71.1851
+   ],
+   "note": "Berlin -> Rangeley",
+   "expect": "route",
+   "destination": [
+    44.9659,
+    -70.6428
+   ],
+   "crow_km": 69.9
+  },
+  {
+   "id": "cross-019",
+   "category": "cross",
+   "state": "CT->MA",
+   "origin": [
+    41.3948,
+    -73.454
+   ],
+   "note": "Danbury -> Pittsfield",
+   "expect": "route",
+   "destination": [
+    42.4501,
+    -73.2454
+   ],
+   "crow_km": 118.6
+  },
+  {
+   "id": "cross-020",
+   "category": "cross",
+   "state": "CT->MA",
+   "origin": [
+    41.0534,
+    -73.5387
+   ],
+   "note": "Stamford -> Springfield",
+   "expect": "route",
+   "destination": [
+    42.1015,
+    -72.5898
+   ],
+   "crow_km": 140.8
+  },
+  {
+   "id": "cross-021",
+   "category": "cross",
+   "state": "CT->RI",
+   "origin": [
+    41.3543,
+    -71.9665
+   ],
+   "note": "Mystic -> Newport",
+   "expect": "route",
+   "destination": [
+    41.4901,
+    -71.3128
+   ],
+   "crow_km": 56.6
+  },
+  {
+   "id": "cross-022",
+   "category": "cross",
+   "state": "NH->ME",
+   "origin": [
+    43.2081,
+    -71.5376
+   ],
+   "note": "Concord -> Portland",
+   "expect": "route",
+   "destination": [
+    43.6591,
+    -70.2568
+   ],
+   "crow_km": 114.9
+  },
+  {
+   "id": "cross-023",
+   "category": "cross",
+   "state": "NH->MA",
+   "origin": [
+    42.7654,
+    -71.4676
+   ],
+   "note": "Nashua -> Worcester",
+   "expect": "route",
+   "destination": [
+    42.2626,
+    -71.8023
+   ],
+   "crow_km": 62.3
+  },
+  {
+   "id": "cross-024",
+   "category": "cross",
+   "state": "NH->MA",
+   "origin": [
+    42.9337,
+    -72.2781
+   ],
+   "note": "Keene -> Northampton",
+   "expect": "route",
+   "destination": [
+    42.3251,
+    -72.6412
+   ],
+   "crow_km": 73.9
+  },
+  {
+   "id": "cross-025",
+   "category": "cross",
+   "state": "VT->NH",
+   "origin": [
+    43.6106,
+    -72.9726
+   ],
+   "note": "Rutland -> Hanover",
+   "expect": "route",
+   "destination": [
+    43.7022,
+    -72.2896
+   ],
+   "crow_km": 55.9
+  },
+  {
+   "id": "cross-026",
+   "category": "cross",
+   "state": "VT->NH",
+   "origin": [
+    44.4759,
+    -73.2121
+   ],
+   "note": "Burlington -> Hanover",
+   "expect": "route",
+   "destination": [
+    43.7022,
+    -72.2896
+   ],
+   "crow_km": 113.3
+  },
+  {
+   "id": "cross-027",
+   "category": "cross",
+   "state": "VT->MA",
+   "origin": [
+    42.8781,
+    -73.1968
+   ],
+   "note": "Bennington -> Northampton",
+   "expect": "route",
+   "destination": [
+    42.3251,
+    -72.6412
+   ],
+   "crow_km": 76.5
+  },
+  {
+   "id": "cross-028",
+   "category": "cross",
+   "state": "RI->MA",
+   "origin": [
+    42.0029,
+    -71.5148
+   ],
+   "note": "Woonsocket -> Worcester",
+   "expect": "route",
+   "destination": [
+    42.2626,
+    -71.8023
+   ],
+   "crow_km": 37.4
+  },
+  {
+   "id": "cross-029",
+   "category": "cross",
+   "state": "CT->MA",
+   "origin": [
+    41.7473,
+    -73.1887
+   ],
+   "note": "Litchfield -> Springfield",
+   "expect": "route",
+   "destination": [
+    42.1015,
+    -72.5898
+   ],
+   "crow_km": 63.3
+  },
+  {
+   "id": "cross-030",
+   "category": "cross",
+   "state": "ME->NH",
+   "origin": [
+    43.3615,
+    -70.4767
+   ],
+   "note": "Kennebunkport -> Manchester",
+   "expect": "route",
+   "destination": [
+    42.9956,
+    -71.4548
+   ],
+   "crow_km": 89.1
+  },
+  {
+   "id": "parking-001",
+   "category": "parking",
+   "state": "CT",
+   "origin": [
+    41.283153,
+    -72.928436
+   ],
+   "note": "lot near New Haven",
+   "expect": "route",
+   "destination": [
+    41.39347,
+    -72.919773
+   ],
+   "crow_km": 12.3
+  },
+  {
+   "id": "parking-002",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    43.361499,
+    -70.477113
+   ],
+   "note": "lot near Kennebunkport",
+   "expect": "route",
+   "destination": [
+    43.414012,
+    -70.436886
+   ],
+   "crow_km": 6.7
+  },
+  {
+   "id": "parking-003",
+   "category": "parking",
+   "state": "RI",
+   "origin": [
+    41.677046,
+    -71.26616
+   ],
+   "note": "lot near Bristol",
+   "expect": "route",
+   "destination": [
+    41.702549,
+    -71.406428
+   ],
+   "crow_km": 12.0
+  },
+  {
+   "id": "parking-004",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    43.850265,
+    -69.641765
+   ],
+   "note": "lot near Boothbay Harbor",
+   "expect": "route",
+   "destination": [
+    43.941256,
+    -69.688935
+   ],
+   "crow_km": 10.8
+  },
+  {
+   "id": "parking-005",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    42.644952,
+    -70.59515
+   ],
+   "note": "lot near Rockport",
+   "expect": "route",
+   "destination": [
+    42.667332,
+    -70.80001
+   ],
+   "crow_km": 16.9
+  },
+  {
+   "id": "parking-006",
+   "category": "parking",
+   "state": "NH",
+   "origin": [
+    42.765625,
+    -71.467703
+   ],
+   "note": "lot near Nashua",
+   "expect": "route",
+   "destination": [
+    42.738756,
+    -71.591659
+   ],
+   "crow_km": 10.6
+  },
+  {
+   "id": "parking-007",
+   "category": "parking",
+   "state": "NH",
+   "origin": [
+    43.076999,
+    -70.757748
+   ],
+   "note": "lot near Portsmouth",
+   "expect": "route",
+   "destination": [
+    43.121513,
+    -70.827955
+   ],
+   "crow_km": 7.5
+  },
+  {
+   "id": "parking-008",
+   "category": "parking",
+   "state": "CT",
+   "origin": [
+    41.767914,
+    -72.644512
+   ],
+   "note": "lot near Hartford",
+   "expect": "route",
+   "destination": [
+    41.691584,
+    -72.72294
+   ],
+   "crow_km": 10.7
+  },
+  {
+   "id": "parking-009",
+   "category": "parking",
+   "state": "VT",
+   "origin": [
+    44.49104,
+    -73.186106
+   ],
+   "note": "lot near Burlington",
+   "expect": "route",
+   "destination": [
+    44.583327,
+    -73.12105
+   ],
+   "crow_km": 11.5
+  },
+  {
+   "id": "parking-010",
+   "category": "parking",
+   "state": "CT",
+   "origin": [
+    41.354237,
+    -71.966404
+   ],
+   "note": "lot near Mystic",
+   "expect": "route",
+   "destination": [
+    41.378196,
+    -71.918497
+   ],
+   "crow_km": 4.8
+  },
+  {
+   "id": "parking-011",
+   "category": "parking",
+   "state": "CT",
+   "origin": [
+    41.743507,
+    -72.682645
+   ],
+   "note": "lot near Hartford",
+   "expect": "route",
+   "destination": [
+    41.779946,
+    -72.62751
+   ],
+   "crow_km": 6.1
+  },
+  {
+   "id": "parking-012",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    44.405935,
+    -70.790067
+   ],
+   "note": "lot near Bethel",
+   "expect": "route",
+   "destination": [
+    44.494371,
+    -70.842387
+   ],
+   "crow_km": 10.7
+  },
+  {
+   "id": "parking-013",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    41.945937,
+    -70.646146
+   ],
+   "note": "lot near Plymouth",
+   "expect": "route",
+   "destination": [
+    41.923672,
+    -70.781391
+   ],
+   "crow_km": 11.5
+  },
+  {
+   "id": "parking-014",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    41.656501,
+    -69.96196
+   ],
+   "note": "lot near Chatham",
+   "expect": "route",
+   "destination": [
+    41.740655,
+    -70.071735
+   ],
+   "crow_km": 13.1
+  },
+  {
+   "id": "parking-015",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    42.449529,
+    -73.225938
+   ],
+   "note": "lot near Pittsfield",
+   "expect": "route",
+   "destination": [
+    42.507833,
+    -73.255226
+   ],
+   "crow_km": 6.9
+  },
+  {
+   "id": "parking-016",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    44.387638,
+    -68.204336
+   ],
+   "note": "lot near Bar Harbor",
+   "expect": "route",
+   "destination": [
+    44.38081,
+    -68.358158
+   ],
+   "crow_km": 12.2
+  },
+  {
+   "id": "parking-017",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    44.54146,
+    -68.42436
+   ],
+   "note": "lot near Ellsworth",
+   "expect": "route",
+   "destination": [
+    44.424917,
+    -68.425439
+   ],
+   "crow_km": 13.0
+  },
+  {
+   "id": "parking-018",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    41.65177,
+    -70.959484
+   ],
+   "note": "lot near New Bedford",
+   "expect": "route",
+   "destination": [
+    41.536668,
+    -71.012006
+   ],
+   "crow_km": 13.5
+  },
+  {
+   "id": "parking-019",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    42.633425,
+    -71.285615
+   ],
+   "note": "lot near Lowell",
+   "expect": "route",
+   "destination": [
+    42.734972,
+    -71.35938
+   ],
+   "crow_km": 12.8
+  },
+  {
+   "id": "parking-020",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    42.575086,
+    -72.581478
+   ],
+   "note": "lot near Greenfield",
+   "expect": "route",
+   "destination": [
+    42.68054,
+    -72.69315
+   ],
+   "crow_km": 14.9
+  },
+  {
+   "id": "parking-021",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    46.681222,
+    -68.015458
+   ],
+   "note": "lot near Presque Isle",
+   "expect": "route",
+   "destination": [
+    46.755746,
+    -68.070528
+   ],
+   "crow_km": 9.3
+  },
+  {
+   "id": "parking-022",
+   "category": "parking",
+   "state": "RI",
+   "origin": [
+    41.677046,
+    -71.26616
+   ],
+   "note": "lot near Bristol",
+   "expect": "route",
+   "destination": [
+    41.712331,
+    -71.30459
+   ],
+   "crow_km": 5.1
+  },
+  {
+   "id": "parking-023",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    44.405935,
+    -70.790067
+   ],
+   "note": "lot near Bethel",
+   "expect": "route",
+   "destination": [
+    44.362402,
+    -70.786823
+   ],
+   "crow_km": 4.8
+  },
+  {
+   "id": "parking-024",
+   "category": "parking",
+   "state": "NH",
+   "origin": [
+    42.936192,
+    -72.288141
+   ],
+   "note": "lot near Keene",
+   "expect": "route",
+   "destination": [
+    42.842573,
+    -72.188961
+   ],
+   "crow_km": 13.2
+  },
+  {
+   "id": "parking-025",
+   "category": "parking",
+   "state": "NH",
+   "origin": [
+    43.541365,
+    -71.450642
+   ],
+   "note": "lot near Laconia",
+   "expect": "route",
+   "destination": [
+    43.536769,
+    -71.547207
+   ],
+   "crow_km": 7.8
+  },
+  {
+   "id": "parking-026",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    41.702889,
+    -69.96946
+   ],
+   "note": "lot near Chatham",
+   "expect": "route",
+   "destination": [
+    41.786719,
+    -69.988443
+   ],
+   "crow_km": 9.5
+  },
+  {
+   "id": "parking-027",
+   "category": "parking",
+   "state": "RI",
+   "origin": [
+    42.002876,
+    -71.514784
+   ],
+   "note": "lot near Woonsocket",
+   "expect": "route",
+   "destination": [
+    41.935005,
+    -71.39342
+   ],
+   "crow_km": 12.6
+  },
+  {
+   "id": "parking-028",
+   "category": "parking",
+   "state": "NH",
+   "origin": [
+    42.765578,
+    -71.439342
+   ],
+   "note": "lot near Nashua",
+   "expect": "route",
+   "destination": [
+    42.779311,
+    -71.516782
+   ],
+   "crow_km": 6.5
+  },
+  {
+   "id": "parking-029",
+   "category": "parking",
+   "state": "MA",
+   "origin": [
+    42.587634,
+    -72.600207
+   ],
+   "note": "lot near Greenfield",
+   "expect": "route",
+   "destination": [
+    42.670757,
+    -72.47776
+   ],
+   "crow_km": 13.6
+  },
+  {
+   "id": "parking-030",
+   "category": "parking",
+   "state": "ME",
+   "origin": [
+    44.104833,
+    -69.109182
+   ],
+   "note": "lot near Rockland",
+   "expect": "route",
+   "destination": [
+    43.987391,
+    -69.203024
+   ],
+   "crow_km": 15.1
+  },
+  {
+   "id": "island-001",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    41.389,
+    -70.5134
+   ],
+   "note": "island-internal Edgartown->Oak Bluffs",
+   "expect": "route",
+   "destination": [
+    41.4543,
+    -70.562
+   ],
+   "crow_km": 8.3
+  },
+  {
+   "id": "island-002",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    41.6526,
+    -70.2881
+   ],
+   "note": "Nantucket from Hyannis",
+   "expect": "fail",
+   "destination": [
+    41.2835,
+    -70.0995
+   ],
+   "crow_km": 43.9
+  },
+  {
+   "id": "island-003",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    41.5515,
+    -70.6148
+   ],
+   "note": "Edgartown from Falmouth",
+   "expect": "fail",
+   "destination": [
+    41.389,
+    -70.5134
+   ],
+   "crow_km": 19.9
+  },
+  {
+   "id": "island-004",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    41.4501,
+    -71.4495
+   ],
+   "note": "Block Island from Narragansett",
+   "expect": "fail",
+   "destination": [
+    41.172,
+    -71.5578
+   ],
+   "crow_km": 32.2
+  },
+  {
+   "id": "island-005",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    43.6591,
+    -70.2568
+   ],
+   "note": "Peaks Island from Portland",
+   "expect": "fail",
+   "destination": [
+    43.6554,
+    -70.197
+   ],
+   "crow_km": 4.8
+  },
+  {
+   "id": "island-006",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    44.1037,
+    -69.1089
+   ],
+   "note": "Vinalhaven from Rockland",
+   "expect": "fail",
+   "destination": [
+    44.0484,
+    -68.8317
+   ],
+   "crow_km": 23.0
+  },
+  {
+   "id": "island-007",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    43.8523,
+    -69.6281
+   ],
+   "note": "Monhegan from Boothbay",
+   "expect": "fail",
+   "destination": [
+    43.7648,
+    -69.3161
+   ],
+   "crow_km": 26.9
+  },
+  {
+   "id": "island-008",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    41.6362,
+    -70.9342
+   ],
+   "note": "Cuttyhunk from New Bedford",
+   "expect": "fail",
+   "destination": [
+    41.4254,
+    -70.9267
+   ],
+   "crow_km": 23.4
+  },
+  {
+   "id": "island-009",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    44.2098,
+    -69.0648
+   ],
+   "note": "Isle au Haut from Camden",
+   "expect": "fail",
+   "destination": [
+    44.0712,
+    -68.6314
+   ],
+   "crow_km": 37.9
+  },
+  {
+   "id": "island-010",
+   "category": "island",
+   "state": "MA/RI/ME",
+   "origin": [
+    42.6559,
+    -70.6206
+   ],
+   "note": "open ocean off Cape Ann",
+   "expect": "fail",
+   "destination": [
+    42.6,
+    -70.2
+   ],
+   "crow_km": 35.0
+  },
+  {
+   "id": "loop-001",
+   "category": "loop",
+   "state": "MA",
+   "origin": [
+    42.3601,
+    -71.0589
+   ],
+   "note": "30 km loop from Boston",
+   "expect": "route",
+   "loop_km": 30
+  },
+  {
+   "id": "loop-002",
+   "category": "loop",
+   "state": "MA",
+   "origin": [
+    42.2626,
+    -71.8023
+   ],
+   "note": "50 km loop from Worcester",
+   "expect": "route",
+   "loop_km": 50
+  },
+  {
+   "id": "loop-003",
+   "category": "loop",
+   "state": "MA",
+   "origin": [
+    42.3251,
+    -72.6412
+   ],
+   "note": "40 km loop from Northampton",
+   "expect": "route",
+   "loop_km": 40
+  },
+  {
+   "id": "loop-004",
+   "category": "loop",
+   "state": "MA",
+   "origin": [
+    42.4501,
+    -73.2454
+   ],
+   "note": "60 km loop from Pittsfield",
+   "expect": "route",
+   "loop_km": 60
+  },
+  {
+   "id": "loop-005",
+   "category": "loop",
+   "state": "MA",
+   "origin": [
+    41.9584,
+    -70.6673
+   ],
+   "note": "35 km loop from Plymouth",
+   "expect": "route",
+   "loop_km": 35
+  },
+  {
+   "id": "loop-006",
+   "category": "loop",
+   "state": "RI",
+   "origin": [
+    41.824,
+    -71.4128
+   ],
+   "note": "30 km loop from Providence",
+   "expect": "route",
+   "loop_km": 30
+  },
+  {
+   "id": "loop-007",
+   "category": "loop",
+   "state": "RI",
+   "origin": [
+    41.4901,
+    -71.3128
+   ],
+   "note": "25 km loop from Newport",
+   "expect": "route",
+   "loop_km": 25
+  },
+  {
+   "id": "loop-008",
+   "category": "loop",
+   "state": "CT",
+   "origin": [
+    41.7658,
+    -72.6734
+   ],
+   "note": "45 km loop from Hartford",
+   "expect": "route",
+   "loop_km": 45
+  },
+  {
+   "id": "loop-009",
+   "category": "loop",
+   "state": "CT",
+   "origin": [
+    41.7473,
+    -73.1887
+   ],
+   "note": "50 km loop from Litchfield",
+   "expect": "route",
+   "loop_km": 50
+  },
+  {
+   "id": "loop-010",
+   "category": "loop",
+   "state": "CT",
+   "origin": [
+    41.3543,
+    -71.9665
+   ],
+   "note": "40 km loop from Mystic",
+   "expect": "route",
+   "loop_km": 40
+  },
+  {
+   "id": "loop-011",
+   "category": "loop",
+   "state": "NH",
+   "origin": [
+    43.2081,
+    -71.5376
+   ],
+   "note": "60 km loop from Concord",
+   "expect": "route",
+   "loop_km": 60
+  },
+  {
+   "id": "loop-012",
+   "category": "loop",
+   "state": "NH",
+   "origin": [
+    44.0537,
+    -71.1284
+   ],
+   "note": "50 km loop from North Conway",
+   "expect": "route",
+   "loop_km": 50
+  },
+  {
+   "id": "loop-013",
+   "category": "loop",
+   "state": "NH",
+   "origin": [
+    43.7022,
+    -72.2896
+   ],
+   "note": "45 km loop from Hanover",
+   "expect": "route",
+   "loop_km": 45
+  },
+  {
+   "id": "loop-014",
+   "category": "loop",
+   "state": "NH",
+   "origin": [
+    43.0718,
+    -70.7626
+   ],
+   "note": "30 km loop from Portsmouth",
+   "expect": "route",
+   "loop_km": 30
+  },
+  {
+   "id": "loop-015",
+   "category": "loop",
+   "state": "VT",
+   "origin": [
+    44.4654,
+    -72.6874
+   ],
+   "note": "40 km loop from Stowe",
+   "expect": "route",
+   "loop_km": 40
+  },
+  {
+   "id": "loop-016",
+   "category": "loop",
+   "state": "VT",
+   "origin": [
+    43.6243,
+    -72.5185
+   ],
+   "note": "60 km loop from Woodstock",
+   "expect": "route",
+   "loop_km": 60
+  },
+  {
+   "id": "loop-017",
+   "category": "loop",
+   "state": "VT",
+   "origin": [
+    42.8509,
+    -72.5579
+   ],
+   "note": "35 km loop from Brattleboro",
+   "expect": "route",
+   "loop_km": 35
+  },
+  {
+   "id": "loop-018",
+   "category": "loop",
+   "state": "ME",
+   "origin": [
+    44.2098,
+    -69.0648
+   ],
+   "note": "50 km loop from Camden",
+   "expect": "route",
+   "loop_km": 50
+  },
+  {
+   "id": "loop-019",
+   "category": "loop",
+   "state": "ME",
+   "origin": [
+    44.404,
+    -70.7909
+   ],
+   "note": "80 km loop from Bethel",
+   "expect": "route",
+   "loop_km": 80
+  },
+  {
+   "id": "loop-020",
+   "category": "loop",
+   "state": "ME",
+   "origin": [
+    43.3615,
+    -70.4767
+   ],
+   "note": "30 km loop from Kennebunkport",
+   "expect": "route",
+   "loop_km": 30
+  }
+ ]
+}
