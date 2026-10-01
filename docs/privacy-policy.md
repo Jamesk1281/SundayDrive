@@ -73,14 +73,20 @@ domains list.
 **No device identifiers.** Nothing in `ios/Sources` reads an advertising
 identifier, a vendor identifier, or the device name.
 
-**What is stored on your phone** — three small settings in `UserDefaults`, all
-of them the app reading back its own preferences:
+**What is stored on your phone**, besides drive recordings (§3), is kept in
+`UserDefaults`. All of it is the app reading back its own data, and one item is
+a short history of where you have been going: the destinations you last
+searched for.
 
 | What | Where |
 | --- | --- |
+| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-50`, written by `RouteModel.swift:182-189` |
+| The length of the last loop you asked for | `ios/Sources/LoopModel.swift:51-52`, `:247` |
 | The chosen guidance voice | `ios/Sources/VoiceCatalogue.swift:118-119` |
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
 | Whether voice guidance is muted | `ios/Sources/VoiceGuide.swift:351-352` |
+| Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:47` |
+| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:240`, read by `ContentView.swift:23` |
 
 ---
 
@@ -279,7 +285,7 @@ Category rules is a §7 item.)*
 - ~~**Don't record.**~~ Not a choice the app offers: every navigated drive
   is recorded (§3). Deleting recordings is the control there is.
 - **Delete recordings** at any time, from the Files app or a Mac (§3).
-- **Reset the three stored settings** by deleting the app.
+- **Reset the stored destinations and settings** by deleting the app.
 
 There is no server-side data about you to request, correct or delete, because
 none is kept.
