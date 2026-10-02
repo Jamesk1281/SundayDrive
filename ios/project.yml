@@ -14,6 +14,14 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: Sunday Drive
+        # The version and build come from the two build settings below, rather
+        # than XcodeGen's literal defaults (1.0 and 1). Those literals ignored
+        # MARKETING_VERSION and CURRENT_PROJECT_VERSION entirely: every build
+        # shipped as 1.0 (1), and every August drive trace recorded "app": "1.0"
+        # while this file said 0.1. App Store Connect refuses a second upload
+        # with the same build number.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # The wagon on dark paper, because the first screen is dark unless the
         # driver has switched on Match system appearance. Both come from
         # ios/scripts/generate_icon.py. UIImageRespectsSafeAreaInsets keeps the
@@ -26,6 +34,13 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         # Shown when navigation asks for location to follow the route.
         NSLocationWhenInUseUsageDescription: "Your location is used to follow the route, turn by turn, while you drive."
+        # Shown when Precise Location is off and a drive asks for it anyway
+        # (`LocationManager.precisePurposeKey`). The key has to match exactly: a
+        # purpose CoreLocation cannot find here shows no prompt and says nothing.
+        # Here and not in Generated/Info.plist, which `xcodegen generate`
+        # overwrites.
+        NSLocationTemporaryUsageDescriptionDictionary:
+          Navigation: "Turn-by-turn guidance needs your precise location to follow the route."
         # Keep receiving location while backgrounded. With when-in-use
         # authorization this is allowed for navigation as long as the blue
         # status bar indicator is showing, which LocationManager opts into.

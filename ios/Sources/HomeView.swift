@@ -30,7 +30,7 @@ struct HomeView: View {
 
                 intentRow(title: "Loop",
                           subtitle: "From here, about \(loopEstimate)",
-                          systemImage: "arrow.trianglehead.clockwise",
+                          systemImage: loopSymbol,
                           tint: .amberText, wash: .amberWash) {
                     stage = .loop
                     // Only if there is nothing to show already — coming back to
@@ -62,6 +62,18 @@ struct HomeView: View {
 
     private var loopEstimate: String {
         TimeText.compact(minutes: model.loops.estimatedMinutes(forKm: model.loops.targetKm))
+    }
+
+    /// The Loop row's symbol, with a fallback for iOS 17.
+    ///
+    /// `arrow.trianglehead.clockwise` is new in iOS 18 (Apple's own
+    /// `name_availability.plist` in CoreGlyphs), and the app targets iOS 17,
+    /// where `Image(systemName:)` draws nothing for a name it does not know.
+    /// The first screen's Loop row would be an empty amber square.
+    /// `arrow.clockwise` has been there since iOS 13.
+    private var loopSymbol: String {
+        if #available(iOS 18, *) { return "arrow.trianglehead.clockwise" }
+        return "arrow.clockwise"
     }
 
     private func intentRow(title: String, subtitle: String, systemImage: String,

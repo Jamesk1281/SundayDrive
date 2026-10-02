@@ -75,18 +75,22 @@
 <p><strong>No account and no identity.</strong> The app never asks for your name, email address, phone number or a password. The server has no user records to attach them to, and it neither asks for nor hands out any identifier.</p>
 <p><strong>No tracking, analytics or advertising.</strong> The app contains no third-party code at all: no analytics, no crash reporter, no ad network. It uses only Apple's own frameworks. It does not track you across apps, so it never asks for tracking permission.</p>
 <p><strong>No device identifiers.</strong> The app does not read your phone's advertising identifier, its vendor identifier or its name.</p>
-<p><strong>What is stored on your phone.</strong> Besides drive recordings (below), the app keeps three small settings for itself:</p>
+<p><strong>What is stored on your phone.</strong> Besides drive recordings (below), the app keeps:</p>
 <ul>
+  <li><strong>your five most recent destinations</strong>, each with its name and location, so the home screen can offer them again,</li>
+  <li>the length of the last loop you asked for,</li>
   <li>the guidance voice you chose,</li>
-  <li>how long each voice takes to speak, so guidance can be timed, and</li>
-  <li>whether voice guidance is muted.</li>
+  <li>how long each voice takes to speak, so guidance can be timed,</li>
+  <li>whether voice guidance is muted,</li>
+  <li>whether you have seen the one-time "Before you drive" notice, and</li>
+  <li>whether the app follows your phone's light or dark appearance.</li>
 </ul>
 
 <h2>Location</h2>
 <p><strong>The app uses your location for one thing: following the route you asked for.</strong> It asks for permission only while you are using the app, never "always". The message iOS shows you is:</p>
 <blockquote>Your location is used to follow the route, turn by turn, while you drive.</blockquote>
 <p><strong>Location continues in the background during a drive, and the blue location indicator shows whenever it does.</strong> This is so a locked phone or an incoming call does not end your drive. Background location is switched off when navigation stops.</p>
-<p><strong>Location is precise.</strong> While you drive, the app asks iOS for the most precise location it offers, about once a second. That is what turn-by-turn guidance needs.</p>
+<p><strong>Location is precise.</strong> While you drive, the app asks iOS for the most precise location it offers, about once a second. That is what turn-by-turn guidance needs. If you have turned off Precise Location for the app, it asks to use precise location for the drive, and it cannot navigate without it.</p>
 
 <h3>Where your location goes</h3>
 <p>To three places, and no others.</p>
@@ -118,7 +122,7 @@
 <ul>
   <li><strong>Refuse location.</strong> The app cannot plan or follow a route without it, but it reads nothing else about your phone.</li>
   <li><strong>Delete recordings</strong> at any time, from the Files app or a Mac.</li>
-  <li><strong>Reset the three stored settings</strong> by deleting the app.</li>
+  <li><strong>Reset the stored destinations and settings</strong> by deleting the app.</li>
 </ul>
 <p>There is no data about you on our server to request, correct or delete, because none is kept.</p>
 

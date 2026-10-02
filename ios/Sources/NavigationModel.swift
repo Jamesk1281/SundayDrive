@@ -286,6 +286,10 @@ final class NavigationModel {
 
     /// Latches once the driver has driven past the loop's far point, after which
     /// a loop reroutes like any other trip — home.
+    ///
+    /// `switchToFastest` sets it too, since giving up the scenery gives up the
+    /// far point, and it is the only thing that ever clears it: when that
+    /// switch never lands, the driver declined nothing.
     private(set) var passedTurnaround = false
 
     /// Whether a fix has yet matched on the near side of the loop's far point.
@@ -311,6 +315,11 @@ final class NavigationModel {
         guard let loop = loopTurnaround, !passedTurnaround else { return nil }
         return loop.coordinate
     }
+
+    /// Whether this is a loop still short of its far point — the one drive on
+    /// which "fastest" means *home*, so `NavView` words the escape hatch that
+    /// way. See `switchToFastest`.
+    var isLoopBeforeFarPoint: Bool { loopWaypoint != nil }
 
     /// Notice the far point going by.
     ///
@@ -1285,17 +1294,27 @@ final class NavigationModel {
         let previousPref = pref
         let previousReroutes = consecutiveReroutes
         let previousOnRouteSince = onRouteSince
+        let previousPassedTurnaround = passedTurnaround
         followingFastest = true
         pref = 0
         // The driver has changed their mind about where they are going, so the
         // history of routes they declined says nothing about this one.
         consecutiveReroutes = 0
         onRouteSince = nil
-        // Both are restored if the request never lands. Left set, the screen
-        // would draw the gray "fastest" line and hide the button — with no
-        // fastest route ever adopted, so no way to retry — while every later
-        // off-route reroute silently asked for pref 0, discarding the scenic
-        // intent on the strength of a request that failed.
+        // On a loop, giving up the scenery gives up the far point too: the
+        // fastest route is the way home. Left pinned, `reroute` asked for the
+        // far point by fast roads — measured on six 60 km loops from 8 km in,
+        // 47–73 km against a fastest way home of 7–8 km. Set here, in state,
+        // and not skipped for this one request: the next off-route reroute
+        // reads `loopWaypoint` too, and would drag the driver back out to the
+        // far point they had just declined.
+        passedTurnaround = true
+        // `followingFastest` and `pref` are restored if the request never
+        // lands. Left set, the screen would draw the gray "fastest" line and
+        // hide the button — with no fastest route ever adopted, so no way to
+        // retry — while every later off-route reroute silently asked for
+        // pref 0, discarding the scenic intent on the strength of a request
+        // that failed.
         //
         // A *superseded* attempt is the one case left alone, because a newer
         // request owns the state by then and restoring would clobber it. That
@@ -1313,6 +1332,11 @@ final class NavigationModel {
             // because one request timed out.
             consecutiveReroutes = previousReroutes
             onRouteSince = previousOnRouteSince
+            // The far point goes back in front of the driver, for the same
+            // reason. Left passed, a switch that never landed would turn every
+            // later reroute of this loop into the short way home — the bug
+            // `LoopRerouteTests` exists to stop.
+            passedTurnaround = previousPassedTurnaround
         case .adopted, .superseded:
             break
         }

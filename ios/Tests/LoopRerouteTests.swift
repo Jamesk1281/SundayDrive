@@ -173,6 +173,109 @@ final class LoopRerouteTests: XCTestCase {
         XCTAssertFalse(nav.passedTurnaround)
     }
 
+    // MARK: - The escape hatch
+
+    // "Switch to fastest" before the far point. The driver is giving up the
+    // rest of the loop, so the far point goes with it: measured on six 60 km
+    // loops from 8 km in, the request pinned through it came back 47–73 km
+    // against a fastest way home of 7–8 km.
+
+    func test_switching_to_fastest_before_the_far_point_heads_home() async {
+        let asked = Asked()
+        let nav = loopDrive(asked)
+        nav.update(Fixture.fixAt(2_000))
+        XCTAssertTrue(nav.isLoopBeforeFarPoint)
+
+        await nav.switchToFastest(from: Fixture.fixAt(2_000))
+
+        XCTAssertEqual(asked.plain, 1, "the fastest way home is a plain route home")
+        XCTAssertEqual(asked.resume, 0, "a driver who gave up the loop was sent "
+                       + "to its far point by fast roads")
+        XCTAssertEqual(asked.to?.latitude ?? 0, origin.latitude, accuracy: 0.0001)
+        XCTAssertTrue(nav.followingFastest)
+        XCTAssertFalse(nav.isLoopBeforeFarPoint)
+    }
+
+    func test_after_heading_home_a_missed_turn_still_heads_home() async {
+        // Why the decision lives in `passedTurnaround` rather than in the one
+        // request: skipping the waypoint only for `reason: "fastest"` sends
+        // the driver home, and then the first off-route reroute reads
+        // `loopWaypoint` again and drags them back out to the far point.
+        let asked = Asked()
+        let fetched = expectation(description: "the switch, then the missed turn")
+        fetched.expectedFulfillmentCount = 2
+        let nav = loopDrive(asked, expectation: fetched)
+        var clock = Date()
+        nav.now = { clock }
+        nav.update(Fixture.fixAt(2_000))
+        await nav.switchToFastest(from: Fixture.fixAt(2_000))
+        XCTAssertEqual(asked.plain, 1)
+
+        // Past the 45 s join grace and the 8 s cooldown, and well clear of
+        // where the switch was asked from, so only the waypoint decides.
+        clock = clock.addingTimeInterval(60)
+        goOffRoute(nav, at: 3_000)
+        await fulfillment(of: [fetched], timeout: 2)
+
+        XCTAssertEqual(asked.plain, 2, "the missed turn should be routed home too")
+        XCTAssertEqual(asked.resume, 0, "a missed turn after heading home sent the "
+                       + "driver back out to the far point")
+    }
+
+    func test_a_switch_that_never_lands_puts_the_far_point_back() async {
+        // The other half. A switch that failed declined nothing, so the loop
+        // has to carry on as a loop: left passed, every later reroute would be
+        // the short way home — the bug at the top of this file.
+        let asked = Asked()
+        let fetched = expectation(description: "the missed turn was fetched")
+        let nav = loopDrive(asked, expectation: fetched)
+        var clock = Date()
+        nav.now = { clock }
+        nav.fetchRoute = { _, _, _, _, _ in
+            asked.plain += 1
+            throw URLError(.timedOut)
+        }
+        nav.update(Fixture.fixAt(2_000))
+        await nav.switchToFastest(from: Fixture.fixAt(2_000))
+
+        XCTAssertEqual(asked.plain, 1, "the switch should have asked for the way home")
+        XCTAssertFalse(nav.passedTurnaround, "a switch that never landed passed the far point")
+        XCTAssertTrue(nav.isLoopBeforeFarPoint)
+        XCTAssertFalse(nav.followingFastest)
+
+        clock = clock.addingTimeInterval(20)        // past the 8 s cooldown
+        goOffRoute(nav, at: 3_000)
+        await fulfillment(of: [fetched], timeout: 2)
+
+        XCTAssertEqual(asked.resume, 1, "the next missed turn should go through the far point")
+        XCTAssertEqual(asked.plain, 1, "a failed switch turned the loop into the way home")
+        XCTAssertEqual(asked.via?.latitude ?? 0, turnaround.latitude, accuracy: 0.0001)
+    }
+
+    func test_the_escape_hatch_says_home_only_where_it_goes_home() {
+        let loop = loopDrive(Asked())
+        let home = NavView.FastestPrompt(loopBeforeFarPoint: loop.isLoopBeforeFarPoint)
+        XCTAssertEqual(home.title, "Head home the fastest way?")
+        XCTAssertEqual(home.confirm, "Head home")
+        XCTAssertEqual(home.label, "Head home the fastest way")
+
+        // Past the far point a loop is heading home whatever happens, and an
+        // ordinary trip has no far point: both keep the words they had.
+        let unchanged = NavView.FastestPrompt(loopBeforeFarPoint: false)
+        XCTAssertEqual(unchanged.title, "Switch to the fastest route?")
+        XCTAssertEqual(unchanged.message, "This gives up the scenic route for the rest of the drive.")
+        XCTAssertEqual(unchanged.confirm, "Switch to fastest")
+        XCTAssertEqual(unchanged.label, "Switch to the fastest route")
+
+        loop.update(Fixture.fixAt(5_000))
+        XCTAssertEqual(NavView.FastestPrompt(loopBeforeFarPoint: loop.isLoopBeforeFarPoint),
+                       unchanged)
+        let trip = NavigationModel(route: Fixture.straightRoute(),
+                                   destination: Fixture.north(5_000),
+                                   pref: 1.0, weights: [:])
+        XCTAssertFalse(trip.isLoopBeforeFarPoint)
+    }
+
     // MARK: - Arrival
 
     /// A drive around a loop whose line actually closes.

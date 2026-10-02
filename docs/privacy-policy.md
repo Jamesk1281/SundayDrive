@@ -73,22 +73,28 @@ domains list.
 **No device identifiers.** Nothing in `ios/Sources` reads an advertising
 identifier, a vendor identifier, or the device name.
 
-**What is stored on your phone** — three small settings in `UserDefaults`, all
-of them the app reading back its own preferences:
+**What is stored on your phone**, besides drive recordings (§3), is kept in
+`UserDefaults`. All of it is the app reading back its own data, and one item is
+a short history of where you have been going: the destinations you last
+searched for.
 
 | What | Where |
 | --- | --- |
+| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-50`, written by `RouteModel.swift:182-189` |
+| The length of the last loop you asked for | `ios/Sources/LoopModel.swift:51-52`, `:247` |
 | The chosen guidance voice | `ios/Sources/VoiceCatalogue.swift:118-119` |
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
 | Whether voice guidance is muted | `ios/Sources/VoiceGuide.swift:351-352` |
+| Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:47` |
+| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:240`, read by `ContentView.swift:23` |
 
 ---
 
 ## 2. Location
 
 **The app uses your location for one thing: following the route you asked for.**
-It requests *when in use* authorization only (`LocationManager.swift:145`,
-`:218`) — never "always" — and the purpose string the system shows you is the
+It requests *when in use* authorization only (`LocationManager.swift:182`,
+`:287`) — never "always" — and the purpose string the system shows you is the
 one at `ios/project.yml:21`: "Your location is used to follow the route, turn
 by turn, while you drive."
 
@@ -103,14 +109,14 @@ in the project.
 **Location continues while the app is in the background, and the blue bar shows
 whenever it does.** `UIBackgroundModes` includes `location`
 (`ios/project.yml:43-44`), and the app opts into
-`showsBackgroundLocationIndicator` (`LocationManager.swift:150-151`), so
+`showsBackgroundLocationIndicator` (`LocationManager.swift:195-196`), so
 background location is always visible in the status bar. Without this, a
 locked phone or an incoming call silently ends a drive; the reasoning is written
 out at `ios/project.yml:22-42`. Background updates are switched off again when
-navigation stops (`LocationManager.swift:163`).
+navigation stops (`LocationManager.swift:208`).
 
 **Accuracy is set to `kCLLocationAccuracyBestForNavigation`**
-(`LocationManager.swift:104`) with no distance filter (`:116`) — about one fix
+(`LocationManager.swift:141`) with no distance filter (`:153`) — about one fix
 per second while driving. This is the accuracy turn-by-turn guidance needs; it
 is also the most precise location iOS will give an app.
 
@@ -192,10 +198,39 @@ server** — only the coordinates Apple resolves them to.
 
 ### 2.2 Precise location and iOS's "approximate" setting
 
-The app does not currently handle reduced accuracy: there is no
-`requestTemporaryFullAccuracyAuthorization` call anywhere in `ios/Sources`.
-Turn-by-turn guidance needs precise location to work at all. *(Behaviour under
-an approximate-location grant is untested — see §7.)*
+Turn-by-turn guidance needs precise location, and the app does not navigate on
+approximate location. It acts only on fixes with a stated error of 65 m or less
+(`usableAccuracy`, `LocationManager.swift:76`), and an approximate fix is
+kilometres wide: the one measured below was 11,920 m.
+
+**If location is allowed but Precise Location is off, the app asks for precise
+location.** It asks when a drive starts and when "My Location" is tapped while
+planning (`requestTemporaryFullAccuracyAuthorization`,
+`LocationManager.swift:188-190` and `:237-239`). iOS shows its own prompt,
+*Allow "Sunday Drive" to use your precise location once?*, with the purpose
+string from the `NSLocationTemporaryUsageDescriptionDictionary` entry in
+`ios/project.yml`: "Turn-by-turn guidance needs your precise location to follow
+the route." The two answers are **Allow Once** and **Don't Allow**. Allow Once
+does not change the setting. The next launch started with Precise Location off
+again, and asked again. Apple's documentation (`CLLocationManager.h`) says the
+grant lasts while the app is in use, and through a drive for as long as the
+blue location indicator shows.
+
+**If you decline, the app says so and does not navigate.** The drive's banner
+reads "Precise Location is off · Turn it on in Settings to navigate". Every
+approximate fix is discarded, so no position is recorded (§3). Until a usable
+fix arrives, the banner says "Waiting for GPS" rather than a distance. Declined
+from "My Location", planning goes ahead from the approximate fix, so the start
+of a planned route can be kilometres out.
+
+*Observed 2026-10-01 in the simulator (iPhone 17 Pro, iOS 26.4), with Precise
+Location switched off in Settings and a drive played along Northampton →
+Amherst. Before the change, no fix was ever accepted and the screen said "50 ft
+away · Head to the start of your route". After it, starting a drive raised the
+prompt. **Allow Once** switched the grant to full accuracy, and from then on 5 m
+fixes were accepted once a second and the drive navigated. **Don't Allow** left
+the banner above, with the one approximate fix that arrived (11,920 m)
+discarded.*
 
 ---
 
@@ -250,7 +285,7 @@ Category rules is a §7 item.)*
 - ~~**Don't record.**~~ Not a choice the app offers: every navigated drive
   is recorded (§3). Deleting recordings is the control there is.
 - **Delete recordings** at any time, from the Files app or a Mac (§3).
-- **Reset the three stored settings** by deleting the app.
+- **Reset the stored destinations and settings** by deleting the app.
 
 There is no server-side data about you to request, correct or delete, because
 none is kept.
@@ -302,10 +337,10 @@ characterisations are not mine to make. In order of how much turns on them:
    Connect is an owner decision that changes this answer.
 5. **Children (§4).** Whether the assertion is sufficient, and what age rating
    the listing should carry.
-6. **Reduced-accuracy behaviour (§2.2).** Not a legal question but a factual gap
-   in this draft: nobody has tested what the app does when iOS grants
-   approximate location. The policy should not describe behaviour that has not
-   been observed. **Test it, then write what happens.**
+6. ~~**Reduced-accuracy behaviour (§2.2).**~~ **Resolved 2026-10-01:** tested
+   in the simulator and found broken (no fix was ever accepted, and the screen
+   said "50 ft away · Head to the start of your route"). It was then fixed and
+   tested again, and §2.2 now describes what was observed. Not a legal question.
 7. ~~**The contact address (§6).**~~ **Resolved 2026-09-29:** privacy@jameskouvlis.com.
 8. ~~**The app's name.**~~ **Resolved 2026-09-20, and again 2026-09-21.** The
    app is **Sunday Drive** (`docs/sunday-drive-naming.md`), renamed from Victory
