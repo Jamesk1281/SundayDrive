@@ -2,6 +2,30 @@
 
 **Status: reviewed `6f26edf`. Verdict: SUBMIT AFTER (four blockers: K-7, approximate location, AR-1, and C-1 before launch day).**
 
+> **Where it stands, 2026-10-04 (main past `f9f1937`).**
+>
+> **Fixed** by round 1 ([`pre-submission-fixes-brief.md`](pre-submission-fixes-brief.md)):
+> - K-7 (`45b1589`)
+> - §6.2, approximate location (`09890a8`)
+> - K-2 (`261b3c0`)
+> - K-6 (`36f5adf`)
+> - K-10 (`8e3772d`)
+> - AR-3, the text only (`8c56c11`)
+>
+> **Still open, of the blockers:**
+> - AR-1: the review notes, and the out-of-region copy.
+> - C-1: the winter-closure mask. It has to be live before the app is public
+>   at all, not only before L, because a user who installs it after a quiet
+>   release in Vermont gets the same closed roads.
+>
+> **Still open, of the "before L" list:**
+> - AR-2 and AR-4/C-2, which are owner decisions.
+> - C-3.
+> - K-1.
+> - A "Clear recent destinations" control.
+>
+> Everything below is as reviewed at `6f26edf`.
+
 Answer to `docs/pre-submission-review-brief.md` (committed alongside). Every
 `file:line` below is at `6f26edf8cc00e8dedebd836a03a6798c34af7b19`, read with
 `git show 6f26edf:<file>`. `<main>` is the main checkout.
