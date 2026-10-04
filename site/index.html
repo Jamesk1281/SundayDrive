@@ -3,12 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="0; url=privacy/">
-<link rel="canonical" href="privacy/">
-<title>Sunday Drive</title>
-<style>body{margin:0;padding:2rem 16px;background:#fbfaf7;color:#1d1c1a;font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}a{color:#8a5a12}@media (prefers-color-scheme:dark){body{background:#161513;color:#ece8df}a{color:#e0a94f}}</style>
+<meta name="referrer" content="no-referrer">
+<title>Sunday Drive · Support</title>
+<!--
+  The Support URL in App Store Connect, https://jamesk1281.github.io/SundayDrive/
+  (.github/workflows/pages.yml publishes site/). Guideline 1.5 wants a way to
+  contact the developer from it. See docs/support-page-brief.md.
+  Links are relative: Pages serves this repo under /SundayDrive/, so a link
+  that starts with a slash leaves the site and 404s. What the app keeps is
+  said in one place, privacy/index.html: link to it, don't describe it here.
+  No scripts, no fonts, no external assets: tests/test_support_page.py checks
+  that. The palette and type are the privacy page's.
+-->
+<style>
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1d1c1a;
+    --ink2: #5b5850;
+    --rule: #e4e0d6;
+    --accent: #8a5a12;
+    --note: #f3eee2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #161513;
+      --ink: #ece8df;
+      --ink2: #a9a499;
+      --rule: #34312b;
+      --accent: #e0a94f;
+      --note: #211f1b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    overflow-wrap: break-word;
+  }
+  main { max-width: 40rem; margin: 0 auto; padding: 2rem 16px 4rem; }
+  h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 .25rem; }
+  h2 { font-size: 1.2rem; margin: 2.25rem 0 .5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+  h3 { font-size: 1rem; margin: 1.5rem 0 .25rem; }
+  p, ul { margin: 0 0 1rem; }
+  ul { padding-left: 1.25rem; }
+  li { margin-bottom: .4rem; }
+  a { color: var(--accent); }
+  .meta { color: var(--ink2); font-size: .95rem; margin-bottom: 1.5rem; }
+  .contact { background: var(--note); border-radius: 12px; padding: 1rem 1.1rem; margin: 1.5rem 0; }
+  .contact h2 { margin: 0 0 .25rem; padding: 0; border: 0; }
+  .contact p { margin: 0; }
+  .contact .email { font-size: 1.2rem; font-weight: 600; margin-top: .35rem; }
+  .credits li { margin-bottom: .75rem; }
+  .credits span { display: block; font-size: .9rem; }
+  .credits .licence { color: var(--ink2); }
+</style>
 </head>
 <body>
-<p><a href="privacy/">Sunday Drive Privacy Policy</a></p>
+<main>
+
+<h1>Sunday Drive</h1>
+<p class="meta">Support</p>
+
+<p>Sunday Drive is a free iPhone app (iOS 17 or later) that plans the scenic way to somewhere, or a loop from where you are, in the six New England states: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island and Vermont. Every road is scored for scenery from open data. No account, no ads, no tracking, and it is <a href="https://github.com/Jamesk1281/SundayDrive">open source</a>.</p>
+
+<div class="contact">
+<h2>Contact</h2>
+<p>Questions, problems or feedback? Email the developer:</p>
+<p class="email"><a href="mailto:support@jameskouvlis.com">support@jameskouvlis.com</a></p>
+</div>
+
+<h2>Common questions</h2>
+
+<h3>It says the point is outside the covered road network</h3>
+<p>Sunday Drive covers New England only. From anywhere, you can type a New England town as your start. <strong>Loop</strong> and <strong>My Location</strong> only work when you are in New England.</p>
+
+<h3>It asks for Precise Location</h3>
+<p>Turn-by-turn guidance needs your precise position. With Precise Location off, starting a drive asks to use it for that drive. If you decline, the app cannot navigate, and it says so. You can turn Precise Location on in Settings, under Sunday Drive → Location.</p>
+
+<h3>Does it work offline, on CarPlay, or on Android?</h3>
+<p>No. Routes are computed on our routing server, so the app needs a data connection. There is no CarPlay or Android version.</p>
+
+<h3>Safety</h3>
+<p>Mount your phone, and don't handle it while you drive. Some roads close for part of the year and the app may not know, so follow posted signs and closures.</p>
+
+<h3>What does the app keep about me?</h3>
+<p>See the <a href="privacy/">privacy policy</a>.</p>
+
+<h2>Links</h2>
+<ul>
+  <li><a href="privacy/">Privacy policy</a></li>
+  <li><a href="https://github.com/Jamesk1281/SundayDrive">Source code on GitHub</a>, under the Apache License 2.0</li>
+</ul>
+
+<h2>Data credits</h2>
+<ul class="credits">
+  <li>Map data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+    <span class="licence">Open Database License (ODbL) 1.0</span></li>
+  <li><a href="https://esa-worldcover.org">ESA WorldCover 10 m 2021 v200</a>
+    <span>© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium</span>
+    <span class="licence">Creative Commons Attribution 4.0 International (CC BY 4.0)</span></li>
+  <li><a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles (AWS Open Data, formerly Mapzen)</a></li>
+  <li>Basemap and place search © Apple Inc. and its data providers, credited on the map itself.</li>
+</ul>
+<p>The full credits for OpenStreetMap and Terrain Tiles are on the app's <strong>Sources</strong> screen.</p>
+
+<!--
+  App Store badge: added once the app has an App Store ID. Download the
+  artwork from Apple's marketing resources, commit it under site/, and link
+  it with a relative path. Never hotlink it.
+-->
+
+</main>
 </body>
 </html>
