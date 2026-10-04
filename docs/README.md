@@ -138,6 +138,7 @@ to these except their own answers.
 | [voice-guidance-plan-brief.md](archive/voice-guidance-plan-brief.md) | `VoiceGuide.swift:12-20`, and re-measured on a second sample in `voice-guidance-plan.md` §3 |
 | [geodata-peer-review-brief.md](archive/geodata-peer-review-brief.md) | `geodata-peer-review-verdict.md`, which is the review it commissioned |
 | [documentation-structure-brief.md](archive/documentation-structure-brief.md) | `documentation-structure-proposal.md` |
+| [roadmap-draft-2026-09-16.md](archive/roadmap-draft-2026-09-16.md) | Never adopted. `roadmap.md` replaced it, and `release-plan.md` sequences the release |
 
 ---
 
