@@ -189,6 +189,31 @@ struct RouteComparison {
     /// Redefining it on the mile counts would need a new census.
     var isSameDrive: Bool { extraMinutes <= 0 && !scoreMoves }
 
+    /// What the extra minutes buy: the "+11" in the dial's headline, "+47 min ·
+    /// +11 mi of beautiful road". Nil whenever there is no gain to print, and
+    /// `summary` takes the headline's place.
+    ///
+    /// A difference, because the minutes in front of it are one. The headline
+    /// used to print the scenic route's *total* there: Concord → Rockport read
+    /// "+47 min · 13 mi of beautiful road" while the fastest route already had
+    /// 2, and on 163 of the 846 census trips that cost time it printed at least
+    /// twice the real gain.
+    ///
+    /// The difference of the two whole-mile figures the ledger prints, not the
+    /// kilometres subtracted and rounded once — the rule `extraMinutes` follows,
+    /// for the same reason. Over cards reading 13 and 2, 13.4 − 1.6 mi rounds to
+    /// 12, and the headline would be the one number on screen that does not
+    /// check out.
+    ///
+    /// Nil for the same drive, which the headline names instead, and nil for a
+    /// tie or a fall rather than "+0 mi" or a fall clamped to zero: `summary`
+    /// already words both, and the fall is what it exists to state plainly.
+    var headlineGain: Int? {
+        guard !isSameDrive, let miles = beautifulMiles, miles.scenic > miles.fastest
+        else { return nil }
+        return miles.scenic - miles.fastest
+    }
+
     /// The sentence under the cards, as markdown.
     ///
     /// Four shapes past "same drive". "Scenic adds 0 min and turns 3 mi of

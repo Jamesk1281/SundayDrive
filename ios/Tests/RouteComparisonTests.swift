@@ -319,4 +319,91 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertTrue(c.summary.contains("lowers"), c.summary)
         XCTAssertFalse(c.summary.contains("raises"), c.summary)
     }
+
+    // MARK: - The dial's headline prints what the extra minutes buy
+
+    func test_the_headline_prints_the_gain_not_the_scenic_total() {
+        // Concord → Rockport at the default setting, production API: "+47 min ·
+        // 13 mi of beautiful road" over cards reading 13 and 2. The minutes
+        // were a difference and the miles a total; the 47 minutes buy 11.
+        //
+        // 13.4 and 1.6 mi rather than that day's 13.0 and 1.6, so the case
+        // also pins how the gain is taken: subtracting first and rounding once
+        // gives 11.8 → 12, over two cards that subtract to 11.
+        let c = comparison(fastest: 52.9, scenic: 99.8,
+                           fastestBeautifulKm: km(miles: 1.6),
+                           scenicBeautifulKm: km(miles: 13.4))
+
+        XCTAssertEqual(c.extraMinutes, 47)
+        XCTAssertEqual(c.fastestDetail, "2 mi beautiful")
+        XCTAssertEqual(c.scenicDetail, "13 mi beautiful")
+        XCTAssertEqual(c.headlineGain, 11)
+    }
+
+    func test_a_gain_at_no_extra_time_stays_the_headline() {
+        // "No extra time · +8 mi of beautiful road": the best news this screen
+        // has, so it must not drop to the sentence.
+        let c = comparison(fastest: 57.6, scenic: 58.2,
+                           fastestBeautifulKm: km(miles: 1.0),
+                           scenicBeautifulKm: km(miles: 9.0))
+
+        XCTAssertEqual(c.extraMinutes, 0)
+        XCTAssertFalse(c.isSameDrive)
+        XCTAssertEqual(c.headlineGain, 8)
+    }
+
+    func test_minutes_that_buy_no_more_beautiful_road_never_read_plus_zero() {
+        // The cards tie at 4 mi, so "+1 min · +0 mi" would advertise a gain of
+        // nothing. The sentence says the minute leaves the count where it was.
+        let c = comparison(fastest: 23.0, scenic: 24.0,
+                           fastestBeautifulKm: km(miles: 4.2),
+                           scenicBeautifulKm: km(miles: 4.4))
+
+        XCTAssertEqual(c.extraMinutes, 1)
+        XCTAssertNil(c.headlineGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "Scenic adds 1 min and leaves beautiful road at 4 mi")
+    }
+
+    func test_a_cut_is_neither_a_negative_gain_nor_clamped_to_zero() {
+        // One of the worst real readouts in the census: "+43 min · 10 mi of
+        // beautiful road" on a trip whose fastest route has 11. Not "−1 mi" and
+        // not "+0 mi": the sentence names the fall.
+        let c = comparison(fastest: 30.0, scenic: 73.0,
+                           fastestBeautifulKm: km(miles: 11.0),
+                           scenicBeautifulKm: km(miles: 10.0))
+
+        XCTAssertEqual(c.extraMinutes, 43)
+        XCTAssertNil(c.headlineGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "Scenic adds 43 min and cuts beautiful road from 11 mi to 10 mi")
+    }
+
+    func test_the_same_drive_has_no_gain_to_announce() {
+        // The headline reads "Same as the fastest route" here, so a gain could
+        // only reach VoiceOver, which would announce a mile the screen does
+        // not. 4.4 and 4.6 mi print 4 and 5, so this pins that the same drive
+        // wins, not merely that the miles happen to tie.
+        let c = comparison(fastest: 57.6, scenic: 57.6,
+                           fastestScore: 4.4, scenicScore: 4.4,
+                           fastestBeautifulKm: km(miles: 4.4),
+                           scenicBeautifulKm: km(miles: 4.6))
+
+        XCTAssertTrue(c.isSameDrive)
+        XCTAssertNil(c.headlineGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "Same as the fastest route at this setting.")
+    }
+
+    func test_an_older_backend_has_no_gain_to_print() {
+        // No `beautiful_km`, so no miles to subtract: the readout keeps the
+        // sentence that shipped before the cards counted miles. The plain text
+        // is what VoiceOver reads, since `summary` itself carries `**`.
+        let c = comparison(fastest: 57.6, scenic: 106.4)
+
+        XCTAssertNil(c.beautifulMiles)
+        XCTAssertNil(c.headlineGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "Scenic adds 48 min and raises scenery 4.4 → 6.1")
+    }
 }
