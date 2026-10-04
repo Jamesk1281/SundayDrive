@@ -1,10 +1,100 @@
 # Brief: stop routing over roads that are closed for the season
 
-**Status: diagnosed and decided, not fixed.** Written 2026-10-04 against `main`
-at `454e2cc`. No source file has been touched for this brief. This is
-`pre-submission-review-verdict.md` C-1, the last code blocker before the app is
-public. Read that section for the evidence. This brief adds the code facts and
-the decisions, and does not repeat the derivation.
+**Status: built 2026-10-04 on `claude/inspiring-cannon-89c90c`, not merged or
+deployed.** The result comes first, below. The brief follows it unchanged.
+
+## Result
+
+**The table.** `pipeline/closures.py` scanned the PBF with extract.py's filter:
+565,410 drivable ways, equal to `roads.parquet`. It flags **179 ways, 205 edges,
+161.8 km**, every one of them in the served graph, in 217 rows (12 edges carry
+two windows). Length-weighted score 5.91, 36.6% of km at 7 or more (verdict:
+5.93 and 37.2%). By window, where the 6 ways with two windows count in both:
+
+| window | ways | km | what |
+|---|---|---|---|
+| Oct 15 - May 15 | 4 | 3.3 | Lincoln Gap Road |
+| Nov 1 - Apr 30 | 176 | 157.2 | VT-108, the Auto Road, ME 113 and the rest |
+| Nov 1 - May 31 | 1 | 7.9 | Hurricane Mountain Road |
+| Dec 1 - Mar 31, Dec 1 - Apr 1, Dec 1 - May 31 | 4 | 5.1 | Mount Agamenticus's Mountain Road and Forest Roads 59 and 59B in Maine, Ayer Road in Vermont |
+
+**Why 179 and not 190.** Read literally, the verdict's rule ("a `*:conditional`
+containing `no` and a month, `winter` or `snow`") flags 195 ways here. The 16
+between 179 and 195 are what decision 2 excludes, applied one rule at a time:
+- **8 dated one-off closures.** Read as annual windows, they would recur
+  forever: four Manchester, NH ramps (2022), Lyman Street (2020-21), Crosby
+  Street (to 2026-10-03) and Burnham Road (2026-03-31 to 10-31, the only one
+  still running).
+- **8 part-time rules** that name months and also a weekday or a time:
+  - Baxter Boulevard's summer Sundays (4 ways); read by its months alone, this
+    rule would close the road all summer;
+  - Greenough Street in Brookline (1 way), closed on weekdays 9-4 from
+    September to June;
+  - Farnam Drive and two other roads in New Haven's East Rock Park (3 ways),
+    shut on winter weekdays and every night.
+
+The verdict's script is not committed, so I cannot name its exact 11 extra
+ways. Every way it could have counted beyond these 179 is among the 16.
+
+**Trap 4 occurs on this graph.** Four candidate edges had both ends among a
+closed way's nodes without lying on it. All four belong to parallel *closed*
+carriageways (two on the Auto Road) and are closed through their own ways. So
+here the 1 m test changed which way each edge is attributed to, and not the
+closed set.
+
+**Before and after.** "Before" is `main` at `8e4e5c7` on a local server. "After"
+is this branch, with the request date injected through a scratch wrapper. On
+2026-10-04, 10-10 and 2027-07-15, every response (4 routes, 8 loop requests
+with every sector) is byte-identical to `main`'s. Closed km is measured the
+verdict's way, inside a 3 m buffer:
+
+| request | `main` | this branch |
+|---|---|---|
+| Stowe → Jeffersonville, pref 0.5 | Both arms: "Head north on Mountain Road", "Continue onto Vermont Route 108 South". 27.9 km, 28 min, 4.8 km closed | On 2027-01-15: Pucker Street, Cadys Falls Road, "Turn left onto Vermont Route 15 West". 39.6 km / 44 min fastest, 38.6 km / 45 min scenic, none closed |
+| Warren → Bristol, pref 0.5 | Both arms: "Turn right onto Lincoln Gap Road". 22.6 km, 27 min | On 2026-10-20: "Turn left onto Vermont Route 17", over the Appalachian Gap. 39.2 km, 36 min |
+| Reroute at the gap's east end, heading 90 | Both arms: "Turn right onto Lincoln Gap Road", back over the gap. 17.4 km, 21 min | On 2026-10-20: "Turn left onto Lincoln Gap Road" (the open stretch, east), "Turn left onto Vermont Route 100", then VT-17. 44.2 km, 42 min |
+| Loops of 40 and 80 km from Stowe, Warren, Jackson, Jefferson, every sector | 19 of 53 carry more than 0.2 km of closed road. The first loop offered does in 5 of 8, and Jefferson's 80 km one has 25.0 km on it | On 2027-01-15: 0 of 48, and 0 of 8. Five directions drop out: Stowe 40 NW; Warren 40 SW, W and NW; Jackson 80 NE |
+| Jackson → Chatham (verdict's third row) | "Turn left onto Hurricane Mountain Road", 7.9 km closed | On 2027-01-15: through North Conway and East Conway Road. 49.7 km, 50 min |
+
+**Recorded, not acted on (Trap 5).** The counts reproduce the verdict's; the
+kilometres differ because its join is not committed:
+
+| set | ways in the PBF | with graph edges | km |
+|---|---|---|---|
+| `motor_vehicle`/`motorcar`/`vehicle` = `no`/`private` | 460 | 452 | 151.5 |
+| behind a blocking barrier no access tag opens | 418 | 404 | 134.7 |
+
+**What these rules miss.** Each one needs a separate decision:
+- **Mt Greylock**, the highest-scoring set of the lot: Rockwell Road and Notch
+  Road, 18 ways, 20.5 km, score 7.99, 96% of km at 7 or more.
+  - They are tagged `motor_vehicle:conditional=yes @ (May 20-Oct 29,
+    sunrise-sunset)` with no base `no`, which means "closed Oct 30 - May 19".
+    Decision 2 reads only `no @`, so from Oct 30 every route and loop can use
+    them.
+  - The fix is to read `yes @ <dates>` on a car key as closed outside them.
+    That is about ten lines in `closures.py` and a table rebuild.
+- **Farnam Drive** is closed on winter weekdays. Pricing that needs a weekday
+  in the window.
+- **Howeville Road** carries `seasonal=winter`, probably a mistag for "not
+  maintained in winter".
+
+**Decided while building, beyond the brief:**
+- **A stale table stops the server.** A table whose rows do not match
+  `graph_edges.parquet`'s `u`/`v` raises at startup, so `closures.py` reruns
+  after every `graph.py` (README).
+- **`on=None` closes nothing.** Only the server passes a date, which keeps
+  tools and the existing tests on the year-round graph.
+- **`test_api.py` pins the date** to 2027-07-15, so its results no longer depend
+  on the date the suite runs.
+- **The deploy script echoes the closure line.** After a restart, it prints the
+  router's `seasonal closures: ...` line from the journal. That line is
+  untested against the box.
+
+**Tests.** `tests/test_closures.py` holds 93 tests. The suite: **489 passed,
+0 failed** (396 before), exit 0. 12 deliberate breakages were all caught once
+one test was added. That test covers the breakage that had survived: dropping
+the date from one arm of the `via` rejoin. Once the table is on the box, the
+box's count in `server/DEPLOY-oracle.md` rises by 93.
 
 ## The symptom, measured (verdict C-1, 2026-09-30, New England build)
 

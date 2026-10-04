@@ -35,6 +35,11 @@ start snaps to the end of its road that lies ahead rather than the nearer one,
 so a mid-drive reroute doesn't open by turning the driver around. Send it only
 while moving; omit it when planning from a parked car.
 
+Every route and loop avoids the roads OpenStreetMap marks closed for the season
+on the day of the request, in New England's time zone (pipeline/closures.py).
+When the only way to a destination is one of them, /api/route says so: a 404
+whose error is CLOSED_FOR_SEASON.
+
 Run:  python server/app.py [processed_dir]   (default: data/processed)
 """
 
@@ -51,7 +56,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
                     LoopPlanner)  # noqa: E402
-from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED, Router)  # noqa: E402
+from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED, Router,  # noqa: E402
+                    region_today)
 
 # How far a user may push a single beauty type. 0 ignores it; the upper bound
 # keeps one cranked slider from completely swamping the others.
@@ -82,6 +88,11 @@ LOOP_RETRACE_NOTE = 0.15
 REGION = (os.environ.get("SUNDAYDRIVE_REGION")
           or os.environ.get("VICTORYLAP_REGION")
           or os.environ.get("SCENIC_REGION", "New England"))
+
+# The 404 for a trip that only a road closed for the season connects. Kept
+# apart from "no route found", which reads as a wrong pin or a broken app: this
+# place is real, and the road to it opens again in spring.
+CLOSED_FOR_SEASON = "the only way there is closed for the season"
 
 # Reject a request whose endpoint lies farther than this from any road — it's
 # outside the covered region (see REGION), and the "nearest" road would be in an
@@ -123,9 +134,11 @@ LOOP_LOCK = threading.Lock()
 # Built loops, keyed by the whole request. The planner's caches make a *new* loop
 # cost ~0.65 s; this makes an *identical* request cost nothing, which is the
 # common interaction and not an edge case — shuffling forward through the
-# directions and then back to the one you liked is how this button gets used. A
-# cached entry can never go stale: the graph is loaded once for the life of the
-# process, so the same request has the same answer.
+# directions and then back to the one you liked is how this button gets used.
+# The graph is loaded once for the life of the process, but the roads closed
+# for the season change on fixed dates while it runs, so the key carries the
+# closure version too. Without it a loop cached on Oct 14 would go on being
+# served over Lincoln Gap after Oct 15.
 LOOP_RESULTS = {}
 LOOP_RESULTS_MAX = 16
 
@@ -136,6 +149,17 @@ print(f"ready: {len(ROUTER.nodes):,} nodes "
 def _parse_ll(s: str):
     lat, lon = (float(x) for x in s.split(","))
     return lat, lon
+
+
+def _today():
+    """The day this request's seasonal closures are judged on.
+
+    Called once per request and handed to every search the request makes, so a
+    request that straddles midnight cannot price its two arms on different
+    days. And the one place the tests replace the clock: on 2026-10-04 Lincoln
+    Gap is open, so a test that read the real date would prove nothing.
+    """
+    return region_today()
 
 
 def _parse_heading(args):
@@ -250,6 +274,7 @@ def api_route():
     except (KeyError, ValueError):
         return jsonify(error="need from=lat,lon&to=lat,lon[&pref=0..1]"
                              "[&heading=0..360][&via=lat,lon][&w_<type>=...]"), 400
+    day = _today()
 
     # Heading applies to the start only: it says which way the driver is
     # travelling, and a destination isn't travelling anywhere.
@@ -287,27 +312,39 @@ def api_route():
         # Under the loop planner's lock: `resume` reads the same cached cost
         # models that `/api/loop` fills, and they are plain dicts.
         with LOOP_LOCK:
-            fastest = LOOPER.resume(s, w, t, 0.0, weights, avoid_unpaved)
+            fastest = LOOPER.resume(s, w, t, 0.0, weights, avoid_unpaved, on=day)
             scenic = (fastest if pref == 0.0
                       else LOOPER.resume(s, w, t, pref, weights,
-                                         avoid_unpaved))
+                                         avoid_unpaved, on=day))
+            # Asked again with nothing closed only when it failed, so the
+            # common case pays nothing for the better message.
+            closed = ((fastest is None or scenic is None)
+                      and LOOPER.resume(s, w, t, 0.0, weights,
+                                        avoid_unpaved) is not None)
         # `heading` is deliberately dropped here. It picks which end of the
         # driver's road to leave from, and this caller is mid-drive, so it
         # matters — but honouring it would mean starting the search from a
         # different node than the one `snap` returned above, which `resume` has
         # no way to express. A rejoin that opens by turning the car around is
         # worth fixing; see docs/loop-routes-design.md.
+        if closed:
+            return jsonify(error=CLOSED_FOR_SEASON), 404
         if fastest is None or scenic is None:
             return jsonify(error="no route found through that waypoint"), 404
         scenic = _no_worse_than_fastest(fastest, scenic)
         return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
     fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
-                           avoid_unpaved=avoid_unpaved)
+                           avoid_unpaved=avoid_unpaved, on=day)
     scenic = (fastest if pref == 0.0
               else ROUTER.route(s, t, pref, weights, heading=heading,
-                                avoid_unpaved=avoid_unpaved))
+                                avoid_unpaved=avoid_unpaved, on=day))
     if fastest is None or scenic is None:
+        # A route on the graph with nothing closed means the closures are what
+        # cut it off: the destination is up a road shut for the season, or
+        # the driver is already on one.
+        if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
+            return jsonify(error=CLOSED_FOR_SEASON), 404
         return jsonify(error="no route found between those points"), 404
     scenic = _no_worse_than_fastest(fastest, scenic)
     return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
@@ -340,6 +377,7 @@ def api_loop():
     sector = args.get("sector") or None
     if sector is not None and sector not in SECTORS:
         return jsonify(error=f"sector must be one of {', '.join(SECTORS)}"), 400
+    day = _today()
 
     # A loop is planned from a standstill by definition — the driver is choosing
     # a drive, not already on one — so no heading, and `snap` takes the nearer
@@ -352,25 +390,26 @@ def api_loop():
 
     target_km = max(MIN_TARGET_KM, min(MAX_TARGET_KM, target_km))
     key = (start, round(target_km, 1), round(pref, 4), sector,
-           tuple(sorted(weights.items())), round(avoid_unpaved, 4))
+           tuple(sorted(weights.items())), round(avoid_unpaved, 4),
+           ROUTER.closure_version(day))
     with LOOP_LOCK:
         cached = LOOP_RESULTS.pop(key, None)
         if cached is not None:
             LOOP_RESULTS[key] = cached          # move to the warm end
             return jsonify(cached)
         loop = LOOPER.plan(start, target_km, pref, weights, sector=sector,
-                           avoid_unpaved=avoid_unpaved)
+                           avoid_unpaved=avoid_unpaved, on=day)
         if loop is None:
             # Only reachable when the geography has nothing at all in that
             # direction at that length, since `plan` returns the best available
             # rather than holding out for a good one.
             nearest = LOOPER.nearest_length(start, target_km, pref, weights,
-                                            avoid_unpaved)
+                                            avoid_unpaved, on=day)
             hint = (f" The nearest loop from here is about {nearest:.0f} km."
                     if nearest else "")
             return jsonify(error="no loop of that length from there." + hint), 404
         available = LOOPER.sectors(start, loop.target_km, pref, weights,
-                                   avoid_unpaved)
+                                   avoid_unpaved, on=day)
 
     note = None
     if loop.repeated_fraction > LOOP_RETRACE_NOTE:

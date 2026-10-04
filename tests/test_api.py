@@ -5,6 +5,7 @@ silent decode failure on the phone.
 """
 
 import sys
+from datetime import date
 
 import pytest
 
@@ -25,6 +26,11 @@ def client():
     sys.path.insert(0, str(ROOT / "server"))
     import app as server_app
     server_app.app.config["TESTING"] = True
+    # Never the real clock. The server judges seasonal closures on the
+    # request's date, and these tests would otherwise answer differently from
+    # November on. July closes nothing; tests/test_closures.py moves the date
+    # wherever the date is the point.
+    server_app._today = lambda: date(2027, 7, 15)
     return server_app.app.test_client()
 
 

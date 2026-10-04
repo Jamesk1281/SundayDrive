@@ -42,6 +42,12 @@ CONTROL_KINDS = {
 CONTROL_COLUMNS = [f"n_{kind}_{d}" for kind in ("signal", "stop", "giveway")
                    for d in ("fwd", "rev")]
 
+# The closed window on each row of seasonal_closures.parquet, both ends
+# included: written by closures.py and read by router.py, here for the same
+# reason as CONTROL_COLUMNS. A window whose start falls after its end wraps the
+# year end, as Nov 1 - Apr 30 does.
+CLOSURE_WINDOW = ("start_month", "start_day", "end_month", "end_day")
+
 # oneway= values, and which direction they permit. Shared because graph.py and
 # router.py have to agree exactly: graph.py decides which nodes are mutually
 # reachable and router.py decides which edges may be traversed, so a road that
