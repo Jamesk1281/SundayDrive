@@ -73,8 +73,8 @@ domains list.
 **No device identifiers.** Nothing in `ios/Sources` reads an advertising
 identifier, a vendor identifier, or the device name.
 
-**What is stored on your phone**, besides drive recordings (§3), is kept in
-`UserDefaults`. All of it is the app reading back its own data, and one item is
+**What is stored on your phone** is kept in `UserDefaults`; drives are not
+recorded (§3). All of it is the app reading back its own data, and one item is
 a short history of where you have been going: the destinations you last
 searched for.
 
@@ -194,8 +194,6 @@ starting from sends a coordinate to Apple's reverse geocoder
 policy, not this one. **Addresses you type are never sent to the routing
 server** — only the coordinates Apple resolves them to.
 
-**(c) To a file on your own phone, if a drive is recorded.** See §3.
-
 ### 2.2 Precise location and iOS's "approximate" setting
 
 Turn-by-turn guidance needs precise location, and the app does not navigate on
@@ -218,7 +216,7 @@ blue location indicator shows.
 
 **If you decline, the app says so and does not navigate.** The drive's banner
 reads "Precise Location is off · Turn it on in Settings to navigate". Every
-approximate fix is discarded, so no position is recorded (§3). Until a usable
+approximate fix is discarded. Until a usable
 fix arrives, the banner says "Waiting for GPS" rather than a distance. Declined
 from "My Location", planning goes ahead from the approximate fix, so the start
 of a planned route can be kilometres out.
@@ -236,36 +234,27 @@ discarded.*
 
 ## 3. Drive recordings
 
-**Every navigated drive is recorded** — `RouteModel.startNavigation` and
-`startLoopDrive` open a `DriveTrace` unconditionally (`RouteModel.swift:267-273`,
-`:296`), and there is no setting to turn it off. *(Corrected 2026-09-29. Until
-then this section said the app "can" record and §5 called recording "a
-deliberate act, not a default"; both were wrong from the day the draft was
-written.)* A recording contains, once per second, the
-raw GPS fix and where it fell on the route: latitude, longitude, horizontal
-accuracy, altitude, speed and a timestamp; plus the route being followed, any
-"nice"/"dull" verdicts tapped during the drive, when the app went to the
-background, and how the drive ended (`DriveTrace.swift:115`, `:199`, `:258-267`,
-`:326-337`, `:360`, `:368`). **Taken together that is a detailed record of where
-you drove and when.**
+**The app does not record drives.** `RouteModel.startNavigation` and
+`startLoopDrive` open a `DriveTrace` only when `DriveTrace.isEnabled`, and that
+constant is `false` (`DriveTrace.swift`, `RouteModel.swift:274-276`,
+`:298-300`). With no trace, nothing from a drive is written anywhere: fixes are
+used to follow the route and then dropped, and the scenery-verdict buttons and
+the arrival card's "How was the road?" are not shown
+(`NavigationModel.canRecordMarks`).
 
-- **It stays on your phone.** Recordings are written to the app's own
-  `Documents/traces` directory (`DriveTrace.swift:131-134`) and there is no
-  upload path anywhere in the app — no `URLSession` call sends them, no share
-  sheet, no mail composer. The only network code in the app is the two route
-  requests in §2.1(a).
-- **You can read and delete them yourself.** `UIFileSharingEnabled` and
-  `LSSupportsOpeningDocumentsInPlace` (`ios/project.yml:51-52`) expose that
-  folder to the Files app and to a Mac over a cable. Deleting a file there
-  deletes the recording; the app keeps no copy.
-- **Deleting the app deletes them.** They live in the app container.
-- **They are included in an iPhone backup.** Nothing in `ios/Sources` marks the
-  traces directory as excluded from backup, so if you back up your phone to
-  iCloud or to a computer, your drive recordings are in that backup, under
-  whatever protection you have given it.
+*History.* Until 2026-10-04 every navigated drive was recorded
+unconditionally, to `Documents/traces`, as a once-per-second log of the raw
+GPS fix, the route, any "nice"/"dull" verdicts and how the drive ended, and
+this section disclosed that. It was switched off for launch because a
+consumer gets nothing from it (there is no upload path), and because
+recording with no consent step runs into App Review guideline 2.5.14
+(pre-submission review, AR-2). The code is kept. **Turning
+`DriveTrace.isEnabled` back on reverses this section, §5 and the published
+page**, and needs a consent step first (§8).
 
-There is no retention limit and no automatic deletion: a recording stays until
-you remove it.
+`UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`
+(`ios/project.yml:73-74`) still expose the app's `Documents` folder to the
+Files app; with recording off it stays empty.
 
 ---
 
@@ -282,9 +271,6 @@ Category rules is a §7 item.)*
 
 - **Refuse location.** The app cannot route without it, but nothing else about
   the phone is read.
-- ~~**Don't record.**~~ Not a choice the app offers: every navigated drive
-  is recorded (§3). Deleting recordings is the control there is.
-- **Delete recordings** at any time, from the Files app or a Mac (§3).
 - **Reset the stored destinations and settings** by deleting the app.
 
 There is no server-side data about you to request, correct or delete, because
@@ -400,7 +386,9 @@ Re-check it if any of these change, because each one is load-bearing above:
   against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.
-- **An off switch for drive recording.** §3 and §5 say there is none.
+- **`DriveTrace.isEnabled` set to `true`.** §3, §5 and the published page all
+  say the app does not record. Re-enabling it needs a consent step (App Review
+  2.5.14) and this document's 2026-09-29 recording text back.
 - **A change to anything in §§0–6 must also change `site/privacy/index.html`.**
   That page is the published copy, and nothing checks the two against each
   other except this line.

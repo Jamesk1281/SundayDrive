@@ -59,6 +59,21 @@ enum SceneryVerdict: String, CaseIterable {
 @MainActor
 final class DriveTrace {
 
+    /// Whether the app records drives at all. **Off**, sidelined for launch on
+    /// 2026-10-04: a consumer gets nothing from a recording (there is no upload
+    /// path, so it can never reach the project), it is a precise location
+    /// history with no retention limit, and recording with no consent step runs
+    /// into App Review guideline 2.5.14 (pre-submission review, AR-2).
+    ///
+    /// Everything that depends on a recording keys off this, directly or
+    /// through a nil trace: the two in-drive scenery buttons and the arrival
+    /// card's "How was the road?" (both via `NavigationModel.canRecordMarks`),
+    /// and the nav screen's recording dot and warnings (`NavView`). Flip it to
+    /// `true` for a build that records, and the whole feature comes back as it
+    /// was. The privacy texts say the app does not record, so a build with this
+    /// on must never ship.
+    static let isEnabled = false
+
     /// Where this drive is being written, for anyone who wants to show or share
     /// it. Traces live in Documents so `UIFileSharingEnabled` exposes them to
     /// Files.app and Finder — that's the export path, and the delete path too.

@@ -264,14 +264,16 @@ final class RouteModel {
     /// Begin live navigation along one of the computed routes (the scenic one by
     /// default). Carries the current preference + weights so any mid-trip
     /// re-route still reflects what the user wanted.
-    /// Every drive is recorded to `Documents/traces` — see `DriveTrace`. Free-flow
-    /// travel times are the biggest known inaccuracy in the app, and a drive is
-    /// the only place the real numbers exist; recording by default is what makes
-    /// each one count instead of being a drive you have to take again.
+    /// When `DriveTrace.isEnabled`, every drive is recorded to `Documents/traces`
+    /// — see `DriveTrace`. Free-flow travel times are the biggest known
+    /// inaccuracy in the app, and a drive is the only place the real numbers
+    /// exist; recording by default is what makes each one count instead of being
+    /// a drive you have to take again. It is off for launch, so `trace` is nil.
     func startNavigation(_ feature: RouteFeature) {
         guard let end else { return }
-        let trace = DriveTrace(origin: start, destination: end,
-                               pref: pref, weights: weights)
+        let trace = DriveTrace.isEnabled
+            ? DriveTrace(origin: start, destination: end, pref: pref, weights: weights)
+            : nil
         let session = NavigationModel(route: feature, destination: end,
                                       pref: pref, weights: weights, trace: trace,
                                       voice: VoiceGuide(speaker: SystemSpeaker()))
@@ -293,8 +295,9 @@ final class RouteModel {
     /// destination it is already standing on.
     func startLoopDrive(_ response: LoopResponse) {
         guard let origin = loops.start else { return }
-        let trace = DriveTrace(origin: origin, destination: origin,
-                               pref: 1.0, weights: weights)
+        let trace = DriveTrace.isEnabled
+            ? DriveTrace(origin: origin, destination: origin, pref: 1.0, weights: weights)
+            : nil
         let session = NavigationModel(
             route: response.loop, destination: origin,
             pref: 1.0, weights: weights, trace: trace,

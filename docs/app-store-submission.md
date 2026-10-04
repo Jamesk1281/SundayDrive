@@ -151,7 +151,8 @@ controls end to end would remove the third party. Either is a real engineering
 change and neither has been made.
 
 **Note what is *not* the reason.** Drive traces are not why location is declared
-collected. They never leave the device (`docs/privacy-policy.md` §3), and
+collected. The release build does not write them at all (`DriveTrace.isEnabled`
+is `false` since 2026-10-04), and when they were written they never left the device (`docs/privacy-policy.md` §3), and
 on-device storage is not collection under Apple's definition. A brief that says
 "the app collects precise location; `DriveTrace` writes it to disk" has the
 right conclusion for the wrong reason, and the reason matters — if the routing
@@ -167,7 +168,7 @@ request changed, the answer would change, and the traces would not save it.
 | Health & Fitness | No | — | — | — | No HealthKit, no motion APIs |
 | Financial Info | No | — | — | — | No purchases, no payment code |
 | Contacts | No | — | — | — | No Contacts framework import |
-| User Content | No | — | — | — | Drive traces and scenery verdicts stay in the app's own `Documents/traces` (`DriveTrace.swift:131-134`); there is no upload path in the app |
+| User Content | No | — | — | — | Drive recording and scenery verdicts are switched off (`DriveTrace.isEnabled = false`); when on, they stayed in the app's own `Documents/traces` with no upload path |
 | Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift:17`, `RouteModel.swift:125`, `LoopModel.swift:78`), never to the routing server, which only ever receives resolved coordinates |
 | Browsing History | No | — | — | — | No web view, no browser |
 | Identifiers | No | — | — | — | No IDFA, no IDFV, no account, no device name read |
@@ -244,9 +245,10 @@ not optional: measured on a physical phone on 2026-08-30, a build declaring only
 recorded at `ios/project.yml:26-40`.
 
 **Why is the Documents folder exposed?** `UIFileSharingEnabled` and
-`LSSupportsOpeningDocumentsInPlace` (`ios/project.yml:51-52`) are the *entire*
-export and deletion story for drive recordings: the user copies them off over a
-cable or deletes them in the Files app. There is no upload and no in-app share.
+`LSSupportsOpeningDocumentsInPlace` (`ios/project.yml:73-74`) were the *entire*
+export and deletion story for drive recordings. Recording is switched off for
+launch (2026-10-04, `DriveTrace.isEnabled`), so the folder stays empty; the keys
+are left in so turning recording back on needs no plist change.
 
 **Age rating.** No user-generated content visible to others, no web view, no
 advertising, no in-app purchases. *(The exact rating is an owner input, not a
@@ -308,7 +310,8 @@ by this document.
    Attachment 6 §2.1, confirmed breach, unfixed. Submitting with a clipped Apple
    logo is submitting a known contract breach.
 
-A third item is open but not a submission gate: drive traces persist
+A third item is open but not a submission gate, and is moot while recording is
+switched off (`DriveTrace.isEnabled`, 2026-10-04): drive traces persist
 Apple-derived coordinates (item 5, Attachment 6 §2.5, which the licensing review
 found now carries an express duty to delete). Fixing it changes the on-disk
 trace schema that twelve recorded drives and `tools/analyze_trace.py` depend on,
