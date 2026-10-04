@@ -22,7 +22,7 @@ the pipeline scripts:
   `graph_nodes.parquet` + `turn_restrictions.parquet` (~87 MB total; the third
   is well under a megabyte and the server refuses to start without it), plus
   `access_ways.parquet` + `access_entries.parquet` (~59 MB, and **optional** —
-  see the 2026-08-23 note below), plus `seasonal_closures.parquet` (15 KB,
+  see the 2026-08-23 note below), plus `seasonal_closures.parquet` (16 KB,
   built by `pipeline/closures.py`). The server starts without that one too,
   and then routes over every road closed for the winter; it prints
   `seasonal closures: ...` at startup either way.

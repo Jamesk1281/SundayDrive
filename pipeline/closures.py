@@ -20,6 +20,8 @@ published number; that belongs to the next full rebuild
 A way is closed for the season when, for a car:
   - `<key>:conditional = no @ <dates>`, for a key that binds a car (CAR_KEYS),
     closes it inside its own dates, including ranges that wrap the year end;
+  - `<key>:conditional = yes @ <dates>` closes it outside them, which is how
+    Mt Greylock's summit roads are tagged (`_open_only_windows`);
   - `no @ winter` or `no @ snow`, `winter_service=no`, and `seasonal` in
     SEASONAL close it in WINTER, Nov 1 - Apr 30.
 Everything else closes nothing here; see `conditional_windows` for which
@@ -40,7 +42,7 @@ import pandas as pd
 import shapely
 from pyproj import Transformer
 
-from common import CLOSURE_WINDOW, CRS_METERS, DRIVABLE, PRIVATE_ACCESS
+from common import CLOSURE_WINDOW, CRS_METERS, DRIVABLE, PRIVATE_ACCESS, in_window
 
 # The keys whose conditional can close a road to a car. `access` binds every
 # road user, `vehicle` everything on wheels, `motor_vehicle` everything with an
@@ -69,6 +71,7 @@ _MONTHS = ("jan", "feb", "mar", "apr", "may", "jun",
            "jul", "aug", "sep", "oct", "nov", "dec")
 # 29 for February so that a window ending in it keeps a leap day.
 _LAST_DAY = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+_YEAR_DAYS = [(m, d) for m in range(1, 13) for d in range(1, _LAST_DAY[m - 1] + 1)]
 
 _MONTH = r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?"
 # "Nov", "Nov 1", "Nov-Apr", "Nov 1-Apr 30", "December - May", "Nov 1-15".
@@ -148,24 +151,87 @@ def _rule_windows(rule: str):
     return windows, None
 
 
+def _open_only_windows(condition: str):
+    """The windows a `yes @ <condition>` closes its way in: every day outside
+    the dates it opens on.
+
+    The inverse of `no @`, and how Mt Greylock's two summit roads, the highest
+    scoring of every road here, are tagged: `motor_vehicle:conditional = yes @
+    (May 20-Oct 29, sunrise-sunset)` with no base `no`. So they are closed from
+    Oct 30 to May 19. Strict opening-hours grammar would read that comma as a
+    second rule, open by daylight all year; the mapper meant a season with
+    daylight hours. So a time or weekday narrows an opening and nothing
+    more, and only the days outside every rule's dates are closed. A rule
+    with no dates opens the road on every date at some hour, which closes
+    nothing, and keeps the I-93 lanes tagged `yes @ (Mo-Fr 05:00-10:00)` as
+    open as they were. Anything else unread closes nothing either.
+    """
+    opening = []
+    for rule in condition.split(";"):
+        rule = rule.strip()
+        if not rule:
+            continue
+        if _SEASON.match(rule) or _VEHICLE.search(rule) or _YEAR.search(rule):
+            return []
+        dates = []
+        for part in rule.split(","):
+            words = [w for w in part.split()
+                     if not (_TIME.search(w) or _WEEKDAY.search(w))]
+            if not words:
+                continue
+            m = _RANGE.match(" ".join(words))
+            window = _window(m) if m else None
+            if window is None:
+                return []
+            dates.append(window)
+        if not dates:
+            return []
+        opening += dates
+    return _complement(opening)
+
+
+def _complement(windows):
+    """The windows left closed when a road is open only inside `windows`."""
+    closed = [not any(in_window(w, md) for w in windows) for md in _YEAR_DAYS]
+    if not any(closed) or all(closed):
+        return []
+    # Walked from an open day, so no closed run is split by the year end.
+    first = closed.index(False)
+    runs, run = [], None
+    for i in list(range(first, len(_YEAR_DAYS))) + list(range(first)):
+        if closed[i]:
+            run = [i, i] if run is None else [run[0], i]
+        elif run is not None:
+            runs.append(run)
+            run = None
+    if run is not None:
+        runs.append(run)
+    return [(*_YEAR_DAYS[a], *_YEAR_DAYS[b]) for a, b in runs]
+
+
 def conditional_windows(value: str):
     """The windows a `<key>:conditional` value closes its way in, plus a
     reason for each `no @` rule that closes nothing.
 
-    Only `no @ ...` restrictions close anything; `yes`, `destination` and the
-    rest are other questions. The condition's rules (separated by `;`) count
-    one at a time, so `no @ (Nov-Dec; Feb-Mar)` closes two windows, while a
-    condition that is only a time of day, such as `no @ (22:00-06:00)`, closes
-    none (decision 2).
+    `no @ ...` closes the road inside its dates and `yes @ ...` outside them
+    (`_open_only_windows`); `destination`, `private` and the rest are other
+    questions. A `no` condition's rules (separated by `;`) count one at a
+    time, so `no @ (Nov-Dec; Feb-Mar)` closes two windows, while a condition
+    that is only a time of day, such as `no @ (22:00-06:00)`, closes none
+    (decision 2).
     """
     windows, skipped = [], []
     for restriction in _split_top(value):
         result, at, condition = restriction.partition("@")
-        if not at or result.strip().lower() != "no":
+        result = result.strip().lower()
+        if not at or result not in ("no", "yes"):
             continue
         condition = condition.strip()
         if condition.startswith("(") and condition.endswith(")"):
             condition = condition[1:-1]
+        if result == "yes":
+            windows += [w for w in _open_only_windows(condition) if w not in windows]
+            continue
         for rule in condition.split(";"):
             rule = rule.strip()
             if not rule:

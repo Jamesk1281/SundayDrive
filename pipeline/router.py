@@ -48,7 +48,7 @@ from shapely.strtree import STRtree
 from pyproj import Transformer
 
 from common import (CLOSURE_WINDOW, CONTROL_COLUMNS, CRS_METERS, ONEWAY_FWD,
-                    ONEWAY_REV)
+                    ONEWAY_REV, in_window)
 from score import (CLASS_ADJ, LEGACY_UNPAVED_ADJ, WEIGHTS, blend, components,
                    composite)
 
@@ -411,16 +411,6 @@ def region_today() -> date:
     return datetime.now(REGION_TZ).date()
 
 
-def _in_window(window, day: date) -> bool:
-    """Whether `day` falls in (start month, start day, end month, end day),
-    both ends included. A window that starts after it ends wraps the year end,
-    as Nov 1 - Apr 30 does."""
-    start, end, today = tuple(window[:2]), tuple(window[2:]), (day.month, day.day)
-    if start <= end:
-        return start <= today <= end
-    return today >= start or today <= end
-
-
 class SeasonalClosures:
     """Which graph edges are closed for the season on a given day.
 
@@ -428,7 +418,7 @@ class SeasonalClosures:
     because the windows in force on a day name the closed set exactly. That
     makes them the closure version every cache keys on: two days with the same
     version close the same edges, and a cache filled under one version cannot
-    answer for another. Six windows cover New England on the 2026-08-25
+    answer for another. Seven windows cover New England on the 2026-08-25
     extract, so the version changes on a handful of dates a year and a cache
     survives every other midnight.
     """
@@ -456,7 +446,8 @@ class SeasonalClosures:
 
     def version(self, day: date) -> tuple:
         """The windows in force on `day`; empty when nothing is closed."""
-        return tuple(w for w in self.windows if _in_window(w, day))
+        return tuple(w for w in self.windows
+                     if in_window(w, (day.month, day.day)))
 
     def edges(self, version: tuple) -> np.ndarray:
         """The undirected edge rows closed under `version`."""

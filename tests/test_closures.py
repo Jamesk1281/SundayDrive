@@ -22,10 +22,10 @@ import shapely
 from pyproj import Transformer
 
 from closures import WINTER, conditional_windows, way_windows
-from common import CRS_METERS
+from common import CRS_METERS, in_window
 from conftest import DATA, ROOT, ROUTER_DATA
 from looper import LoopPlanner
-from router import Router, SeasonalClosures, _in_window
+from router import Router, SeasonalClosures
 
 # The dates the brief's checks are written against. Lincoln Gap closes on
 # Oct 15 and everything else in New England on Nov 1 or later, so Oct 20 has
@@ -47,9 +47,10 @@ GORHAM = (44.3876, -71.1734)
 # who meets the gate here and turns round faces east, and the reroute from
 # this spot used to send them straight back over the gap.
 GAP_EAST_END = (44.094617, -72.910377)
-# On the Mt Washington Auto Road, a mile above its gate: no open road reaches it
-# in winter.
+# On the Mt Washington Auto Road, a mile above its gate, and on Mt Greylock's
+# Notch Road below the summit: no open road reaches either in winter.
 AUTO_ROAD = (44.28112, -71.24602)
+GREYLOCK = (42.65410, -73.16278)
 
 _TO_M = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
 
@@ -123,13 +124,26 @@ class TestWhatCountsAsClosed:
     def test_a_vehicle_condition_is_not_a_closure(self, value):
         assert conditional_windows(value) == ([], ["vehicle"])
 
+    @pytest.mark.parametrize("value,windows", [
+        # Mt Greylock's Rockwell and Notch Roads. Read by strict grammar the
+        # comma adds a daylight rule for every day of the year; the mapper
+        # meant a season with daylight hours.
+        ("yes @ (May 20-Oct 29, sunrise-sunset)", [(10, 30, 5, 19)]),
+        ("yes @ (May-Oct)", [WINTER]),
+        ("yes @ (May-Oct Sa,Su 10:00-16:00)", [WINTER]),
+        ("yes @ (Jun 1-Sep 30; Dec 15-Jan 15)", [(1, 16, 5, 31), (10, 1, 12, 14)]),
+    ])
+    def test_open_only_in_season_closes_the_rest_of_the_year(self, value, windows):
+        assert conditional_windows(value) == (windows, [])
+
     @pytest.mark.parametrize("value", [
-        "yes @ (May 20-Oct 29, sunrise-sunset)",
-        "destination @ (Apr 15 - Nov 30)",
+        "yes @ (Mo-Fr 05:00-10:00)",          # the I-93 lanes: open every week
         "yes @ snow",
+        "yes @ (2026 May-2026 Oct)",
+        "destination @ (Apr 15 - Nov 30)",
         "private @ (Mo-Su 07:00-09:00,16:00-18:00)",
     ])
-    def test_only_no_closes_anything(self, value):
+    def test_the_other_values_close_nothing(self, value):
         assert conditional_windows(value) == ([], [])
 
     def test_the_keys_that_bind_a_car_are_the_ones_read(self):
@@ -217,6 +231,10 @@ def _table(rows):
                                        "length_m"])
 
 
+def _closed_on(window, day):
+    return in_window(window, (day.month, day.day))
+
+
 class TestTheCalendar:
     @pytest.mark.parametrize("day,closed", [
         (date(2026, 10, 14), False), (date(2026, 10, 15), True),
@@ -224,7 +242,7 @@ class TestTheCalendar:
         (date(2027, 5, 16), False), (date(2027, 7, 15), False),
     ])
     def test_a_window_across_new_year_includes_both_ends(self, day, closed):
-        assert _in_window((10, 15, 5, 15), day) is closed
+        assert _closed_on((10, 15, 5, 15), day) is closed
 
     @pytest.mark.parametrize("day,closed", [
         (date(2026, 10, 31), False), (date(2026, 11, 1), True),
@@ -232,14 +250,14 @@ class TestTheCalendar:
         (date(2027, 5, 1), False),
     ])
     def test_the_default_winter_window(self, day, closed):
-        assert _in_window(WINTER, day) is closed
+        assert _closed_on(WINTER, day) is closed
 
     @pytest.mark.parametrize("day,closed", [
         (date(2027, 5, 31), False), (date(2027, 6, 1), True),
         (date(2027, 8, 31), True), (date(2027, 9, 1), False),
     ])
     def test_a_window_inside_one_year(self, day, closed):
-        assert _in_window((6, 1, 8, 31), day) is closed
+        assert _closed_on((6, 1, 8, 31), day) is closed
 
     def test_the_version_names_the_windows_in_force(self):
         c = SeasonalClosures(_table([[0, 10, 11, 1, 10, 15, 5, 15, 100.0],
@@ -333,8 +351,8 @@ class TestTheTable:
         windows = table[["start_month", "start_day", "end_month",
                          "end_day"]].drop_duplicates().to_numpy()
         for w in windows:
-            assert _in_window(tuple(w), JANUARY), w
-            assert not _in_window(tuple(w), JULY), w
+            assert _closed_on(w, JANUARY), w
+            assert not _closed_on(w, JULY), w
 
     def test_the_named_roads_are_there(self, table):
         def windows(name):
@@ -347,6 +365,8 @@ class TestTheTable:
         assert (11, 1, 5, 31) in windows("Hurricane Mountain Road")
         # Evans Notch carries a route number and no name.
         assert (table["ref"] == "ME 113").any()
+        # Tagged the other way round: open May 20 - Oct 29.
+        assert windows("Rockwell Road") == windows("Notch Road") == {(10, 30, 5, 19)}
 
     def test_the_router_loaded_all_of_it(self, closed_router, table):
         assert closed_router.closures.n_edges == table["edge"].nunique()
@@ -595,8 +615,11 @@ class TestThroughTheServer:
             assert min(p.distance(_line_m(before.get_json()[arm])) for p in gap) < 1.0
             assert min(p.distance(_line_m(after.get_json()[arm])) for p in gap) > 50.0
 
-    def test_a_destination_only_a_closed_road_reaches_says_so(self, server, monkeypatch):
-        form = {"from": self._ll(GORHAM), "to": self._ll(AUTO_ROAD), "pref": "0.5"}
+    @pytest.mark.parametrize("start,end", [(GORHAM, AUTO_ROAD),
+                                           ((42.6973, -73.1084), GREYLOCK)])
+    def test_a_destination_only_a_closed_road_reaches_says_so(
+            self, server, monkeypatch, start, end):
+        form = {"from": self._ll(start), "to": self._ll(end), "pref": "0.5"}
         winter = _on(monkeypatch, server, JANUARY).post("/api/route", data=form)
         assert winter.status_code == 404
         assert winter.get_json()["error"] == server.CLOSED_FOR_SEASON

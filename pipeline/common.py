@@ -48,6 +48,15 @@ CONTROL_COLUMNS = [f"n_{kind}_{d}" for kind in ("signal", "stop", "giveway")
 # year end, as Nov 1 - Apr 30 does.
 CLOSURE_WINDOW = ("start_month", "start_day", "end_month", "end_day")
 
+
+def in_window(window, month_day) -> bool:
+    """Whether (month, day) falls inside a CLOSURE_WINDOW, both ends included."""
+    start, end = tuple(window[:2]), tuple(window[2:])
+    if start <= end:
+        return start <= month_day <= end
+    return month_day >= start or month_day <= end
+
+
 # oneway= values, and which direction they permit. Shared because graph.py and
 # router.py have to agree exactly: graph.py decides which nodes are mutually
 # reachable and router.py decides which edges may be traversed, so a road that
