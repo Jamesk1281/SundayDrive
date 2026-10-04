@@ -182,8 +182,8 @@ the decisions, and does not repeat the derivation.
 
 - Work on your own branch off `main`. Commit this brief with the change if it
   is not already committed.
-- `data/` and `.venv` live only in the main checkout (`<main>` =
-  `/Users/james./Desktop/myapps/SundayDrive`).
+- `data/` and `.venv` live only in the main checkout, written `<main>` here,
+  not in a worktree.
   - Build the table into `<main>/data/processed-ne/`.
   - Run the suite with `SUNDAYDRIVE_DATA=<main>/data/processed-ne
     <main>/.venv/bin/python -m pytest -q tests > out.txt 2>&1; echo $?`.
