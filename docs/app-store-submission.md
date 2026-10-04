@@ -45,8 +45,9 @@ cannot be edited, so **a custom EULA is required.**
 
 **The notice is in the app, verbatim, rendered, and test-asserted.**
 - It is defined at `ios/Sources/AboutView.swift:107-108`.
-- It is shown on the Sources screen under a `SAFETY` heading. That screen is
-  one tap from planning (`PlanningView.swift:81`).
+- It is rendered in exactly one place, `BeforeYouDriveView.swift:35`. That
+  view is shown at first launch and can be reached at any time from the
+  Sources screen, which is one tap from planning (`PlanningView.swift:81`).
 - `ios/Tests/AttributionTests.swift:152-153` asserts it character for
   character, and an uppercase guard stops anyone "fixing the shouting".
 
