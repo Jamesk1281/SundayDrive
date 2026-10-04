@@ -180,13 +180,18 @@ right about that. It is the real cost of the name and it does not improve.
 
 **No knockout blocker found — proceed to professional clearance.**
 
+> **Not taken, 2026-10-04.** The name was adopted without paid clearance, as
+> `release-plan.md` §8 decision 2 decided for the free knockout screen. The two
+> questions below are what an attorney would be asked if clearance is ever
+> bought. Revisit that before money is spent on the brand.
+
 Nothing on the register in classes 9, 39 or 42. Nothing in Navigation or Travel
 on the App Store. No descriptiveness refusal on record, and a register that
 treats the phrase as inherently distinctive. The one on-the-nose prior
 conflict — a class 42 registration for internet map and geography information —
 has been cancelled since 2014.
 
-**Two questions for the attorney**, in order: whether reg. 6979596's
+**Two questions for an attorney, if one is ever engaged**, in order: whether reg. 6979596's
 "automotive information via a global computer network" reaches a navigation
 app, and whether "Sunday drive" is too descriptive of *these* goods to
 register on the Principal Register without a fight.

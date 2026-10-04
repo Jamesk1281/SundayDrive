@@ -1,39 +1,30 @@
 # Privacy policy — the developer's source copy
 
-> **The user-facing version is `site/privacy/index.html`, to be served at
-> <https://jamesk1281.github.io/SundayDrive/privacy/>** by
-> `.github/workflows/pages.yml` (built 2026-09-29,
-> `docs/privacy-policy-page-brief.md`). It is §§0–6 below rewritten for a
-> driver. **Not live until the branch is merged**: the contact address (§6) is
-> in and Pages is set to deploy from GitHub Actions (both 2026-09-29). This file stays: its citations are what make the page
-> checkable, and a change to §§0–6 here must change the page too (§8).
+> **The user-facing version is `site/privacy/index.html`, live at
+> <https://jamesk1281.github.io/SundayDrive/privacy/>.** It is published by
+> `.github/workflows/pages.yml` and linked from the app's Sources screen
+> (`PrivacyPolicy.url`, `AboutView.swift`). It is §§0–6 below rewritten for a
+> driver. This file stays because its citations are what make the page
+> checkable. A change to §§0–6 here must change the page too (§8).
 
-**Status: drafted 2026-09-19, published nowhere; name and identifier brought
-up to date 2026-09-21; hosting brought up to date 2026-09-29, when the routing
-server moved from the developer's laptop to an Oracle Cloud virtual machine
-(§2.1(a), §7 item 9); coordinates moved out of the request URL 2026-09-29
-(§2.1(a), §7 item 1).** Checkable: `git grep -l 'privacy polic'` finds no URL
-in `ios/`, and App Store Connect has never been given one. The app itself is
-`PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive` at `MARKETING_VERSION: "1.0"`
-(`ios/project.yml:66`, `:74`) — the identifier changed with the 2026-09-20
-rename and **again** with the 2026-09-21 rename to Sunday Drive
-(`docs/sunday-drive-naming.md`), and is **not** final — it locks at the
-first build upload, TestFlight included, not at submission
-(`docs/app-store-submission.md` §6). Nothing has been uploaded.
+**Status, 2026-10-04: published, and current as of main past `f9f1937`.**
+- Written 2026-09-19 against `3fb75d6`.
+- Name and identifier brought up to date 2026-09-21.
+- Hosting brought up to date 2026-09-29, when the routing server moved from
+  the developer's laptop to an Oracle Cloud virtual machine (§2.1(a)).
+- Coordinates moved out of the request URL the same day (§2.1(a)).
+- Approximate-location behaviour tested and described 2026-10-01 (§2.2).
+- The stored-settings list corrected the same day (§3, §5).
 
-> **This is a draft for review. It is not published anywhere, it is not linked
-> from the app, and it is not the policy URL that App Store Connect asks for.**
->
-> **It has not been reviewed by a lawyer, and it must be before it is
-> published.** `docs/licensing-open-questions.md` puts the reason plainly: being
-> wrong in a published privacy policy is worse than not having one, because a
-> published policy is a representation to users and to regulators, and an
-> inaccurate one is actionable in a way that silence is not. §7 below lists
-> exactly which claims need clearing and why.
->
-> Written 2026-09-19 against `main` at `3fb75d6`. Every factual claim in §§1–5
-> cites the file that makes it true, so the draft can be re-checked against the
-> code rather than trusted.
+**It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
+decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
+something untrue, so every factual claim in §§1–5 cites the file that makes it
+true. Re-check those claims against the code rather than trusting them, and
+use §8 for what would make them wrong.
+
+The app is `PRODUCT_BUNDLE_IDENTIFIER: app.sundaydrive`. The identifier locks
+at the first build upload, TestFlight included (`docs/app-store-submission.md`
+§6), and nothing has been uploaded yet.
 
 ---
 
@@ -302,71 +293,56 @@ also carries `api.jameskouvlis.com`, so renewing the domain keeps both alive.
 
 ---
 
-## 7. What a lawyer has to clear before this is published
+## 7. The open questions, and how each was settled
 
-The engineering facts above are verifiable and I have verified them. The legal
-characterisations are not mine to make. In order of how much turns on them:
+This section once listed what "a lawyer has to clear". On 2026-09-19 the owner
+decided to publish without one (`release-plan.md` §8, decision 3), and each
+question was settled in another way:
+- by an engineering change,
+- by a conservative declaration,
+- by a threshold test,
+- or by a choice of territory.
 
-1. **The Cloudflare edge disclosure (§2.1(a)).** The claim "the server stores
-   nothing" is true of the code and false of the *system*, because coordinates
-   still pass through a third party that terminates TLS. **The
-   engineering half is done (2026-09-29):** the app now sends coordinates in a
-   POST body rather than the URL query string
-   (`docs/coordinates-out-of-the-url-brief.md`), so they are no longer in the
-   URLs that access logs record by default. What is left is the legal half.
-   Cloudflare can still technically read the body, so a lawyer still needs to
-   decide whether Cloudflare is a processor to be named (this draft names it)
-   and whether the §2.1(a) wording discloses it adequately. The privacy
-   manifest is unchanged by this: precise location stays declared as
-   collected (item 2).
-2. **Whether precise location counts as "collected".** Apple's definition turns
-   on retention beyond servicing the request in real time. On the code alone the
-   answer is no; with Cloudflare in the path it is arguably yes. The privacy
-   manifest and the nutrition label both currently answer **yes**, which is the
-   conservative choice — see `docs/app-store-submission.md` §3 for the full
-   reasoning and for what would have to be true to change it.
-3. **CPRA.** Precise geolocation is "sensitive personal information" under
-   California law, which brings its own notice and limit-use obligations. Does a
-   free single-purpose app with no sale of data and no business-size threshold
-   met actually fall in scope? Probably not on thresholds — but "probably not"
-   is not a thing to publish.
-4. **GDPR.** If the app is downloadable in the EU/UK, there is a controller
-   (the owner), a lawful basis to name, and a set of data-subject rights to
-   describe. Location data is not formally "special category", but regulators
-   treat routine location history as high-risk. The territory list in App Store
-   Connect is an owner decision that changes this answer.
-5. **Children (§4).** Whether the assertion is sufficient, and what age rating
-   the listing should carry.
-6. ~~**Reduced-accuracy behaviour (§2.2).**~~ **Resolved 2026-10-01:** tested
-   in the simulator and found broken (no fix was ever accepted, and the screen
-   said "50 ft away · Head to the start of your route"). It was then fixed and
-   tested again, and §2.2 now describes what was observed. Not a legal question.
-7. ~~**The contact address (§6).**~~ **Resolved 2026-09-29:** privacy@jameskouvlis.com.
-8. ~~**The app's name.**~~ **Resolved 2026-09-20, and again 2026-09-21.** The
-   app is **Sunday Drive** (`docs/sunday-drive-naming.md`), renamed from Victory
-   Lap (`docs/victory-lap-naming.md`), and this document was updated with it.
-   The audit's item 1 — "Scenic" being taken by a senior direct competitor, and
-   descriptive — is what the first rename answered; the second was a change of
-   fit, not of risk.
-9. **Oracle as the host (§2.1(a)).** *Numbered last so that
-   `docs/release-plan.md` Decision 3, which maps these items by number, keeps
-   its numbering. By weight it belongs beside item 1.* Since 2026-09-29 the
-   routing server has run on an Oracle Cloud Infrastructure virtual machine,
-   not on hardware the developer owns. A lawyer needs to decide three things.
-   First, whether Oracle is a processor or service provider that the policy
-   must name. Second, how
-   Oracle's own terms for its free tier bear on that. Third, whether §2.1(a)'s
-   description of Oracle's in-VM agents is enough. Two facts bear on the
-   answer. The region is in the US, which keeps `docs/release-plan.md`
-   decision 3's "US-only at launch" premise intact. (A host established in the
-   EU, such as Contabo GmbH, the planned paid fallback, would reopen it.) And
-   the draft's own §8 trigger ("a move off the Cloudflare tunnel") did not
-   catch this change, because the tunnel stayed the same and only the machine
-   behind it changed. §8 now lists a change of host too. **Engineering can
-   shrink this one as well.** Three of the four agent components in §2.1(a)
-   (the log collector, the workload scanner and the remote-command component)
-   are optional plugins that can be switched off in Oracle's console. The
-   monitoring component cannot be switched off without risking reclamation.
+The numbering is kept because `release-plan.md` decision 3 maps these items by
+number. The decision has an expiry. Revisit it if money changes hands, an
+account system appears, a third-party SDK is added, or EU/UK territories are
+switched on.
+
+1. **The Cloudflare edge disclosure (§2.1(a)).** Settled 2026-09-29.
+   - The app sends coordinates in a POST body, so they are no longer in the
+     URLs that access logs record by default
+     (`docs/coordinates-out-of-the-url-brief.md`).
+   - §2.1(a) names Cloudflare as the service that carries them, because
+     Cloudflare terminates TLS and can technically read the body.
+2. **Whether precise location counts as "collected".** Settled: **yes**, which
+   is the conservative answer. The privacy manifest and the nutrition label
+   both say so. See `docs/app-store-submission.md` §3 for why, and for what
+   would have to change for the answer to change.
+3. **CPRA.** Settled by its own thresholds. It applies to businesses with more
+   than $25M in revenue, or 100,000+ consumers, or revenue from selling
+   personal data. The app meets none of these, and it sells nothing.
+4. **GDPR.** Settled by shipping in the **United States only**. The territory
+   is a checkbox in App Store Connect (`docs/app-store-submission.md` §6).
+   Switching on an EU or UK territory reopens this item.
+5. **Children (§4).** Settled at submission. App Store Connect's age-rating
+   questionnaire decides the rating; answer it honestly.
+6. **Reduced-accuracy behaviour (§2.2).** Settled 2026-10-01. It was tested in
+   the simulator and found broken: no fix was ever accepted, and the screen
+   said "50 ft away · Head to the start of your route". It was then fixed and
+   tested again, and §2.2 describes what was observed.
+7. **The contact address (§6).** Settled 2026-09-29: privacy@jameskouvlis.com.
+8. **The app's name.** Settled 2026-09-21: **Sunday Drive**
+   (`docs/sunday-drive-naming.md`), renamed from Victory Lap
+   (`docs/victory-lap-naming.md`).
+9. **Oracle as the host (§2.1(a)).** Settled 2026-09-29. §2.1(a) names Oracle
+   as the host, in the same breath as Cloudflare.
+   - The region is `us-ashburn-1`, so shipping US-only still keeps GDPR out
+     of scope. A host established in the EU, such as Contabo GmbH, the
+     planned paid fallback, would reopen item 4.
+   - Optional: three of the four Oracle agent components in §2.1(a) (the log
+     collector, the workload scanner and the remote-command component) can be
+     switched off in Oracle's console. The monitoring component cannot be
+     switched off without risking reclamation.
 
 ## 8. What would make this document wrong
 

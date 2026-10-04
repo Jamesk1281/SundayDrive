@@ -602,19 +602,18 @@ obligations (1b).
 
 Used sparingly, and meant literally.
 
-**Needs a lawyer:**
+**Once listed as needing a lawyer. All three were settled without one:**
 
-- **The ODbL position on `census-pairs.csv` (1b)**, if the owner wants to keep
-  the file as it stands rather than take option 1 or 2. The guideline is
-  board-endorsed but it is a guideline, not the licence, and the substantiality
-  question in a specific case is exactly what the OSMF says to take to counsel:
-  *"If you intended use is obviously larger than our guideline, well, you'll have
-  to consult your lawyer."* If either cheap option is taken, the question does
-  not arise.
-- **The name (audit item 1)**, unchanged from the audit's own assessment.
-- **Any privacy policy that will actually be published**, because it has to be
-  accurate about GDPR and CCPA/CPRA treatment of precise location, and being
-  wrong in a published policy is worse than not having one.
+- **The ODbL position on `census-pairs.csv` (1b).** One of the cheap options
+  was taken, so the question no longer arises. The file is carved out of
+  Apache-2.0 and offered under the ODbL by `docs/route-census/README.md`
+  (merged 2026-09-19).
+- **The name (audit item 1).** Paid clearance was declined
+  (`release-plan.md` §8, decision 2). The app became Sunday Drive after a free
+  knockout screen (`docs/sunday-drive-naming.md`).
+- **The published privacy policy.** It went out without a lawyer by owner
+  decision (`release-plan.md` §8, decision 3), with every factual claim
+  citing its source (`docs/privacy-policy.md` §7).
 
 **Could not be retrieved from this machine:**
 

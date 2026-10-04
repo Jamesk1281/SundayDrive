@@ -32,6 +32,26 @@
 > artifacts. §10's states were brought up to date and §11's
 > table given a state column, both 2026-09-29.
 
+> **2026-10-04: the membership is in hand (accepted 2026-10-03), and what is
+> left is tracked in two places rather than here.** These are
+> [`app-store-submission.md`](app-store-submission.md) §8 (the console
+> checklist, with the custom EULA now paste-ready in §1) and the open items at
+> the top of [`pre-submission-review-verdict.md`](pre-submission-review-verdict.md).
+>
+> **Three corrections to the text below:**
+> - **§3's "two things change on the day membership starts" missed a third:
+>   the team changes.** `ios/project.yml` still names the free Personal Team.
+>   That team registered `app.sundaydrive` on 2026-09-29, which can block the
+>   paid team from registering it until the claim lapses, around 2026-10-06
+>   (`app-store-submission.md` §6).
+> - **§11's "the total cost is $99/year" is short.** Add the domain,
+>   `jameskouvlis.com`, at about $23/year. It expires 2026-10-28 and is
+>   unrenewed as of 2026-10-04. Also add the PO box that the custom EULA's
+>   minimum terms now require (`app-store-submission.md` §1).
+> - **The Windows laptop is retired** (owner, 2026-10-04). §7's "keep the
+>   laptop up" option, and its role as a second connector or a rollback, are
+>   gone. Oracle is the only origin.
+
 **Status:** current. Sequenced 2026-09-19 against `main` at `4cf43b8`, plus the
 two unmerged branches named in §2, and **revised the same day** with three owner
 decisions recorded in §8. **Nothing was executed** — no rename, no `LICENSE`, no

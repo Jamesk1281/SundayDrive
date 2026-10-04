@@ -1,24 +1,18 @@
 # App Store Connect answers
 
-**Status: written 2026-09-19; nothing submitted, and three of the ten items in
-§8 are blocked on decisions only the owner can make.** Checkable: the one
-deliverable here that is code, `ios/Sources/PrivacyInfo.xcprivacy`, is asserted
-present in the built bundle by `ios/Tests/PrivacyManifestTests.swift`.
+**Status, 2026-10-04: nothing has been submitted or uploaded.** The Developer
+Program membership was accepted on 2026-10-03. The owner decided on 2026-09-19
+that the privacy policy and the EULA go out **without a lawyer**
+(`release-plan.md` §8, decision 3), so none of the answers here wait on one.
+§8 is the checklist. Checkable: the one deliverable here that is code,
+`ios/Sources/PrivacyInfo.xcprivacy`, is asserted present in the built bundle by
+`ios/Tests/PrivacyManifestTests.swift`.
 
-**The app name, bundle identifier and product name were brought up to date
-2026-09-21** — the app is **Sunday Drive**, `app.sundaydrive`, and the built
-bundle is `SundayDrive.app` (`docs/sunday-drive-naming.md`). §6, §7.1 and row 8
-of §8 were what carried the old ones.
-
-**What this document is for.** Four things that gate an App Store submission are
-answered in a web console and recorded nowhere else: the licence agreement, the
-privacy nutrition label, the privacy policy URL, and export compliance. A web
-form is a bad place for an answer that has to be defended later, so the answers
-live here, each with the code that justifies it.
-
-**Written 2026-09-19 against `main` at `3fb75d6`. Nothing here has been
-submitted.** The app is not currently submittable — see §7 for the two blockers
-that are not paperwork.
+**What this document is for.** Several things that gate an App Store
+submission are answered in a web console and recorded nowhere else. Among them
+are the licence agreement, the privacy nutrition label, the privacy policy URL
+and export compliance. A web form is a bad place for an answer that has to be
+defended later, so the answers live here, each with the code that justifies it.
 
 **Keep this in step with `ios/Sources/PrivacyInfo.xcprivacy`.** The manifest and
 the nutrition label answer overlapping questions, and Apple compares them. If
@@ -32,143 +26,234 @@ tell you if the manifest drifts from what §3 says here.
 ### The obligation
 
 Apple's Developer Program License Agreement, **§3.3.3 "Data and Privacy" → F.
-"Location and Maps; User Consents" → (iii)**, requires that an app doing
-real-time navigation "must have an end user license agreement that includes the
-following notice":
+"Location and Maps; User Consents" → (iii)**, applies to any app doing
+real-time navigation. Such an app "must have an end user license agreement
+that includes the following notice":
 
 > YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE RISK.
 > LOCATION DATA MAY NOT BE ACCURATE.
 
-The clause and the string were verified against the current agreement in
-`docs/licensing-open-questions.md` §"Clause by clause" — byte-for-byte
-identical, pure ASCII, no smart quotes. **The citation `§3.3.15` that appears in
+The clause and the string were checked against the current agreement in
+`docs/licensing-open-questions.md` §"Clause by clause". They match byte for
+byte: pure ASCII, no smart quotes. **The citation `§3.3.15` that appears in
 older documents is the pre-restructure number and no longer exists.**
+
+Apple's standard Licensed Application EULA does not contain this notice and
+cannot be edited, so **a custom EULA is required.**
 
 ### What is already done — do not do it again
 
-**The notice is in the app, verbatim, rendered, and test-asserted.** It is
-defined at `ios/Sources/AboutView.swift:100-102`, shown under a `SAFETY`
-heading at `:233`, reachable in one tap from the main screen via
-`RoutePanel.swift:250`, and asserted character-for-character — plus an
-uppercase guard against "fixing the shouting" — in
-`ios/Tests/AttributionTests.swift:149-154` and `:158-163`.
+**The notice is in the app, verbatim, rendered, and test-asserted.**
+- It is defined at `ios/Sources/AboutView.swift:107-108`.
+- It is shown on the Sources screen under a `SAFETY` heading. That screen is
+  one tap from planning (`PlanningView.swift:81`).
+- `ios/Tests/AttributionTests.swift:152-153` asserts it character for
+  character, and an uppercase guard stops anyone "fixing the shouting".
 
 **A session that "adds the EULA notice" will duplicate a shipped string and
-break a test that asserts there is exactly one.** What is left to do is not in
-this repository.
+break a test that asserts there is exactly one.** What is left is the console
+field below.
 
-### What is left to do: the console field
+### Apple's minimum terms, and the address they require
 
-App Store Connect offers a choice between Apple's **standard Licensed
-Application EULA** and a **custom EULA**. Apple's standard EULA does not contain
-this notice and cannot be edited, so **it cannot discharge the clause on its
-own**. A custom EULA is therefore required, and Apple requires any custom EULA
-to meet its published "Minimum Terms of Developer's EULA".
+A custom EULA must meet Apple's *Minimum Terms of Developer's End-User License
+Agreement*
+(`apple.com/legal/internet-services/itunes/appstore/dev/minterms/`, read
+2026-10-04). It sets ten terms:
+1. Acknowledgement that the EULA is between you and the user, not Apple.
+2. Scope of the licence.
+3. Maintenance and support.
+4. Warranty.
+5. Product claims.
+6. Intellectual property.
+7. Export legal compliance.
+8. **Developer name and address.**
+9. Third-party terms.
+10. Apple as third-party beneficiary.
 
-**Paste-ready clause.** This is the part that carries the obligation; it goes
-into whichever custom EULA is filed, as its own numbered section:
+**Item 8 is the one with a cost.** The EULA must state *"Your name and
+address, and the contact information (telephone number; E-mail address) to
+which any End-User questions, complaints or claims with respect to the
+Licensed Application should be directed."* The owner chose a PO box on
+2026-10-04, so no home address is published.
+
+### The text to paste
+
+App Store Connect → the app → **App Information** → License Agreement →
+**Edit** → custom. Paste the text below and apply it to **United States**,
+the only territory (§6). The field is plain text: HTML is stripped and only
+line breaks survive.
+
+**Three values are still blank. Fill them before pasting:**
+- the PO box's city, state and ZIP;
+- a phone number (a Google Voice number is free and keeps a personal number
+  private);
+- confirmation that `support@jameskouvlis.com` routes to an inbox. It is a
+  new Cloudflare Email Routing address, the same one the support page
+  publishes.
+
+The name must match the seller name App Store Connect shows for the account.
+For an individual, that is the legal name.
 
 ```text
-ROUTE GUIDANCE AND LOCATION DATA
+SUNDAY DRIVE END USER LICENSE AGREEMENT
 
-YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE RISK.
-LOCATION DATA MAY NOT BE ACCURATE.
+Last updated: October 2026
 
-You are responsible at all times for the safe operation of your vehicle and for
-obeying all traffic laws and road signs. Routes, road classifications, turn
-restrictions and estimated times are derived from third-party data that may be
-incomplete, out of date, or wrong, and are offered as suggestions only.
+This End User License Agreement ("Agreement") is between you and James Kouvlis ("the Developer"), the developer of the Sunday Drive app ("the App"). By downloading or using the App, you agree to this Agreement.
+
+1. ACKNOWLEDGEMENT
+This Agreement is concluded between you and the Developer only, and not with Apple Inc. ("Apple"). The Developer, not Apple, is solely responsible for the App and its content. This Agreement does not provide for usage rules for the App that conflict with the Apple Media Services Terms and Conditions as of the date you accept it.
+
+2. SCOPE OF LICENSE
+The Developer grants you a non-transferable license to use the App on any Apple-branded products that you own or control, as permitted by the Usage Rules in the Apple Media Services Terms and Conditions, except that the App may also be accessed and used by other accounts associated with you through Family Sharing or volume purchasing. This Agreement governs the copy of the App you obtain from the App Store. The App's source code is published separately under the Apache License, Version 2.0, and nothing in this Agreement restricts the rights that license gives you in that source code.
+
+3. ROUTE GUIDANCE AND LOCATION DATA
+YOUR USE OF THIS REAL TIME ROUTE GUIDANCE APPLICATION IS AT YOUR SOLE RISK. LOCATION DATA MAY NOT BE ACCURATE.
+You are responsible at all times for the safe operation of your vehicle and for obeying all traffic laws and road signs. Do not handle your device while driving. Routes, road classifications, turn restrictions, road closures and estimated times are derived from third-party data that may be incomplete, out of date or wrong, and are offered as suggestions only. Some roads close for part of the year, and the App may not know that a road is closed.
+
+4. MAINTENANCE AND SUPPORT
+The Developer is solely responsible for providing any maintenance and support services for the App, as specified in this Agreement or as required under applicable law. You and the Developer acknowledge that Apple has no obligation whatsoever to furnish any maintenance and support services with respect to the App. The App is free, and the Developer may change, suspend or discontinue it, including the routing service it depends on, at any time.
+
+5. WARRANTY
+To the maximum extent permitted by applicable law, the App is provided "as is" and "as available", without warranty of any kind, and the Developer disclaims all warranties, express or implied. To the extent any warranty cannot be disclaimed under applicable law, the Developer, not Apple, is solely responsible for it. In the event of any failure of the App to conform to any applicable warranty, you may notify Apple, and Apple will refund the purchase price, if any, for the App to you. To the maximum extent permitted by applicable law, Apple will have no other warranty obligation whatsoever with respect to the App, and any other claims, losses, liabilities, damages, costs or expenses attributable to any failure to conform to any warranty will be the Developer's sole responsibility.
+
+6. PRODUCT CLAIMS
+You and the Developer acknowledge that the Developer, not Apple, is responsible for addressing any claims by you or any third party relating to the App or your possession and use of the App, including, but not limited to: (i) product liability claims; (ii) any claim that the App fails to conform to any applicable legal or regulatory requirement; and (iii) claims arising under consumer protection, privacy or similar legislation. This Agreement does not limit the Developer's liability to you beyond what is permitted by applicable law.
+
+7. INTELLECTUAL PROPERTY RIGHTS
+In the event of any third-party claim that the App or your possession and use of the App infringes that third party's intellectual property rights, the Developer, not Apple, will be solely responsible for the investigation, defense, settlement and discharge of any such intellectual property infringement claim.
+
+8. LEGAL COMPLIANCE
+You represent and warrant that (i) you are not located in a country that is subject to a U.S. Government embargo, or that has been designated by the U.S. Government as a "terrorist supporting" country; and (ii) you are not listed on any U.S. Government list of prohibited or restricted parties.
+
+9. THIRD-PARTY TERMS
+You must comply with applicable third-party terms of agreement when using the App, such as your wireless data service agreement. The base map is provided by Apple. Road and scenery data come from OpenStreetMap contributors and other open datasets, credited with their licenses on the App's Sources screen.
+
+10. THIRD-PARTY BENEFICIARY
+You and the Developer acknowledge and agree that Apple, and Apple's subsidiaries, are third-party beneficiaries of this Agreement, and that, upon your acceptance of the terms and conditions of this Agreement, Apple will have the right (and will be deemed to have accepted the right) to enforce this Agreement against you as a third-party beneficiary thereof.
+
+11. LIMITATION OF LIABILITY
+To the extent not prohibited by applicable law, in no event will the Developer be liable for personal injury, or for any incidental, special, indirect or consequential damages whatsoever, arising out of or related to your use of or inability to use the App, however caused, regardless of the theory of liability, even if the Developer has been advised of the possibility of such damages.
+
+12. PRIVACY
+The App's privacy policy is at https://jamesk1281.github.io/SundayDrive/privacy/
+
+13. TERMINATION
+This Agreement is effective until terminated. Your rights under it end automatically if you fail to comply with any of its terms. When it ends, you must stop using the App and delete it.
+
+14. CONTACT
+Questions, complaints or claims about the App:
+James Kouvlis
+PO Box 920857
+[CITY, STATE ZIP]
+Phone: [PHONE]
+Email: support@jameskouvlis.com
 ```
 
-The **first paragraph is fixed by contract**: it must appear exactly as above,
-capitals included. The second paragraph is drafting, not obligation, and is a
-lawyer's to revise or delete.
+**Where each minimum term is met:**
 
-> **This needs a lawyer, and the rest of the EULA is not drafted here.** A EULA
-> is a contract with every user, and Apple's minimum terms have to be satisfied
-> in full. Writing the surrounding document is outside what this repository can
-> verify. The verbatim notice above is the only part where the correct text is
-> known with certainty and has been checked against the source.
+| Minimum term | Section |
+| --- | --- |
+| 1 Acknowledgement | 1 |
+| 2 Scope of licence | 2 |
+| 3 Maintenance and support | 4 |
+| 4 Warranty | 5 |
+| 5 Product claims | 6 |
+| 6 Intellectual property | 7 |
+| 7 Legal compliance | 8 |
+| 8 Name and address | 14 |
+| 9 Third-party terms | 9 |
+| 10 Third-party beneficiary | 10 |
 
-**Owner decision:** whether to file a custom EULA at all, which presupposes
-deciding the app is going to be submitted. Until then the in-app notice is the
-half that protects an actual driver, and it has shipped.
+**Things in it that are deliberate:**
+- §3 carries the DPLA notice exactly as written, capitals included, on a line
+  of its own.
+- §3's "roads close for part of the year" is there because the router has no
+  seasons yet (`pre-submission-review-verdict.md` C-1).
+- §2's Apache sentence stops the EULA from appearing to take back what
+  `LICENSE` grants.
+- There is no governing-law clause. Add one only if a state is chosen on
+  purpose.
 
 ---
 
 ## 2. Privacy policy URL
 
-**Required. No exception for free apps, single-user apps, or apps with no
-account.** The field will not accept "none", and the URL must resolve to a
-publicly readable page at submission time and stay up afterwards.
+**Required, with no exception for free apps or apps without accounts.** The
+URL must resolve to a public page at submission time and stay up afterwards.
 
-**Status: there is no URL, because there is nowhere to host it and nothing
-published to host.** `docs/privacy-policy.md` is a draft, marked as one, with
-every factual claim traceable to a file in this repo.
+**Done.** The URL is **`https://jamesk1281.github.io/SundayDrive/privacy/`**.
+- It is published from `site/privacy/index.html` by
+  `.github/workflows/pages.yml`. That workflow uploads `site/` only; never
+  serve Pages from `/docs`.
+- It is linked inside the app at `AboutView.swift:302` (`PrivacyPolicy.url`),
+  as guideline 5.1.1(i) asks.
+- Its contact address is `privacy@jameskouvlis.com`, and
+  `tests/test_privacy_page.py` fails if the placeholder returns.
+- `docs/privacy-policy.md` is the developer-facing source, with a file
+  citation for every claim. A change to its §§0–6 must also change the
+  published page.
 
-**Owner decisions, in order:**
-
-1. **Have a lawyer clear the draft.** `docs/privacy-policy.md` §7 lists the
-   eight items that need clearing and says which are legal and which are
-   factual gaps.
-2. **Decide where it is hosted.** It must outlive any one machine; the laptop
-   behind the Cloudflare tunnel (`server/DEPLOY.md`) is the wrong place for a
-   document that has to be up when the app is reviewed. A static page is
-   enough.
-3. **Decide the contact address** it will publish (`docs/privacy-policy.md`
-   §6).
+**The same site also has to serve the Support URL**, which App Store Connect
+requires as well. Today `site/index.html` only redirects to the privacy page.
+It is being replaced: see `support-page-brief.md`.
 
 ---
 
 ## 3. App Privacy — the nutrition label
 
-Apple asks, per data type: is it **collected**, is it **linked to the user**, is
-it used for **tracking**, and for what **purposes**. "Collect" means
-transmitting data off the device in a way that lets you or your partners access
-it for longer than is needed to service the request in real time.
+Apple asks four questions about each data type:
+- Is it **collected**?
+- Is it **linked to the user**?
+- Is it used for **tracking**?
+- For what **purposes**?
+
+"Collect" means sending data off the device in a way that lets you or your
+partners access it for longer than it takes to service the request in real
+time.
 
 ### The one judgement call: is precise location "collected"?
 
-**On the app and server code alone, no.** Coordinates go to `/api/route` and
-`/api/loop` to compute a route (`RouteService.swift:135-146`, `:185-192`) and
-`server/app.py` keeps nothing — no database, no log file, no request logging
-(startup prints only, at `:93` and `:120`), served by `waitress`, which writes
-no access log by default.
+**On the app and server code alone, no.** Coordinates are sent to `/api/route`
+and `/api/loop` to compute a route (`RouteService.swift:150-160` and
+`:211-219`, both POST). `server/app.py` keeps nothing: no database, no log
+file, no request logging. It is served by `waitress`, which writes no access
+log by default.
 
 **With the deployment in the path, arguably yes.** The backend is reached
-through a Cloudflare tunnel that terminates TLS (`server/DEPLOY.md:9`,
-`:113-120`), and the coordinates are in the **query string**, so they appear in
-the request URL that Cloudflare's edge sees and may retain.
+through a Cloudflare tunnel that terminates TLS, and since 2026-09-29 it runs
+on an Oracle Cloud VM. Since that date the coordinates travel in a **POST
+body** rather than the URL, so they are no longer in the URLs that access logs
+record by default. Cloudflare still terminates TLS and can technically read
+the body.
 
 **Answer: declare it collected.** Under-declaring is a rejection and a
 credibility problem; over-declaring costs an honest line on the label. This is
-the conservative reading and it is what `PrivacyInfo.xcprivacy` says.
+the conservative reading, it is what `PrivacyInfo.xcprivacy` says, and
+`release-plan.md` decision 3 keeps it.
 
-**What would change the answer:** moving the coordinates out of the query string
-into a POST body would not by itself remove Cloudflare from the path, but it
-would stop them appearing in URLs. Dropping the tunnel for a host the owner
-controls end to end would remove the third party. Either is a real engineering
-change and neither has been made.
+**Note what is *not* the reason.** Drive traces are not why location is
+declared collected:
+- They never leave the device (`docs/privacy-policy.md` §3).
+- On-device storage is not collection under Apple's definition.
+- The same goes for the five recent destinations (`Recents.swift`).
 
-**Note what is *not* the reason.** Drive traces are not why location is declared
-collected. They never leave the device (`docs/privacy-policy.md` §3), and
-on-device storage is not collection under Apple's definition. A brief that says
-"the app collects precise location; `DriveTrace` writes it to disk" has the
-right conclusion for the wrong reason, and the reason matters — if the routing
-request changed, the answer would change, and the traces would not save it.
+A brief that says "the app collects precise location because `DriveTrace`
+writes it to disk" has the right conclusion for the wrong reason.
 
 ### The answers
 
 | Data type | Collected | Linked | Tracking | Purpose | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| **Precise Location** | **Yes** | No | No | App Functionality | `RouteService.swift:135-146`, `:185-192`; see above |
+| **Precise Location** | **Yes** | No | No | App Functionality | `RouteService.swift:150-160`, `:211-219`; see above |
 | Coarse Location | No | — | — | — | Only precise coordinates are ever sent; the app never derives or sends a coarse value |
 | Contact Info | No | — | — | — | No name, email, phone or address field exists anywhere in `ios/Sources` |
 | Health & Fitness | No | — | — | — | No HealthKit, no motion APIs |
 | Financial Info | No | — | — | — | No purchases, no payment code |
 | Contacts | No | — | — | — | No Contacts framework import |
-| User Content | No | — | — | — | Drive traces and scenery verdicts stay in the app's own `Documents/traces` (`DriveTrace.swift:131-134`); there is no upload path in the app |
-| Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift:17`, `RouteModel.swift:125`, `LoopModel.swift:78`), never to the routing server, which only ever receives resolved coordinates |
+| User Content | No | — | — | — | Drive traces and scenery verdicts stay in the app's own `Documents/traces` (`DriveTrace.swift`); there is no upload path in the app |
+| Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift`, `RouteModel.swift:149-160`, `LoopModel.swift:108-128`), never to the routing server, which only ever receives resolved coordinates. Recent destinations stay on the phone |
 | Browsing History | No | — | — | — | No web view, no browser |
 | Identifiers | No | — | — | — | No IDFA, no IDFV, no account, no device name read |
 | Purchases | No | — | — | — | No StoreKit |
@@ -178,11 +263,11 @@ request changed, the answer would change, and the traces would not save it.
 | Other Data | No | — | — | — | — |
 
 **"Used for tracking": No, for every type.** There is no ad SDK, no analytics
-SDK, no IDFA and no App Tracking Transparency prompt — `ios/project.yml`
+SDK, no IDFA and no App Tracking Transparency prompt. `ios/project.yml`
 declares no Swift Package, no CocoaPods and no Carthage, and every `import` in
-`ios/Sources` is an Apple framework. (The `dependencies:` line at
-`ios/project.yml:97` is **not** a package: it is the test target depending on
-the app target.) `NSPrivacyTrackingDomains` is correspondingly empty.
+`ios/Sources` is an Apple framework. The test target's `dependencies:` entry in
+`ios/project.yml` is **not** a package: it is the test target depending on the
+app target. `NSPrivacyTrackingDomains` is empty to match.
 
 ---
 
@@ -192,18 +277,19 @@ the app target.) `NSPrivacyTrackingDomains` is correspondingly empty.
 qualify for any of the exemptions provided in Category 5, Part 2 of the U.S.
 Export Administration Regulations?"
 
-**The facts.** The app's only network traffic is HTTPS to
-`https://api.jameskouvlis.com` (`ios/project.yml:63`, read by
-`RouteService.swift:23-32`), using the system's own TLS through `URLSession`.
-There is no bundled crypto library, no custom cipher, and no key management
-code anywhere in `ios/Sources`. The one App Transport Security exception is
-`NSAllowsLocalNetworking` (`ios/project.yml:55-56`) — for `http` to a Flask dev
-server on the same machine — **not** `NSAllowsArbitraryLoads`, which is the one
-that draws questions.
+**The facts.**
+- The app's only network traffic is HTTPS to `https://api.jameskouvlis.com`
+  (`SundayDriveAPIBaseURL` in `ios/project.yml`), using the system's own TLS
+  through `URLSession`.
+- There is no bundled crypto library, no custom cipher, and no key management
+  code anywhere in `ios/Sources`.
+- The one App Transport Security exception is `NSAllowsLocalNetworking`, which
+  allows `http` to a dev server on the same machine. It is **not**
+  `NSAllowsArbitraryLoads`, the one that draws questions.
 
-**The answer that follows:** the app uses encryption, but only Apple's, only for
-HTTPS, which is the standard exemption. In App Store Connect that resolves to
-answering **"No"** to *non-exempt* encryption.
+**The answer that follows:** the app uses encryption, but only Apple's and
+only for HTTPS, which is the standard exemption. In App Store Connect that
+means answering **"No"** to *non-exempt* encryption.
 
 **To stop being asked on every build,** add to the Info.plist properties in
 `ios/project.yml`:
@@ -214,105 +300,116 @@ answering **"No"** to *non-exempt* encryption.
         ITSAppUsesNonExemptEncryption: false
 ```
 
-**Deliberately not added here.** That key is a declaration to a US export
-authority, made in the owner's name, and it is the owner's to make. The
-engineering facts supporting it are above and are checkable; the declaration is
-not a code change to be slipped in by a session writing documents.
+**Deliberately not added yet.** The key is a declaration to a US export
+authority, made in the owner's name, so it is the owner's to make. The facts
+that support it are above and can be checked.
 
 ---
 
 ## 5. Things App Review will ask about, with the answers
 
-Not console fields, but the questions this app's configuration reliably
-provokes. Each answer is already written down in the codebase; this is where to
-find it.
+These are not console fields. They are the questions this app's configuration
+reliably provokes, and each answer is already in the codebase. **Paste the
+short versions into the App Review notes** (≤ 4,000 bytes), together with the
+region note at the end of this section.
 
-**Why does it need background location?** `UIBackgroundModes: [location,
-audio]` (`ios/project.yml:43-45`). It is a turn-by-turn navigation app: with
-when-in-use authorization, background location is permitted for navigation so
-long as the blue status-bar indicator shows, which the app opts into
-(`LocationManager.swift:150-151`) and switches off when navigation ends
-(`:163`). Without it, a locked phone or an incoming call silently ends the
-drive. **It never requests "always" authorization** — only
-`requestWhenInUseAuthorization` (`LocationManager.swift:145`, `:218`).
+**Why does it need background location?** It is a turn-by-turn navigation app,
+and it declares `UIBackgroundModes: [location, audio]` in `ios/project.yml`.
+- With when-in-use authorization, background location is permitted for
+  navigation as long as the blue status-bar indicator shows. The app opts
+  into it (`LocationManager.swift:196`) and switches it off when navigation
+  ends.
+- Without it, a locked phone or an incoming call silently ends the drive.
+- **It never requests "always" authorization**, only
+  `requestWhenInUseAuthorization` (`LocationManager.swift:182`, `:287`).
 
-**Why does it need the `audio` background mode?** Spoken guidance, and it is
-not optional: measured on a physical phone on 2026-08-30, a build declaring only
-`location` failed to speak on all 19 attempts made from the background —
-`AVAudioSession.setActive(true)` throwing `'!pla'` — while the same binary with
-`audio` added spoke 23 of 23, 16 with the screen off. The measurement is
-recorded at `ios/project.yml:26-40`.
+**Why does it need the `audio` background mode?** For spoken guidance, and it
+is not optional. On a physical phone on 2026-08-30:
+- A build declaring only `location` failed to speak on all 19 attempts made
+  from the background. `AVAudioSession.setActive(true)` threw `'!pla'`.
+- The same binary with `audio` added spoke 23 of 23, 16 of them with the
+  screen off.
+
+The measurement is recorded in the comment above `UIBackgroundModes` in
+`ios/project.yml`.
 
 **Why is the Documents folder exposed?** `UIFileSharingEnabled` and
-`LSSupportsOpeningDocumentsInPlace` (`ios/project.yml:51-52`) are the *entire*
-export and deletion story for drive recordings: the user copies them off over a
-cable or deletes them in the Files app. There is no upload and no in-app share.
+`LSSupportsOpeningDocumentsInPlace` are the *entire* export and deletion story
+for drive recordings. The user copies them off over a cable, or deletes them
+in the Files app. There is no upload and no in-app share.
+
+**Why does it only work in New England?** (`pre-submission-review-verdict.md`
+AR-1.) A reviewer outside the region who taps **Loop** or uses **My
+Location** gets the server's out-of-region error. The notes must say so up
+front:
+- Each road's scenery score is computed from regional open data, so coverage
+  is the six New England states.
+- From anywhere, typing a New England town as the start works.
+- Give a test route: **Concord, MA → Rockport, MA**. On 2026-10-04 production
+  returned both arms in 0.8 s: fastest 77 km in 53 min, scenic 75 km in
+  100 min with 24 km of beautiful road.
+- Name a loop start in southern New England. Northern mountain roads close
+  for winter (verdict C-1).
+- Attach a short screen recording of a real drive.
 
 **Age rating.** No user-generated content visible to others, no web view, no
-advertising, no in-app purchases. *(The exact rating is an owner input, not a
-code fact.)*
+advertising, no in-app purchases. Answer the age-rating questionnaire
+honestly; the result is Apple's to compute.
 
 ---
 
 ## 6. Version and identity fields
 
-These are still development values and are wrong for a submission
-(`ios/project.yml:66`, `:74-76`, `:5`): bundle identifier `app.sundaydrive`
-(renamed 2026-09-20 to `app.victorylap` and again 2026-09-21 to this,
-**still provisional — see the gate below**),
-marketing version `1.0` (raised from `0.1` 2026-09-29), build `1`, iPhone only (`TARGETED_DEVICE_FAMILY: "1"`),
-deployment target iOS 17.0. **Each is an owner decision.**
+| Field | Value | State |
+| --- | --- | --- |
+| Name | `Sunday Drive` (12 of 30) | Decided. Editable until submission, and changeable with any later version |
+| Subtitle | `The scenic route, on purpose` (28 of 30) | Decided |
+| Bundle ID | `app.sundaydrive` | Decided. **Locks at the first build upload, TestFlight included** |
+| SKU | not yet chosen | Permanent once the record is created; never shown to users |
+| Version / build | `MARKETING_VERSION` 1.0, `CURRENT_PROJECT_VERSION` 1 | Wired into the bundle since K-2 (`261b3c0`); raise the build number for every upload |
+| Devices | iPhone only (`TARGETED_DEVICE_FAMILY: "1"`), iOS 17.0+ | Decided |
+| Territories | **United States only** | Decided (`release-plan.md` decision 3) |
+| Price | Free | Decided |
 
-**The bundle identifier locks at the first build *upload*, not at submission.**
-App Store Connect Help → Reference → App information states it directly: the
-bundle ID is a property you *"can't change … after you upload a build."*
-**A TestFlight build is an upload.** An earlier version of this section said
-"cannot be changed after first submission", which implies a window that runs
-up to App Review; the real one closes the first time a binary is pushed.
-Nothing has been uploaded, so the window is open — but confirm the identifier
-before the first TestFlight build, not before the first submission.
+**The team changed when the membership started.** `ios/project.yml` still says
+`DEVELOPMENT_TEAM: 28ZU5P5GC3`. That is the free Personal Team, the only team
+Xcode knew on 2026-10-04.
+- The paid team has its own Team ID. That line has to change before the first
+  upload.
+- The Personal Team registered `app.sundaydrive` on 2026-09-29, with a 7-day
+  profile that expires 2026-10-06. Apple's forums report that such a
+  registration makes the ID "not available" to another team until it lapses.
+  Developer Support can sometimes release it sooner.
+- **Do not build to a device with the Personal Team again**, because that
+  renews the claim.
+- iOS will not upgrade an app across team IDs. So the free-team install on
+  the phone must be deleted before a paid-team build goes on. Copy its
+  `Documents/traces` off first.
 
-Two more from the same reference, worth knowing here because neither is
-recoverable either: the **SKU** *"can't be changed after you add the app to
-your account"*, and the numeric **Apple ID** is generated and never editable.
-The **app name**, by contrast, is *not* permanent — editable until submission
-and changeable with any later version.
-
-Note that publishing the app publishes `api.jameskouvlis.com` — the backend URL
-is baked into the bundle and readable by anyone who unpacks it. That is already
-true of this public repository, but it is worth deciding deliberately rather
-than by default.
+Note that publishing the app publishes `api.jameskouvlis.com`. The backend URL
+is baked into the bundle and readable by anyone who unpacks it. That is
+already true of this public repository.
 
 ---
 
-## 7. The two blockers that are not paperwork
+## 7. The two blockers that were not paperwork — both resolved
 
-Both from `docs/legal-and-ip-audit.md`; neither is fixed, and neither is fixed
-by this document.
+1. **The name.** Resolved 2026-09-20 and re-decided 2026-09-21. "Scenic" was
+   taken by a senior direct competitor in the same category, and it is merely
+   descriptive. The app is **Sunday Drive** (`sunday-drive-naming.md`).
+2. **Apple's map attribution was obscured** by the planning sheet (ADPLA
+   Attachment 6 §2.1). It was resolved by the clean-sheet redesign, merged
+   2026-09-29 (`f54e24f`). Planning is a page with a bounded map card, and
+   the driving screen keeps a reserved strip for the logo
+   (`Metric.appleKeep`). Runtime screenshots of every planning stage and the
+   driving screen confirm the logo is clear (`pre-submission-review-verdict.md`
+   §5). Re-check it if the map card's corner radius or inset changes.
 
-1. ~~**The name.**~~ **Resolved 2026-09-20, and re-decided 2026-09-21.** Item 1
-   — "Scenic" taken by a senior direct competitor in the same category *and*
-   merely descriptive — is answered: the app is **Sunday Drive**
-   (`sunday-drive-naming.md`), renamed from Victory Lap
-   (`victory-lap-naming.md`), and the identifiers were renamed to match.
-   Nothing public-facing has gone out under any of the three names.
-
-   **The App Store `Name` field answer is `Sunday Drive` — 12 characters of
-   30.** The listing copy in `victory-lap-naming.md` §6–§8 still carries the
-   old name in its `Name` row and its own forward pointer says so; the
-   subtitle it decided, *The scenic route, on purpose*, is name-independent and
-   stands. Note that the `Name - Subtitle` combined form does **not** carry
-   over: `Victory Lap - The Scenic Route` was exactly 30 characters, and
-   `Sunday Drive - The Scenic Route` is **31**, one over the limit.
-2. **Apple's map attribution is obscured** by the planning sheet. Item 2, ADPLA
-   Attachment 6 §2.1, confirmed breach, unfixed. Submitting with a clipped Apple
-   logo is submitting a known contract breach.
-
-A third item is open but not a submission gate: drive traces persist
-Apple-derived coordinates (item 5, Attachment 6 §2.5, which the licensing review
-found now carries an express duty to delete). Fixing it changes the on-disk
-trace schema that twelve recorded drives and `tools/analyze_trace.py` depend on,
-so it is its own piece of work.
+One related item is open but is not a submission gate. Drive traces and
+recent destinations persist Apple-geocoded coordinates (Attachment 6 §2.5,
+which now carries an express duty to delete). The fix is to store the
+server's snapped endpoint instead. It changes the trace format that
+`tools/analyze_trace.py` reads, so it is its own piece of work.
 
 ---
 
@@ -320,13 +417,20 @@ so it is its own piece of work.
 
 | # | Item | State |
 | --- | --- | --- |
-| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done** — `ios/Sources/PrivacyInfo.xcprivacy`, verified at the root of the built `SundayDrive.app` and guarded by `ios/Tests/PrivacyManifestTests.swift` |
-| 2 | Route-guidance notice in the app | **Done** — `AboutView.swift:100-102`, shipped 2026-09-19 |
-| 3 | Custom EULA filed in App Store Connect | **Open** — §1; needs a lawyer and an owner decision |
-| 4 | Privacy policy drafted | **Done, as a draft** — `docs/privacy-policy.md` |
-| 5 | Privacy policy cleared and published, URL entered | **Open** — §2; needs a lawyer, a host, and a contact address |
-| 6 | Nutrition label answers decided | **Done** — §3; enter them when submitting |
-| 7 | Export compliance answer decided | **Done** — §4; the declaration itself is the owner's to make |
-| 8 | Name settled | **Done** — §7.1, `Sunday Drive` as of 2026-09-21 |
-| 9 | Apple attribution unobscured | **Blocked** — §7.2 |
-| 10 | Bundle ID, version, territories | **Open** — §6, owner input |
+| 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done.** Guarded by `PrivacyManifestTests.swift` |
+| 2 | Route-guidance notice in the app | **Done.** `AboutView.swift:107-108` |
+| 3 | Custom EULA filed in App Store Connect | **Text ready (§1).** Needs the PO box's city/state/ZIP, a phone number, and the `support@` route. Then paste it once the app record exists |
+| 4 | Privacy policy written | **Done.** `docs/privacy-policy.md` |
+| 5 | Privacy policy published, URL entered | **Published** (§2). Enter the URL in App Store Connect |
+| 6 | Nutrition label answers | **Decided** (§3). Enter them in App Store Connect |
+| 7 | Export compliance | **Decided** (§4). The plist key is the owner's to approve |
+| 8 | Name | **Done.** `Sunday Drive` |
+| 9 | Apple attribution unobscured | **Done** (§7.2) |
+| 10 | Bundle ID, version, territories | **Decided** (§6) |
+| 11 | Paid team in `project.yml`, and `app.sundaydrive` registered to it | **Open** (§6). Needs the paid Team ID |
+| 12 | Support URL | **Open.** Dispatched as `support-page-brief.md` |
+| 13 | App Review notes and screen recording | **Open** (§5). Must exist before the first submission *and* before external TestFlight, whose beta review has the same problem |
+| 14 | Mac and Vision Pro availability | **Untick both.** iPhone apps are offered on Apple Silicon Macs and Apple Vision Pro by default. Pricing and Availability → "iPhone and iPad Apps on Apple Silicon Macs", and the Apple Vision Pro section |
+| 15 | Accessibility Nutrition Label | Optional. **Do not claim Larger Text.** No text in the app follows Dynamic Type yet (verdict K-5) |
+| 16 | Screenshots | **Open.** 6.9" (1320 × 2868), from a **freshly created** simulator, because the unit tests leave fake settings and drive traces in the app (verdict K-3). Take them after the dial headline fix (verdict C-3) |
+| 17 | Category, age rating, copyright, release option | **Open.** Navigation / Travel; the age-rating questionnaire; `2026 <legal name>`; **Manually release this version** |

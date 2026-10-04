@@ -126,16 +126,15 @@ measured; `[ ]` is open, with what it is waiting on.
 - [ ] **The 500 m reroute re-seat window is argued, not fitted.** Bounded by one
       measured case (282 m). A drive deliberately routed over a road the route
       uses twice would calibrate it — `docs/reroute-audit.md`
-- [ ] **App Store submission is blocked on three owner decisions and a lawyer,
-      not on engineering.** The code half is done: `PrivacyInfo.xcprivacy` ships
-      in the bundle and Apple's route-guidance notice is in the app, both
-      test-asserted. What is open is a custom EULA filed in App Store Connect, a
-      privacy policy cleared and hosted somewhere that outlives the laptop, and
-      an export-compliance declaration — plus two items that are neither: the
-      name is taken by a senior competitor, and the Apple logo is still obscured
-      by the planning sheet. The answers and their evidence are in
-      `docs/app-store-submission.md`; the policy draft is
-      `docs/privacy-policy.md`
+- [ ] **App Store submission: the engineering is mostly done, and the rest is
+      paperwork plus the open verdict items.**
+      - Membership was accepted 2026-10-03.
+      - No lawyer, by owner decision (`release-plan.md` §8, decision 3).
+      - The name is settled, and the Apple logo has been clear since the
+        redesign.
+      - What is left is tracked in two places: the submission checklist,
+        `docs/app-store-submission.md` §8, and the open items listed at the
+        top of `docs/pre-submission-review-verdict.md`.
 
 > The early MapLibre web demo was retired to focus on iOS; it lives in git
 > history (`git show 82044e2`) and is cheap to revive on the same API if needed.

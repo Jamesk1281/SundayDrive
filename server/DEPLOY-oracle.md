@@ -594,6 +594,10 @@ hostname, and the tunnel is the switch.
 
 ### Before the laptop is next switched on
 
+> **2026-10-04: the owner expects the laptop never to be switched on again**,
+> so Oracle is the only origin and there is no rollback box. The warning below
+> still holds if it ever boots.
+
 If the Task Scheduler entries from [`DEPLOY.md`](DEPLOY.md) §7 exist, booting
 the laptop starts `cloudflared tunnel run scenic` and attaches it as a
 **second, ungated** connector. Cloudflare sends each request to the closest
