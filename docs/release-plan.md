@@ -38,11 +38,11 @@
 > checklist, with the custom EULA now paste-ready in §1) and the open items at
 > the top of [`pre-submission-review-verdict.md`](pre-submission-review-verdict.md).
 >
-> **Three corrections to the text below:**
-> - **§3's "two things change on the day membership starts" missed a third:
->   the team changes.** `ios/project.yml` still names the free Personal Team.
->   That team registered `app.sundaydrive` on 2026-09-29, which can block the
->   paid team from registering it until the claim lapses, around 2026-10-06
+> **Three notes on the text below:**
+> - **§3 holds as written: the team did not change.** The individual
+>   enrolment kept Team ID `28ZU5P5GC3`, the free team's own ID, so
+>   `ios/project.yml` and the existing `app.sundaydrive` registration are
+>   already right. Only Xcode's cached account needs refreshing
 >   (`app-store-submission.md` §6).
 > - **§11's "the total cost is $99/year" is short.** Add the domain,
 >   `jameskouvlis.com`, at about $23/year. It expires 2026-10-28 and is

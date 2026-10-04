@@ -375,20 +375,23 @@ honestly; the result is Apple's to compute.
 | Territories | **United States only** | Decided (`release-plan.md` decision 3) |
 | Price | Free | Decided |
 
-**The team changed when the membership started.** `ios/project.yml` still says
-`DEVELOPMENT_TEAM: 28ZU5P5GC3`. That is the free Personal Team, the only team
-Xcode knew on 2026-10-04.
-- The paid team has its own Team ID. That line has to change before the first
-  upload.
-- The Personal Team registered `app.sundaydrive` on 2026-09-29, with a 7-day
-  profile that expires 2026-10-06. Apple's forums report that such a
-  registration makes the ID "not available" to another team until it lapses.
-  Developer Support can sometimes release it sooner.
-- **Do not build to a device with the Personal Team again**, because that
-  renews the claim.
-- iOS will not upgrade an app across team IDs. So the free-team install on
-  the phone must be deleted before a paid-team build goes on. Copy its
-  `Documents/traces` off first.
+**The membership kept the team.** Membership details (2026-10-04) shows Team
+ID **`28ZU5P5GC3`**, enrolled as an Individual. That is the same ID the free
+Personal Team had: the enrolment upgraded the existing team rather than
+creating a new one. So:
+- `DEVELOPMENT_TEAM: 28ZU5P5GC3` in `ios/project.yml` is already right.
+- `app.sundaydrive` is already registered to this team. Xcode registered it on
+  2026-09-29.
+- Builds on the phone upgrade in place and keep their data.
+
+**The one thing to do is refresh Xcode.** On 2026-10-04 its cached account
+still read `isFreeProvisioningTeam = 1`, "James . (Personal Team)". Until
+Settings → Accounts is refreshed, Xcode treats the team as free: 7-day
+profiles, the three-app cap, and no App Store upload.
+
+*An earlier version of this section, written the same morning, predicted that
+the paid team would get a new Team ID and fight the free one for the bundle
+ID. That prediction was wrong and is retracted.*
 
 Note that publishing the app publishes `api.jameskouvlis.com`. The backend URL
 is baked into the bundle and readable by anyone who unpacks it. That is
@@ -432,7 +435,7 @@ server's snapped endpoint instead. It changes the trace format that
 | 8 | Name | **Done.** `Sunday Drive` |
 | 9 | Apple attribution unobscured | **Done** (§7.2) |
 | 10 | Bundle ID, version, territories | **Decided** (§6) |
-| 11 | Paid team in `project.yml`, and `app.sundaydrive` registered to it | **Open** (§6). Needs the paid Team ID |
+| 11 | Team and bundle ID | **Done** (§6). The membership kept Team ID `28ZU5P5GC3`, and `app.sundaydrive` is registered to it. Refresh Xcode's account so it stops treating the team as free |
 | 12 | Support URL | **Open.** Dispatched as `support-page-brief.md` |
 | 13 | App Review notes and screen recording | **Open** (§5). Must exist before the first submission *and* before external TestFlight, whose beta review has the same problem |
 | 14 | Mac and Vision Pro availability | **Untick both.** iPhone apps are offered on Apple Silicon Macs and Apple Vision Pro by default. Pricing and Availability → "iPhone and iPad Apps on Apple Silicon Macs", and the Apple Vision Pro section |
