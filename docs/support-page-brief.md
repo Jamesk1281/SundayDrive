@@ -1,7 +1,7 @@
 # Brief: the support page (App Store Connect's Support URL)
 
 **Status: decided, not built.** Written 2026-10-04 against `main` at
-`dcbde88`. Nothing under `site/` has been touched for this brief. The content
+`08eea85`. Nothing under `site/` has been touched for this brief. The content
 and scope below are decided. **Do not re-derive them; build them.**
 
 ## The goal
@@ -97,19 +97,16 @@ there are several. It should assert:
    `jamesk1281.github.io/privacy/`, which is a 404. Use relative links
    (`privacy/`). The in-app link (`PrivacyPolicy.url`,
    `AboutView.swift:217-218`) is absolute and correct: leave it alone.
-2. **Another live session owns the privacy page and the recording story.**
-   Branch `claude/in-drive-recording-scenery-rating-206ec1` (commit `fa58454`,
-   "Sideline drive recording and scenery rating for launch") is changing:
-   - what the app records,
-   - `site/privacy/index.html`,
-   - and the iOS sources around them.
-
-   So:
-   - **do not touch `site/privacy/index.html` or `tests/test_privacy_page.py`**;
-   - **do not describe drive recording, the rating buttons or stored data**
-     on the support page. Link to the privacy policy instead. A second
-     description is a second thing to keep true, and it would be wrong the
-     day that branch merges.
+2. **The privacy page is the one place that says what the app keeps.** It has
+   just changed: `08eea85` (merged 2026-10-04) switched drive recording and
+   both scenery-rating controls off in every build
+   (`DriveTrace.isEnabled = false`), and rewrote `site/privacy/index.html` to
+   say so.
+   - **Do not touch `site/privacy/index.html` or `tests/test_privacy_page.py`.**
+   - **Do not describe recording, the rating buttons or stored data on the
+     support page.** Link to the privacy policy instead. A second description
+     is a second thing to keep true, and recording is meant to come back one
+     day.
 3. **Load nothing from anywhere else, including the App Store badge later.**
    The privacy page's test enforces this rule for that page, and a support
    page that pings a third-party server contradicts the "no tracking" line on
@@ -160,8 +157,8 @@ there are several. It should assert:
    which only the owner can test.
 
 **Out of scope:**
-- a "Contact" or "Support" row inside the app (iOS, and it would collide with
-  Trap 2's session);
+- a "Contact" or "Support" row inside the app (iOS work, kept out of a
+  site-only change);
 - screenshots, a press kit and the marketing landing page
   (`marketing-plan.md` §5.7), which this page can grow into later;
 - any change to the privacy page.
