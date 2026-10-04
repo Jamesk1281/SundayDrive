@@ -455,7 +455,7 @@ struct NavView: View {
             // Under the controls, not in the banner: the banner is where the
             // next maneuver goes, and no diagnostic outranks the turn you are
             // about to miss. Unmissable, but never in the way.
-            if let problem = nav.recordingProblem ?? nav.actionProblem {
+            if let problem = recordingProblem ?? nav.actionProblem {
                 Label(problem, systemImage: "exclamationmark.triangle.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.alert)
@@ -485,6 +485,14 @@ struct NavView: View {
         .accessibilityLabel(label)
     }
 
+    /// `nav.recordingProblem`, but only in a build that records at all. With
+    /// recording switched off (`DriveTrace.isEnabled`) there is no trace, and
+    /// the model would rightly call that "Not recording" — which is the
+    /// intended state there, not a fault to show the driver.
+    private var recordingProblem: String? {
+        DriveTrace.isEnabled ? nav.recordingProblem : nil
+    }
+
     private var tripStats: some View {
         VStack(spacing: 1) {
             HStack(spacing: 6) {
@@ -492,9 +500,11 @@ struct NavView: View {
                 // traffic was that thick, once — so whether it is being recorded
                 // has to be answerable at a glance. Silence would look identical
                 // to working.
-                Circle()
-                    .fill(nav.recordingProblem == nil ? Color.endPin : Color.alert)
-                    .frame(width: 8, height: 8)
+                if DriveTrace.isEnabled {
+                    Circle()
+                        .fill(recordingProblem == nil ? Color.endPin : Color.alert)
+                        .frame(width: 8, height: 8)
+                }
                 Text(nav.eta, format: .dateTime.hour().minute())
                     .font(.figure(23, .bold))
                     .foregroundStyle(Color.ink)
@@ -522,7 +532,7 @@ struct NavView: View {
         .accessibilityLabel(
             "Arriving at \(nav.eta.formatted(date: .omitted, time: .shortened)), "
             + "\(timeText(nav.remainingMinutes)) and \(Self.milesText(nav.remainingMeters)) to go. "
-            + (nav.recordingProblem ?? "Recording this drive.")
+            + (DriveTrace.isEnabled ? (recordingProblem ?? "Recording this drive.") : "")
             + (nav.marksRecorded > 0 ? " \(nav.marksRecorded) scenery marks logged." : "")
         )
     }

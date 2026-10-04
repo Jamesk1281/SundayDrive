@@ -19,7 +19,10 @@
 >   release in Vermont gets the same closed roads.
 >
 > **Still open, of the "before L" list:**
-> - AR-2 and AR-4/C-2, which are owner decisions.
+> - ~~AR-2 and AR-4/C-2~~ **Decided 2026-10-04:** drive recording and both
+>   scenery-rating controls are switched off in every build
+>   (`DriveTrace.isEnabled = false`), code kept. The privacy texts say the app
+>   does not record.
 > - C-3.
 > - K-1.
 > - A "Clear recent destinations" control.

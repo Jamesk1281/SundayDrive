@@ -39,20 +39,24 @@ struct ArrivalView: View {
             }
             .padding(.top, 15)
 
-            Divider().overlay(Color.hairline).padding(.vertical, 15)
+            // Only asked when there is a recording to put the answer in. Asking
+            // and then dropping the answer would be worse than not asking.
+            if nav.canRecordMarks {
+                Divider().overlay(Color.hairline).padding(.vertical, 15)
 
-            Text("How was the road?").sectionLabel()
-                .padding(.bottom, 10)
+                Text("How was the road?").sectionLabel()
+                    .padding(.bottom, 10)
 
-            HStack(spacing: 10) {
-                answer(.nice, "Lovely", symbol: "hand.thumbsup.fill",
-                       tint: .amberText, border: .amber)
-                answer(.dull, "Not really", symbol: "hand.thumbsdown.fill",
-                       tint: .ink2, border: .hairline)
+                HStack(spacing: 10) {
+                    answer(.nice, "Lovely", symbol: "hand.thumbsup.fill",
+                           tint: .amberText, border: .amber)
+                    answer(.dull, "Not really", symbol: "hand.thumbsdown.fill",
+                           tint: .ink2, border: .hairline)
+                }
             }
 
             PrimaryButton(title: "Done", action: onDone)
-                .padding(.top, 12)
+                .padding(.top, nav.canRecordMarks ? 12 : 18)
         }
         .padding(20)
         .background(Color.card, in: RoundedRectangle(cornerRadius: 22))

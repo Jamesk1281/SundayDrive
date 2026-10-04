@@ -23,8 +23,10 @@ which is made available under the
 
 ## Both claims are measured
 
-Every drive records itself, so a test drive produces numbers rather than
-impressions.
+Every test drive recorded itself, so it produced numbers rather than
+impressions. Recording and the scenery buttons are switched off for launch
+(`DriveTrace.isEnabled` in `ios/Sources/DriveTrace.swift`); flip it to record
+again.
 
 - **The ETA.** 5.7% error pooled over two recorded drives, down from 22%, once
   routes were priced at the speed each road class is really driven plus the
@@ -148,7 +150,8 @@ xcrun simctl location booted set 42.2809,-71.2378      # Needham, MA
 ```
 
 Setting it again mid-drive is how to walk the car along a route: the arrival
-card and the two scenery marks need the drive to actually progress.
+card and (with `DriveTrace.isEnabled` on) the two scenery marks need the drive
+to actually progress.
 
 ## Tests
 

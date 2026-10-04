@@ -236,7 +236,9 @@ the conservative reading, it is what `PrivacyInfo.xcprivacy` says, and
 
 **Note what is *not* the reason.** Drive traces are not why location is
 declared collected:
-- They never leave the device (`docs/privacy-policy.md` §3).
+- The release build does not write them at all (`DriveTrace.isEnabled` is
+  `false` since 2026-10-04), and when it did they never left the device
+  (`docs/privacy-policy.md` §3).
 - On-device storage is not collection under Apple's definition.
 - The same goes for the five recent destinations (`Recents.swift`).
 
@@ -253,7 +255,7 @@ writes it to disk" has the right conclusion for the wrong reason.
 | Health & Fitness | No | — | — | — | No HealthKit, no motion APIs |
 | Financial Info | No | — | — | — | No purchases, no payment code |
 | Contacts | No | — | — | — | No Contacts framework import |
-| User Content | No | — | — | — | Drive traces and scenery verdicts stay in the app's own `Documents/traces` (`DriveTrace.swift`); there is no upload path in the app |
+| User Content | No | — | — | — | Drive recording and scenery verdicts are switched off (`DriveTrace.isEnabled = false`); when on, they stayed in the app's own `Documents/traces` with no upload path |
 | Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift`, `RouteModel.swift:149-160`, `LoopModel.swift:108-128`), never to the routing server, which only ever receives resolved coordinates. Recent destinations stay on the phone |
 | Browsing History | No | — | — | — | No web view, no browser |
 | Identifiers | No | — | — | — | No IDFA, no IDFV, no account, no device name read |
@@ -335,9 +337,10 @@ The measurement is recorded in the comment above `UIBackgroundModes` in
 `ios/project.yml`.
 
 **Why is the Documents folder exposed?** `UIFileSharingEnabled` and
-`LSSupportsOpeningDocumentsInPlace` are the *entire* export and deletion story
-for drive recordings. The user copies them off over a cable, or deletes them
-in the Files app. There is no upload and no in-app share.
+`LSSupportsOpeningDocumentsInPlace` were the *entire* export and deletion story
+for drive recordings. Recording is switched off for launch (2026-10-04,
+`DriveTrace.isEnabled`), so the folder stays empty; the keys are left in so
+turning recording back on needs no plist change.
 
 **Why does it only work in New England?** (`pre-submission-review-verdict.md`
 AR-1.) A reviewer outside the region who taps **Loop** or uses **My
@@ -406,8 +409,9 @@ already true of this public repository.
    driving screen confirm the logo is clear (`pre-submission-review-verdict.md`
    §5). Re-check it if the map card's corner radius or inset changes.
 
-One related item is open but is not a submission gate. Drive traces and
-recent destinations persist Apple-geocoded coordinates (Attachment 6 §2.5,
+One related item is open but is not a submission gate. Recent destinations,
+and drive traces when recording is switched on (it is off since 2026-10-04),
+persist Apple-geocoded coordinates (Attachment 6 §2.5,
 which now carries an express duty to delete). The fix is to store the
 server's snapped endpoint instead. It changes the trace format that
 `tools/analyze_trace.py` reads, so it is its own piece of work.
