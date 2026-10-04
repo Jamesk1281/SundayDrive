@@ -111,9 +111,11 @@ junction copies included:
 **What still slips through: closures OSM does not record.**
 - **Certain:** Acadia's Park Loop Road (29.9 km, score 8.59) and Cadillac
   Summit Road (5.4 km, 7.68). The park closes both Dec 1 - Apr 14, and OSM
-  tags neither. Park Loop Road is #5 on the flagship list. The fix belongs in
-  OSM, as a `motor_vehicle:conditional` on those ways; the next extract would
-  then carry it.
+  tags neither. Park Loop Road is #5 on the flagship list. The lasting fix is
+  an OSM edit, a `motor_vehicle:conditional` on those ways. It reaches the app
+  only with the next full rebuild, because `closures.py` reads the PBF the
+  graph was built from. Closing them this winter would take a hand-kept
+  override.
 - **Possible, unverified:** Mt Equinox's Skyline Drive (8.6 km) and Skinner
   State Park Road (4.2 km) are summit roads in the graph with no closure tag.
   I could not find the toll roads on Mt Mansfield and Burke Mountain, or Pack
