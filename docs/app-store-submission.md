@@ -85,16 +85,15 @@ App Store Connect → the app → **App Information** → License Agreement →
 the only territory (§6). The field is plain text: HTML is stripped and only
 line breaks survive.
 
-**Three values are still blank. Fill them before pasting:**
-- the PO box's city, state and ZIP;
-- a phone number (a Google Voice number is free and keeps a personal number
-  private);
-- confirmation that `support@jameskouvlis.com` routes to an inbox. It is a
-  new Cloudflare Email Routing address, the same one the support page
-  publishes.
+**Filled in 2026-10-04 by the owner:**
+- the address is the PO box in Needham, MA 02492;
+- the phone is the account's number;
+- `support@jameskouvlis.com` is created.
 
-The name must match the seller name App Store Connect shows for the account.
-For an individual, that is the legal name.
+Paste it as it stands.
+
+The name must match the seller name App Store Connect shows for the account. It
+does: Xcode lists the team as "James Kouvlis", Individual, as of 2026-10-04.
 
 ```text
 SUNDAY DRIVE END USER LICENSE AGREEMENT
@@ -147,8 +146,8 @@ This Agreement is effective until terminated. Your rights under it end automatic
 Questions, complaints or claims about the App:
 James Kouvlis
 PO Box 920857
-[CITY, STATE ZIP]
-Phone: [PHONE]
+Needham, MA 02492
+Phone: (781) 300-8440
 Email: support@jameskouvlis.com
 ```
 
@@ -427,7 +426,7 @@ server's snapped endpoint instead. It changes the trace format that
 | --- | --- | --- |
 | 1 | `PrivacyInfo.xcprivacy` in the app bundle | **Done.** Guarded by `PrivacyManifestTests.swift` |
 | 2 | Route-guidance notice in the app | **Done.** `AboutView.swift:107-108` |
-| 3 | Custom EULA filed in App Store Connect | **Text ready (§1).** Needs the PO box's city/state/ZIP, a phone number, and the `support@` route. Then paste it once the app record exists |
+| 3 | Custom EULA filed in App Store Connect | **Text final (§1).** Paste it once the app record exists |
 | 4 | Privacy policy written | **Done.** `docs/privacy-policy.md` |
 | 5 | Privacy policy published, URL entered | **Published** (§2). Enter the URL in App Store Connect |
 | 6 | Nutrition label answers | **Decided** (§3). Enter them in App Store Connect |
@@ -436,7 +435,7 @@ server's snapped endpoint instead. It changes the trace format that
 | 9 | Apple attribution unobscured | **Done** (§7.2) |
 | 10 | Bundle ID, version, territories | **Decided** (§6) |
 | 11 | Team and bundle ID | **Done** (§6). The membership kept Team ID `28ZU5P5GC3`, and `app.sundaydrive` is registered to it. Refresh Xcode's account so it stops treating the team as free |
-| 12 | Support URL | **Open.** Dispatched as `support-page-brief.md` |
+| 12 | Support URL | **Built** (`site/index.html`, merged 2026-10-04): `https://jamesk1281.github.io/SundayDrive/`, live once `main` is pushed |
 | 13 | App Review notes and screen recording | **Open** (§5). Must exist before the first submission *and* before external TestFlight, whose beta review has the same problem |
 | 14 | Mac and Vision Pro availability | **Untick both.** iPhone apps are offered on Apple Silicon Macs and Apple Vision Pro by default. Pricing and Availability → "iPhone and iPad Apps on Apple Silicon Macs", and the Apple Vision Pro section |
 | 15 | Accessibility Nutrition Label | Optional. **Do not claim Larger Text.** No text in the app follows Dynamic Type yet (verdict K-5) |
