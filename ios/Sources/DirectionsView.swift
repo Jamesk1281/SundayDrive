@@ -219,15 +219,17 @@ struct PrefDial: View {
                 Text("Same as the fastest route")
                     .font(.figure(24))
                     .foregroundStyle(Color.ink2)
-            } else if let miles = c.beautifulMiles {
+            } else if let gain = c.headlineGain {
                 (cost(c.extraMinutes)
                  + Text(" · ").foregroundColor(.ink3)
-                 + Text("\(miles.scenic) mi of beautiful road").foregroundColor(.amberText))
+                 + Text("+\(gain) mi of beautiful road").foregroundColor(.amberText))
                     .font(.figure(26))
                     .contentTransition(.numericText())
             } else {
-                // Older backend, no `beautiful_km`. The sentence that shipped
-                // before the cards counted miles still describes it exactly.
+                // No gain to print: the same beautiful miles or fewer, which the
+                // sentence words honestly rather than as "+0 mi". Or an older
+                // backend, no `beautiful_km`, which the sentence that shipped
+                // before the cards counted miles still describes exactly.
                 Text(c.attributedSummary)
                     .font(.system(size: 15))
                     .foregroundStyle(Color.ink)
@@ -241,12 +243,15 @@ struct PrefDial: View {
             : Text("+\(minutes) min").foregroundColor(.slate)
     }
 
+    /// The readout, in words. Wherever there is no gain to print, the same
+    /// drive included, it reads the sentence's plain text: `summary` is
+    /// markdown, and its `**` are not something to read aloud.
     private var spokenValue: String {
         let c = RouteComparison(fastest: response.fastest.properties,
                                 scenic: response.scenic.properties)
-        guard let miles = c.beautifulMiles else { return c.summary }
+        guard let gain = c.headlineGain else { return String(c.attributedSummary.characters) }
         let cost = c.extraMinutes <= 0
             ? "no extra time" : "plus \(CountText.of(c.extraMinutes, "minute"))"
-        return "\(cost), \(CountText.of(miles.scenic, "mile")) of beautiful road"
+        return "\(cost), \(CountText.of(gain, "more mile")) of beautiful road"
     }
 }
