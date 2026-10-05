@@ -1,7 +1,6 @@
-# Brief: stop routing over roads that are closed for the season
+# Seasonal closures: what was built, and the decisions behind it
 
-**Status: built 2026-10-04 on `claude/inspiring-cannon-89c90c`, not merged or
-deployed.** The result comes first, below. The brief follows it unchanged.
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/seasonal-closures-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## Result
 
@@ -251,92 +250,3 @@ windows`.
 
    It is a separate commit, because it needs a new build while the server part
    does not.
-
-## Traps
-
-1. **Computing the mask once at startup is wrong.** The box runs for weeks.
-   Lincoln Gap closes on Oct 15, but VT‑108 and Hurricane Mountain Road close
-   on Nov 1. A mask fixed when the server started would miss every date after
-   it.
-   - Compute the active set from the current date, and cache it by date at
-     most.
-   - Tests must inject the date and never read the real clock. On 2026-10-04
-     Lincoln Gap is *open*, so a test of "today" proves nothing.
-2. **The caches will serve pre-closure routes after the date flips unless
-   the closure state is in their keys.** All three caches key on everything
-   except that state:
-   - `LOOP_RESULTS` in `server/app.py:354-355`;
-   - `LoopPlanner._fields_by_key` in `pipeline/looper.py:589-590`;
-   - `LoopPlanner._costs_by_key`, the `_cost` key.
-
-   Add a closure version, for example a hash of the active set, to all three
-   keys.
-3. **The deploy script will not ship the new file.**
-   - `server/deploy-oracle.sh:18-19` copies a fixed list,
-     `REQUIRED="graph_edges graph_nodes turn_restrictions"` and
-     `OPTIONAL="access_ways access_entries"`.
-   - Add `seasonal_closures` to `OPTIONAL`, or the box silently runs with no
-     mask.
-   - The router must log at startup how many closure edges it loaded, so the
-     box's journal shows it.
-4. **A node-id join alone over-marks parallel roads.** When a closed way and
-   an open way both run between the same two junctions, both rows share
-   `(u, v)`. `route()` collapses parallel edges to the cheapest
-   (`router.py:1342-1343`), so closing both would also close the open road.
-   - Take candidate rows by `u`/`v` in the way's node refs.
-   - Then confirm each by its geometry: midpoint within 1 m of the way, in
-     EPSG:26986. That is the verdict's method, and it reproduced the 190.
-5. **Don't widen the scope to the year-round sets in this pass.** The verdict
-   also counted:
-   - 460 ways / 152.8 km tagged `motor_vehicle`/`motorcar`/`vehicle` =
-     `no`/`private` all year;
-   - 418 ways / 141.9 km behind blocking barriers.
-
-   Both are real, but they carry false-positive risk (a destination on a
-   private drive becomes unreachable). They are a separate decision. Record
-   their counts in the report and leave them.
-
-## Done looks like
-
-1. **The side table builds.** `pipeline/closures.py` writes
-   `seasonal_closures.parquet`, and its control count is 565,410 drivable
-   ways. Around 190 ways should be flagged on this PBF. If the number moves,
-   say why.
-2. **The router applies it.** It loads the table optionally, applies the mask
-   per request date inside `_weights`, adds the closure version to the three
-   cache keys, and logs the loaded count.
-3. **Tests**, with injected dates, in a new `tests/test_closures.py`:
-   - Stowe → Jeffersonville avoids VT‑108 on 2027-01-15 and uses it on
-     2027-07-15.
-   - Warren → Bristol avoids Lincoln Gap Road on 2026-10-20 and uses it on
-     2026-10-10.
-   - The Lincoln Gap reroute (heading 90°) does not go back over the gap on
-     2026-10-20.
-   - Loops of 40 and 80 km from Stowe, Warren, Jackson and Jefferson, NH,
-     every sector offered, carry ≤ 0.2 km of closed road on 2027-01-15.
-   - A conditional with only a time of day is not a closure.
-4. **The full suite stays green.** The baseline was 388 passed at `6f26edf`,
-   run with `SUNDAYDRIVE_DATA=<main>/data/processed-ne`.
-5. **The deploy script** lists `seasonal_closures`. **Do not deploy.** The
-   master session deploys after the merge.
-6. **The app** gets the `BeforeYouDriveView` line, in its own commit.
-7. **The report** gives:
-   - the flagged count;
-   - before/after step names for the four requests;
-   - the year-round counts, recorded and not acted on (Trap 5).
-
-## Build and test
-
-- Work on your own branch off `main`. Commit this brief with the change if it
-  is not already committed.
-- `data/` and `.venv` live only in the main checkout, written `<main>` here,
-  not in a worktree.
-  - Build the table into `<main>/data/processed-ne/`.
-  - Run the suite with `SUNDAYDRIVE_DATA=<main>/data/processed-ne
-    <main>/.venv/bin/python -m pytest -q tests > out.txt 2>&1; echo $?`.
-  - Never pipe pytest through `tail`; the exit code is lost.
-- For the request checks, start a local server on a free port
-  (`PORT=<port> SUNDAYDRIVE_HOST=127.0.0.1 SUNDAYDRIVE_DATA=… server/serve.py`).
-  Don't use 5057, which another session may own.
-- If you touch the app, run `xcodegen generate` in `ios/` first; the project
-  is gitignored.

@@ -249,7 +249,7 @@ def _request_params():
 
     The app sends POST, so the driver's coordinates travel in the body and not
     in the URL, which is what a TLS-terminating proxy's access log records by
-    default (docs/coordinates-out-of-the-url-brief.md). GET stays accepted for
+    default (docs/coordinates-out-of-the-url.md). GET stays accepted for
     builds already installed and for curl.
 
     Deliberately not `request.values`, which merges the two. That would make a

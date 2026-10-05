@@ -4,7 +4,7 @@ import XCTest
 
 /// One simulated drive: a persona's timed fix stream through the real
 /// `NavigationModel`, against the real local server, measured by an instrument
-/// that is not the model's own. See docs/overnight-e2e-drives-brief.md.
+/// that is not the model's own. See docs/overnight-e2e-findings.md.
 ///
 /// The car has a *true* position — always a point on real road geometry the
 /// server returned (the route, a detour the server routed, or the replacement

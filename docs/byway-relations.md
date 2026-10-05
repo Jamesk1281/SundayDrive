@@ -1,10 +1,6 @@
-# Read scenic byways from OSM relations instead of three hardcoded names
+# Scenic byways from OSM relations instead of three hardcoded names
 
-**Status: built and measured 2026-08-29.** The diagnosis below stands and its
-measurements reproduced exactly. Three of its inferences did not — see
-[What the build found](#what-the-build-found) at the end, which is the part to
-read if you only read one section. The original design is
-`docs/new-england-rollout.md` Phase 0b, written 2026-08-26.
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/byway-relations-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## The goal
 
@@ -64,57 +60,7 @@ switching on a component that is currently off.
    `roads.parquet` already carries `way_id`, so the join is free.
 3. Then delete `BYWAY_NAMES` and the `is_byway` term in `score.py`.
 
-## Traps
-
-- **Three of the 13 matched networks are walking and cycling routes** — `nwn`,
-  `lwn`, `lcn` — which matched on the word "scenic". Admit them and footpath
-  routes will flag roads. They must be excluded, and the remaining 12 relations
-  with no `network` tag must be vetted by name. **The 4,026 km figure is an
-  upper bound that includes them.**
-- **Confirm the Mohawk Trail is actually among the 14 `US:MA:Scenic` relations
-  before deleting `BYWAY_NAMES`.** Jacob's Ladder is confirmed present; the
-  Mohawk Trail is not. If it is missing, keep a name fallback for it *with a
-  bounding-box guard*, or Massachusetts loses a benchmark that
-  `tests/test_calibration.py` asserts on by name
-  (`test_scenic_byways_beat_the_interstates`, and `score.py`'s own
-  `calibration_report` prints "Mohawk Trail" as a benchmark row).
-- **Do not rebuild over `data/processed`.** It is the live promoted build
-  (rebuilt and validated 2026-08-29, 294 tests green, and copied to the serving
-  box). Build into a scratch directory with the unchanged layers symlinked in —
-  `docs/new-england-rollout.md` Phase 1 and the `data/lc_build` pattern both do
-  this. Disk is at 99% with ~6 GiB free, so delete the scratch build when done.
-- **This needs a full `extract.py` run, not `tools/build_access.py`.** The
-  access layers are unaffected; `roads.parquet` is what changes, and it comes
-  from the full pass.
-- **It changes scores, so it changes routes.** After rebuilding, re-run
-  `tools/analyze_trace.py <build> traces/*.ndjson` and check the separation on
-  the 76 marks does not fall below the live build's **0.71 against a 0.63 null
-  ceiling**. Byways are a precision signal, so it should rise. A change that
-  improves coverage and regresses that number is not an improvement.
-- **Do not touch `pipeline/elevation.py`.** Its `BBOX` now points at New England
-  while `data/processed` is a Massachusetts build, so running it is a New
-  England run — see `docs/new-england-rollout.md` Phase 2.
-- **Do not re-open the `c_forest` work.** Land cover merged 2026-08-29 and
-  `WEIGHTS["green"]` is now `WEIGHTS["forest"]`. Leave it alone.
-
-## Done looks like
-
-1. `extract.py` reads byway route relations behind a vetted network allowlist,
-   with the allowlist and the reason for each exclusion written in a comment.
-2. `roads.scenic` unions the relation membership with the `scenic=yes` tag.
-3. `BYWAY_NAMES` and its `is_byway` term are gone from `score.py` — **or** a
-   stated reason why a guarded fallback for the Mohawk Trail had to stay.
-4. A per-state count of flagged byway km, so the New England build can be
-   sanity-checked later.
-5. A rebuild in a scratch directory showing `c_scenic_tag` coverage rising from
-   0.1% of MA network km, the calibration benchmarks still ordered correctly,
-   and mark separation at or above 0.71 against its printed null ceiling.
-6. `.venv/bin/python -m pytest tests/` green — **or** a statement of which
-   assertion had to change and why.
-
----
-
-# What the build found
+## What the build found
 
 Built on branch `claude/byway-relations`. Everything below is measured, on the
 2026-08-25 New England extract for the region figures and the **June**
@@ -127,7 +73,7 @@ the small gap is this pass applying `extract.py`'s own `PRIVATE_ACCESS` rule).
 Three of the brief's *inferences* were wrong, and one trap it does not mention
 is larger than the one it does.
 
-## 1. The Mohawk Trail is in the relations. `BYWAY_NAMES` is gone.
+### 1. The Mohawk Trail is in the relations. `BYWAY_NAMES` is gone.
 
 The brief says "Jacob's Ladder is confirmed present; the Mohawk Trail is not",
 and asks for a bounding-box-guarded name fallback if so. Not needed. Relation
@@ -136,7 +82,7 @@ relations, with 251 member ways in the June extract and 253 in the August one.
 All 14 are present in both. `BYWAY_NAMES` and its `is_byway` term are deleted
 outright, with no fallback.
 
-## 2. Two of the three `BYWAY_NAMES` entries never matched anything
+### 2. Two of the three `BYWAY_NAMES` entries never matched anything
 
 Against the live `roads.parquet`:
 
@@ -158,7 +104,7 @@ after people (Jacob Cobb Lane, Jacob Amsden Road, Jacob Gates Road…) and only
 the label "Jacob's Ladder Trail". Selector fixed to `jacob'?s ladder`; the row
 moves from 5.18 on 33 km of unrelated street to 6.56 on 13 km of actual byway.
 
-## 3. The trap the brief missed is bigger than the one it flags
+### 3. The trap the brief missed is bigger than the one it flags
 
 The brief warns that `nwn`, `lwn` and `lcn` are walking and cycling networks.
 True, and measurable: those six relations road-walk **206 drivable ways, 91 km**
@@ -185,7 +131,7 @@ and sometimes not"), and Maine SR 11 is merely *named* "Aroostock Scenic
 Highway" — at 615 ways and 655 km the single largest candidate in the region —
 while carrying no scenic designation tag.
 
-## 4. The rule that works needs two clauses, not one
+### 4. The rule that works needs two clauses, not one
 
 ```
 type=route  AND  route=road  AND  (network in BYWAY_NETWORKS  OR  scenic=yes)
@@ -219,7 +165,7 @@ footpaths cannot flag anything.
 `BYWAY_NETWORKS` is an explicit set rather than a pattern because of §3. It is
 in `pipeline/extract.py` with the reason for each admission and each exclusion.
 
-## 5. Per-state byway coverage (the sanity check for the NE build)
+### 5. Per-state byway coverage (the sanity check for the NE build)
 
 Vetted: **38 relations, 4,510 drivable member ways, 3,235 km** — not the 4,026
 km headline, which was an upper bound including the walking, cycling, railway
@@ -239,7 +185,7 @@ and numbered-highway candidates.
 Rejected: 16 candidates, 1,070 drivable ways, 830 km — 739 km of it the
 numbered-highway trap, 91 km the walking and cycling routes.
 
-## 6. The Massachusetts rebuild
+### 6. The Massachusetts rebuild
 
 Into `data/byway_build`, June extract, with `relief.tif`, `elevation.tif`,
 `tree_cover.parquet` and `traffic_control.parquet` symlinked from
@@ -287,7 +233,7 @@ and no assertion had to change.
 
 **`SCENIC_DATA=data/byway_build pytest`: 294 passed, 0 skipped.**
 
-## 7. The drive traces cannot see this change
+### 7. The drive traces cannot see this change
 
 `tools/analyze_trace.py` on the rebuilt graph: **separation 0.73** on 79 marks
 over 12 drives, against the printed 0.63 null ceiling. The gate was "not below
@@ -301,7 +247,7 @@ chunk whose score changed.** The recorded drives never touched a designated
 byway, so this instrument is blind to the change rather than endorsing it. The
 gate is met; nothing more should be claimed from it.
 
-## 8. One judgement call worth knowing about
+### 8. One judgement call worth knowing about
 
 116 motorway ways are now flagged scenic, all from a single relation —
 `Minuteman Highway` (`US:MA:Scenic`), which is MA Route 2's Concord Turnpike

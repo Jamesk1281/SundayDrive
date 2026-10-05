@@ -6,7 +6,7 @@ Camber on the register, Aimless and Detourist on common-law use. Longcut
 survives every leg, and so do Backway (§12), Sideroad (§13) and Victory Lap
 (§15). Sunday Drive (§14) is blocked.**
 
-Answers [`trademark-knockout-brief.md`](trademark-knockout-brief.md). Corrects
+Answers [`trademark-knockout-brief.md`](briefs.md). Corrects
 three rows of [`branding-brainstorm.md`](branding-brainstorm.md) §3 and settles
 its open question about `longcut.app`.
 

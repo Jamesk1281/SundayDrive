@@ -6,7 +6,7 @@ deploys `site/`). App Review guideline 1.5 wants a way to contact the developer
 from it, which a redirect to the privacy policy is not. Pages serves this repo
 as a project site under /SundayDrive/, so `href="/privacy/"` would resolve to
 jamesk1281.github.io/privacy/ and 404: links have to be relative.
-See `docs/support-page-brief.md`.
+The brief it was built from: `git show a2ddddc:docs/support-page-brief.md`.
 """
 
 import re

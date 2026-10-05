@@ -46,6 +46,6 @@ Two things worth knowing before touching any of this:
   offline-download-this-region feature would be, and has to be designed for it.
 
 The full reasoning, and what was checked against each licence's own text, is in
-[`licensing-and-attribution-brief.md`](licensing-and-attribution-brief.md). The
+[`licensing-and-attribution.md`](licensing-and-attribution.md). The
 three questions it left open — and the finding that ODbL is already engaged —
 are answered in [`licensing-open-questions.md`](licensing-open-questions.md).

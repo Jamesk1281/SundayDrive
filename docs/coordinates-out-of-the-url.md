@@ -1,20 +1,6 @@
-# Brief: take the coordinates out of the URL (release-plan §6e)
+# Taking the coordinates out of the URL
 
-**Status: fixed in code 2026-09-29 on branch `claude/coordinates-out-of-url`,
-not deployed.** The server change has to reach the Oracle box before a build
-that sends POST reaches a phone (`server/DEPLOY-oracle.md`, "Updating the
-code: server before phone"). What follows is the brief as written, unchanged.
-
-Diagnosed and decided before the fix. Written 2026-09-29 against `main`
-just after the redesign merge (`interface-redesign-from-nothing`). Nothing in
-`ios/Sources`, `server/`, `tools/` or `tests/` has been touched for this. Every
-`file:line` below is from that tree, and each one comes with its anchor text so
-it still makes sense if the lines drift.
-
-Answers [`release-plan.md`](release-plan.md) §6e. It is also item 1 of
-[`privacy-policy.md`](privacy-policy.md) §7.
-
----
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/coordinates-out-of-the-url-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## 1. The goal, as measured
 
@@ -105,72 +91,3 @@ work unchanged on `request.form`.
    **app** sends, and that is what the policy describes. Removing GET later is a
    separate, deliberate change. Do not do it here.
 3. **`/api/health` and `/` stay GET.** They carry no coordinates.
-
-## 4. Traps
-
-1. **Leaving the query items on the URL while also sending a body.** Flask
-   reads `request.args` on a POST, so a half-converted client, one that sets
-   `httpMethod = "POST"` and a body but still hands `components.url!` with
-   `queryItems` attached, **works perfectly and fixes nothing**. Every test
-   passes, and the coordinates stay in the URL. This is the most likely way this
-   change ships wrong. It is also why §5 item 1 is a unit test on the built
-   `URLRequest`, not a live call.
-2. **Rewriting the 46 GET calls in `tests/test_api.py` to POST.** GET stays
-   supported (decision 2), so those tests stay valid, and churning them buries
-   the change. Add **parity** tests instead. Send the same parameters by GET and
-   by POST (form) for `/api/route`, `/api/route` with `via`, and `/api/loop`,
-   and assert the JSON bodies are identical. Also cover the 400 path by POST
-   (missing `from`).
-3. **`request.values` on the server.** It merges `args` and `form`, which looks
-   like the neat one-liner. It is not a bug, but it makes the server silently
-   accept trap 1's half-converted client, so no server-side test could ever
-   notice. Use `args = request.form if request.method == "POST" else
-   request.args` and read from `args` throughout, including the direct
-   `request.args[...]` and `request.args.get(...)` reads in both handlers. Miss
-   one of those and that parameter is silently ignored on POST: `sector` on
-   loops, and `via` on routes, which is the loop-rejoin reroute.
-4. **Overclaiming in the policy.** POST does **not** remove Cloudflare from the
-   path. The tunnel still terminates TLS and can read the body. The honest new
-   wording: coordinates travel in the request body rather than the URL, so they
-   are not in the URLs that access logs record by default, *and* Cloudflare can
-   still technically read them. Cloudflare stays named as a processor. **The
-   privacy manifest does not change.** Precise location stays declared as
-   collected (release-plan §6e, §8 Decision 3). Don't touch
-   `ios/Sources/PrivacyInfo.xcprivacy`.
-5. **A hypothesis, not a finding: POST loses transport-level retries.**
-   CFNetwork will silently retry an idempotent GET on a reused connection that
-   the peer closed. It will not retry a POST. Mid-drive on a patchy signal, that
-   could turn a few invisible retries into `.offline` errors. The app already
-   recovers: `NavigationModel` retries a failed reroute on its 8-second cooldown
-   (comment near `:916`). So the likely cost is one extra cooldown cycle, not a
-   stuck drive. Evidence for it: Apple's documented idempotency behaviour.
-   What would kill it: nothing cheap. **Do not "fix" this by adding a retry
-   loop to `RouteService`.** Note it in the commit message and move on.
-
-## 5. Done looks like
-
-1. **A unit test that the app's requests carry no coordinates in the URL.**
-   Factor request construction into internal functions (for example
-   `RouteService.routeRequest(...) -> URLRequest` and `loopRequest(...)`) and
-   assert, for a route with `via` and `heading` and a loop with `sector`:
-   `httpMethod == "POST"`, `url?.query == nil`, the URL string contains no
-   digit sequence of either coordinate, `Content-Type` is form-encoded, and the
-   body decodes to exactly the keys and values sent today.
-2. **The server accepts POST on `/api/route` and `/api/loop`**, reading every
-   parameter from the form (trap 3), with GET unchanged. Parity tests as in
-   trap 2. The backend suite stays green (see below for the baseline).
-3. **`tools/fake_api.py` answers POST** with the same behaviour as its GET.
-4. **`LiveDriveTests` exercises the POST path**, ideally through `RouteService`
-   itself rather than a hand-built URL.
-5. **`privacy-policy.md` §2.1(a), §7 item 1 and §8 are updated in the same
-   commit**, worded per trap 4. `README.md:82` documents POST as the app's call
-   and GET as still accepted.
-6. **A deployment note in the commit message and in `server/DEPLOY-oracle.md`**:
-   the server change must be deployed to the Oracle box (`git pull` plus
-   `systemctl restart sundaydrive-api`) **before** a POST-sending build goes
-   onto a phone. You cannot deploy it yourself. The box's SSH key has a
-   passphrase and needs the owner's `ssh-add`. Say so. Do not try.
-
-Out of scope: removing GET, anything about Cloudflare's own logging
-configuration, the privacy manifest, and §6d (the drive that never ends, which
-lives in `NavigationModel.swift`, the file this change must **not** edit).

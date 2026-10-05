@@ -91,7 +91,7 @@ measured; `[ ]` is open, with what it is waiting on.
       search bias (`ios/Sources/Region.swift`), so a Vermont trip is harder to
       search for than it should be.
 - [x] **A drive that never joins its route can never end.** Done 2026-09-29,
-      per [`never-joined-drive-brief.md`](never-joined-drive-brief.md). All
+      per [`never-joined-drive.md`](never-joined-drive.md). All
       three arrival tests are gated on `hasJoinedRoute`, so a car parked more
       than 60 m from a line it never reached held GPS at 1 Hz with the screen
       awake indefinitely: measured once, `drive-2026-08-25-222344`, parked

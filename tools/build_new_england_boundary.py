@@ -5,7 +5,7 @@
 
 Writes `ios/Sources/NewEnglandBoundary.swift`, which `NewEngland.contains` reads.
 The check runs on the phone and sends the coordinate nowhere, so the outline has
-to ship inside the app. See `docs/new-england-only-brief.md`.
+to ship inside the app. See `docs/new-england-only.md`.
 
 **The source is the US Census Bureau's 2024 cartographic boundary file for the
 states, at 1:500,000.** It is public domain. Geofabrik's `.poly` files are the

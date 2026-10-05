@@ -65,7 +65,7 @@ final class NavigationModel {
     /// and 176 m from its own pin, ended only by killing the app. Arriving
     /// would have been false (nothing was driven) and permanent (`arrived`
     /// never un-latches), so this says "paused" and can be undone:
-    /// `resumeAfterStall`. See `docs/never-joined-drive-brief.md`.
+    /// `resumeAfterStall`. See `docs/never-joined-drive.md`.
     private(set) var stalled = false
 
     /// How far the car may wander from where it stopped and still count as

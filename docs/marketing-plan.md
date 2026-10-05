@@ -868,7 +868,7 @@ reads.
 [`app-store-submission.md`](app-store-submission.md) ·
 [`privacy-policy.md`](privacy-policy.md) and the live
 [privacy page](https://jamesk1281.github.io/SundayDrive/privacy/) ·
-[`privacy-policy-page-brief.md`](privacy-policy-page-brief.md) ·
+[`privacy-policy-page-brief.md`](briefs.md) ·
 [`driving-app-features-cost.md`](driving-app-features-cost.md) ·
 [`data-sources.md`](data-sources.md) ·
 [`hosting-independent-review.md`](hosting-independent-review.md) ·

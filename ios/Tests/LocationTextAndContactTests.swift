@@ -7,7 +7,7 @@ import XCTest
 ///
 /// Whether the prompt's text matches the privacy policy that quotes it is
 /// `tests/test_privacy_page.py`'s job, since the policy is not in the bundle.
-/// See `docs/location-text-and-contact-brief.md`.
+/// See `docs/location-text-and-contact.md`.
 final class LocationTextAndContactTests: XCTestCase {
 
     // MARK: - The location prompt

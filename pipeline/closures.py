@@ -15,7 +15,7 @@ which `Router` loads if present, pricing each edge at +inf on the days its
 window covers. A side table rather than a graph column because carrying the
 tags through extract.py and graph.py means a rebuild, and a rebuild moves every
 published number; that belongs to the next full rebuild
-(docs/seasonal-closures-brief.md, decision 1).
+(docs/seasonal-closures.md, decision 1).
 
 A way is closed for the season when, for a car:
   - `<key>:conditional = no @ <dates>`, for a key that binds a car (CAR_KEYS),

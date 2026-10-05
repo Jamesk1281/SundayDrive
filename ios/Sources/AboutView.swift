@@ -115,7 +115,7 @@ enum DataSources {
     /// graph in `data/processed` is a different thing — a Derivative Database,
     /// §4.4 — and distributing *that* would trigger share-alike. It never
     /// leaves the author's own machines today. See
-    /// `docs/licensing-and-attribution-brief.md` before building any
+    /// `docs/licensing-and-attribution.md` before building any
     /// download-a-region-for-offline-use feature.)
     ///
     /// Both credit lines are acceptable forms per the guideline: "Attribution
@@ -213,7 +213,7 @@ enum DataSources {
 /// that is the routing server, and the policy is served by GitHub Pages from
 /// this repo's `site/` (`.github/workflows/pages.yml`). The path is the repo's
 /// name, and Pages does **not** redirect after a rename: renaming the repo
-/// again breaks this link. See `docs/privacy-policy-page-brief.md`.
+/// again breaks this link. See `docs/privacy-policy.md`.
 enum PrivacyPolicy {
     static let url = URL(string: "https://jamesk1281.github.io/SundayDrive/privacy/")!
 }

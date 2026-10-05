@@ -2,7 +2,7 @@
 
 **Status: checked 2026-09-19 against `main` at `2d6fbc0`. Nothing was migrated,
 provisioned, purchased or signed up for, and no file outside `docs/` was
-touched.** Answers [hosting-refresh-brief.md](hosting-refresh-brief.md). The
+touched.** Answers [hosting-refresh-brief.md](briefs.md). The
 1,028 lines of [hosting-options-findings.md](hosting-options-findings.md) were
 **not** redone — only the four dated provider facts it turns on, and the one
 measurement that predated A\*.

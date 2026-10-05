@@ -798,7 +798,7 @@ described there is still unwritten.
 ## Updating the code: server before phone
 
 **Added 2026-09-29 with the move of coordinates out of the URL
-(`docs/coordinates-out-of-the-url-brief.md`).** From that commit on, the app
+(`docs/coordinates-out-of-the-url.md`).** From that commit on, the app
 sends `/api/route` and `/api/loop` as `POST` with the parameters in a form
 body. The server accepts both `POST` and `GET`, but a box running older code
 answers only `GET`, and a `POST` to it gets a `405` that the app shows as "the

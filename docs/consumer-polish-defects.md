@@ -1,6 +1,8 @@
-# Eight consumer-facing defects found by driving the app, diagnosed not fixed
+# Eight consumer-facing defects found by driving the app
 
-**Status: diagnosed 2026-08-29; four of the eight have since been fixed.**
+**Status:** four of eight open as of the 2026-09-19 re-check — #3, #4, #5 and #6 (table below). Re-check against the tree before acting on one. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/consumer-polish-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
+
+Diagnosed 2026-08-29; four of the eight fixed by 2026-09-19.
 Re-checked against the tree 2026-09-19 — **#1, #2, #7 and #8 are closed**, and
 each item below now opens with its own state:
 
@@ -14,34 +16,6 @@ each item below now opens with its own state:
 | 6 | two overlapping location requests strand a task | open |
 | 7 | "Switch to fastest" can do nothing at all | **fixed** — `NavView.swift:106-108` no longer no-ops on a nil fix |
 | 8 | the loop tab never names the place | **fixed** — `LoopModel.swift:137,148` |
-
-The diagnosis below is unchanged from the day it was written. No source file and
-no test was touched *by this document*. Every symptom below was observed by building the app
-(`xcodegen generate` + `xcodebuild`), installing it on a booted iPhone 15 Pro
-simulator, serving `data/processed` locally, and driving the device along a real
-route with `xcrun simctl location start`. Screenshots and the app's own drive
-trace are the evidence; the numbers quoted are read off those, not estimated.
-
-`SCENIC_DATA=<abs>/data/processed pytest tests/` was green before this work —
-**294 passed** in 82 s.
-
-This brief covers **only the eight items that are fully decided**. Seven other
-findings from the same review are product decisions and are deliberately *not*
-here — voice guidance, the default `pref` value, how the scenery breakdown
-should be presented, the `SCENIC_REGION` default, whether Start should re-anchor
-to the current fix, the drive-trace privacy story, and backend hosting. Do not
-attempt those; they are being decided separately and touching them will conflict.
-
-## Out of scope — do not edit these files
-
-`pipeline/`, `server/`, `ios/Sources/BeautyType.swift`,
-`ios/Sources/TuneView.swift`. A separate session is working
-`docs/driver-preferences-study.md`, which adds new preference axes and owns
-those two Swift files plus the scoring pipeline. `ios/Sources/RouteModel.swift`
-is shared: keep edits there to the two functions named in item 8 and nothing
-else, so the merge stays trivial.
-
----
 
 ## 1. A backend outage reaches the driver as the text "HTTP 530"
 
@@ -296,78 +270,3 @@ parameter and a slightly different accessibility label). Extract one
 unreviewable; say so rather than doing it badly.
 
 ---
-
-## Traps that apply across the whole brief
-
-1. **Do not "fix" a detent by assigning one during a focus change.**
-   `RoutePanel.swift:58-74` documents, at length, that forcing the sheet to a
-   specific detent while the keyboard animates leaves UIKit with a stale
-   hit-test frame, and taps in the newly exposed top half of the sheet —
-   the first suggestion rows — silently do nothing. The existing code
-   deliberately *raises* off `.planningCompact` and lets the keyboard drive the
-   rest. Item 3 changes what `.planningCompact` measures; it must not change
-   that mechanism.
-
-2. **Do not reuse `ContentView.frame()` verbatim for a single point.** It builds
-   a rect from an array of coordinates; one point gives width and height 0, so
-   `bottomLift = max(0 * 1.4, 0 * 0.9) = 0` and every padding multiplier
-   collapses to a degenerate zero-size rect. Item 4 needs a rect with a real
-   size around the point, *then* the lift.
-
-3. **`ios/Scenic.xcodeproj` is gitignored build output.** Run
-   `xcodegen generate` after any pull and after adding
-   `PlaceNaming.swift` — a new source file that is not regenerated into the
-   project is "Cannot find type X in scope" with the file plainly on disk.
-
-4. **`ios/Tests/` asserts label lists from both sides.** `ModelsTests` checks
-   `RouteProps.sceneryBreakdown` against the server's `SCENERY_BREAKDOWN`, and
-   `BeautyType.all` against `BEAUTY_TYPES`. Nothing in this brief should touch
-   those lists; if a test there fails, the change went further than intended.
-
-## Verifying
-
-Backend, from the **main checkout** (`data/processed` and `.venv` exist only
-there; the worktree has neither):
-
-```sh
-SCENIC_DATA="$PWD/data/processed" .venv/bin/python server/app.py
-```
-
-Flask runs without the reloader here — restart it after any edit or the change
-is silently ignored.
-
-iOS:
-
-```sh
-cd ios && xcodegen generate && xcodebuild test -project Scenic.xcodeproj -scheme Scenic -destination "id=$(xcrun simctl list devices booted -j | python3 -c 'import json,sys;print(next(d["udid"] for v in json.load(sys.stdin)["devices"].values() for d in v))')"
-```
-
-`-destination 'name=iPhone 15 Pro'` is rejected on this machine even when the
-device is listed; use `id=`. To run the app against the local server, the
-environment variable needs the `SIMCTL_CHILD_` prefix — `--setenv` fails with
-"Invalid device":
-
-```sh
-SIMCTL_CHILD_SCENIC_API=http://127.0.0.1:5057 xcrun simctl launch booted app.scenic.demo
-```
-
-`xcrun simctl location <udid> set 42.2809,-71.2378` places the device in
-Needham, which is what makes "My Location" exercise the real path.
-
-## Done looks like
-
-1. All eight items above fixed, each with the behaviour described — or, for any
-   one of them, a statement of why the diagnosis here is wrong, quoting the
-   line that proves it. A refuted item is a good outcome; a quietly skipped one
-   is not.
-2. `xcodebuild test` green, including new cases for item 6 (two concurrent
-   `currentLocation()` callers while authorization is undetermined) and item 2
-   (the delta sentence agrees with the two cards, and the `extra <= 0` wording).
-3. `SCENIC_DATA=<abs>/data/processed .venv/bin/python -m pytest tests/ -q` still
-   **294 passed** — nothing in this brief should move it, so a change there means
-   something out of scope was touched.
-4. Screenshots, from a booted simulator, of: the compact sheet on launch with
-   nothing clipped at the largest accessibility text size; the start pin visible
-   above the sheet; the verdict buttons over light map tiles; and the network
-   error text with the backend stopped.
-5. This brief committed with the change, on a branch off `main` — not on `main`.

@@ -311,7 +311,7 @@ BEAUTIFUL_SCORE = 7.0
 # The bound is ALT: travel time to and from a fixed set of landmarks, combined
 # through the triangle inequality. Over 12 OD pairs spanning New England, 16 of
 # them let A* settle 1.9% of the graph at the median. The count is what chose
-# 16: docs/astar-fastest-arm-brief.md measured 8 landmarks at 3.8% and 1.6x
+# 16: docs/astar-fastest-arm.md measured 8 landmarks at 3.8% and 1.6x
 # worse on the two hardest pairs, and a straight-line bound at 9.0% and up to
 # 48% — which is why the straight-line version is not the cheap one to build
 # first but the one that does not work.
@@ -394,7 +394,7 @@ SNAP_HEADING_DEG = 40.0
 # `_weights` adds +inf to a closed edge, which scipy's Dijkstra never relaxes
 # and `_astar` never improves a distance with. The ALT bound stays admissible,
 # because closing an edge can only lengthen a true cost.
-# docs/seasonal-closures-brief.md has the decisions.
+# docs/seasonal-closures.md has the decisions.
 
 # The calendar closures are dated in. OSM writes `no @ (Oct 15-May 15)` in local
 # dates, and at 9 pm on Oct 14 in Vermont it is already Oct 15 in UTC.
@@ -1500,7 +1500,8 @@ class Router:
         # *perfect* heuristic still settles 78-93% of the graph on a long
         # route, and a Python heap costs 3.6x what scipy's C does at equal
         # work, so a scenic A* would be several times slower than this is
-        # (docs/astar-fastest-arm-brief.md, Trap 4). Every other request takes
+        # (Trap 4 of the A* brief, git show
+        # a2ddddc:docs/astar-fastest-arm-brief.md). Every other request takes
         # the path it always did.
         path = _ASTAR_GAVE_UP
         if pref == 0.0 and self._alt_bwd is not None:

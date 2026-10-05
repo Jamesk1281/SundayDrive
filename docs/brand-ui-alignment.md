@@ -1,12 +1,6 @@
 # Bringing the interface into line with the new logo
 
-**Status: decided, not built (2026-09-29).** The logo and app icon exist and are
-committed on `claude/logo-design-316bd8`; no Swift has been touched. This brief
-is the handoff for a *slight evolution* of the interface toward the brand, not a
-redesign. `docs/interface-design.md` is still the design of record, and
-everything in it not named below stands.
-
----
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/brand-ui-alignment-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## 1. What exists now
 
@@ -89,61 +83,3 @@ so in the PR rather than choosing a different design.
 5. **Update `docs/interface-design.md` §7.2's table** (and add a line to §7.4 or
    a new §7.8) with the new values and one paragraph on why: the icon's cream
    and ink. Keep the doc's voice: short, reasoned, no marketing.
-
-## 4. Traps
-
-1. **Do not make pine, moss or marigold into interface colours.** They are the
-   logo's colours, not the app's. §7.4 records why the old mint green was
-   *demoted*: the scenic route line has to stay legible over a basemap whose
-   parks, forests and golf courses are green, and the app routes across exactly
-   that country. A pine accent, a pine route line or a pine button walks
-   straight back into that. Marigold beside amber breaks the two-colour rule:
-   a second warm accent next to "beauty" makes beauty ambiguous.
-2. **Do not bring the script or Futura into the UI.** §7.5 is two faces with one
-   rule between them, on purpose. The wordmark appears only as an *image* of the
-   lockup. Setting "Sunday Drive" in live Snell Roundhand anywhere is the wrong
-   fix, and it is also a font-licensing question nobody has answered.
-3. **Amber never means warning** (`Theme.swift:77–81`). Rust is close enough to
-   amber and to alert red that using it for anything semantic (the end pin,
-   an error, a destructive button) muddles both rules. Rust belongs to the
-   wordmark only.
-4. **`HomeView` has no headline, deliberately** (`HomeView.swift:12–14`: *"No
-   headline above the rows… a greeting would be the most prominent thing on a
-   screen whose job is to get out of the way"*). Putting the logo or wordmark at
-   the top of the home screen is the obvious move and it contradicts a recorded
-   decision. The launch screen is where the logo goes.
-5. **Two unmerged branches touch views you might reach for.**
-   `claude/never-joined-stall` edits `NavView.swift` and `NavigationModel.swift`
-   and adds `StalledView.swift`. `claude/privacy-policy-page` adds 30 lines to
-   `AboutView.swift`. **Do not touch `NavView.swift`.** For the About header,
-   check first whether `privacy-policy-page` has merged to `main`. If it has,
-   rebase and add the header. If it has not, skip the About header and say so in
-   the PR. Colour changes reach every view through `Theme.swift`, so neither
-   file needs editing for step 1.
-6. **The lockup SVGs contain live `<text>`.** Xcode's asset-catalogue SVG
-   renderer will not reliably render Snell Roundhand/Futura from `<text>`. Use
-   `logo.svg` (no text) for the launch screen. For the About header, rasterise
-   the lockup to PNG at @2x/@3x (`qlmanage -t -s <px> -o <dir> file.svg`, then
-   `sips` as `generate_icon.py`'s `rasterise` does) rather than shipping the SVG.
-7. **Do not re-derive the palette from the icon PNG by sampling pixels.** The
-   hex values are the constants in `generate_icon.py`; sampling a JPEG-flattened
-   PNG gives values a few units off.
-8. **The map follows the app's scheme** (§7.6: *"The map follows the app rather
-   than the system"*). Warming the surfaces must not touch MapKit's basemap
-   style; the route line's contrast arguments in §7.4 are measured against
-   Apple's basemap, not against `paper`.
-
-## 5. Done looks like
-
-1. `Theme.swift` surfaces and ink warmed per §3.1, with a contrast table in the
-   PR for every §7.2 text pairing, light and dark, all ≥ 4.5:1.
-2. The launch screen shows the wagon logo on a background that matches the first
-   screen; screenshot in the PR.
-3. Before/after simulator screenshots, dark and light, of Home, Planning with a
-   route, and the Driving screen, so the "slight" can be judged by eye.
-4. `interface-design.md` §7 updated.
-5. The About header added, **or** a line in the PR saying it was skipped because
-   `privacy-policy-page` has not merged.
-6. The iOS suite still green, with the count reported.
-7. If any decided value cannot meet 4.5:1 without breaking another rule, a
-   statement of which rule and which value, and no silent substitute.

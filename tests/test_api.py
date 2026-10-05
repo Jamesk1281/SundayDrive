@@ -528,7 +528,7 @@ def test_loop_accepts_the_surface_preference(client):
 # TLS-terminating proxy's access log records by default. GET stays accepted for
 # installed builds and curl, so the 46 GET calls above keep pinning behaviour;
 # these pin that a POST of the same parameters answers identically. See
-# docs/coordinates-out-of-the-url-brief.md.
+# docs/coordinates-out-of-the-url.md.
 
 def _parity(client, path, params):
     """GET and POST (form) of the same parameters, and their two JSON bodies."""

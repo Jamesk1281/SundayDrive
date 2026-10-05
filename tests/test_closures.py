@@ -7,8 +7,8 @@ them, saying which.
 
 **Every date here is injected, never today's.** On 2026-10-04, when this was
 written, Lincoln Gap was open and VT-108 had four weeks to go, so a test of
-"today" would have passed with no mask at all (docs/seasonal-closures-brief.md,
-Trap 1).
+"today" would have passed with no mask at all (Trap 1 of the brief,
+`git show a2ddddc:docs/seasonal-closures-brief.md`).
 """
 
 import sys

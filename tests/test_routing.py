@@ -448,7 +448,7 @@ class TestFastestArm:
     """`route(pref=0)` is an A* over ALT landmark bounds; every other pref is
     still the whole-graph Dijkstra. The A* has to return what the Dijkstra
     would have, and the bound has to be a bound. See
-    docs/astar-fastest-arm-brief.md."""
+    docs/astar-fastest-arm.md."""
 
     def _od(self, router, a, b):
         return router.snap(*a)[0], router.snap(*b)[0]

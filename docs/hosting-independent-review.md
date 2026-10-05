@@ -1,7 +1,7 @@
 # Hosting: an independent review before the home region is chosen
 
 **Status: written 2026-09-28 against `main` at `3402298`. It answers
-[hosting-independent-review-brief.md](hosting-independent-review-brief.md).
+[hosting-independent-review-brief.md](briefs.md).
 Nothing was signed up for, trialled or bought. No hosting file was edited.
 Every price and allowance below was read at its primary source on 2026-09-28,
 unless the row says otherwise.** No workload figure was re-measured. The RSS,

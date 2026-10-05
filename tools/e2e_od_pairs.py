@@ -6,7 +6,7 @@ Seeded and committed on purpose: a drive that fails at 3 a.m. has to be
 re-runnable by its id the next morning, so the list is data in the repo and not
 a sampler run per night. Re-running this with the same seed and the same
 processed data reproduces the file byte for byte; changing either is a new list
-and should be committed as one. See docs/overnight-e2e-drives-brief.md.
+and should be committed as one. See docs/overnight-e2e-findings.md.
 
 Pins come from three places, and the category says which:
 

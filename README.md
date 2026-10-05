@@ -91,7 +91,7 @@ the one endpoint that matters (`/api/loop` takes `from`, `km` and `sector`).
 The app sends those parameters as `POST` with an
 `application/x-www-form-urlencoded` body, so a driver's coordinates never
 appear in a URL
-([`docs/coordinates-out-of-the-url-brief.md`](docs/coordinates-out-of-the-url-brief.md)).
+([`docs/coordinates-out-of-the-url.md`](docs/coordinates-out-of-the-url.md)).
 `GET` with the same parameters in the query string is still accepted, for older
 builds and for curl. `GET /` describes the service and doubles as a liveness
 check. Hosting it behind a tunnel: [`server/DEPLOY.md`](server/DEPLOY.md).

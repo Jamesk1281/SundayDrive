@@ -1,12 +1,6 @@
-# Brief: loops match the wrong pass of a road they drive twice
+# Loops matched the wrong pass of a road they drive twice
 
-**Status: fixed (2026-10-01), on `claude/loop-matching-fix`, not merged.**
-See "What was fixed" at the end. The brief below is as written on 2026-09-30,
-when no product code had been touched. The defects were found by the overnight simulated drives: Findings 1,
-2 and 2b in `docs/overnight-e2e-drives-brief.md`. Each is pinned by a strict
-`XCTExpectFailure` in `ios/Tests/SimulatedDriveRegressionTests.swift`. The
-harness, the regression tests and this brief all live on
-`claude/overnight-e2e-drives`, which is **not merged to main**.
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/loop-matching-fix-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## The symptom, as measured
 
@@ -102,83 +96,6 @@ The failure modes are the worst ones on offer:
 - a drive that silently becomes the short way home, the exact Needham case
   `loopWaypoint` was written to prevent;
 - an `arrived` that cannot be undone, 20 m from the driveway.
-
-## Traps
-
-1. **`<` → `<=`, or any deterministic tie-break, is not a fix.** The tie is
-   float noise on identical geometry (above), and with real GPS the two
-   offsets differ by millimetres in either direction. "Exactly equal"
-   essentially never happens; "equal to within the GPS error" happens on every
-   fix of a shared stretch.
-   - The rule has to prefer **continuity**: among candidates within a
-     tolerance of the best offset, take the one nearest the current progress
-     (earliest at/after the floor).
-   - The harness's independent instrument does this for maneuver placement
-     (`Polyline.alongPositions`, `ios/Tests/SimulatedDriveSupport.swift`,
-     earliest within 1 m). **Do not copy that code into the app.** The two must
-     stay independent, or the harness ends up measuring the model against itself.
-2. **A fixed forward ceiling breaks tunnels.** The dropout persona has 20–90 s
-   gaps; at highway speed the car really is 2.7 km further on when fixes
-   resume, and the match must follow. Any ceiling must scale with the time
-   since the last fix, measured on `now()`.
-   - `lastFixAt` is written with `Date()`, not `now()`
-     (`NavigationModel.swift:882`), so it is invisible to the injected clock
-     and to the harness. Use the injected clock.
-   - A ceiling alone also does not separate passes that are both within it
-     (a short out-and-back), so it is a complement to trap 1's rule, not a
-     substitute for it.
-3. **Do not special-case loops.** The same tie skips mid-route U-turns
-   ("Make a U-turn to stay on North Washington Street", `urban-011`) and some
-   interchanges (`suburban-013@0.0`) on point-to-point routes: Finding 4 in
-   the overnight brief.
-   - A fix inside `progress` or its callers will move those numbers too, and
-     that is expected.
-   - Finding 4 is out of scope: report what happens to it, but don't chase it.
-4. **`progress` has five callers** (`NavigationModel.swift:598, 870, 897,
-   1078, 1487`) and `GeoTests.swift` pins its behaviour.
-   - `reseatIfPinned` (`:1078`) *deliberately* asks the unconstrained question
-     (`notBefore: 0`). Read its doc comment, and `docs/reroute-audit.md`
-     Finding 3, before touching it.
-   - Changing the shared function's semantics for one caller changes all five.
-5. **The strict `XCTExpectFailure`s will go red when the fix works.** That is
-   the signal, not a regression. Convert F1/F2/F2b into plain assertions;
-   F3–F6 should stay as they are.
-6. **Don't judge it on the regression tests alone.** They pin three loops.
-   The harness covers all 20, and covers what the change might break elsewhere.
-
-## Done looks like
-
-1. `test_F1`, `test_F2` and `test_F2b` in `SimulatedDriveRegressionTests`
-   fail as unexpected passes, then are converted to plain passing assertions.
-2. **All 20 loops** under `loopPerfect`:
-   - 0 reroutes;
-   - 0 arrivals before `drivenKm` ≥ 95% of the loop;
-   - `bannerBehind` 0;
-   - or each remaining exception named, with its trace.
-
-   Run with `TEST_RUNNER_SUNDAYDRIVE_E2E=1` and
-   `-only-testing:SundayDriveTests/SimulatedDriveTests/test_09_loopPerfect`,
-   then `test_10_loopLate` and `test_11_loopEarly`. Summarise with
-   `python3 tools/e2e_summarize.py <out>`.
-3. **No regression on point-to-point.** Re-run `test_02_perfect`,
-   `test_04_dropout`, `test_05_stopAndGo` and `test_08_earlyStop`, and compare
-   with the overnight table in `docs/overnight-e2e-drives-brief.md`:
-   - still 0 reroutes;
-   - 582/582 arrivals;
-   - banner-behind / banner-skipped no higher than perfect 26/23 and dropout
-     19/23.
-
-   Dropout matters most (trap 2).
-4. The default suite still passes: 290 run / 258 passed / 32 skipped with no
-   server. With the server, `LiveDriveTests` (7/7) and the regression class
-   pass. `DriveReplayTests` replays 12 real phone traces from the main
-   checkout's `traces/`: unchanged, or every change explained.
-5. A short "What was fixed" section appended to this file, with before/after
-   numbers. Include what happened to Finding 4's numbers as a side effect.
-6. **Escape hatch:** if no single tolerance separates a genuine tie from a
-   legitimate jump without breaking (3), stop. Write up the trade-off with the
-   numbers, and leave the decision to the owner, rather than shipping a
-   compromise silently.
 
 ## What was fixed (2026-10-01)
 

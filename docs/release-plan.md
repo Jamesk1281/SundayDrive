@@ -301,7 +301,7 @@ Judged on release relevance, not on backlog rank. See §9 for the ten that do no
 qualify.
 
 - **Done 2026-09-29**, per
-  [`never-joined-drive-brief.md`](never-joined-drive-brief.md). An unjoined car
+  [`never-joined-drive.md`](never-joined-drive.md). An unjoined car
   that stays within 50 m of one fix for 5 minutes now *pauses* the drive
   (`NavigationModel.stalled`). That stops location, releases the screen lock,
   and shows *Keep navigating* / *End drive*. It is not an arrival and it does
@@ -328,7 +328,7 @@ qualify.
 ### 6e. Move the coordinates out of the query string — an hour, and now required
 
 **Done in code 2026-09-29** (branch `claude/coordinates-out-of-url`, per
-[`coordinates-out-of-the-url-brief.md`](coordinates-out-of-the-url-brief.md)),
+[`coordinates-out-of-the-url.md`](coordinates-out-of-the-url.md)),
 with the privacy policy's §2.1(a), §7 item 1 and §8 rewritten in the same
 commit. **Deployed, checked 2026-09-29:** an empty-bodied POST to
 `https://api.jameskouvlis.com/api/route` gets the handler's own 400

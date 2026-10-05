@@ -17,7 +17,7 @@ anyone's behalf. The decisions recorded in the banner above were taken
 separately, by the owner, after reading this.
 
 This document answers the three questions left open by
-[`licensing-open-questions-brief.md`](licensing-open-questions-brief.md). It is
+[`licensing-open-questions-brief.md`](briefs.md). It is
 the *residue* of the legal and IP audit, not a replacement for it — that audit
 registers ten items against primary sources and is right about every claim
 re-checked today. Read it first if you are starting cold.

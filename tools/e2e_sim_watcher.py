@@ -13,7 +13,8 @@ The test writes `<id>.cmd` (JSON) into the command directory and waits for
 
 Pass the test the same command directory as `SUNDAYDRIVE_E2E_SCREENS`
 (`TEST_RUNNER_SUNDAYDRIVE_E2E_SCREENS=...` through xcodebuild). Stop with
-Ctrl-C. See docs/overnight-e2e-drives-brief.md.
+Ctrl-C. The harness brief has the
+environment gotchas: git show a2ddddc:docs/overnight-e2e-drives-brief.md.
 """
 
 import json

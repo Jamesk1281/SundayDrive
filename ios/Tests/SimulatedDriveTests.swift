@@ -4,8 +4,7 @@ import XCTest
 
 /// The overnight end-to-end drives: every route in `tools/e2e_od_pairs.json`,
 /// at every pref, driven by every persona through the real `NavigationModel`
-/// against a real local server. See docs/overnight-e2e-drives-brief.md and the
-/// findings appended to it.
+/// against a real local server. See docs/overnight-e2e-findings.md.
 ///
 /// Off by default twice over: it skips unless `SUNDAYDRIVE_E2E=1`, and it
 /// skips when no server answers (a decode error still fails). Run it as

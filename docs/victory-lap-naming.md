@@ -15,7 +15,7 @@ job. This document is copy and evidence.
 
 **Nobody here is a lawyer and nothing below is legal advice.**
 
-Answers [`victory-lap-naming-brief.md`](victory-lap-naming-brief.md). Companion
+Answers [`victory-lap-naming-brief.md`](briefs.md). Companion
 piece to [`trademark-knockout-findings.md`](trademark-knockout-findings.md),
 which screens the four fallback names (Longcut, Aimless, Detourist, Camber) and
 which — after this brief was written — added its own §15 on Victory Lap. **That

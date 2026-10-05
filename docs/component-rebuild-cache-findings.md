@@ -6,7 +6,7 @@
 scratch directory of symlinked inputs; `data/processed` and `data/processed-ne`
 were not written to.
 
-This is what came of [`docs/component-rebuild-cache-brief.md`](component-rebuild-cache-brief.md),
+This is what came of [`docs/component-rebuild-cache-brief.md`](briefs.md),
 committed alongside it, which is in turn F2 of `docs/scenery-grading-verdict.md`.
 **The brief's measurements hold and its design is sound. Two of its framings are
 wrong in the same direction — it undersells the change — and one of its

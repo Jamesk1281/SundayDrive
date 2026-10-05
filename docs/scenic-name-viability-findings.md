@@ -8,7 +8,7 @@ variation that still reads as "scenic" is blocked. The four that survive the
 screen survive by no longer meaning anything — which is the answer to the
 question that was actually asked.**
 
-Answers [`scenic-name-viability-brief.md`](scenic-name-viability-brief.md).
+Answers [`scenic-name-viability-brief.md`](briefs.md).
 Extends the eight-name screen in
 [`trademark-knockout-findings.md`](trademark-knockout-findings.md) with thirteen
 more candidates and re-runs its positive control, which still passes. Three

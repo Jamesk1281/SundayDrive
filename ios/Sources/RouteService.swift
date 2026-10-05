@@ -232,7 +232,7 @@ enum RouteService {
     /// proxy's access log by default, so they travel in the body instead.
     /// Same keys and value formats the query string carried, which is why the
     /// server's parsing did not change. See
-    /// docs/coordinates-out-of-the-url-brief.md.
+    /// docs/coordinates-out-of-the-url.md.
     ///
     /// Setting POST is not the fix; leaving the query off the URL is. The server
     /// reads only the body on a POST, so a request that kept both would fail

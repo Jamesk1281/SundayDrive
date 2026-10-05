@@ -2,7 +2,7 @@
 
 **Status: audited and fixed 2026-09-21, against `claude/rename-to-sunday-drive`
 at `c75ce1d` with `main` merged in — the audited tree is `5aff398`.** Answers
-[`sunday-drive-rename-audit-brief.md`](sunday-drive-rename-audit-brief.md).
+[`sunday-drive-rename-audit-brief.md`](briefs.md).
 Every `git show` in this document is pinned to a SHA, never to `main`, because
 `main` moves several times an hour on this repo.
 

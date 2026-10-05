@@ -3,7 +3,7 @@
 # Do NOT switch Pages to "Deploy from a branch" with /docs: that would publish
 # every internal document in docs/ as a public page. The privacy policy lives
 # in site/ so that this workflow can upload that one folder and nothing else.
-# See docs/privacy-policy-page-brief.md §4.
+# See §4 of the Pages brief, `git show a2ddddc:docs/privacy-policy-page-brief.md`.
 name: Pages
 
 on:

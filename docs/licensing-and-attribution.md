@@ -1,47 +1,6 @@
 # Licensing and data attribution: what the app owes, and to whom
 
-**Status: diagnosed 2026-08-31, nothing changed.** No source file, no test, no
-`ios/project.yml` was touched. Every claim below was checked against the working
-tree at that date, not recalled.
-
-Scenic renders OpenStreetMap-derived geometry and scores built from two more
-open datasets, and **attributes none of them anywhere**. This is a legal
-precondition for putting the app in front of anyone but its author — it is not
-polish, and it is not the README's job.
-
-The measurement:
-
-```
-grep -rniE "attribution|openstreetmap|odbl|CC-BY|copyright|licen" ios/   →  0 hits
-ls LICENSE*                                                             →  none
-```
-
----
-
-## Out of scope — do not touch these
-
-- **`pipeline/`, `server/`, `tests/`.** Nothing in this brief needs them.
-- **A repo `LICENSE` file. Deliberately excluded — do not add one.** The
-  repository is **private** (verified: `api.github.com/repos/Jamesk1281/Scenic`
-  returns 404 unauthenticated). Nobody can read the code, so no licence is owed.
-  Which licence to publish under, if it is ever made public, is the owner's
-  commercial decision and is being held in the master session.
-- **`PrivacyInfo.xcprivacy`.** Adjacent and also missing, but it is a privacy
-  manifest, not a licence. Noted at the end so it is not lost; not part of this.
-
-## Known-failing tests that are NOT yours
-
-At the time of writing, `SCENIC_DATA=<abs>/data/processed pytest tests/` reports
-**2 failed, 345 passed, 1 skipped**:
-
-- `tests/test_loops.py::TestLoopsAreLoops::test_the_penalty_is_what_removes_the_retrace`
-- `tests/test_routing.py::TestSurfaceAvoidanceIsNotAScenerySetting::test_surface_is_absent_from_the_reported_score`
-
-Both come from the `claude/unpaved-and-urban-verdict` merge and both **pass
-against `data/processed-ne`**. They are being handled separately. Do not chase
-them, and do not "fix" them. Your bar is that the count does not get worse.
-
----
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/licensing-and-attribution-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## The three sources, and what each actually requires
 
@@ -145,82 +104,14 @@ branches were merged on 2026-08-31 — so there is nothing to collide with.
 
 ---
 
-## Traps
-
-1. **"Put it in the README and call it done."** The obligation attaches to what
-   is *distributed to users*. The README is in a private repo and reaches
-   nobody. It is worth updating too, but it does not discharge anything.
-
-2. **"ODbL means the app has to be open-sourced."** It does not. Share-alike
-   attaches to a Derivative *Database*, not to a Produced Work, and the routes
-   drawn on screen are a Produced Work. Do not let this drive a licence change,
-   and do not let it stop the work either.
-
-3. **Burying it.** OSM's guidance is that attribution be reasonably visible for
-   the medium. The accepted small-screen pattern is one tap from the main view.
-   Do **not** put it inside "Tune scenery" — that is two taps and it is a
-   settings screen for something else.
-
-4. **Asserting Terrarium is public domain because 3DEP is.** See §3.
-
-5. **`xcodegen`.** `ios/Scenic.xcodeproj` is a gitignored build output of
-   `ios/project.yml`. Adding a Swift file without running `cd ios &&
-   xcodegen generate` first produces "Cannot find type X in scope" with the file
-   plainly on disk. Run it before every build.
-
-6. **The iOS suite needs a live backend for 6 of its tests.** `LiveDriveTests`
-   skips silently when nothing answers on `127.0.0.1:5057`, so a green run can
-   be hiding them. Serve it with `.venv/bin/python server/serve.py` from the
-   **main checkout** (the parquets live only there, not in a worktree). Nothing
-   in this brief should affect those tests; the point is that "green" needs
-   checking for skips.
-
----
-
-## Done looks like
-
-1. An attribution surface reachable in **one tap** from the app's main screen,
-   naming: OpenStreetMap (ODbL), ESA WorldCover (CC-BY 4.0), and whatever the
-   Terrain Tiles source list actually requires — each in the wording its licence
-   asks for, with links, not paraphrased.
-2. A statement, with a simulator screenshot at each of the three detents, of
-   whether MapKit's own Apple attribution is covered by the planning sheet — and
-   the fix if it is.
-3. `cd ios && xcodegen generate && xcodebuild test ... -destination
-   'platform=iOS Simulator,name=iPhone 17 Pro'` green, with the skip count
-   reported, plus a case asserting the attribution strings are present (so a
-   later refactor that drops a bar fails a test rather than quietly shipping).
-4. Backend suite no worse than the 2 known failures listed above. If that count
-   moves, something out of scope was edited.
-5. A short note appended to this file recording the ODbL Derivative-Database
-   constraint, so the offline-download idea meets it at design time.
-6. The README's data-source lines updated to name the licences alongside the
-   sources it already lists (`README.md:21`, `:104`, `:109`).
-7. **Or, for any item: a statement of why this brief is wrong, quoting the
-   source that proves it.** A refuted item is a good outcome. A silently skipped
-   one is not.
-
----
-
-## Noted, not in scope: the privacy manifest
-
-`PrivacyInfo.xcprivacy` does not exist. Until 2026-08-31 `main` did not need one
-— it used no required-reason API. **The voice-guidance merge changed that**:
-`ios/Sources/VoiceCatalogue.swift:118` persists the chosen voice in
-`UserDefaults`, which is `NSPrivacyAccessedAPICategoryUserDefaults` and must be
-declared with a reason code for App Store submission. Separate piece of work;
-recorded here so it is not rediscovered late.
-
----
-
-# Outcome, 2026-08-31 — implemented, with four corrections to the above
+## Outcome, 2026-08-31 — implemented, with four corrections to the above
 
 Shipped: `ios/Sources/AboutView.swift` (the credit strings and the "Data
 sources" sheet), a credit line pinned in `RoutePanel` at every sheet height,
 `ios/Tests/AttributionTests.swift` (12 cases), and the
 [Data sources and licences](data-sources.md) page.
 
-## The ODbL Derivative-Database constraint (brief item 5)
+### The ODbL Derivative-Database constraint (brief item 5)
 
 **Recorded, not acted on, exactly as instructed.** The routes the app draws are
 a Produced Work under ODbL §4.3 — attribution only, no share-alike, and adding
@@ -247,7 +138,7 @@ file with an adjacent `LICENSE`/`README` naming ODbL 1.0 and crediting
 OpenStreetMap, and treat that pair as inseparable from the download. Retrofitting
 it after the fact means re-issuing every file already shipped.
 
-## Correction 1 — "one tap from the main view" is not sufficient on its own
+### Correction 1 — "one tap from the main view" is not sufficient on its own
 
 The brief's Trap 3 says the accepted small-screen pattern is one tap from the
 main view. The OSMF guideline is stricter than that. Its base requirement:
@@ -268,7 +159,7 @@ so seeing it would require a scroll, i.e. an interaction. `PlanningCompactDetent
 gained `attributionTextPoints`/`attributionFixedPoints` to reserve its height,
 for the same reason the custom detent exists at all.
 
-## Correction 2 — the Terrarium source list *was* resolvable
+### Correction 2 — the Terrarium source list *was* resolvable
 
 The brief allowed "credited the aggregate because the per-source list could not
 be pinned down" as an acceptable outcome. It did not come to that. The AWS
@@ -298,7 +189,7 @@ public domain, so the shortcut cannot come back.
 New Zealand, Norwegian and UK lines. **Widening `BBOX` can pull in another
 upstream with another licence** — re-read that per-zoom table when it changes.
 
-## Correction 3 — the two "known-failing" backend tests do not fail on `main`
+### Correction 3 — the two "known-failing" backend tests do not fail on `main`
 
 The brief says to expect `2 failed, 345 passed, 1 skipped` and not to chase
 them. On `main` (8ab5110) that is not the state:
@@ -316,7 +207,7 @@ had that work; `main` does not.
 So the bar was tighter than stated, and is met: **317 passed, 0 failed, 0
 skipped**, unchanged, and this branch touches no Python.
 
-## Correction 4 — MapKit's attribution is covered, and the one-line fix does not work
+### Correction 4 — MapKit's attribution is covered, and the one-line fix does not work
 
 **It is covered, at every detent** (brief item 2). Apple's attribution — the
 Apple logo followed by the word "Maps" — sits at the map's bottom-left and the

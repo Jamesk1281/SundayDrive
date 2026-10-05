@@ -4,7 +4,7 @@
 
 > **Where it stands, 2026-10-04 (main past `f9f1937`).**
 >
-> **Fixed** by round 1 ([`pre-submission-fixes-brief.md`](pre-submission-fixes-brief.md)):
+> **Fixed** by round 1 ([`pre-submission-fixes-brief.md`](briefs.md)):
 > - K-7 (`45b1589`)
 > - §6.2, approximate location (`09890a8`)
 > - K-2 (`261b3c0`)

@@ -4,12 +4,12 @@
 at (`.github/workflows/pages.yml` deploys `site/`). A privacy page that pulls a
 script or a web font from someone else's server contradicts itself, and one
 that still says CONTACT_ADDRESS_TBD is not a policy anyone can act on.
-See `docs/privacy-policy-page-brief.md`.
+See `docs/privacy-policy.md`.
 
 The page also quotes the app's location prompt word for word, so it has to
 change whenever `ios/project.yml` does. It once went on quoting a prompt that
 described one use of location while the app had more, and nothing noticed. See
-`docs/location-text-and-contact-brief.md`.
+`docs/location-text-and-contact.md`.
 """
 
 import html

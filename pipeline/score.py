@@ -217,13 +217,13 @@ def near_flags(tree: STRtree | None, geoms: np.ndarray, dist: float) -> np.ndarr
 # and 171 MB of parquet against farm_areas' 16 MB.
 #
 # Three queries rather than two, because water is queried *twice* and the
-# second one is not free. docs/component-rebuild-cache-brief.md's table carries
-# one row per layer and prices water at its 350 m query alone; measured on the
-# 942,448-chunk New England build, the 120 m query costs 123.4 s against the
-# 350 m query's 125.3 s. So the water layer is about twice what that table
-# implies — and the five uncached layers, 7.5 s between them, really are the
-# rounding error it makes them out to be (place has a second unlisted query
-# too, and it is 0.5 s).
+# second one is not free. The cache brief's table carries one row per layer
+# (git show a2ddddc:docs/component-rebuild-cache-brief.md) and prices water
+# at its 350 m query alone; measured on the 942,448-chunk New England build,
+# the 120 m query costs 123.4 s against the 350 m query's 125.3 s. So the
+# water layer is about twice what that table implies — and the five uncached
+# layers, 7.5 s between them, really are the rounding error it makes them out
+# to be (place has a second unlisted query too, and it is 0.5 s).
 #
 # So this caches those two layers and nothing else. Wrapping the cheap five in
 # hash-and-verify machinery would save seconds and add another place for the
@@ -291,7 +291,7 @@ def chunk_digest(geoms: np.ndarray) -> str:
 def cache_dir(d: Path) -> Path:
     """Where cached queries live: beside the build, never inside it.
 
-    `d` is the deploy source — docs/hosting-options-brief.md counts its bytes
+    `d` is the deploy source — docs/hosting-options-findings.md sizes it
     for transfer planning and a naive rsync of it would ship this to the
     serving box. Same placement landcover.py:267 uses for its WorldCover tiles.
     Builds of different regions share the directory safely, because their chunk

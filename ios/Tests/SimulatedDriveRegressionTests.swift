@@ -7,9 +7,9 @@ import XCTest
 /// Every assertion is wrapped in a strict `XCTExpectFailure`: the suite is green
 /// while the defect is present and goes red the day it is fixed, so whoever
 /// fixes it has to come here and turn the expectation into a plain assertion.
-/// Each names its finding in docs/overnight-e2e-drives-brief.md. F1, F2, F2b
+/// Each names its finding in docs/overnight-e2e-findings.md. F1, F2, F2b
 /// and F4 have been through that: fixed by `progress`'s continuity rule
-/// (docs/loop-matching-fix-brief.md), and now plain regression tests.
+/// (docs/loop-matching-fix.md), and now plain regression tests.
 ///
 /// Needs the local server, like `LiveDriveTests`, and skips without one:
 ///     TEST_RUNNER_SUNDAYDRIVE_API=http://127.0.0.1:5173 xcodebuild test ...

@@ -176,7 +176,7 @@ class TestChunkIdentity:
 
 
 class TestInvalidationTable:
-    """docs/component-rebuild-cache-brief.md's table, executed row by row.
+    """The invalidation table in docs/component-rebuild-cache-findings.md, executed row by row.
 
     `opened` is the assertion in every case: a layer that is not reopened is a
     query that was not re-run.

@@ -7,7 +7,7 @@ import XCTest
 /// The API sits behind a Cloudflare tunnel that terminates TLS, and a URL is
 /// what an access log records by default, so the driver's start, destination
 /// and waypoint travel in a POST body instead. See
-/// docs/coordinates-out-of-the-url-brief.md.
+/// docs/coordinates-out-of-the-url.md.
 ///
 /// These check the built `URLRequest`, not a live call, on purpose. The server
 /// would answer a POST that left its parameters on the URL too, so a

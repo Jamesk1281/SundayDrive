@@ -103,7 +103,7 @@ ACCESS = "service"
 # largest single candidate in the region, carrying no scenic designation tag.
 #
 # Counts are from the 2026-08-25 New England extract; see
-# docs/byway-relations-brief.md.
+# docs/byway-relations.md.
 BYWAY_NETWORKS = {
     "US:MA:Scenic",                 # 14 relations, every one a designated byway
     "US:VT:byway",                  # 9

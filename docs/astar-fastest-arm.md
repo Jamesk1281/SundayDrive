@@ -1,19 +1,6 @@
-# A\* on the fastest arm: ALT landmarks over the time metric
+# A* on the fastest arm: ALT landmarks over the time metric
 
-**Status: built 2026-09-19 — see "Built" at the foot of this file, which
-records what this plan got wrong.** Everything above it is the brief as it was
-written, before any of it was implemented: the numbers in it come from scratch
-scripts outside the repository that load one `Router` and work on its arrays,
-the `pipeline/scenery_cap_experiment.py` pattern. They held up. Four of the
-inferences drawn from them did not, and one of those returned a wrong route.
-
-Companion to `docs/scenery-grading-verdict.md` (proposal **F3**), which
-concluded "build now, fastest arm only". **This brief supersedes that document's
-payoff estimate**: the verdict quoted ~36% of request latency from the *perfect*
-heuristic, and a real 16-landmark ALT delivers ~25%. Everything else in the F3
-section still holds.
-
----
+**Status:** shipped — merged to `main` by `a2ddddc`. This is the part of the dispatch brief that outlived the work: its measurements, decisions and results. The brief itself, with its traps and done-list, was deleted on merge — `git show a2ddddc:docs/astar-fastest-arm-brief.md` prints it. Section numbers and "below" refer to that brief's layout.
 
 ## The goal, as measured
 
@@ -112,130 +99,7 @@ here. The integration is.
 
 ---
 
-## Traps
-
-**Trap 1 — the destination is a *set*, and missing this returns a wrong route
-silently.** `route()` does this at `pipeline/router.py:1187-1189`:
-
-```python
-targets = self.node_copies.get(dst_idx)
-if targets is not None:
-    dst_idx = int(targets[np.argmin(dist[targets])])
-```
-
-A junction split for turn restrictions stands at several node indices, and any
-of them is a legitimate place to arrive. A full Dijkstra can pick the cheapest
-afterwards because it settled all of them; **A\* cannot**. The rule that works,
-and is what the measured run used: `h(n) = min over targets t of h(n, t)`, then
-stop when the **first** target is popped. That is correct because the min of
-lower bounds is a lower bound on reaching the nearest target.
-
-**Trap 2 — build the landmark tables *after* `_apply_turn_restrictions`.**
-`self.n` is set to 794,685 at `router.py:331` from `graph_nodes.parquet`, and
-`_build_directed` → `_apply_turn_restrictions` (`:897`) then grows it to
-**801,719**. Tables built against the pre-split node set are the wrong length
-and, worse, the wrong *indexing* — they would load, run, and return plausible
-routes. Precompute inside or after `_build_directed`, never before.
-
-**Trap 3 — at `pref = 0` the weight is not `d_minutes`.** It is
-`d_minutes + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km` (`router.py:1035-1038`).
-The heuristic stays admissible (the extra term is non-negative), but A\* must
-search on the **actual `w` array `_weights` returns**. Caching one time-only
-Dijkstra and reusing it as "the fastest route" returns the wrong road whenever
-`avoid_unpaved != 0`, which is the default (1.0).
-
-**Trap 4 — do not put the scenic arm on this, however tempting.** Measured at
-`pref = 1`, even the *perfect* heuristic still settles 77.9% (Providence→Portland)
-and 92.5% (Burlington→Bangor) of the graph; ALT will be worse. Leaving scipy's C
-for a Python heap costs **3.6×** on this project's own measurement
-(`docs/traffic-schedule-plan.md:232-234`: scipy static 88.6 ms vs Python static
-319.9 ms). A Python A\* settling 90% of 801,719 nodes is several times *slower*
-than what ships today. Gate strictly on `pref == 0.0` and let everything else
-take the existing path unchanged.
-
-**Trap 5 — search the collapsed pair graph, not the directed slot array.**
-`route()` builds its matrix from one entry per `(tail, head)`, taking the
-cheapest parallel edge (`router.py:1175-1177`). A\* must traverse the same
-collapsed graph. If it walks `self.tail/self.head` directly it can settle a
-parallel edge the cost matrix never offered, and `_collect` — which re-picks
-`argmin(w[slots])` per hop at `:1230` — will then disagree with the path A\*
-found.
-
-**Trap 6 — node copies have no coordinates.** `self._nx` / `self._ny`
-(`router.py:332-334`) are projected from `graph_nodes.parquet` and have 794,685
-entries, not 801,719. Anything geometric must index through `self.real_node`.
-(This matters only if the Euclidean bound is attempted; Trap 5's graph and the
-ALT tables are both full-length. It is recorded because it cost time in the
-scratch work.)
-
-**Trap 7 — float32 rounding must go down, not to nearest.** The ALT bound is
-`max(d(n,L) − d(t,L), d(L,t) − d(L,n))`, a difference of two stored values.
-Rounding either to nearest can make the bound exceed the true distance by an ulp
-and break admissibility. Either store float32 and subtract a small epsilon from
-`h`, or clamp `h = max(h, 0)` *and* accept the path only if its cost matches a
-verification pass. The simplest safe answer: store float32, compute `h` in
-float64, and subtract `1e-6` minutes. Nobody notices a microsecond; an
-inadmissible heuristic returns a wrong route with no symptom.
-
-**Trap 8 — "same cost" is the assertion; "same edges" is a measurement, not an
-assertion.** Road networks have genuine ties, so A\* and scipy can return
-different equal-cost paths, and the driver would see a different road with the
-same ETA. Assert cost equality to 1e-9. **Report** the share of OD pairs whose
-edge list differs rather than asserting it is zero — if that share is large
-enough to matter, that is a finding worth reporting back, not a bug to suppress
-by tie-breaking until the test passes.
-
-**Trap 9 — RAM.** `docs/hosting-options-brief.md` puts a warm `app.py` at
-**≈4.3 GB** and recommends sizing the box at ~6 GB. float32 tables add 103 MB
-(2.4%). That is fine on the chosen 24 GB target, but the 7 s of preprocessing
-lands on **every process start**, on top of a 40 s load. If that is unacceptable,
-the tables are a deterministic function of `graph_edges.parquet` and can be
-written beside it — but do not add a new required file without saying so in
-`Router.REQUIRED_EDGE_COLUMNS`'s neighbourhood, and keep the in-process
-computation as the fallback.
-
----
-
-## Done looks like
-
-1. `Router` precomputes 16 ALT landmark tables over `d_minutes` at load, after
-   turn restrictions are applied, as float32, in ≤10 s.
-2. `route()` uses a numpy A\* when `pref == 0.0` and the existing scipy path
-   otherwise. The scipy path is unchanged for every other input.
-3. On a sample of at least 200 OD pairs spanning New England, the A\* arm's path
-   **cost** matches today's to 1e-9 on every one; the share whose **edge list**
-   differs is measured and reported (Trap 8).
-4. Measured median latency of the `pref = 0` arm, before and after, on the same
-   machine. The expectation from the scratch work is ~227 ms → ~20 ms; a result
-   worse than ~80 ms means the implementation, not the idea, and is worth
-   reporting rather than shipping.
-5. `.venv/bin/python -m pytest tests/` green, with `SCENIC_DATA` pointed at the
-   New England build.
-6. A test that would catch Trap 1: an OD pair whose destination junction carries
-   turn-restriction copies, asserted to route identically on both paths.
-7. **Or** an honest statement that one of the traps above makes this not worth
-   doing, with the measurement that shows it. That is a real answer.
-
-## Reproducing the numbers above
-
-One scratch script, outside the repo, ~120 lines: load `Router`, build the
-collapsed time CSR and its transpose, pick 16 landmarks by farthest-point
-selection over backward Dijkstra, run `2k` Dijkstras for the tables, then per OD
-pair count `|{n : dist_w[n] + h(n) ≤ dist_w[dst]}|` for each candidate `h` and
-time a `heapq` A\*. One `Router` load (23–40 s, ~4 GB RSS) serves the whole
-sweep.
-
-```
-SCENIC_DATA=<abs>/Scenic/data/processed-ne     # the live New England build
-```
-
-The data lives **only in the main checkout**, never in a worktree. The project
-path contains spaces, so every venv console script has a broken shebang: always
-`.venv/bin/python -m <tool>`, never `.venv/bin/pytest`.
-
----
-
-# Built, 2026-09-19
+## Built, 2026-09-19
 
 (`docs/scenery-grading-verdict.md`, referenced above, was not on the branch
 this was built on — it was copied across on its own so that the plan and the
@@ -274,7 +138,7 @@ and did not happen once. Admissibility checked by backward Dijkstra on the real
 `w` for five targets: 0 violations over 801,717 nodes each. `avoid_unpaved` at
 0.0, 1.0 and 2.0 all agree (Trap 3).
 
-## Four things this brief had wrong or missing
+### Four things this brief had wrong or missing
 
 **1. The bound is negative at the targets, and that alone returns wrong
 routes.** The brief's rule — `h = min` over targets, stop at the first target
@@ -308,7 +172,7 @@ the query to the Dijkstra. It fired on 22 of 250 random pairs and on 0 of 250
 realistic ones, the budget counter costs nothing measurable, and the slowest
 new arm (630 ms) is below the slowest old one (787 ms).
 
-## What the search is not
+### What the search is not
 
 45.8 ms of arm is ~24 ms of search and bound and ~22 ms of array work that both
 arms pay: `_edge_scores` 4.3 ms, `_weights` 10.1 ms, the parallel-edge collapse
