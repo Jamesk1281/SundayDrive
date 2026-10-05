@@ -342,17 +342,32 @@ for drive recordings. Recording is switched off for launch (2026-10-04,
 turning recording back on needs no plist change.
 
 **Why does it only work in New England?** (`pre-submission-review-verdict.md`
-AR-1.) A reviewer outside the region who taps **Loop** or uses **My
-Location** gets the server's out-of-region error. The notes must say so up
-front:
-- Each road's scenery score is computed from regional open data, so coverage
-  is the six New England states.
-- From anywhere, typing a New England town as the start works.
-- Give a test route: **Concord, MA → Rockport, MA**. On 2026-10-04 production
-  returned both arms in 0.8 s: fastest 77 km in 53 min, scenic 75 km in
-  100 min with 24 km of beautiful road.
-- Name a loop start in southern New England. Northern mountain roads close
-  for winter (verdict C-1).
+AR-1.) Each road's scenery score is computed from regional open data, so
+coverage is the six New England states. A reviewer is almost certainly
+outside them, and the app now says so itself (`docs/new-england-only-brief.md`):
+- **At launch**, after "Before you drive" and the location prompt, a phone
+  outside New England gets a full-screen notice, **This won't work from
+  here**. "Got it" dismisses it, and nothing is blocked. The check runs on the
+  phone; the location is not sent anywhere for it.
+- **My Location**, in Directions and Loop, says "You're outside New England,
+  so this can't start from your location. Type a New England town as your
+  start." It sends nothing to the server.
+- **Home's Loop row** reads "Type a New England town to start", and opens the
+  loop page with the start field ready.
+- **Search** only offers and accepts New England places.
+
+So give the reviewer the two ways in that work from anywhere:
+- **Directions:** type **Concord, MA** as the start and **Rockport, MA** as
+  the destination. On 2026-10-04 production returned both arms in 0.8 s:
+  fastest 77 km in 53 min, scenic 75 km in 100 min with 24 km of beautiful
+  road.
+- **Loop:** type **Kent, CT** into "Start and finish here". On 2026-10-04 the
+  default 40 km loop came back as 38 km in 52 min, 27 km of it beautiful and
+  1.4 km driven twice, with five directions to try.
+  - Not Stowe, VT. Its default loop climbs VT 108 to Smugglers' Notch and
+    comes back the same way, 19 of 41 km twice, and that road is closed from
+    November to April (verdict C-1). Kent's nearest seasonal road is 32 km
+    away.
 - Attach a short screen recording of a real drive.
 
 **Age rating.** No user-generated content visible to others, no web view, no

@@ -118,12 +118,24 @@ final class RouteModel {
     /// The screen switches to the nav view whenever this is set.
     var nav: NavigationModel?
 
+    /// How "My Location" gets its fix. Tests substitute one, so a phone in
+    /// Cupertino can be tested without being in Cupertino.
+    var locate: () async -> CLLocation?
+
+    /// How routes are fetched. Tests substitute a stub, the seam
+    /// `LoopModel.fetchLoop` already is, so "no request reached the server"
+    /// is something a test can count.
+    var fetchRoute: RouteFetcher = { from, to, pref, weights, _ in
+        try await RouteService.route(from: from, to: to, pref: pref, weights: weights)
+    }
+
     init() {
         // Built here rather than inline so `loops` can be handed the same
         // manager without reading a half-initialised `self`.
         let manager = LocationManager()
         locationManager = manager
         loops = LoopModel(locationManager: manager)
+        locate = { await manager.currentLocation() }
 
         // Demo mode (launch with SUNDAYDRIVE_DEMO set) preloads a route via the
         // real search path, so a screenshot doubles as an end-to-end check.
@@ -148,7 +160,7 @@ final class RouteModel {
 
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = trimmed
-        request.region = searchRegion
+        request.rank(around: searchRegion)
         await resolve(request, label: trimmed, into: role)
     }
 
@@ -163,11 +175,19 @@ final class RouteModel {
 
     /// Run a MapKit search, set the matching endpoint, and route if both ends
     /// are now known. Shared by the typed and the autocomplete paths.
+    ///
+    /// Takes the first result *in New England*, never simply the first
+    /// (`NewEngland.firstInside`), so nothing outside it can become an end of
+    /// the trip, whatever the search was biased toward.
     private func resolve(_ request: MKLocalSearch.Request, label: String, into role: Endpoint) async {
         do {
             let result = try await MKLocalSearch(request: request).start()
-            guard let match = result.mapItems.first else {
+            guard !result.mapItems.isEmpty else {
                 errorText = "No match for “\(label)”"
+                return
+            }
+            guard let match = NewEngland.firstInside(result.mapItems) else {
+                errorText = NewEngland.notInNewEngland(label)
                 return
             }
             let coordinate = match.placemark.coordinate
@@ -200,15 +220,24 @@ final class RouteModel {
     /// Takes a fresh fix rather than trusting the last one: CoreLocation's
     /// cached location is often Wi-Fi-derived and a street or two out, which is
     /// exactly the error a driver notices at the start of a drive.
+    ///
+    /// A fix outside New England goes no further than this. The server would
+    /// only refuse it, with "point is outside the covered road network", so
+    /// the refusal is said here, in words that say what to do instead, and
+    /// nothing is sent. Whatever start was there before is left alone.
     func useMyLocation() async {
         isLocatingUser = true
         defer { isLocatingUser = false }
 
-        guard let fix = await locationManager.currentLocation() else {
+        guard let fix = await locate() else {
             errorText = locationManager.authorization == .denied
                     || locationManager.authorization == .restricted
                 ? "Location access is off — allow it in Settings to start from here."
                 : "Couldn’t get a location fix. Try again in a moment."
+            return
+        }
+        guard locationManager.noteRegion(of: fix) == .inside else {
+            errorText = NewEngland.outsideHere
             return
         }
 
@@ -220,6 +249,24 @@ final class RouteModel {
 
         if end != nil { await computeRoute() }
         await nameCurrentLocation(fix)
+    }
+
+    /// Whether the phone is in New England: checked once a launch, so someone
+    /// outside it is told before they try anything rather than after.
+    ///
+    /// `askingPermission` is true only on the launch that showed "Before you
+    /// drive", the one launch that asks. Every later launch checks only if
+    /// location is already allowed, and otherwise does nothing; the My
+    /// Location paths still ask when they are used.
+    ///
+    /// The fix comes from `roughLocation()`, never `currentLocation()`: any
+    /// approximate fix will do, and there must be no precision prompt at
+    /// launch. It is tested on the phone, against `NewEngland.contains`.
+    /// Nothing is sent and nothing is geocoded.
+    func checkWhereabouts(askingPermission: Bool) async -> RegionStatus {
+        if askingPermission { await locationManager.requestPermissionIfUndetermined() }
+        guard let fix = await locationManager.roughLocation() else { return .unknown }
+        return locationManager.noteRegion(of: fix)
     }
 
     /// Put a street name on the "My Location" start once reverse geocoding
@@ -350,7 +397,7 @@ final class RouteModel {
         errorText = nil
 
         do {
-            let result = try await RouteService.route(from: a, to: b, pref: pref, weights: weights)
+            let result = try await fetchRoute(a, b, pref, weights, nil)
             guard generation == requestGeneration else { return }   // a newer request superseded us
             response = result
             responsePref = pref

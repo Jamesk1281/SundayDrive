@@ -29,10 +29,15 @@ struct HomeView: View {
                 }
 
                 intentRow(title: "Loop",
-                          subtitle: "From here, about \(loopEstimate)",
+                          subtitle: isOutside ? "Type a New England town to start"
+                                              : "From here, about \(loopEstimate)",
                           systemImage: loopSymbol,
                           tint: .amberText, wash: .amberWash) {
                     stage = .loop
+                    // Outside New England, "from here" cannot be: the loop
+                    // stage opens on its start field instead (`LoopView`), and
+                    // no fix is spent on a request the server would refuse.
+                    guard !isOutside else { return }
                     // Only if there is nothing to show already — coming back to
                     // a loop you were looking at should not throw it away and
                     // spend a fix and a request reproducing it.
@@ -63,6 +68,10 @@ struct HomeView: View {
     private var loopEstimate: String {
         TimeText.compact(minutes: model.loops.estimatedMinutes(forKm: model.loops.targetKm))
     }
+
+    /// The last fix was outside New England: at launch, or from either
+    /// My Location. See `RegionStatus`.
+    private var isOutside: Bool { model.locationManager.regionStatus == .outside }
 
     /// The Loop row's symbol, with a fallback for iOS 17.
     ///
