@@ -10,6 +10,7 @@ from datetime import date
 import pytest
 
 from conftest import DATA, ROOT, ROUTER_DATA
+from looper import MAX_TARGET_KM, MIN_TARGET_KM
 from router import BEAUTIFUL_SCORE
 
 
@@ -378,7 +379,7 @@ def test_a_loop_too_short_for_the_geography_says_so(client):
 
 
 def test_the_distance_is_clamped_not_rejected(client):
-    for km, expected in ((1, 5.0), (9999, 200.0)):
+    for km, expected in ((1, MIN_TARGET_KM), (9999, MAX_TARGET_KM)):
         meta = client.get(f"/api/loop?from={NEEDHAM}&km={km}").get_json()["meta"]
         assert meta["target_km"] == expected
 

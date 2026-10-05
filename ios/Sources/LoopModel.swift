@@ -40,9 +40,10 @@ final class LoopModel {
     /// The distance slider, in kilometers. 40 km is a bit over an hour's drive,
     /// which is what most people mean by "go for a drive".
     ///
-    /// The bounds match the server's clamp. They are not graph limits — the
-    /// longest available loop from a Massachusetts start is over 500 km — they
-    /// are the range where the answer is a drive rather than an expedition.
+    /// The bounds match the server's clamp (`MAX_TARGET_KM` in
+    /// `pipeline/looper.py`). They are not graph limits — the longest available
+    /// loop from a Massachusetts start is over 500 km — they are the range where
+    /// the answer is a drive rather than an expedition: 400 km is a full day.
     /// Restored from the last session, so "Loop" on the home screen is one tap
     /// to a finished drive rather than one tap to a form.
     ///
@@ -56,7 +57,7 @@ final class LoopModel {
     var targetKm: Double = UserDefaults.standard.object(forKey: LoopModel.targetKey) as? Double ?? 40
     private static let targetKey = "lastLoopTargetKm"
     static let minKm: Double = 5
-    static let maxKm: Double = 200
+    static let maxKm: Double = 400
 
     /// Minutes per kilometre, for labelling the distance dial in time.
     ///

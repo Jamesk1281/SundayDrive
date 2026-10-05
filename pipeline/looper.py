@@ -165,7 +165,13 @@ MIN_LEG_KM = 0.5
 
 # The slider's ends. Not graph limits — the largest available loop is 516 km from
 # Needham, 622 km from Petersham — but the range where the answer is a drive.
-MIN_TARGET_KM, MAX_TARGET_KM = 5.0, 200.0
+# The top was 200 km (about four hours) until 2026-10-05; 400 km is a full day.
+# Measured from Needham, Petersham, Boston, Bar Harbor, Stowe and Provincetown
+# at 300 and 400 km: built length within 4.3% of target, at most 3% doubled
+# back, ~0.5 s each, 8.2-9.0 h of driving at 400. The cost does not grow with
+# length, because every Dijkstra here already runs over the whole graph. What
+# does shrink is choice: at 400 km most starts have one or two directions.
+MIN_TARGET_KM, MAX_TARGET_KM = 5.0, 400.0
 
 # The score at or above which a road counts as properly beautiful — see
 # `router.BEAUTIFUL_SCORE`, which is where it now lives because point-to-point

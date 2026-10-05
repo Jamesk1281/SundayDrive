@@ -306,7 +306,7 @@ like the principled one, and it is measurably the worst.
 
 **Range.** Not graph-limited. The largest available out-and-back loop is 516 km
 (Needham), 622 km (Petersham), 576 km (Boston). The top of the slider is a
-product choice; **5–200 km** is the useful span.
+product choice; **5–200 km** is the useful span. (Raised to 5–400 km on 2026-10-05; the measurement is in the `MAX_TARGET_KM` comment in `pipeline/looper.py`.)
 
 **Accuracy.** The estimate from the cached fields is exact for the *mirror*
 loop, but the penalised return leg is a different path, and its km differs from

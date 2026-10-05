@@ -90,8 +90,14 @@ struct LoopView: View {
             // Asks for a new loop only when the user lets go — mid-drag it
             // would be a request per tick, and each one is ~0.65 s of work on
             // the server.
-            Slider(value: Binding(get: { loops.targetKm }, set: { loops.targetKm = $0 }),
-                   in: LoopModel.minKm...LoopModel.maxKm) { editing in
+            //
+            // On a square-root scale, because the range is 80-fold: linear, an
+            // hour's loop sat in the first eighth of the track and the short
+            // drives most people want were the hardest to set. Square root puts
+            // an hour about a quarter of the way along and four hours at two-thirds.
+            Slider(value: Binding(get: { loops.targetKm.squareRoot() },
+                                  set: { loops.targetKm = ($0 * $0).rounded() }),
+                   in: LoopModel.minKm.squareRoot()...LoopModel.maxKm.squareRoot()) { editing in
                 if !editing, loops.start != nil { Task { await loops.generate() } }
             }
             .tint(Color.amber)
