@@ -61,7 +61,7 @@
 <div class="summary">
 <ul>
   <li>No account, no sign-in, no analytics, no advertising, and no third-party code in the app.</li>
-  <li>Your location is used to follow your route. It is sent to our routing server to plan the route, and the server does not store it.</li>
+  <li>Your location is used to plan drives from where you are, to check that you are in New England, and to guide you turn by turn. The New England check happens on your phone. To plan a route, your location is sent to our routing server, which does not store it.</li>
   <li>Two companies are in the path: Cloudflare carries the connection and can read it, and Oracle hosts the server.</li>
   <li>The app does not record your drives.</li>
 </ul>
@@ -87,13 +87,19 @@
 </ul>
 
 <h2>Location</h2>
-<p><strong>The app uses your location for one thing: following the route you asked for.</strong> It asks for permission only while you are using the app, never "always". The message iOS shows you is:</p>
-<blockquote>Your location is used to follow the route, turn by turn, while you drive.</blockquote>
+<p><strong>The app uses your location for three things:</strong></p>
+<ul>
+  <li><strong>Planning a drive from where you are</strong>, when you start directions or a loop from your location instead of from a place you type.</li>
+  <li><strong>Checking that you are in New England.</strong> The app only has roads for the six New England states, so it checks whether you are in them and warns you if you are not. This check happens on your phone, and your location is not sent anywhere for it.</li>
+  <li><strong>Guiding you turn by turn</strong> along the route you asked for.</li>
+</ul>
+<p>It asks for permission only while you are using the app, never "always". The message iOS shows you is:</p>
+<blockquote id="location-purpose">Your location is used to plan drives from where you are, to check that you’re in New England, and to guide you turn by turn.</blockquote>
 <p><strong>Location continues in the background during a drive, and the blue location indicator shows whenever it does.</strong> This is so a locked phone or an incoming call does not end your drive. Background location is switched off when navigation stops.</p>
 <p><strong>Location is precise.</strong> While you drive, the app asks iOS for the most precise location it offers, about once a second. That is what turn-by-turn guidance needs. If you have turned off Precise Location for the app, it asks to use precise location for the drive, and it cannot navigate without it.</p>
 
 <h3>Where your location goes</h3>
-<p>To two places, and no others.</p>
+<p>To two places, and no others. Checking that you are in New England sends it to neither.</p>
 
 <p><strong>1. To our routing server, to plan a route.</strong> When you ask for a route, the app sends your start and destination coordinates. When you ask for a loop, it sends your start point. If you leave the route while driving, it sends your current position and heading to plan a new one. Nothing goes with them: no identifier, no timestamp, no history of where you have been. The coordinates are sent inside the request itself, not in the web address.</p>
 <p><strong>The server stores nothing.</strong> It has no database and no log file, and it does not log requests. We checked the running server on 29 September 2026: after real route requests had passed through it, none of their coordinates appeared in any of its logs.</p>
@@ -111,7 +117,7 @@
 
 <h2>Your choices</h2>
 <ul>
-  <li><strong>Refuse location.</strong> The app cannot plan or follow a route without it, but it reads nothing else about your phone.</li>
+  <li><strong>Refuse location.</strong> You can still plan a drive between places you type, but not from where you are, and the app cannot guide you along the route. It reads nothing else about your phone.</li>
   <li><strong>Reset the stored destinations and settings</strong> by deleting the app.</li>
 </ul>
 <p>There is no data about you on our server to request, correct or delete, because none is kept.</p>

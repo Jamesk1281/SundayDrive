@@ -32,8 +32,11 @@ targets:
           UIImageRespectsSafeAreaInsets: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
-        # Shown when navigation asks for location to follow the route.
-        NSLocationWhenInUseUsageDescription: "Your location is used to follow the route, turn by turn, while you drive."
+        # Shown with the first request for location, which usually comes while
+        # planning, not driving, so it names every use (App Review 5.1.1(ii)) and
+        # not the app, which iOS already puts in the alert's title. The privacy
+        # page quotes it word for word; tests/test_privacy_page.py checks that.
+        NSLocationWhenInUseUsageDescription: "Your location is used to plan drives from where you are, to check that you’re in New England, and to guide you turn by turn."
         # Shown when Precise Location is off and a drive asks for it anyway
         # (`LocationManager.precisePurposeKey`). The key has to match exactly: a
         # purpose CoreLocation cannot find here shows no prompt and says nothing.

@@ -15,6 +15,10 @@
 - Coordinates moved out of the request URL the same day (§2.1(a)).
 - Approximate-location behaviour tested and described 2026-10-01 (§2.2).
 - The stored-settings list corrected the same day (§3, §5).
+- The uses of location completed 2026-10-04, with a new purpose string (§2):
+  planning from where you are, and the on-device New England check. That
+  check is built on a parallel branch (`docs/new-england-only-brief.md`), so
+  §2 item 2 cites the brief, not code, and the two branches merge together.
 
 **It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
 decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
@@ -77,33 +81,58 @@ searched for.
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
 | Whether voice guidance is muted | `ios/Sources/VoiceGuide.swift:351-352` |
 | Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:47` |
-| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:240`, read by `ContentView.swift:23` |
+| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:262`, read by `ContentView.swift:23` |
 
 ---
 
 ## 2. Location
 
-**The app uses your location for one thing: following the route you asked for.**
+**The app uses your location for three things**, and the purpose string names
+all three, because App Review Guideline 5.1.1(ii) asks it to describe the use
+"clearly and completely":
+
+1. **Planning a drive or a loop from where you are.** My Location in Directions
+   (`RouteModel.useMyLocation`) and the Loop row on Home
+   (`LoopModel.useMyLocation`, called from `HomeView`) each take one fix
+   through `LocationManager.currentLocation()`. This is usually where the
+   permission prompt first appears: while planning, not driving.
+2. **Checking that you are in New England**, so that the app can warn someone
+   outside it that it cannot plan from where they are. **The check runs on the
+   phone and sends the location nowhere.** It tests the fix against an outline
+   of the six states built into the app, with no network call and no
+   geocoding (`docs/new-england-only-brief.md` §A and trap 4). It is also why
+   the prompt can appear at first launch: the app asks once, after the
+   "Before you drive" notice (the same brief, §D).
+3. **Turn-by-turn guidance while you drive** (`LocationManager.start()`,
+   `LocationManager.swift:180-199`), in the background too (below).
+
 It requests *when in use* authorization only (`LocationManager.swift:182`,
 `:287`) — never "always" — and the purpose string the system shows you is the
-one at `ios/project.yml:21`: "Your location is used to follow the route, turn
-by turn, while you drive."
+one at `ios/project.yml:39`: "Your location is used to plan drives from where
+you are, to check that you’re in New England, and to guide you turn by turn."
+`tests/test_privacy_page.py` fails if the published page quotes anything
+else, or if this file stops quoting it.
+
+*Until 2026-10-04 the string, this section and the published page said the
+app used location "for one thing: following the route you asked for". That was
+incomplete before the New England check existed: planning from where you are
+was already a second use.*
 
 **That string does not name the app, deliberately** — iOS already titles the
 alert *Allow "Sunday Drive" to use your location?*, so naming the app in the
-body said it twice. The name was removed on 2026-09-20 and this quotation was
-re-read against `ios/project.yml` at `5aff398` on 2026-09-21. Do not "restore"
-a product name to it: neither *"Victory Lap uses your location…"* (what this
-document quoted until 2026-09-21) nor a Sunday Drive equivalent exists anywhere
-in the project.
+body says it twice. The name was removed on 2026-09-20, the 2026-10-04 rewrite
+kept it out, and `LocationTextAndContactTests` fails if it comes back. Do not
+"restore" a product name to it: neither *"Victory Lap uses your location…"*
+(what this document quoted until 2026-09-21) nor a Sunday Drive equivalent
+exists anywhere in the project.
 
 **Location continues while the app is in the background, and the blue bar shows
 whenever it does.** `UIBackgroundModes` includes `location`
-(`ios/project.yml:43-44`), and the app opts into
+(`ios/project.yml:68-69`), and the app opts into
 `showsBackgroundLocationIndicator` (`LocationManager.swift:195-196`), so
 background location is always visible in the status bar. Without this, a
 locked phone or an incoming call silently ends a drive; the reasoning is written
-out at `ios/project.yml:22-42`. Background updates are switched off again when
+out at `ios/project.yml:47-67`. Background updates are switched off again when
 navigation stops (`LocationManager.swift:208`).
 
 **Accuracy is set to `kCLLocationAccuracyBestForNavigation`**
@@ -113,7 +142,10 @@ is also the most precise location iOS will give an app.
 
 ### 2.1 Where location goes
 
-Three destinations, and no others.
+Two destinations, and no others. The New England check (§2, item 2) adds none,
+because it runs on the phone. *(This said "three" until 2026-10-04: the third
+was a recorded drive's file on the phone, and the page dropped it when
+recording was switched off, but this line did not.)*
 
 **(a) To the routing server, to compute a route.** Your start and destination
 coordinates are sent in the body of a POST request to `/api/route`
@@ -244,7 +276,7 @@ recording with no consent step runs into App Review guideline 2.5.14
 page**, and needs a consent step first (§8).
 
 `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`
-(`ios/project.yml:73-74`) still expose the app's `Documents` folder to the
+(`ios/project.yml:76-77`) still expose the app's `Documents` folder to the
 Files app; with recording off it stays empty.
 
 ---
@@ -260,8 +292,10 @@ Category rules is a §7 item.)*
 
 ## 5. Your choices
 
-- **Refuse location.** The app cannot route without it, but nothing else about
-  the phone is read.
+- **Refuse location.** A drive can still be planned between places you type,
+  but not from where you are, and the app cannot guide you along it. Nothing
+  else about the phone is read. *(Until 2026-10-04 this said the app "cannot
+  route without it", which typed starts and destinations never needed.)*
 - **Reset the stored destinations and settings** by deleting the app.
 
 There is no server-side data about you to request, correct or delete, because
@@ -340,7 +374,7 @@ Re-check it if any of these change, because each one is load-bearing above:
   the server persists nothing.
 - **Any third-party package added to `ios/project.yml`.** §1's "no third-party
   code at all" is the strongest claim here and the easiest to invalidate.
-  (Note that the `dependencies:` entry at `ios/project.yml:97` is *not* a
+  (Note that the `dependencies:` entry at `ios/project.yml:122` is *not* a
   package — it is the test target depending on the app target.)
 - **Any upload, share or sync feature for drive traces.** §3 rests on there
   being none.
@@ -362,9 +396,16 @@ Re-check it if any of these change, because each one is load-bearing above:
   against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.
+- **Any network call in the New England check**, reverse geocoding included.
+  §2, §2.1 and the published page all say the check sends the location
+  nowhere.
+- **A new use of location.** The purpose string has to name it (§2), and the
+  page quotes the string.
 - **`DriveTrace.isEnabled` set to `true`.** §3, §5 and the published page all
   say the app does not record. Re-enabling it needs a consent step (App Review
   2.5.14) and this document's 2026-09-29 recording text back.
 - **A change to anything in §§0–6 must also change `site/privacy/index.html`.**
   That page is the published copy, and nothing checks the two against each
-  other except this line.
+  other except this line. The one exception is the location purpose string:
+  `tests/test_privacy_page.py` checks that the page and this file both quote
+  `ios/project.yml` exactly.

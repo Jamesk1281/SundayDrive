@@ -218,6 +218,28 @@ enum PrivacyPolicy {
     static let url = URL(string: "https://jamesk1281.github.io/SundayDrive/privacy/")!
 }
 
+/// How to reach the developer — App Store Review Guideline 1.5 wants "your app
+/// **and** its Support URL" to include a way to make contact, and until these
+/// two rows the app's only link out was the privacy policy.
+///
+/// Two ways in, because a `mailto:` link alone fails anyone with no mail
+/// account on the phone: iOS sends them to set up, or restore, Mail instead of
+/// writing a message. The support page lists the same address, where it can be
+/// read and copied. (The MessageUI composer fails the same way with no account,
+/// so it would add a framework and fix nothing.)
+///
+/// The same warnings as `PrivacyPolicy`: the page's path is the repo's name, and
+/// Pages does **not** redirect after a rename, so renaming the repo again breaks
+/// this link. The address is on jameskouvlis.com, as the API is, and dies with
+/// the domain if it is not renewed.
+enum Support {
+    /// The support page, `site/index.html`, which is also App Store Connect's
+    /// Support URL.
+    static let url = URL(string: "https://jamesk1281.github.io/SundayDrive/")!
+    /// The address the support page lists (`tests/test_support_page.py`).
+    static let email = URL(string: "mailto:support@jameskouvlis.com")!
+}
+
 /// **Sources** — what the app is built from, and the credit each of those
 /// licences asks for.
 ///
@@ -299,23 +321,9 @@ struct AboutView: View {
                     .buttonStyle(.plain)
                     .padding(.top, 10)
 
-                    Link(destination: PrivacyPolicy.url) {
-                        HStack {
-                            Text("Privacy policy")
-                                .font(.system(size: 15.5, weight: .semibold))
-                                .foregroundStyle(Color.ink)
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(Color.ink3)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 50)
-                        .background(Color.sunk, in: RoundedRectangle(cornerRadius: 15))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 10)
+                    outboundRow("Privacy policy", to: PrivacyPolicy.url)
+                    outboundRow("Help and support", to: Support.url)
+                    outboundRow("Email the developer", to: Support.email)
                 }
                 .padding(Metric.margin)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -332,6 +340,28 @@ struct AboutView: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showingNotice) { BeforeYouDriveView() }
+    }
+
+    /// A row that leaves the app, marked with an arrow where "Before you drive"
+    /// has a chevron because it stays inside.
+    private func outboundRow(_ title: String, to url: URL) -> some View {
+        Link(destination: url) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 15.5, weight: .semibold))
+                    .foregroundStyle(Color.ink)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 50)
+            .background(Color.sunk, in: RoundedRectangle(cornerRadius: 15))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 10)
     }
 
     /// One source: what it gives us, its verbatim credit, its licence, and a
