@@ -20,6 +20,9 @@ and town centers, ignore farmland. At neutral weights (all 1.0) the live score
 exactly reproduces the precomputed composite from score.py. The same graph
 answers fastest vs scenic, so we return them side by side with a breakdown.
 
+Given the date (`on`), the roads OSM marks closed for the season that day are
+priced at +inf, from seasonal_closures.parquet (pipeline/closures.py).
+
 CLI:
     python router.py <processed_dir> "lat,lon" "lat,lon" [pref]
 writes out/route_fastest.geojson and out/route_scenic.geojson.
@@ -29,9 +32,11 @@ import json
 import math
 import sys
 import warnings
+from datetime import date, datetime
 from functools import cached_property
 from heapq import heappop, heappush
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import geopandas as gpd
 import numpy as np
@@ -42,7 +47,8 @@ from scipy.sparse.csgraph import connected_components, dijkstra
 from shapely.strtree import STRtree
 from pyproj import Transformer
 
-from common import CONTROL_COLUMNS, CRS_METERS, ONEWAY_FWD, ONEWAY_REV
+from common import (CLOSURE_WINDOW, CONTROL_COLUMNS, CRS_METERS, ONEWAY_FWD,
+                    ONEWAY_REV, in_window)
 from score import (CLASS_ADJ, LEGACY_UNPAVED_ADJ, WEIGHTS, blend, components,
                    composite)
 
@@ -316,7 +322,8 @@ BEAUTIFUL_SCORE = 7.0
 #
 # **Why one landmark set is correct for every request.** `_weights` is
 # `d_minutes` plus strictly non-negative addends, so `w >= d_minutes` pointwise
-# for every pref, every beauty-weight vector and every `avoid_unpaved`. A bound
+# for every pref, every beauty-weight vector, every `avoid_unpaved` and every
+# date, a seasonal closure's +inf being one more such addend. A bound
 # on travel time is therefore a bound on every metric this router can be asked
 # for, and the tables depend on no user parameter. Only the fastest arm uses
 # them — see `route` — but they would be *admissible* on any of them.
@@ -381,6 +388,73 @@ SNAP_HEADING_SLACK_M = 20.0
 # this is measured on 0..90.
 SNAP_HEADING_DEG = 40.0
 
+# --- Seasonal closures --------------------------------------------------------
+# The roads OSM marks closed or unmaintained in winter, read from
+# seasonal_closures.parquet (pipeline/closures.py). Closed means unusable:
+# `_weights` adds +inf to a closed edge, which scipy's Dijkstra never relaxes
+# and `_astar` never improves a distance with. The ALT bound stays admissible,
+# because closing an edge can only lengthen a true cost.
+# docs/seasonal-closures-brief.md has the decisions.
+
+# The calendar closures are dated in. OSM writes `no @ (Oct 15-May 15)` in local
+# dates, and at 9 pm on Oct 14 in Vermont it is already Oct 15 in UTC.
+REGION_TZ = ZoneInfo("America/New_York")
+
+
+def region_today() -> date:
+    """Today in New England: the day a request's closures are judged on.
+
+    Read per request and never once at startup. The server runs for weeks, and
+    the closed set changes on fixed dates in between: Lincoln Gap closes on
+    Oct 15, VT-108 and Hurricane Mountain Road on Nov 1.
+    """
+    return datetime.now(REGION_TZ).date()
+
+
+class SeasonalClosures:
+    """Which graph edges are closed for the season on a given day.
+
+    Held as the table's distinct windows, each with the edges it closes,
+    because the windows in force on a day name the closed set exactly. That
+    makes them the closure version every cache keys on: two days with the same
+    version close the same edges, and a cache filled under one version cannot
+    answer for another. Seven windows cover New England on the 2026-08-25
+    extract, so the version changes on a handful of dates a year and a cache
+    survives every other midnight.
+    """
+
+    def __init__(self, table: pd.DataFrame, edge_u: np.ndarray,
+                 edge_v: np.ndarray):
+        rows = table["edge"].to_numpy()
+        inside = (rows >= 0) & (rows < len(edge_u))
+        same = np.zeros(len(rows), bool)
+        same[inside] = ((edge_u[rows[inside]] == table["u"].to_numpy()[inside])
+                        & (edge_v[rows[inside]] == table["v"].to_numpy()[inside]))
+        if not same.all():
+            raise RuntimeError(
+                f"seasonal_closures.parquet names {(~same).sum():,} edges that "
+                "graph_edges.parquet does not hold at those rows, so it was built "
+                "against another graph and would close whichever roads sit there "
+                "now. Rerun pipeline/closures.py against this graph.")
+        keys = table[list(CLOSURE_WINDOW)].to_numpy()
+        self.windows = sorted({tuple(int(x) for x in k) for k in keys})
+        self._edges = {w: np.unique(rows[(keys == w).all(axis=1)])
+                       for w in self.windows}
+        self.n_edges = len(np.unique(rows))
+        self.n_ways = int(table["way_id"].nunique())
+        self.km = float(table.drop_duplicates("edge")["length_m"].sum() / 1000.0)
+
+    def version(self, day: date) -> tuple:
+        """The windows in force on `day`; empty when nothing is closed."""
+        return tuple(w for w in self.windows
+                     if in_window(w, (day.month, day.day)))
+
+    def edges(self, version: tuple) -> np.ndarray:
+        """The undirected edge rows closed under `version`."""
+        if not version:
+            return np.empty(0, np.int64)
+        return np.unique(np.concatenate([self._edges[w] for w in version]))
+
 
 class Router:
     # Columns the maneuver generator needs, and the graph build that writes
@@ -414,6 +488,61 @@ class Router:
 
         self._build_directed()
         self._read_access(d)
+        self._read_closures(d)
+
+    def _read_closures(self, d: Path):
+        """The roads OSM marks closed for the season, if the table is there.
+
+        Optional, like the access layer and for the same reason: without it
+        every road is open all year, which is how this router behaved before
+        the table existed. But never silent. The count is printed either way,
+        and flushed, because the box's journal drops buffered stdout
+        (server/DEPLOY-oracle.md, Part 8), and serving with no mask is the
+        failure this table exists to prevent.
+        """
+        self._closed_slots_by_version = {}
+        path = d / "seasonal_closures.parquet"
+        if not path.exists():
+            self.closures = None
+            print(f"seasonal closures: none, {path.name} is missing, so every "
+                  "road is open all year", flush=True)
+            return
+        self.closures = SeasonalClosures(pd.read_parquet(path),
+                                         self.edges["u"].to_numpy(),
+                                         self.edges["v"].to_numpy())
+        c = self.closures
+        print(f"seasonal closures: {c.n_edges:,} edges ({c.km:.1f} km, "
+              f"{c.n_ways:,} ways) in {len(c.windows)} windows", flush=True)
+
+    def closure_version(self, on: date | None) -> tuple:
+        """Which closure windows are in force on `on`: the closure version.
+
+        Every cache of routes or edge weights keys on this, because an answer
+        cached before a closure date is wrong after it. `on=None` asks for the
+        graph with nothing closed, which is also the version of any day outside
+        every window, and of every day on a graph with no table.
+        """
+        if on is None or self.closures is None:
+            return ()
+        return self.closures.version(on)
+
+    def _closed_slots(self, on: date | None):
+        """The directed slots closed on `on`, or None when nothing is.
+
+        Through `eidx`, so the copies `_apply_turn_restrictions` made of a
+        closed road close with it. Cached per version rather than per day: a
+        handful of entries a year, each a few hundred slots.
+        """
+        version = self.closure_version(on)
+        if not version:
+            return None
+        slots = self._closed_slots_by_version.get(version)
+        if slots is None:
+            closed = np.zeros(len(self.edges), bool)
+            closed[self.closures.edges(version)] = True
+            slots = np.flatnonzero(closed[self.eidx])
+            self._closed_slots_by_version[version] = slots
+        return slots
 
     def _read_access(self, d: Path):
         """The parking-lot and driveway layer, used only to place destinations.
@@ -1177,9 +1306,11 @@ class Router:
         return composite(raw, self.score_adj)
 
     def _weights(self, pref: float, scores: np.ndarray,
-                 avoid_unpaved: float = 1.0) -> np.ndarray:
+                 avoid_unpaved: float = 1.0,
+                 on: date | None = None) -> np.ndarray:
         """Directed-edge Dijkstra weights: travel time, a scenery detour cost,
-        and a surface avoidance.
+        and a surface avoidance, with the roads closed for the season on `on`
+        made unusable.
 
         `scores` is the per-undirected-edge 0-10 score from `_edge_scores`,
         passed in rather than recomputed so the route is reported on exactly the
@@ -1190,6 +1321,11 @@ class Router:
         driver minds a dirt road is a fact about their car and their day, not
         about how much scenery they asked for, and folding it into `pref` made
         the beauty slider double as a dirt-avoidance slider running backwards.
+
+        `on` is the request's date in New England (`region_today`). Every route,
+        loop, rejoin and "switch to fastest" is priced here, so this is the one
+        place the closures have to reach. `on=None` closes nothing, which keeps
+        every caller that does not say what day it is on the year-round graph.
         """
         penalty = self.km * (1.0 - scores / 10.0)           # km of "unscenic" road
         # Clamped because a negative pref raised to a fractional power is a
@@ -1203,6 +1339,12 @@ class Router:
         if avoid:
             dirt_km = self.km * self.unpaved_frac
             w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km[self.eidx]
+
+        # In place, which is safe: both lines above build `w` afresh, so it is
+        # never `d_minutes` itself.
+        closed = self._closed_slots(on)
+        if closed is not None:
+            w[closed] += np.inf
         return w
 
     def snap(self, lat: float, lon: float,
@@ -1328,7 +1470,8 @@ class Router:
         return v if abs(_turn_delta(heading, tangent)) <= 90.0 else u
 
     def route(self, src_idx: int, dst_idx: int, pref: float, weights: dict = None,
-              heading: float | None = None, avoid_unpaved: float = 1.0):
+              heading: float | None = None, avoid_unpaved: float = 1.0,
+              on: date | None = None):
         # Scored once, then used for both jobs: choosing the route and reporting
         # it. They used to disagree — the router optimized the live re-blend
         # while RouteResult.mean_score read the stored neutral column, so a user
@@ -1336,7 +1479,8 @@ class Router:
         # (measured 1.9 points apart on a 0-10 scale). That number is the whole
         # output of the tune screen.
         scores = self._edge_scores(weights or {})
-        w = self._weights(pref, scores, avoid_unpaved)
+        # `on` closes the roads shut for the season that day; see `_weights`.
+        w = self._weights(pref, scores, avoid_unpaved, on)
         # Collapse parallel edges to the cheapest weight per node-pair, so the
         # cost matrix has one entry per pair (no summed duplicates).
         pair_w = np.full(self.n_pairs, np.inf)

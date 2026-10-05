@@ -60,6 +60,10 @@ struct BeforeYouDriveView: View {
                           "The terrain component saturates north of Massachusetts, so a "
                           + "Maine road and a Connecticut road are not scored on quite the "
                           + "same ruler.")
+                    limit("Seasonal roads.",
+                          "Some mountain roads close for winter. The app avoids the "
+                          + "closures OpenStreetMap records, but not every closure is "
+                          + "recorded, so follow posted signs.")
 
                     if onAcknowledge != nil {
                         Text("Also in Sources, any time.")
