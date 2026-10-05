@@ -4,11 +4,13 @@ import Observation
 /// Thin wrapper around `CLLocationManager` — the one place the app touches the
 /// user's location.
 ///
-/// Two ways in. `start()`/`stop()` bracket a live navigation session and stream
-/// fixes into `location`; `currentLocation()` takes a single fix so the planning
-/// screen can offer "My Location" as a start point without leaving the GPS on.
+/// Three ways in. `start()`/`stop()` bracket a live navigation session and
+/// stream fixes into `location`; `currentLocation()` takes a single fix so the
+/// planning screen can offer "My Location" as a start point without leaving the
+/// GPS on; `roughLocation()` takes a fix of any accuracy for the one question
+/// that needs no more, whether the phone is in New England.
 ///
-/// Both paths reject junk fixes (see `isUsable`). That matters more than it
+/// The first two reject junk fixes (see `isUsable`). That matters more than it
 /// looks: `startUpdatingLocation` hands back a *cached* fix immediately, often
 /// minutes old and derived from Wi-Fi rather than GPS, so the first location the
 /// app ever sees is the least trustworthy one it will get. Routing from it puts
@@ -60,6 +62,27 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             && accuracy == .reducedAccuracy
     }
 
+    /// Whether the app may use location at all, Precise or not.
+    var isAuthorized: Bool {
+        manager.authorizationStatus == .authorizedWhenInUse
+            || manager.authorizationStatus == .authorizedAlways
+    }
+
+    /// Whether the phone was in New England at the last fix the app planned
+    /// with. See `RegionStatus`.
+    ///
+    /// Here because both planning models share this object, so the check at
+    /// launch, Directions' My Location and the Loop row all write the one
+    /// answer, and Home reads it.
+    var regionStatus: RegionStatus = .unknown
+
+    /// Record which side of the line a fix is on, and return it.
+    @discardableResult
+    func noteRegion(of fix: CLLocation) -> RegionStatus {
+        regionStatus = RegionStatus(fix.coordinate)
+        return regionStatus
+    }
+
     /// The entry in `NSLocationTemporaryUsageDescriptionDictionary`
     /// (`ios/project.yml`) that the precise-location prompt shows. A key that
     /// is not in that dictionary fails silently: CoreLocation shows nothing.
@@ -103,6 +126,10 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     /// A `currentLocation()` call waiting for a fix good enough to answer with.
     private var pendingFix: PendingFix?
+    /// A `roughLocation()` call waiting for any fix at all.
+    private var pendingRoughFix: PendingFix?
+    /// How old a fix `roughLocation()` will still answer with.
+    private var roughMaxAge: TimeInterval = 0
     /// Every `currentLocation()` call waiting for the permission prompt to
     /// resolve — an array, because there can be more than one.
     ///
@@ -206,7 +233,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         // location grant the user only ever agreed to for a drive. (Clearing it
         // is always safe; only setting it true needs the capability.)
         manager.allowsBackgroundLocationUpdates = false
-        guard pendingFix == nil else { return }   // a one-shot still needs them
+        // A one-shot still needs them.
+        guard pendingFix == nil, pendingRoughFix == nil else { return }
         manager.stopUpdatingLocation()
     }
 
@@ -317,9 +345,66 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     /// has to know both have registered before it answers.
     var waitingOnAuthorization: Int { pendingAuth.count }
 
-    /// Switch the GPS back off if a one-shot turned it on outside navigation.
+    /// Ask for permission if nobody has been asked yet, and wait for the
+    /// answer. Once, at first launch, so the New England check can run; every
+    /// other path asks when it needs a fix, through `currentLocation()`.
+    @MainActor
+    @discardableResult
+    func requestPermissionIfUndetermined() async -> CLAuthorizationStatus {
+        guard manager.authorizationStatus == .notDetermined else { return manager.authorizationStatus }
+        return await requestAuthorization()
+    }
+
+    // MARK: - Any recent fix, for the New England check
+
+    /// The first fix of any accuracy, or nil if there is no permission or
+    /// nothing arrives within `timeout`.
+    ///
+    /// **Not `currentLocation()`, on purpose.** That holds out for a fix good
+    /// enough to drive on (`isUsable`, 65 m), and with Precise Location off it
+    /// first raises the temporary full-accuracy prompt — "Turn-by-turn guidance
+    /// needs your precise location" — which at launch, with no drive in sight,
+    /// would make no sense. Which side of the New England line the phone is on
+    /// needs kilometres, not metres, so this takes the first real fix to
+    /// arrive, an approximate one included, and asks for nothing: not
+    /// precision, and not permission either.
+    ///
+    /// A fix up to `maxAge` old will do. The phone cannot have left the region
+    /// since, and a cached fix answers without turning the GPS on.
+    @MainActor
+    func roughLocation(maxAge: TimeInterval = 600, timeout: TimeInterval = 10) async -> CLLocation? {
+        guard isAuthorized else { return nil }
+        if let cached = manager.location, Self.isRough(cached, maxAge: maxAge) { return cached }
+
+        return await withCheckedContinuation { (continuation: CheckedContinuation<CLLocation?, Never>) in
+            // Superseding answers the earlier caller rather than stranding it,
+            // as `currentLocation()` does.
+            pendingRoughFix?.finish(with: nil)
+            let pending = PendingFix(continuation)
+            pendingRoughFix = pending
+            roughMaxAge = maxAge
+            manager.startUpdatingLocation()
+
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(timeout))
+                guard self.pendingRoughFix === pending else { return }
+                self.pendingRoughFix = nil
+                self.settleAfterOneShot()
+                pending.finish(with: nil)
+            }
+        }
+    }
+
+    /// Real, and recent enough to say which state the phone is in. Any
+    /// accuracy; an invalid fix carries a negative one.
+    private static func isRough(_ location: CLLocation, maxAge: TimeInterval) -> Bool {
+        location.horizontalAccuracy > 0 && -location.timestamp.timeIntervalSinceNow <= maxAge
+    }
+
+    /// Switch the GPS back off if a one-shot turned it on outside navigation,
+    /// once no other one-shot is still waiting on it.
     private func settleAfterOneShot() {
-        if !navigating { manager.stopUpdatingLocation() }
+        if !navigating, pendingFix == nil, pendingRoughFix == nil { manager.stopUpdatingLocation() }
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -347,6 +432,13 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
                 settleAfterOneShot()
                 pending.finish(with: newest)
             }
+        }
+
+        // The New England check takes the first real fix, however coarse.
+        if let rough = pendingRoughFix, Self.isRough(newest, maxAge: roughMaxAge) {
+            pendingRoughFix = nil
+            settleAfterOneShot()
+            rough.finish(with: newest)
         }
 
         guard Self.isUsable(newest) else { return }
@@ -399,9 +491,12 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         // A refusal is terminal for a one-shot; transient errors just mean the
         // next fix hasn't landed yet, and the timeout will cover us.
-        guard (error as? CLError)?.code == .denied, let pending = pendingFix else { return }
+        guard (error as? CLError)?.code == .denied else { return }
+        let waiting = [pendingFix, pendingRoughFix].compactMap { $0 }
+        guard !waiting.isEmpty else { return }
         pendingFix = nil
+        pendingRoughFix = nil
         settleAfterOneShot()
-        pending.finish(with: nil)
+        for pending in waiting { pending.finish(with: nil) }
     }
 }

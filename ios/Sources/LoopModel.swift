@@ -24,8 +24,13 @@ typealias LoopFetcher = (CLLocationCoordinate2D, Double, String?,
 final class LoopModel {
     private let locationManager: LocationManager
 
+    /// How "My Location" gets its fix. Tests substitute one, the way they
+    /// substitute `fetchLoop`.
+    var locate: () async -> CLLocation?
+
     init(locationManager: LocationManager) {
         self.locationManager = locationManager
+        locate = { await locationManager.currentLocation() }
     }
 
     var start: CLLocationCoordinate2D?
@@ -107,7 +112,7 @@ final class LoopModel {
         guard trimmed.count >= 3 else { return }
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = trimmed
-        request.region = searchRegion
+        request.rank(around: searchRegion)
         await resolve(request, label: trimmed)
     }
 
@@ -123,11 +128,17 @@ final class LoopModel {
     /// the state.
     var searchRegion: MKCoordinateRegion = .massachusetts
 
+    /// The first result in New England, never simply the first — see
+    /// `RouteModel.resolve`.
     private func resolve(_ request: MKLocalSearch.Request, label: String) async {
         do {
             let result = try await MKLocalSearch(request: request).start()
-            guard let match = result.mapItems.first else {
+            guard !result.mapItems.isEmpty else {
                 errorText = "No match for “\(label)”"
+                return
+            }
+            guard let match = NewEngland.firstInside(result.mapItems) else {
+                errorText = NewEngland.notInNewEngland(label)
                 return
             }
             start = match.placemark.coordinate
@@ -145,16 +156,21 @@ final class LoopModel {
     /// Takes a fresh fix rather than the cached one for the same reason
     /// `RouteModel.useMyLocation` does: a Wi-Fi-derived location is often a
     /// street or two out, and here that error decides which roads are within
-    /// reach.
+    /// reach. And, as there, a fix outside New England stops here with a
+    /// message, and no request is made.
     func useMyLocation() async {
         isLocatingUser = true
         defer { isLocatingUser = false }
 
-        guard let fix = await locationManager.currentLocation() else {
+        guard let fix = await locate() else {
             errorText = locationManager.authorization == .denied
                     || locationManager.authorization == .restricted
                 ? "Location access is off — allow it in Settings to start from here."
                 : "Couldn’t get a location fix. Try again in a moment."
+            return
+        }
+        guard locationManager.noteRegion(of: fix) == .inside else {
+            errorText = NewEngland.outsideHere
             return
         }
         start = fix.coordinate

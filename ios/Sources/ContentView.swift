@@ -22,6 +22,16 @@ struct ContentView: View {
     /// the Sources screen. See `docs/interface-design.md` §7.6.
     @AppStorage("matchSystemAppearance") private var matchSystem = false
 
+    /// The same flag `PlanningView` presents "Before you drive" from. Read
+    /// here only to know when the first launch's notice has been acknowledged.
+    @AppStorage("hasSeenBeforeYouDrive") private var hasSeenNotice = false
+
+    /// The phone is outside New England and has not yet said "Got it" this
+    /// launch. See `OutsideNewEnglandView`.
+    @State private var showingOutsideWarning = false
+    /// Whether this launch has checked, so it checks once and warns once.
+    @State private var checkedWhereabouts = false
+
     var body: some View {
         ZStack {
             if let nav = model.nav {
@@ -35,9 +45,39 @@ struct ContentView: View {
                 PlanningView(model: model)
                     .transition(.opacity)
             }
+
+            if showingOutsideWarning {
+                OutsideNewEnglandView { showingOutsideWarning = false }
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
         .animation(.smooth(duration: 0.4), value: model.nav != nil)
+        .animation(.smooth(duration: 0.3), value: showingOutsideWarning)
         .preferredColorScheme(matchSystem ? nil : .dark)
         .tint(Color.amberText)
+        // Every launch after the first: check quietly, and only if location
+        // is already allowed. A cold launch only — `.task` does not run again
+        // when the app comes back from the background, so neither does the
+        // warning.
+        .task { if hasSeenNotice { await checkWhereabouts(askingPermission: false) } }
+        // The first launch: once "Before you drive" is acknowledged, ask for
+        // location, then check. The pause lets the notice finish leaving
+        // before the system prompt arrives over it.
+        .onChange(of: hasSeenNotice) { _, seen in
+            guard seen else { return }
+            Task {
+                try? await Task.sleep(for: .milliseconds(600))
+                await checkWhereabouts(askingPermission: true)
+            }
+        }
+    }
+
+    private func checkWhereabouts(askingPermission: Bool) async {
+        guard !checkedWhereabouts else { return }
+        checkedWhereabouts = true
+        if await model.checkWhereabouts(askingPermission: askingPermission) == .outside {
+            showingOutsideWarning = true
+        }
     }
 }

@@ -28,15 +28,17 @@ final class SearchCompleter: NSObject, MKLocalSearchCompleterDelegate {
     /// The caller passes the part of the map the user is looking at (or is
     /// standing in), because the completer ranks by distance from that region's
     /// center: bias it statewide and a search from Needham surfaces places in
-    /// central Massachusetts first. Very short fragments are ignored so we don't
-    /// show noise for one or two letters.
+    /// central Massachusetts first. A region outside New England is swapped for
+    /// the New England envelope (`rank(around:)`), so a phone in Cupertino is
+    /// not offered Cupertino's main streets. Very short fragments are ignored
+    /// so we don't show noise for one or two letters.
     func update(for fragment: String, near region: MKCoordinateRegion) {
         let query = fragment.trimmingCharacters(in: .whitespaces)
         guard query.count >= 2 else {
             suggestions = []
             return
         }
-        completer.region = region
+        completer.rank(around: region)
         completer.queryFragment = query
     }
 
@@ -48,8 +50,14 @@ final class SearchCompleter: NSObject, MKLocalSearchCompleterDelegate {
 
     // MARK: - MKLocalSearchCompleterDelegate (called on the main thread)
 
+    /// Only New England places (`NewEngland.allowsSuggestion`), filtered here
+    /// rather than at display so the field's five rows are five that can be
+    /// used. Filtered after `prefix(5)`, Oregon would still cost "Portland" a
+    /// row: four would show, and Portland Head Light, eighth, never would.
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        suggestions = completer.results
+        suggestions = completer.results.filter {
+            NewEngland.allowsSuggestion(title: $0.title, subtitle: $0.subtitle)
+        }
     }
 
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
