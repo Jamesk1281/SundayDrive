@@ -1316,7 +1316,9 @@ class TestBeautyWeightsAreWellBehaved:
         # below pins that other half.
         half = router._weights(0.5, neutral, 0.0) - router.d_minutes
         full = router._weights(1.0, neutral, 0.0) - router.d_minutes
-        moving = full > 0
+        # Finite only: the slots closed to cars cost +inf at every pref and
+        # have no scenery cost to compare (docs/closed-roads.md).
+        moving = np.isfinite(full) & (full > 0)
         ratio = half[moving].sum() / full[moving].sum()
         assert ratio == pytest.approx(0.25, rel=1e-9), (
             f"half-strength scenery cost is {ratio:.4f} of full; expected 0.25 "
@@ -1334,7 +1336,7 @@ class TestBeautyWeightsAreWellBehaved:
         neutral = router._edge_scores({})
         half = router._weights(0.5, neutral, 1.0) - router.d_minutes
         full = router._weights(1.0, neutral, 1.0) - router.d_minutes
-        moving = full > 0
+        moving = np.isfinite(full) & (full > 0)
         assert half[moving].sum() / full[moving].sum() > 0.25
 
 
@@ -1359,7 +1361,9 @@ class TestSurfaceAvoidanceIsNotAScenerySetting:
         scores = router._edge_scores({})
         delta = (router._weights(pref, scores, avoid)
                  - router._weights(pref, scores, 0.0))
-        on_dirt = dirt > 1e-9
+        # A slot closed to cars is +inf either way, so its delta is nan: it
+        # has no charge to compare (docs/closed-roads.md).
+        on_dirt = (dirt > 1e-9) & np.isfinite(delta)
         return delta[on_dirt] / dirt[on_dirt]
 
     @pytest.mark.parametrize("pref", [0.0, 0.25, 0.5, 0.75, 1.0])
@@ -1399,7 +1403,8 @@ class TestSurfaceAvoidanceIsNotAScenerySetting:
         scores = router._edge_scores({})
         delta = (router._weights(0.8, scores, 2.0)
                  - router._weights(0.8, scores, 0.0))
-        paved = (router.km * router.unpaved_frac)[router.eidx] <= 1e-9
+        paved = ((router.km * router.unpaved_frac)[router.eidx] <= 1e-9) \
+            & np.isfinite(delta)
         assert np.allclose(delta[paved], 0.0)
 
     def test_surface_is_absent_from_the_reported_score(self, router):

@@ -1,4 +1,5 @@
-"""Roads OpenStreetMap marks closed for the season, as a table the router reads.
+"""Roads OpenStreetMap closes to cars, for the season or all year, as two tables
+the router reads.
 
 The graph has one state all year, and the scenery score is drawn to exactly the
 roads that close for winter: VT-108 through Smugglers' Notch, the Mt Washington
@@ -12,10 +13,30 @@ them and writes
                               end_month, end_day, length_m
 
 which `Router` loads if present, pricing each edge at +inf on the days its
-window covers. A side table rather than a graph column because carrying the
-tags through extract.py and graph.py means a rebuild, and a rebuild moves every
-published number; that belongs to the next full rebuild
-(docs/seasonal-closures.md, decision 1).
+window covers.
+
+The same pass finds what OSM closes to cars all year. extract.py and graph.py
+drop a road only for `access=no|private`, so the graph keeps `motor_vehicle=no`
+roads, `access=permit` ones and fords, and every gate, block, chain and bollard
+standing on an open road; routes, loops and reroutes drove through them
+(docs/closed-roads.md). It writes
+
+  closed_to_cars.parquet      one row per graph edge and what closes it:
+                              edge, u, v, rule, kind, osm_type, osm_id, tag,
+                              at_m, name, length_m
+
+`rule` is "edge" where the edge is closed both ways, by its way's tags or by a
+barrier or ford standing on it, and "through" where a barrier stands on the
+node at which two edges meet end to end: each side stays open up to it and only
+driving through is forbidden. `at_m` is a barrier's distance from `u` along the
+edge, which `Router.snap` compares with a point's own to keep a driver on their
+side of it. `Router` loads it if present and closes those edges and movements
+for every request.
+
+Side tables rather than graph columns because carrying the tags through
+extract.py and graph.py means a rebuild, and a rebuild moves every published
+number; that belongs to the next full rebuild (docs/seasonal-closures.md,
+decision 1; docs/closed-roads.md).
 
 A way is closed for the season when, for a car:
   - `<key>:conditional = no @ <dates>`, for a key that binds a car (CAR_KEYS),
@@ -27,6 +48,11 @@ A way is closed for the season when, for a car:
 Everything else closes nothing here; see `conditional_windows` for which
 conditions those are and why.
 
+A way is closed to cars all year when `closed_to_cars` (common.py) says so or
+it is a ford (`ford=yes`), and a node closes the road it stands on when
+`barrier_closes` says so. Where that node stands decides what is closed; see
+`join_closed_to_cars`.
+
 Usage: python closures.py <input.osm.pbf> <processed_dir>
 """
 
@@ -35,6 +61,7 @@ import sys
 import time
 from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
 
 import geopandas as gpd
 import numpy as np
@@ -42,7 +69,9 @@ import pandas as pd
 import shapely
 from pyproj import Transformer
 
-from common import CLOSURE_WINDOW, CRS_METERS, DRIVABLE, PRIVATE_ACCESS, in_window
+from common import (CLOSED_TO_CARS, CLOSURE_WINDOW, CRS_METERS, DRIVABLE,
+                    PASSABLE_BARRIERS, PRIVATE_ACCESS, barrier_closes, car_access,
+                    closed_to_cars, in_window)
 
 # The keys whose conditional can close a road to a car. `access` binds every
 # road user, `vehicle` everything on wheels, `motor_vehicle` everything with an
@@ -269,15 +298,41 @@ def way_windows(tags) -> dict:
     return found
 
 
-def scan(pbf_path: str):
-    """Every drivable way the tags close for part of the year, and the count
-    of drivable ways seen, which is the control.
+# The values of a car key that are open to a driver with business there, which
+# the router leaves open (docs/closed-roads.md), and the other values it knows
+# to be open; anything else is open too, and counted as unrecognised.
+LOCAL_ACCESS = {"destination", "customers"}
+KNOWN_OPEN = {"yes", "permissive", "designated", "discouraged", "unknown"} | LOCAL_ACCESS
 
-    The filter is extract.py's, line for line, down to keeping a way only if
-    osmium can build its line, so the count must equal `roads.parquet`'s rows.
+# The barrier values that are gates, for counting the ones whose access
+# depends on the time of day.
+GATES = {"gate", "lift_gate", "swing_gate"}
+
+
+def scan(pbf_path: str):
+    """Everything both tables are made from, in one pass over the PBF.
+
+    Returns a SimpleNamespace of:
+      drivable   the drivable ways seen, which is the control. The filter is
+                 extract.py's, line for line, down to keeping a way only if
+                 osmium can build its line, so this must equal
+                 `roads.parquet`'s rows;
+      closed     the ways closed for part of the year, and `skipped`, the car
+                 conditionals with a rule that closes nothing, by reason;
+      ways       every drivable way the all-year join needs: the ones closed
+                 to cars (`closes` names the tags) and the ones a closing
+                 barrier stands on (`closes` empty);
+      barriers   {node id: (lon, lat, why, [index into `ways`])} for every node
+                 a drivable way passes through that `barrier_closes` says
+                 stops a car;
+      record     counts of what was found and left alone on purpose, for
+                 docs/closed-roads.md.
+
     osmium is imported here rather than at the top so that the parser above
     can be imported, and tested, on the serving box, which does not install
-    the pipeline's dependencies (server/DEPLOY.md).
+    the pipeline's dependencies (server/DEPLOY.md). Only nodes tagged
+    `barrier` or `ford` reach Python, through a KeyFilter, so reading nodes
+    costs the pass almost nothing: 71 s on the New England extract.
     """
     import osmium
 
@@ -289,12 +344,29 @@ def scan(pbf_path: str):
             self.drivable = 0
             self.closed = []
             self.skipped = Counter()
+            self.tagged = {}            # barrier/ford node id -> (lon, lat, tags)
+            self.ways = []
+            self.barriers = {}
+            self.counted = set()
+            self.record = {key: Counter() for key in (
+                "dropped but open", "local access", "unrecognised",
+                "left open", "timed gates")}
+
+        def node(self, n):
+            if n.location.valid():
+                self.tagged[n.id] = (n.location.lon, n.location.lat,
+                                     {t.k: t.v for t in n.tags})
 
         def way(self, w):
             tags = w.tags
             if tags.get("highway") not in DRIVABLE:
                 return
             if tags.get("access") in PRIVATE_ACCESS and tags.get("motor_vehicle") != "yes":
+                # Already out of the graph. Counted where the full rule would
+                # let a car in, because re-admitting those takes a rebuild.
+                found = car_access(tags)
+                if found is not None and found[1] not in CLOSED_TO_CARS:
+                    self.record["dropped but open"][f"{found[0]}={found[1]}"] += 1
                 return
             try:
                 wkb.create_linestring(w)
@@ -306,27 +378,90 @@ def scan(pbf_path: str):
                 if value:
                     for reason in set(conditional_windows(value)[1]):
                         self.skipped[(reason, f"{key}:conditional={value}")] += 1
+            points = None
             windows = way_windows(tags)
-            if not windows:
+            if windows:
+                points = _points(w)
+                self.closed.append({
+                    "way_id": w.id,
+                    "name": tags.get("name", ""),
+                    "ref": tags.get("ref", ""),
+                    "windows": windows,
+                    "refs": [p[0] for p in points],
+                    "coords": [(p[1], p[2]) for p in points],
+                })
+            self._all_year(w, tags, points)
+
+        def _all_year(self, w, tags, points):
+            closes = []
+            tag = closed_to_cars(tags)
+            if tag:
+                closes.append(tag)
+            if (tags.get("ford") or "").strip().lower() == "yes":
+                closes.append("ford=yes")
+            found = car_access(tags)
+            if found is not None and found[1] in LOCAL_ACCESS:
+                self.record["local access"][f"{found[0]}={found[1]}"] += 1
+            elif (found is not None and found[1] not in CLOSED_TO_CARS
+                  and found[1] not in KNOWN_OPEN):
+                self.record["unrecognised"][f"{found[0]}={found[1]}"] += 1
+            stops = []
+            for n in w.nodes:
+                hit = self.tagged.get(n.ref)
+                if hit is None:
+                    continue
+                why = barrier_closes(hit[2])
+                if why:
+                    stops.append((n.ref, hit, why))
+                if n.ref not in self.counted:
+                    self.counted.add(n.ref)
+                    self._count(hit[2], why)
+            if not closes and not stops:
                 return
-            points = [(n.ref, n.location.lon, n.location.lat)
-                      for n in w.nodes if n.location.valid()]
-            self.closed.append({
+            points = points or _points(w)
+            self.ways.append({
                 "way_id": w.id,
                 "name": tags.get("name", ""),
-                "ref": tags.get("ref", ""),
-                "windows": windows,
+                "closes": "; ".join(closes),
+                # What closes the way itself, when something does.
+                "kind": ("way" if tag else "ford") if closes else "",
                 "refs": [p[0] for p in points],
                 "coords": [(p[1], p[2]) for p in points],
             })
+            for ref, (lon, lat, _), why in stops:
+                self.barriers.setdefault(ref, (lon, lat, why, []))[3].append(
+                    len(self.ways) - 1)
+
+        def _count(self, tags, why):
+            """One tally per node, of the ones left open and the gates whose
+            access depends on the time, for the record."""
+            barrier = (tags.get("barrier") or "").strip().lower()
+            if barrier in GATES and ("opening_hours" in tags or any(
+                    f"{key}:conditional" in tags for key in CAR_KEYS)):
+                self.record["timed gates"]["closed" if why else "left open"] += 1
+            if why or not barrier:
+                return
+            found = car_access(tags)
+            if found is None:
+                self.record["left open"][f"{barrier}, untagged"] += 1
+            else:
+                self.record["left open"][f"{barrier}, {found[0]}={found[1]}"] += 1
 
     h = Handler()
-    h.apply_file(pbf_path, locations=True, idx="flex_mem")
-    return h.drivable, h.closed, h.skipped
+    tagged = osmium.filter.KeyFilter("barrier", "ford").enable_for(osmium.osm.NODE)
+    h.apply_file(pbf_path, locations=True, idx="flex_mem", filters=[tagged])
+    return SimpleNamespace(drivable=h.drivable, closed=h.closed, skipped=h.skipped,
+                           ways=h.ways, barriers=h.barriers, record=h.record)
 
 
-def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
-    """The table: each closed way's rows in graph_edges, one per window.
+
+def _points(w):
+    return [(n.ref, n.location.lon, n.location.lat)
+            for n in w.nodes if n.location.valid()]
+
+
+def _way_edges(ways, edges: gpd.GeoDataFrame):
+    """(way, edge row) for every graph edge of each way.
 
     Two tests, because the first alone closes open roads. graph.py splits a
     way at its junctions, so every edge of a way has both ends among the way's
@@ -339,7 +474,7 @@ def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
     to_m = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
     u, v = edges["u"].to_numpy(), edges["v"].to_numpy()
     wanted = np.unique(np.concatenate([np.asarray(w["refs"], dtype=np.int64)
-                                       for w in closed])) if closed else []
+                                       for w in ways])) if ways else []
     candidates = np.flatnonzero(np.isin(u, wanted) & np.isin(v, wanted))
     mids = shapely.line_interpolate_point(
         edges.geometry.iloc[candidates].to_crs(CRS_METERS).values,
@@ -348,8 +483,7 @@ def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
     for i, row in enumerate(candidates):
         by_u.setdefault(int(u[row]), []).append(i)
 
-    rows = []
-    for way in closed:
+    for way in ways:
         if len(way["coords"]) < 2:
             continue
         xs, ys = to_m.transform(*zip(*way["coords"]))
@@ -360,14 +494,23 @@ def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
                 row = int(candidates[i])
                 if int(v[row]) not in refs or mids[i].distance(line) > MATCH_M:
                     continue
-                for window, tags in way["windows"].items():
-                    rows.append({
-                        "edge": row, "u": int(u[row]), "v": int(v[row]),
-                        "way_id": way["way_id"], "name": way["name"],
-                        "ref": way.get("ref", ""), "tag": "; ".join(tags),
-                        **dict(zip(CLOSURE_WINDOW, window)),
-                        "length_m": float(edges["length_m"].iat[row]),
-                    })
+                yield way, row
+
+
+def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
+    """The seasonal table: each closed way's rows in graph_edges, one per
+    window, found by `_way_edges`."""
+    u, v = edges["u"].to_numpy(), edges["v"].to_numpy()
+    rows = []
+    for way, row in _way_edges(closed, edges):
+        for window, tags in way["windows"].items():
+            rows.append({
+                "edge": row, "u": int(u[row]), "v": int(v[row]),
+                "way_id": way["way_id"], "name": way["name"],
+                "ref": way.get("ref", ""), "tag": "; ".join(tags),
+                **dict(zip(CLOSURE_WINDOW, window)),
+                "length_m": float(edges["length_m"].iat[row]),
+            })
     table = pd.DataFrame(rows, columns=["edge", "u", "v", "way_id", "name", "ref",
                                         "tag", *CLOSURE_WINDOW, "length_m"])
     # Two ways can share an edge only where they overlap, which is a mapping
@@ -379,6 +522,107 @@ def join(closed, edges: gpd.GeoDataFrame) -> pd.DataFrame:
     return table
 
 
+# closed_to_cars.parquet's columns, in order; see the module docstring.
+CLOSED_TO_CARS_COLUMNS = ["edge", "u", "v", "rule", "kind", "osm_type", "osm_id",
+                          "tag", "at_m", "name", "length_m"]
+
+
+def join_closed_to_cars(ways, barriers, edges: gpd.GeoDataFrame):
+    """The all-year table, and the closing barriers it leaves alone.
+
+    A way closes its edges, found as a seasonal way's are (`_way_edges`). A
+    barrier closes by where it stands, which the graph decides
+    (docs/closed-roads.md, "Where the barriers stand"):
+      - inside an edge, it closes that edge both ways, and `at_m` records how
+        far along it stands. The edge is found by position, not by midpoint,
+        since a barrier stands anywhere along its edge: both ends among the
+        way's nodes, and the barrier within MATCH_M of the edge's line;
+      - on a node where exactly two edges meet, it forbids driving through:
+        one "through" row per edge. Each road is open up to the barrier, so
+        closing either edge would close an open road;
+      - on a dead end, it closes nothing. Nothing drives through a dead end,
+        and closing its edge would only stop a route reaching the road up to
+        the barrier;
+      - on a node where three or more edges meet, it closes nothing either.
+        Which of them it bars is a guess, and both on this extract are
+        mapping errors.
+
+    Returns (table, left), `left` holding the barrier node ids left alone, by
+    where they stand.
+    """
+    u, v = edges["u"].to_numpy(), edges["v"].to_numpy()
+    length = edges["length_m"].to_numpy()
+    names = (edges["name"].fillna("").to_numpy() if "name" in edges.columns
+             else np.full(len(edges), ""))
+
+    def row(r, rule, kind, osm_type, osm_id, tag, at_m):
+        return {"edge": r, "u": int(u[r]), "v": int(v[r]), "rule": rule,
+                "kind": kind, "osm_type": osm_type, "osm_id": int(osm_id),
+                "tag": tag, "at_m": at_m, "name": names[r],
+                "length_m": float(length[r])}
+
+    rows = [row(r, "edge", way["kind"], "way", way["way_id"], way["closes"], np.nan)
+            for way, r in _way_edges([w for w in ways if w["closes"]], edges)]
+
+    ends, degrees = np.unique(np.concatenate([u, v]), return_counts=True)
+    degree = dict(zip(ends.tolist(), degrees.tolist()))
+    on_node = {}
+    for r in np.flatnonzero(np.isin(u, list(barriers)) | np.isin(v, list(barriers))):
+        for end in {int(u[r]), int(v[r])}:
+            if end in barriers:
+                on_node.setdefault(end, []).append(int(r))
+
+    # Candidate edges for the barriers inside one, projected once.
+    to_m = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
+    inside = [b for nid, b in barriers.items() if nid not in degree]
+    wanted = (np.unique(np.concatenate([np.asarray(ways[i]["refs"], dtype=np.int64)
+                                        for b in inside for i in b[3]]))
+              if inside else np.empty(0, np.int64))
+    candidates = np.flatnonzero(np.isin(u, wanted) & np.isin(v, wanted))
+    geoms = edges.geometry.iloc[candidates].to_crs(CRS_METERS).values
+    by_u = {}
+    for i, r in enumerate(candidates):
+        by_u.setdefault(int(u[r]), []).append(i)
+
+    left = {"dead end": [], "junction": [], "not in the graph": []}
+    for nid in sorted(barriers):
+        lon, lat, why, owners = barriers[nid]
+        kind = "ford" if why == "ford=yes" else "barrier"
+        if nid not in degree:
+            point = shapely.Point(*to_m.transform(lon, lat))
+            hits = set()
+            for w in owners:
+                refs = set(ways[w]["refs"])
+                for ref in refs:
+                    for i in by_u.get(ref, ()):
+                        if (int(v[candidates[i]]) in refs
+                                and geoms[i].distance(point) <= MATCH_M):
+                            hits.add(i)
+            if not hits:
+                left["not in the graph"].append(nid)
+            for i in sorted(hits):
+                rows.append(row(int(candidates[i]), "edge", kind, "node", nid, why,
+                                float(geoms[i].project(point))))
+        elif degree[nid] == 2 and len(on_node.get(nid, ())) == 2:
+            for r in on_node[nid]:
+                rows.append(row(r, "through", kind, "node", nid, why,
+                                0.0 if int(u[r]) == nid else float(length[r])))
+        elif degree[nid] == 1:
+            left["dead end"].append(nid)
+        else:
+            left["junction"].append(nid)
+
+    table = pd.DataFrame(rows, columns=CLOSED_TO_CARS_COLUMNS)
+    # An edge two closed ways overlap on, or a barrier listed by two ways,
+    # once each.
+    table = (table.drop_duplicates(["edge", "rule", "osm_type", "osm_id"])
+             .sort_values(["edge", "rule", "at_m", "osm_id"]).reset_index(drop=True))
+    table = table.astype({"edge": "int64", "u": "int64", "v": "int64",
+                          "osm_id": "int64", "at_m": "float64",
+                          "length_m": "float64"})
+    return table, left
+
+
 def _window_label(window):
     sm, sd, em, ed = window
     return f"{_MONTHS[sm - 1].title()} {sd} - {_MONTHS[em - 1].title()} {ed}"
@@ -387,7 +631,8 @@ def _window_label(window):
 def main(pbf_path: str, processed_dir: str):
     d = Path(processed_dir)
     t0 = time.time()
-    drivable, closed, skipped = scan(pbf_path)
+    found = scan(pbf_path)
+    drivable, closed, skipped = found.drivable, found.closed, found.skipped
     print(f"scanned in {time.time() - t0:.0f}s: {drivable:,} drivable ways, "
           f"{len(closed):,} of them closed for part of the year")
     roads = d / "roads.parquet"
@@ -398,7 +643,7 @@ def main(pbf_path: str, processed_dir: str):
         print(f"control: roads.parquet has {control:,} ways, which {verdict} the scan")
 
     edges = gpd.read_parquet(d / "graph_edges.parquet",
-                             columns=["u", "v", "length_m", "score", "geometry"])
+                             columns=["u", "v", "length_m", "score", "name", "geometry"])
     table = join(closed, edges)
     table.to_parquet(d / "seasonal_closures.parquet", index=False)
 
@@ -427,6 +672,55 @@ def main(pbf_path: str, processed_dir: str):
                     print(f"    {n:3,}  {tag}")
     print(f"wrote seasonal_closures.parquet ({len(table):,} rows) "
           f"in {time.time() - t0:.0f}s")
+
+    cars, left = join_closed_to_cars(found.ways, found.barriers, edges)
+    cars.to_parquet(d / "closed_to_cars.parquet", index=False)
+    _report(found, cars, left)
+    print(f"wrote closed_to_cars.parquet ({len(cars):,} rows) "
+          f"in {time.time() - t0:.0f}s")
+
+
+LEFT_ALONE = {"dead end": "at a dead end",
+              "junction": "where three or more edges meet",
+              "not in the graph": "on no edge of the graph"}
+
+
+def _report(found, cars, left):
+    """What the all-year table holds, and what it leaves open on purpose: the
+    counts docs/closed-roads.md records."""
+    by_way = cars[cars["osm_type"] == "way"]
+    print(f"closed to cars all year: {by_way['osm_id'].nunique():,} ways in the "
+          f"graph ({by_way['edge'].nunique():,} edges, "
+          f"{by_way.drop_duplicates('edge')['length_m'].sum() / 1000:.1f} km) of "
+          f"{sum(1 for w in found.ways if w['closes']):,} in the PBF, by the tag "
+          "that closes them:")
+    for tag, group in sorted(by_way.groupby("tag"), key=lambda g: -g[1]["osm_id"].nunique()):
+        print(f"  {group['osm_id'].nunique():5,} ways {group['edge'].nunique():5,} edges "
+              f"{group.drop_duplicates('edge')['length_m'].sum() / 1000:7.1f} km  {tag}")
+    nodes = cars[cars["osm_type"] == "node"]
+    inside = nodes[nodes["rule"] == "edge"]
+    through = nodes[nodes["rule"] == "through"]
+    print(f"barriers and fords that stop a car: {len(found.barriers):,} on drivable "
+          "ways, by where they stand:")
+    print(f"  {inside['osm_id'].nunique():5,} inside an edge, which closes "
+          f"{inside['edge'].nunique():,} edges "
+          f"({inside.drop_duplicates('edge')['length_m'].sum() / 1000:.1f} km)")
+    print(f"  {through['osm_id'].nunique():5,} where two edges meet, which forbids "
+          "driving through")
+    for where, ids in left.items():
+        print(f"  {len(ids):5,} {LEFT_ALONE[where]}, left alone")
+    kinds = Counter(why.split(",")[0] for _, _, why, _ in found.barriers.values())
+    print("  by kind: " + ", ".join(f"{k} {n:,}" for k, n in kinds.most_common()))
+    shut = cars[cars["rule"] == "edge"].drop_duplicates("edge")
+    both = len(set(inside["edge"]) & set(by_way["edge"]))
+    print(f"edges closed outright: {len(shut):,} "
+          f"({shut['length_m'].sum() / 1000:.1f} km), {both:,} of them by a way "
+          "and a barrier both")
+    for name, counts in found.record.items():
+        if counts:
+            print(f"{name}: {sum(counts.values()):,}")
+            for key, n in counts.most_common(12):
+                print(f"  {n:5,}  {key}")
 
 
 if __name__ == "__main__":

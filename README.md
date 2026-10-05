@@ -73,12 +73,14 @@ R=data/raw/new-england-latest.osm.pbf; D=data/processed-ne
 .venv/bin/python pipeline/score.py     "$D"      # scenic score per chunk (cached; --no-cache forces)
 .venv/bin/python pipeline/render.py    "$D" out  # heatmap + regional maps
 .venv/bin/python pipeline/graph.py     "$R" "$D" # routable graph
-.venv/bin/python pipeline/closures.py  "$R" "$D" # roads closed for the season
+.venv/bin/python pipeline/closures.py  "$R" "$D" # roads closed for the season, and to cars all year
 ```
 
-`closures.py` names edges by their row in `graph_edges.parquet`, so it reruns
+`closures.py` writes `seasonal_closures.parquet` and `closed_to_cars.parquet`
+in one pass. Both name edges by their row in `graph_edges.parquet`, so it reruns
 after every `graph.py`. The router refuses a table built against another graph
-rather than closing whichever roads now sit at those rows.
+rather than closing whichever roads now sit at those rows
+([`docs/closed-roads.md`](docs/closed-roads.md)).
 
 ## Run the API
 

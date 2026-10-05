@@ -21,7 +21,10 @@ exactly reproduces the precomputed composite from score.py. The same graph
 answers fastest vs scenic, so we return them side by side with a breakdown.
 
 Given the date (`on`), the roads OSM marks closed for the season that day are
-priced at +inf, from seasonal_closures.parquet (pipeline/closures.py).
+priced at +inf, from seasonal_closures.parquet (pipeline/closures.py). The roads,
+barriers and fords it closes to cars all year are priced at +inf for every
+request, from closed_to_cars.parquet, and `snap` keeps a driver on their own
+side of them (docs/closed-roads.md).
 
 CLI:
     python router.py <processed_dir> "lat,lon" "lat,lon" [pref]
@@ -43,7 +46,8 @@ import numpy as np
 import pandas as pd
 import shapely
 from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import connected_components, dijkstra
+from scipy.sparse.csgraph import breadth_first_order, connected_components, dijkstra
+from shapely.ops import substring
 from shapely.strtree import STRtree
 from pyproj import Transformer
 
@@ -325,8 +329,12 @@ BEAUTIFUL_SCORE = 7.0
 # for every pref, every beauty-weight vector, every `avoid_unpaved` and every
 # date, a seasonal closure's +inf being one more such addend. A bound
 # on travel time is therefore a bound on every metric this router can be asked
-# for, and the tables depend on no user parameter. Only the fastest arm uses
-# them — see `route` — but they would be *admissible* on any of them.
+# for, and the tables depend on no user parameter. A road closed to cars all
+# year is one more +inf addend, and so is a movement through a barrier
+# (`_split_through_barriers` leaves those slots in the graph and prices them in
+# `_weights`), so the tables are built on the graph with nothing closed and stay
+# admissible. Only the fastest arm uses them — see `route` — but they would be
+# *admissible* on any of them.
 ALT_LANDMARKS = 16
 
 # Slack subtracted from every bound, in minutes, to absorb float32 rounding.
@@ -387,6 +395,14 @@ SNAP_HEADING_SLACK_M = 20.0
 # are on. Compared without direction (a road carries traffic both ways), so
 # this is measured on 0..90.
 SNAP_HEADING_DEG = 40.0
+
+# How far past the nearest road `snap` first looks for one a car can use, when
+# the nearest is closed to cars where the point is, and the furthest it will go
+# before giving up and keeping the closed one. The search doubles from the
+# first to the second; in New England an open road is never more than a few
+# hundred metres from a closed one.
+SNAP_OPEN_SLACK_M = 50.0
+SNAP_OPEN_MAX_M = 20000.0
 
 # --- Seasonal closures --------------------------------------------------------
 # The roads OSM marks closed or unmaintained in winter, read from
@@ -456,6 +472,60 @@ class SeasonalClosures:
         return np.unique(np.concatenate([self._edges[w] for w in version]))
 
 
+class ClosedToCars:
+    """What OpenStreetMap closes to cars all year, as rows of this graph.
+
+    From closed_to_cars.parquet (pipeline/closures.py), and the same for every
+    request on every day, so unlike `SeasonalClosures` it has no version and no
+    cache keys on it (docs/closed-roads.md, decision 6).
+
+      edges    the undirected edge rows closed both ways: by their way's tags,
+               or by a barrier or ford standing inside them;
+      whole    those closed by their way's tags, which nothing snaps to;
+      at       {edge row: sorted metres from `u` of each barrier and ford
+               inside it}, which `Router.snap` compares with a point's own
+               position to keep it on its side;
+      through  {OSM node id: (edge row, edge row)}, a barrier standing where two
+               edges meet end to end: a car may drive up to it from either side
+               and not through it (`Router._split_through_barriers`).
+    """
+
+    def __init__(self, table: pd.DataFrame, edge_u: np.ndarray,
+                 edge_v: np.ndarray):
+        rows = table["edge"].to_numpy()
+        inside = (rows >= 0) & (rows < len(edge_u))
+        same = np.zeros(len(rows), bool)
+        same[inside] = ((edge_u[rows[inside]] == table["u"].to_numpy()[inside])
+                        & (edge_v[rows[inside]] == table["v"].to_numpy()[inside]))
+        if not same.all():
+            raise RuntimeError(
+                f"closed_to_cars.parquet names {(~same).sum():,} edges that "
+                "graph_edges.parquet does not hold at those rows, so it was built "
+                "against another graph and would close whichever roads sit there "
+                "now. Rerun pipeline/closures.py against this graph.")
+        rule = table["rule"].to_numpy()
+        node = (table["osm_type"] == "node").to_numpy()
+        shut = rule == "edge"
+        self.edges = np.unique(rows[shut])
+        self.whole = np.unique(rows[shut & ~node])
+        at = {}
+        for r, m in zip(rows[shut & node], table["at_m"].to_numpy()[shut & node]):
+            at.setdefault(int(r), []).append(float(m))
+        self.at = {r: np.sort(np.array(m)) for r, m in at.items()}
+        self.through = {}
+        for osm_id, group in table[rule == "through"].groupby("osm_id"):
+            ends = group[["u", "v"]].to_numpy()
+            if len(group) != 2 or not (ends == osm_id).any(axis=1).all():
+                raise RuntimeError(
+                    f"closed_to_cars.parquet has node {osm_id} as a barrier between "
+                    "two edges, but its rows do not name two edges that end there. "
+                    "Rerun pipeline/closures.py against this graph.")
+            self.through[int(osm_id)] = tuple(int(r) for r in group["edge"])
+        self.km = float(table[shut].drop_duplicates("edge")["length_m"].sum() / 1000.0)
+        self.n_ways = int(table.loc[~node, "osm_id"].nunique())
+        self.n_barriers = int(table.loc[shut & node, "osm_id"].nunique())
+
+
 class Router:
     # Columns the maneuver generator needs, and the graph build that writes
     # them. Checked at load and refused loudly, rather than degraded silently:
@@ -486,9 +556,13 @@ class Router:
         self._edge_geom_m = self.edges.geometry.to_crs(CRS_METERS).values
         self._edge_tree = STRtree(self._edge_geom_m)
 
+        # Read before the graph is built, because its barriers between two
+        # edges split junctions the way turn restrictions do.
+        self._read_closed_to_cars(d)
         self._build_directed()
         self._read_access(d)
         self._read_closures(d)
+        self._close_to_cars()
 
     def _read_closures(self, d: Path):
         """The roads OSM marks closed for the season, if the table is there.
@@ -513,6 +587,120 @@ class Router:
         c = self.closures
         print(f"seasonal closures: {c.n_edges:,} edges ({c.km:.1f} km, "
               f"{c.n_ways:,} ways) in {len(c.windows)} windows", flush=True)
+
+    def _read_closed_to_cars(self, d: Path):
+        """What OSM closes to cars all year, if the table is there.
+
+        Optional, like the seasonal table and for the same reason: without it
+        every road and barrier in the graph is open, which is how this router
+        behaved before the table existed. Its line is printed by
+        `_close_to_cars`, once the graph it closes has been built.
+        """
+        path = d / "closed_to_cars.parquet"
+        self._closed_to_cars_path = path
+        self.closed_to_cars = None
+        if path.exists():
+            self.closed_to_cars = ClosedToCars(pd.read_parquet(path),
+                                               self.edges["u"].to_numpy(),
+                                               self.edges["v"].to_numpy())
+
+    def _close_to_cars(self):
+        """Close what OSM closes to cars, for every request, and find the way
+        round what that cuts off.
+
+        The closed slots are every directed copy of a closed edge, through
+        `eidx`, and the movements through a barrier between two edges
+        (`_split_through_barriers`). `_weights` prices them all at +inf.
+
+        Closing a gate cuts off what lies behind it, and a point there would
+        snap to a node no route reaches: a house up a gated lane, or a car
+        inside a gated estate. `_ways_round` finds, for each such node, the
+        nearest one a route can end at, or start from, on the way to it, so
+        that `snap` and `snap_destination` hand out that instead
+        (docs/closed-roads.md, Trap 2).
+
+        Never silent: the line is printed either way, and flushed, because the
+        box's journal drops buffered stdout (server/DEPLOY-oracle.md, Part 8).
+        """
+        self._car_closed_slots = None
+        self._snap_closed = np.zeros(len(self.edges), bool)
+        self._way_out, self._way_in = {}, {}
+        c = self.closed_to_cars
+        if c is None:
+            print(f"closed to cars: none, {self._closed_to_cars_path.name} is "
+                  "missing, so every road and barrier in the graph is open to "
+                  "cars", flush=True)
+            return
+        shut = np.zeros(len(self.edges), bool)
+        shut[c.edges] = True
+        self._car_closed_slots = np.union1d(np.flatnonzero(shut[self.eidx]),
+                                            self._through_slots)
+        self._snap_closed[c.whole] = True
+        self._way_out, self._way_in = self._ways_round()
+        print(f"closed to cars: {len(c.edges):,} edges ({c.km:.1f} km, "
+              f"{c.n_ways:,} ways, {c.n_barriers:,} barriers and fords), "
+              f"and no driving through {len(self._through_split):,} more barriers; "
+              f"{len(self._way_in):,} junctions cut off behind them", flush=True)
+
+    def _ways_round(self):
+        """({node: where a route from it starts}, {node: where a route to it
+        ends}) for the nodes the closures cut off.
+
+        A route may end at a node a car can reach from the main network, and
+        start from one that can reach it, with nothing closed driven. For every
+        other node the answer is the nearest such node on the road to it (or
+        from it), over the graph with nothing closed: the near side of the
+        gate, where a driver stops, or the way out of a gated estate. Nearest
+        by length, since this is about where the road physically runs.
+
+        A junction split for turn restrictions, or at a barrier, can have no
+        approaches under its own index; it is reached through its copies
+        (`node_copies`), and is not cut off when one of them is reachable.
+        """
+        n = self.n
+        open_w = self.d_minutes.copy()
+        open_w[self._car_closed_slots] = np.inf
+        pair_open = np.full(self.n_pairs, np.inf)
+        np.minimum.at(pair_open, self.slot_pair, open_w)
+        ok = np.isfinite(pair_open)
+        tails, heads = self.u_tail[ok], self.u_head[ok]
+        ones = np.ones(int(ok.sum()))
+        fwd = csr_matrix((ones, (tails, heads)), shape=(n, n))
+        bwd = csr_matrix((ones, (heads, tails)), shape=(n, n))
+        _, label = connected_components(fwd, directed=True, connection="strong")
+        root = int(np.flatnonzero(label == np.bincount(label).argmax())[0])
+        can_end = np.zeros(n, bool)
+        can_end[breadth_first_order(fwd, root, directed=True,
+                                    return_predecessors=False)] = True
+        can_start = np.zeros(n, bool)
+        can_start[breadth_first_order(bwd, root, directed=True,
+                                      return_predecessors=False)] = True
+        arrivable = can_end.copy()
+        for v, copies in self.node_copies.items():
+            arrivable[v] |= can_end[copies].any()
+
+        pair_km = np.full(self.n_pairs, np.inf)
+        np.minimum.at(pair_km, self.slot_pair, self.km[self.eidx])
+
+        def nearest(usable, cut, tails, heads):
+            # One Dijkstra from every usable node at once: `min_only` returns,
+            # for each node, the source nearest to it, which is the last usable
+            # node on the road in.
+            found = {}
+            cut = np.flatnonzero(cut)
+            if len(cut):
+                graph = csr_matrix((pair_km, (tails, heads)), shape=(n, n))
+                _, _, source = dijkstra(graph, directed=True,
+                                        indices=np.flatnonzero(usable),
+                                        return_predecessors=True, min_only=True)
+                found = {int(x): int(source[x]) for x in cut if source[x] >= 0}
+            return found
+
+        way_in = nearest(can_end, ~arrivable, self.u_tail, self.u_head)
+        # On the transpose, so the source nearest a node is the nearest one it
+        # can drive *to*.
+        way_out = nearest(can_start, ~can_start, self.u_head, self.u_tail)
+        return way_out, way_in
 
     def closure_version(self, on: date | None) -> tuple:
         """Which closure windows are in force on `on`: the closure version.
@@ -627,13 +815,17 @@ class Router:
         The distance returned is still measured from the *pin*, not from the
         entrance, so `SNAP_MAX_M` keeps meaning "is this anywhere near our road
         network" rather than silently becoming "did we find an entrance".
+
+        A destination behind a barrier, which no route can reach, ends at the
+        nearest node on the road to it that one can: the near side of the
+        gate, never beyond it, and never "no route" (docs/closed-roads.md,
+        Trap 2). The rest of what roads closed to cars change is `snap`'s.
         """
-        pin = self.snap(lat, lon)
+        node, off = self._snap(lat, lon)
         entry = self.access_point(lat, lon)
-        if entry is None:
-            return pin
-        node, _ = self.snap(*entry)
-        return node, pin[1]
+        if entry is not None:
+            node, _ = self._snap(*entry)
+        return self._way_in.get(node, node), off
 
     @staticmethod
     def _read_restrictions(d: Path):
@@ -805,6 +997,89 @@ class Router:
         for _, copy, _ in plan:
             copies.setdefault(int(real[copy]), []).append(copy)
         self.node_copies = {v: np.array([v] + c) for v, c in copies.items()}
+
+    def _split_through_barriers(self):
+        """One node per side at each barrier standing between two edges.
+
+        A gate where two ways meet end to end, typically where a public road
+        becomes a private one, forbids driving *through* it, not either road:
+        each stays open up to it (docs/closed-roads.md, Trap 1). A node cannot
+        say that, for the reason it cannot say a turn restriction: it has no
+        memory of the road it was reached by. So it is said the same way. Each
+        approach gets a copy of the junction to arrive at, and the copy gets
+        the junction's exits.
+
+        Unlike a restriction's copy, each copy keeps every exit, and the one
+        onto the far side is priced at +inf in `_weights` instead of left out.
+        Leaving it out would cut what lies behind a barrier at a dead end out
+        of the graph, and `_keep_network_reachable` would give the movement
+        back to reconnect it. Kept and closed, the graph stays as connected as
+        it was, the ALT tables stay admissible, and the closed movements are
+        one more set of +inf slots, closed for every caller like the closed
+        edges.
+
+        The same ordering as `_apply_turn_restrictions`: every approach is
+        redirected before any copy is given its exits, so that a copy's exit
+        into a neighbouring barrier arrives at that barrier's copy for it.
+
+        Sets `through_copy` {(edge row, junction): the copy a point on that
+        edge's side starts from or ends at}, which `snap` hands out in place of
+        the junction, and `_through_slots`, the closed exits.
+        """
+        self.through_copy = {}
+        self._through_split = set()
+        self._through_slots = np.empty(0, np.int64)
+        c = self.closed_to_cars
+        if c is None or not c.through:
+            return
+        by_head = self._group(self.head, self.n)
+        by_tail = self._group(self.tail, self.n)
+        plan, next_idx = [], self.n
+        for node_id in sorted(c.through):
+            b = self.idx.get(node_id)
+            # Already split for a turn restriction: none are, on this extract,
+            # and splitting twice would need the copies of copies.
+            if b is None or b in self.node_copies:
+                continue
+            arriving = self._members(by_head, b)
+            if not len(arriving):
+                continue
+            self._through_split.add(b)
+            for s in arriving:
+                plan.append((int(s), next_idx, b, self._members(by_tail, b)))
+                next_idx += 1
+        if not plan:
+            return
+
+        for s, copy, _, _ in plan:
+            self.head[s] = copy
+        tails, heads, eidx, flip, origin, closed = [], [], [], [], [], []
+        for s, copy, b, exits in plan:
+            self.through_copy[(int(self.eidx[s]), b)] = copy
+            for o in exits:
+                closed.append(self.eidx[o] != self.eidx[s])
+                tails.append(copy)
+                heads.append(self.head[o])      # already redirected if it had to be
+                eidx.append(self.eidx[o])
+                flip.append(self.flip[o])
+                origin.append(o)
+        first = len(self.tail)
+        self.tail = np.concatenate([self.tail, np.array(tails, dtype=self.tail.dtype)])
+        self.head = np.concatenate([self.head, np.array(heads, dtype=self.head.dtype)])
+        self.eidx = np.concatenate([self.eidx, np.array(eidx, dtype=self.eidx.dtype)])
+        self.flip = np.concatenate([self.flip, np.array(flip, dtype=bool)])
+        self.d_minutes = np.concatenate([self.d_minutes,
+                                         self.d_minutes[np.array(origin)]])
+        self._through_slots = first + np.flatnonzero(closed)
+        self.real_node = np.concatenate(
+            [self.real_node, np.array([b for _, _, b, _ in plan],
+                                      dtype=self.real_node.dtype)])
+        self.n = next_idx
+        copies = {}
+        for _, copy, b, _ in plan:
+            copies.setdefault(b, []).append(copy)
+        for b, cs in copies.items():
+            self.node_copies[b] = np.array([b] + cs)
 
     def _candidate_ends(self, plan):
         """The (tail, head) the graph would have if `plan` were applied.
@@ -1097,6 +1372,9 @@ class Router:
         # expressible. Everything below reads tail/head/eidx/flip, so it has to
         # come after this and not before.
         self._apply_turn_restrictions(self.restrictions)
+        # ...as are the barriers standing where two edges meet, for the same
+        # reason and at the same point.
+        self._split_through_barriers()
 
         # Parallel edges: more than one directed edge can join the same
         # (tail, head) — parallel roads between the same two junctions. scipy's
@@ -1324,8 +1602,13 @@ class Router:
 
         `on` is the request's date in New England (`region_today`). Every route,
         loop, rejoin and "switch to fastest" is priced here, so this is the one
-        place the closures have to reach. `on=None` closes nothing, which keeps
-        every caller that does not say what day it is on the year-round graph.
+        place the closures have to reach. `on=None` closes nothing for the
+        season, which keeps every caller that does not say what day it is on
+        the year-round graph.
+
+        What OSM closes to cars all year is closed whatever `on` says, `None`
+        included: a locked gate is locked for every purpose
+        (docs/closed-roads.md, decision 6).
         """
         penalty = self.km * (1.0 - scores / 10.0)           # km of "unscenic" road
         # Clamped because a negative pref raised to a fractional power is a
@@ -1345,6 +1628,8 @@ class Router:
         closed = self._closed_slots(on)
         if closed is not None:
             w[closed] += np.inf
+        if self._car_closed_slots is not None:
+            w[self._car_closed_slots] = np.inf
         return w
 
     def snap(self, lat: float, lon: float,
@@ -1381,21 +1666,128 @@ class Router:
         points that aren't on the network at all — e.g. a request from outside
         Massachusetts would otherwise silently snap to a border town and return
         a nonsense route.
+
+        **Roads closed to cars** (docs/closed-roads.md, Trap 2). The start,
+        a reroute, a `via` and a loop all snap here, and a car must not be
+        started on the far side of a barrier it cannot pass:
+          - on an edge with a barrier inside it, the end on the point's own
+            side, whatever distance or heading say. The nearer end, or the end
+            ahead, is often past the gate: at Crane Road's, 57 m short of it,
+            the nearer end is beyond it;
+          - at the junction a barrier between two edges stands on, the copy of
+            it on the point's side (`_split_through_barriers`), from which the
+            only way on is back;
+          - on a road closed by its tags, or between two barriers, there is no
+            end of its own a car can use, so the nearest road a car can use
+            instead;
+          - and at a node no route can leave, behind a closed gate, the nearest
+            one on the way out that a route can start from.
         """
+        node, off = self._snap(lat, lon, heading)
+        return self._way_out.get(node, node), off
+
+    def _snap(self, lat: float, lon: float, heading: float | None = None):
+        """`snap` before the way round a closure: the node on the road the
+        point is on, on its own side of any barrier."""
         x, y = _TO_M.transform(lon, lat)
         point = shapely.Point(x, y)
         aiming = heading if heading is not None and 0.0 <= heading < 360.0 else None
         e = int(self._edge_tree.nearest(point))
+        if self._shut_at(e, point):
+            e = self._nearest_open(point, e)
         if aiming is not None:
             e = self._aligned_edge(point, e, aiming)
         u, v = int(self.edge_u_idx[e]), int(self.edge_v_idx[e])
-        if aiming is None:
+        node = self._barrier_end(e, point, u, v)
+        if node is None and aiming is None:
             du = (self._nx[u] - x) ** 2 + (self._ny[u] - y) ** 2
             dv = (self._nx[v] - x) ** 2 + (self._ny[v] - y) ** 2
             node = u if du <= dv else v
-        else:
+        elif node is None:
             node = self._forward_end(self._edge_geom_m[e], point, u, v, aiming)
-        return node, float(self._edge_geom_m[e].distance(point))
+        return self._own_side(e, node, u, v), float(self._edge_geom_m[e].distance(point))
+
+    def _shut_at(self, e: int, point) -> bool:
+        """Whether no car can be on edge `e` where `point` is: the edge is
+        closed by its way's tags, or the point lies between two of its
+        barriers."""
+        if self._snap_closed[e]:
+            return True
+        at = self.closed_to_cars.at.get(e) if self.closed_to_cars else None
+        if at is None or len(at) < 2:
+            return False
+        along = self._edge_geom_m[e].project(point)
+        return bool(at[0] < along < at[-1])
+
+    def _open_distance(self, e: int, point) -> float:
+        """How far `point` is from the part of edge `e` a car can use."""
+        if self._snap_closed[e]:
+            return math.inf
+        line = self._edge_geom_m[e]
+        if not self._shut_at(e, point):
+            return line.distance(point)
+        at = self.closed_to_cars.at[e]
+        return min(substring(line, 0.0, at[0]).distance(point),
+                   substring(line, at[-1], line.length).distance(point))
+
+    def _nearest_open(self, point, nearest: int) -> int:
+        """The edge whose drivable part is nearest `point`, for a point where
+        the nearest edge is closed to cars.
+
+        Searched outward from the nearest edge's distance, doubling, and only
+        accepted once the best candidate lies inside the radius searched, so
+        no nearer one can lie outside it. Kept at `nearest` if nothing is open
+        within SNAP_OPEN_MAX_M, which nowhere in New England is.
+        """
+        reach = self._edge_geom_m[nearest].distance(point) + SNAP_OPEN_SLACK_M
+        while reach <= SNAP_OPEN_MAX_M:
+            best, best_d = nearest, math.inf
+            for c in self._edge_tree.query(point.buffer(reach)):
+                d = self._open_distance(int(c), point)
+                if d < best_d:
+                    best, best_d = int(c), d
+            if best_d <= reach:
+                return best
+            reach *= 2.0
+        return nearest
+
+    def _barrier_end(self, e: int, point, u: int, v: int):
+        """The end of edge `e` on `point`'s side of the barriers inside it, or
+        None if it has none.
+
+        Compared along the edge, using the position closures.py stored for
+        each barrier against the point's own projection. A point between two
+        barriers, which `_nearest_open` only leaves here when this edge is
+        still the nearest a car can use, takes the end beyond the nearer one.
+        """
+        at = self.closed_to_cars.at.get(e) if self.closed_to_cars else None
+        if at is None:
+            return None
+        line = self._edge_geom_m[e]
+        along = line.project(point)
+        if along <= at[0]:
+            return u
+        if along >= at[-1]:
+            return v
+        to_u = substring(line, 0.0, at[0]).distance(point)
+        to_v = substring(line, at[-1], line.length).distance(point)
+        return u if to_u <= to_v else v
+
+    def _own_side(self, e: int, node: int, u: int, v: int) -> int:
+        """`node`, or the copy of it on edge `e`'s side if a barrier between
+        two edges stands there.
+
+        A copy exists for every edge a car can arrive by. One that cannot, a
+        one-way road leading away from the barrier, starts from its other end,
+        which is where a car on it is going.
+        """
+        if node not in self._through_split:
+            return node
+        copy = self.through_copy.get((e, node))
+        if copy is not None:
+            return copy
+        other = v if node == u else u
+        return self.through_copy.get((e, other), other)
 
     def _aligned_edge(self, point, nearest: int, heading: float) -> int:
         """Which road the driver is on, among the ones they may be standing over.
@@ -1412,7 +1804,8 @@ class Router:
         `SNAP_HEADING_SLACK_M` of the nearest are looked at, so a well-aligned
         road further away can never win; and the nearest edge is kept unless it
         is *itself* misaligned, so an ordinary snap on an ordinary street does
-        not change at all.
+        not change at all. A road closed to cars where the driver is cannot
+        win either (docs/closed-roads.md).
         """
         off = self._misalignment(nearest, point, heading)
         if off <= SNAP_HEADING_DEG:
@@ -1421,7 +1814,8 @@ class Router:
         best, best_off = nearest, off
         for c in self._edge_tree.query(point.buffer(reach)):
             c = int(c)
-            if c == nearest or self._edge_geom_m[c].distance(point) > reach:
+            if (c == nearest or self._edge_geom_m[c].distance(point) > reach
+                    or self._shut_at(c, point)):
                 continue
             c_off = self._misalignment(c, point, heading)
             if c_off < best_off:

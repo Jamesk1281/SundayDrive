@@ -315,7 +315,7 @@ Then, **from the Mac**, in the **main checkout's** root. The parquets are
 gitignored and exist only there, not in any worktree:
 
 ```bash
-rsync -a --partial -e "ssh -i ~/.ssh/scenic_oracle" data/processed-ne/graph_edges.parquet data/processed-ne/graph_nodes.parquet data/processed-ne/turn_restrictions.parquet data/processed-ne/access_ways.parquet data/processed-ne/access_entries.parquet data/processed-ne/seasonal_closures.parquet ubuntu@<INSTANCE_IP>:~/Scenic/data/processed-ne/
+rsync -a --partial -e "ssh -i ~/.ssh/scenic_oracle" data/processed-ne/graph_edges.parquet data/processed-ne/graph_nodes.parquet data/processed-ne/turn_restrictions.parquet data/processed-ne/access_ways.parquet data/processed-ne/access_entries.parquet data/processed-ne/seasonal_closures.parquet data/processed-ne/closed_to_cars.parquet ubuntu@<INSTANCE_IP>:~/Scenic/data/processed-ne/
 ```
 
 > **The 2026-09-19 command used `--append-verify`, and on this Mac it uploads
@@ -329,10 +329,10 @@ rsync -a --partial -e "ssh -i ~/.ssh/scenic_oracle" data/processed-ne/graph_edge
 the same directory:
 
 ```bash
-shasum -a 256 data/processed-ne/{graph_edges,graph_nodes,turn_restrictions,access_ways,access_entries,seasonal_closures}.parquet
+shasum -a 256 data/processed-ne/{graph_edges,graph_nodes,turn_restrictions,access_ways,access_entries,seasonal_closures,closed_to_cars}.parquet
 ```
 
-Then run this on the box. The six hashes must match:
+Then run this on the box. The seven hashes must match:
 
 ```bash
 cd ~/Scenic/data/processed-ne && sha256sum *.parquet
@@ -346,6 +346,7 @@ cd ~/Scenic/data/processed-ne && sha256sum *.parquet
 | `access_ways.parquet` | 136.0 MB | optional, but destinations snap to the wrong road without it |
 | `access_entries.parquet` | 31.9 MB | optional, same |
 | `seasonal_closures.parquet` | 0.02 MB | optional, but without it routes use roads closed for the season. The router prints `seasonal closures: ...` at startup either way |
+| `closed_to_cars.parquet` | 0.07 MB | optional, but without it routes drive through locked gates and onto roads closed to cars. The router prints `closed to cars: ...` at startup either way |
 
 On the first run all 382 MB crossed in 16 s. If yours drops, re-run the
 identical command until the checksums match.
@@ -422,9 +423,9 @@ Three things about this unit:
   because `curl` refuses for the first minute.
 - **`journalctl -u sundaydrive-api` shows almost nothing, and that is normal.**
   Python block-buffers stdout when it is not a terminal, so `serve.py`'s two
-  startup lines may never appear. The exception is the router's
-  `seasonal closures: ...` line, which is flushed on purpose so that a box
-  serving without its closure table shows it here. Tracebacks go to stderr,
+  startup lines may never appear. The exceptions are the router's
+  `seasonal closures: ...` and `closed to cars: ...` lines, which are flushed
+  on purpose so that a box serving without its closure tables shows it here. Tracebacks go to stderr,
   which is unbuffered, so a crash *does* show up. If you want the startup
   lines, add `Environment=PYTHONUNBUFFERED=1` to the unit. The live box does
   not have it.
@@ -778,11 +779,11 @@ following, and stops at the first step that fails:
 4. Restarts `sundaydrive-api` once, **only if** server code or data changed.
    A docs-only change is pulled and nothing restarts. `--restart` forces one.
 5. Waits up to 180 s for `/api/health`. Then it prints the router's
-   `seasonal closures: ...` line from the journal, checks that the node count
-   equals `graph_nodes.parquet`'s row count, reports memory against the
-   reclaim floor, and checks the public hostname. A closures line reading
-   `none`, or no line at all, means the box is routing over roads closed for
-   the season.
+   `seasonal closures: ...` and `closed to cars: ...` lines from the journal,
+   checks that the node count equals `graph_nodes.parquet`'s row count,
+   reports memory against the reclaim floor, and checks the public hostname.
+   A closures line reading `none`, or no line at all, means the box is
+   routing over roads closed for the season, or closed to cars.
 
 Code and data both arrive before the single restart. That is what prevents
 the `KeyError: 'c_green'` crash. A restart still means about 66 s of `502`

@@ -131,6 +131,10 @@ kilometres differ because its join is not committed:
 | `motor_vehicle`/`motorcar`/`vehicle` = `no`/`private` | 460 | 452 | 151.5 |
 | behind a blocking barrier no access tag opens | 418 | 404 | 134.7 |
 
+These are now acted on, together with closed gates and fords:
+[`closed-roads.md`](closed-roads.md) masks what OSM closes to cars all year,
+for every request, from the same scan.
+
 **Decided while building, beyond the brief:**
 - **Greylock's inverse tag counts** (above).
 - **A stale table stops the server.** A table whose rows do not match
