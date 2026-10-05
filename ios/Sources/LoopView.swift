@@ -49,6 +49,7 @@ struct LoopView: View {
 
                     if let response = loops.response {
                         loopCard(response)
+                        directionPicker(response)
                         breakdown(response)
                     } else if loops.start == nil, !loops.isLoading {
                         Text("Pick a starting point and how long you have. There’s no "
@@ -65,17 +66,8 @@ struct LoopView: View {
             .scrollDismissesKeyboard(.interactively)
 
             if let response = loops.response {
-                VStack(spacing: 9) {
-                    SecondaryButton(title: loops.directionCount > 1
-                                    ? "Try another direction (\(loops.directionCount))"
-                                    : "Try another loop",
-                                    systemImage: "arrow.triangle.2.circlepath",
-                                    isBusy: loops.isRegenerating) {
-                        Task { await loops.regenerate() }
-                    }
-                    PrimaryButton(title: "Start driving", systemImage: "location.north.fill") {
-                        model.startLoopDrive(response)
-                    }
+                PrimaryButton(title: "Start driving", systemImage: "location.north.fill") {
+                    model.startLoopDrive(response)
                 }
                 .padding(.horizontal, Metric.margin)
                 .padding(.bottom, 10)
@@ -156,8 +148,9 @@ struct LoopView: View {
                 .foregroundStyle(Color.amberText)
                 .padding(.top, 6)
 
+            // The heading is not repeated here: the compass under this card
+            // says it, and is where it changes.
             HStack(spacing: 14) {
-                Label("heading \(headingName(meta.sector))", systemImage: "location.north")
                 // Always shown, not only when bad: it is the one number that
                 // tells a driver their loop is really an out-and-back. It is no
                 // longer orange, because in this palette amber is the brand and
@@ -188,8 +181,31 @@ struct LoopView: View {
         .background(Color.card, in: RoundedRectangle(cornerRadius: Metric.cardRadius))
     }
 
-    private func headingName(_ sector: String) -> String {
-        LoopAlternative(sector: sector, candidates: 0).name.lowercased()
+    // MARK: - Which way
+
+    private func directionPicker(_ response: LoopResponse) -> some View {
+        let count = loops.directionCount
+        return HStack(spacing: 18) {
+            LoopCompass(current: response.meta.sector,
+                        available: loops.availableSectors,
+                        pending: loops.pendingSector) { sector in
+                Task { await loops.head(sector) }
+            }
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Which way").sectionLabel()
+                Text("Heading \(LoopAlternative(sector: response.meta.sector, candidates: 0).name.lowercased())")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Color.ink)
+                Text(count > 1
+                     ? "\(count) of 8 directions have a loop this long from here. Tap one to go that way."
+                     : "This is the only direction with a loop this long from here.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func breakdown(_ response: LoopResponse) -> some View {

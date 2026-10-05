@@ -117,7 +117,7 @@ final class LoopModelTests: XCTestCase {
         XCTAssertEqual(model.directionCount, 4)
     }
 
-    func test_regenerate_walks_the_directions_that_exist_and_wraps() async {
+    func test_choosing_a_direction_asks_for_exactly_that_one() async {
         var asked: [String?] = []
         let model = model { _, _, sector, _ in
             asked.append(sector)
@@ -125,9 +125,22 @@ final class LoopModelTests: XCTestCase {
             return self.loopResponse(sector: sector ?? "N")
         }
         await model.generate()
-        for _ in 0..<4 { await model.regenerate() }
-        // First request has no opinion; then N -> NE -> E -> SE -> back to N.
-        XCTAssertEqual(asked, [nil, "NE", "E", "SE", "N"])
+        await model.head("SE")
+        await model.head("NE")
+        XCTAssertEqual(asked, [nil, "SE", "NE"])
+        XCTAssertEqual(model.response?.meta.sector, "NE")
+        XCTAssertNil(model.pendingSector)
+    }
+
+    func test_choosing_the_direction_already_on_screen_asks_nothing() async {
+        var asked: [String?] = []
+        let model = model { _, _, sector, _ in
+            asked.append(sector)
+            return self.loopResponse(sector: sector ?? "N")
+        }
+        await model.generate()
+        await model.head("N")
+        XCTAssertEqual(asked, [nil])
     }
 
     func test_it_never_asks_for_a_direction_the_server_did_not_offer() async {
@@ -138,22 +151,58 @@ final class LoopModelTests: XCTestCase {
             return self.loopResponse(sector: sector ?? "N", sectors: ["N", "S"])
         }
         await model.generate()
-        for _ in 0..<3 { await model.regenerate() }
-        XCTAssertEqual(asked, [nil, "S", "N", "S"])
+        await model.head("E")
+        await model.head("S")
+        XCTAssertEqual(asked, [nil, "S"])
+        XCTAssertEqual(model.availableSectors, ["N", "S"])
         XCTAssertEqual(model.directionCount, 2)
     }
 
-    func test_a_single_direction_leaves_the_choice_to_the_server() async {
+    func test_a_chosen_direction_survives_a_new_length() async {
         var asked: [String?] = []
-        let model = model { _, _, sector, _ in
+        let model = model { _, km, sector, _ in
             asked.append(sector)
-            return self.loopResponse(sectors: ["N"])
+            return self.loopResponse(km: km, targetKm: km, sector: sector ?? "N",
+                                     sectors: ["N", "W"])
         }
         await model.generate()
-        await model.regenerate()
-        // Nothing to rotate through, so don't pin the server to the one sector
-        // it already gave us — let it pick again.
-        XCTAssertEqual(asked, [nil, nil])
+        await model.head("W")
+        model.targetKm = 90
+        await model.generate()
+        // Dragging the slider must not swing a westward drive round to
+        // whatever the server would have picked.
+        XCTAssertEqual(asked, [nil, "W", "W"])
+        XCTAssertEqual(model.response?.meta.sector, "W")
+    }
+
+    func test_a_chosen_direction_with_nothing_at_the_new_length_falls_back() async {
+        var asked: [String?] = []
+        let model = model { _, km, sector, _ in
+            asked.append(sector)
+            if km < 10, sector == "W" {
+                throw RouteService.ServiceError.server("no loop of that length from there.")
+            }
+            return self.loopResponse(km: km, targetKm: km, sector: sector ?? "N",
+                                     sectors: ["N", "W"])
+        }
+        await model.generate()
+        await model.head("W")
+        model.targetKm = 6
+        await model.generate()
+        // The server's choice rather than an empty map; the preference is
+        // kept for the next length.
+        XCTAssertEqual(asked, [nil, "W", "W", nil])
+        XCTAssertEqual(model.response?.meta.sector, "N")
+        XCTAssertNil(model.errorText)
+        XCTAssertEqual(model.preferredSector, "W")
+    }
+
+    func test_clearing_the_start_forgets_the_direction() async {
+        let model = model { _, _, sector, _ in self.loopResponse(sector: sector ?? "N") }
+        await model.generate()
+        await model.head("E")
+        model.clear()
+        XCTAssertNil(model.preferredSector)
     }
 
     // MARK: - The distance slider
@@ -181,7 +230,7 @@ final class LoopModelTests: XCTestCase {
 
     func test_a_superseded_response_does_not_overwrite_a_newer_one() async {
         // The slow request is the *older* one, exactly as a slider drag followed
-        // by a regenerate would be.
+        // by a tap on the compass would be.
         let model = model { _, km, _, _ in
             if km == 20 {
                 try? await Task.sleep(nanoseconds: 40_000_000)
@@ -207,7 +256,7 @@ final class LoopModelTests: XCTestCase {
             return self.loopResponse(sector: "N")
         }
         await model.generate()
-        await model.regenerate()
+        await model.head("E")
         // Blanking the map because one direction came back empty would throw
         // away a drive the user was looking at.
         XCTAssertEqual(model.response?.meta.sector, "N")

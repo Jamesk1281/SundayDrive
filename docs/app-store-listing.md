@@ -13,7 +13,7 @@ some places and refuses in others.
 | Field | Limit | This draft | Needs review to change? |
 | --- | --- | --- | --- |
 | Promotional text | 170 characters | 160 | **No**, edit any time |
-| Description | 4,000 characters, plain text | 2,731 | Yes, ships with a version |
+| Description | 4,000 characters, plain text | 2,747 | Yes, ships with a version |
 | Keywords | **100 bytes**, comma-separated | 98 | Yes, ships with a version |
 
 ---
@@ -62,7 +62,7 @@ ONE SLIDER
 Drag from Fastest to Most scenic and the route redraws as you go. Sunday Drive always shows you the trade against its own fastest route, in plain numbers: how many minutes the scenic way adds, and how many more miles of beautiful road those minutes buy. Some drives cost nothing extra. Some cost an hour. That's your call.
 
 LOOPS, FOR WHEN YOU HAVE NOWHERE TO BE
-No destination? Pick a starting point and how long you have, from a short spin to most of an afternoon. Sunday Drive plans a round trip over the best-scoring roads nearby and brings you back where you started. Don't like the direction it chose? Try another. Every loop tells you how many of its miles are beautiful and whether any of it doubles back.
+No destination? Pick a starting point and how long you have, from a short spin to most of an afternoon. Sunday Drive plans a round trip over the best-scoring roads nearby and brings you back where you started. Don't like the direction it chose? Pick another on the compass. Every loop tells you how many of its miles are beautiful and whether any of it doubles back.
 
 ROADS THAT SUIT YOU
 Tell it what you'd rather drive past: coast, forest and parks, lakes and rivers, hills, farmland or town centers. Routes reshape in the background as you adjust.
@@ -102,7 +102,7 @@ change the description in the same commit.
 | The trade, against **its own** fastest route | `RouteResults.swift` ("Scenic adds … min"); the "+N mi of beautiful road" gain is C-3 (`ce25d1f`, unmerged). The wording "how many more miles" is true of `main` only once C-3 merges; on `main` alone the readout prints the scenic total |
 | "Some drives cost nothing extra" | `RouteResults.swift:237` "at no extra time" |
 | Loop from a starting point, "short spin to most of an afternoon" | `LoopView.swift:173` typed start; `LoopModel.minKm`/`maxKm` = 5–200 km, about 3 h 50 at the top end (`LoopView.swift:248`) |
-| Try another direction | `LoopView.swift:212-215` |
+| Pick another direction on the compass | `LoopCompass.swift`; `LoopModel.head` |
 | Beautiful miles, doubles back | `LoopView.swift:291-307` |
 | Six scenery types, reshape in the background | `BeautyType.all`; `TuneView.swift:30` |
 | Score components, highways score low | `docs/scoring.md` opening paragraph (water, coast, forest/parks, farmland, viewpoints, curvature, relief, highway penalty) |

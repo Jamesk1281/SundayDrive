@@ -179,8 +179,8 @@ enum RouteService {
     ///   - km: the distance slider, in kilometers. The server clamps it to its
     ///     own range and reports what it settled on in `meta.target_km`, so the
     ///     UI should read the target back rather than assume it was honoured.
-    ///   - sector: which compass direction to head off in — what the regenerate
-    ///     button varies. Pass nil for the first loop and the server picks the
+    ///   - sector: which compass direction to head off in — what the compass
+    ///     on the loop panel sets. Pass nil and the server picks the
     ///     best-scoring direction. Only the sectors named in a previous
     ///     response's `alternatives` are worth asking for; the others have no
     ///     loop in them and would be rejected.

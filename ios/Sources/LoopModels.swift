@@ -45,8 +45,8 @@ struct LoopMeta: Decodable {
     let repeated_km: Double
     /// `[lat, lon]` of the farthest point, i.e. where the loop turns for home.
     let turnaround: [Double]
-    /// Which compass octant this loop heads off in — what the regenerate button
-    /// varies.
+    /// Which compass octant this loop heads off in — what the compass on the
+    /// loop panel shows and sets.
     let sector: String
 
     var turnaroundCoordinate: CLLocationCoordinate2D? {
@@ -62,8 +62,13 @@ struct LoopMeta: Decodable {
     var distanceError: Double { target_km > 0 ? (km - target_km) / target_km : 0 }
 }
 
-/// One direction the user could regenerate into.
+/// One direction the user could send the loop off in instead.
 struct LoopAlternative: Decodable, Identifiable {
+    /// Every octant the server knows, clockwise from north — the compass's
+    /// eight points, whether or not this start has a loop in each. Matches
+    /// `SECTORS` in `pipeline/looper.py`.
+    static let allSectors = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+
     let sector: String
     /// How many turnaround points this direction offers at this length. Not
     /// shown to the user; useful when deciding whether a direction is a real

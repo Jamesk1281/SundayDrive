@@ -11,7 +11,7 @@ typealias LoopFetcher = (CLLocationCoordinate2D, Double, String?,
                          [String: Double]) async throws -> LoopResponse
 
 /// State for the loop tab: one start point, one distance, and the loop that came
-/// back. Regenerating cycles the compass direction.
+/// back. The driver picks the compass direction; the server picks the first.
 ///
 /// Separate from `RouteModel` because it shares almost nothing with it — no
 /// destination, no swap, no fastest-versus-scenic comparison — but it does *not*
@@ -81,14 +81,21 @@ final class LoopModel {
     var isLoading = false
     var errorText: String?
 
-    /// True while regenerating rather than searching fresh, so the button can say
-    /// so without the whole panel flashing its loading state.
-    var isRegenerating = false
+    /// The direction the driver just tapped, while its loop is on the way, so
+    /// the compass can show which point is working without the whole panel
+    /// flashing its loading state.
+    var pendingSector: String?
+
+    /// The last direction the driver chose on the compass. Carried into every
+    /// later request — a new length, a new start, a new taste — so dragging the
+    /// slider does not swing a westward drive round to whatever the server
+    /// would have picked. Nil until they choose, which leaves it to the server.
+    private(set) var preferredSector: String?
 
     /// Ticks up per request so a slow response that lands after a newer one has
     /// started can be recognised as stale and dropped. Same reason
     /// `RouteModel.requestGeneration` exists: dragging the distance slider and
-    /// then pressing regenerate is two requests in flight, and the older one
+    /// then tapping the compass is two requests in flight, and the older one
     /// must not win.
     private var requestGeneration = 0
 
@@ -203,39 +210,38 @@ final class LoopModel {
         startQuery = ""
         response = nil
         errorText = nil
+        preferredSector = nil
     }
 
     // MARK: - Asking for loops
 
-    /// Ask for a loop, letting the server choose the direction. Used for the
-    /// first loop and after the distance changes.
+    /// Ask for a loop in the direction the driver last chose, or the server's
+    /// choice if they have not. Used for the first loop and after the distance,
+    /// start or taste changes.
     func generate() async {
-        await fetch(sector: nil, regenerating: false)
+        await fetch(sector: preferredSector, regenerating: false)
     }
 
-    /// Ask for a loop in the next direction that has one.
+    /// Ask for a loop heading off in `sector`, as tapped on the compass.
     ///
-    /// The sectors come from the last response's `alternatives`, which lists only
-    /// the directions that actually hold a loop of this length — asking blindly
-    /// would offer the user a button that fails, since a coastal start has fewer
-    /// than eight.
-    func regenerate() async {
-        await fetch(sector: nextSector(), regenerating: true)
+    /// Only a direction the last response listed in `alternatives` is asked
+    /// for: those are the ones that actually hold a loop of this length, and
+    /// the compass greys out the rest — a coastal start has fewer than eight,
+    /// and some of the missing ones are the ocean. Tapping the direction already
+    /// on screen does nothing.
+    func head(_ sector: String) async {
+        guard let response, sector != response.meta.sector,
+              availableSectors.contains(sector) else { return }
+        preferredSector = sector
+        pendingSector = sector
+        await fetch(sector: sector, regenerating: true)
     }
 
-    /// The direction after the current one, wrapping. Nil if there is nothing to
-    /// rotate through, which leaves the choice to the server.
-    private func nextSector() -> String? {
-        guard let current = response?.meta.sector,
-              let options = response?.alternatives.map(\.sector),
-              options.count > 1 else { return nil }
-        guard let at = options.firstIndex(of: current) else { return options.first }
-        return options[(at + 1) % options.count]
-    }
+    /// The directions that hold a loop of this length from this start.
+    var availableSectors: Set<String> { Set(response?.alternatives.map(\.sector) ?? []) }
 
-    /// How many different directions the user can shuffle through from here.
-    /// Shown so the button does not imply endless variety when the geography
-    /// offers five.
+    /// How many directions the driver can choose between from here. Shown so
+    /// the compass does not imply eight choices when the geography offers five.
     var directionCount: Int { response?.alternatives.count ?? 0 }
 
     private func fetch(sector: String?, regenerating: Bool) async {
@@ -243,11 +249,20 @@ final class LoopModel {
 
         requestGeneration += 1
         let generation = requestGeneration
-        if regenerating { isRegenerating = true } else { isLoading = true }
+        if !regenerating { isLoading = true }
         errorText = nil
 
         do {
-            let result = try await fetchLoop(origin, targetKm, sector, weights)
+            let result: LoopResponse
+            do {
+                result = try await fetchLoop(origin, targetKm, sector, weights)
+            } catch where sector != nil && !regenerating {
+                // The remembered direction has nothing at this length or from
+                // this start. Better the server's choice than an error and an
+                // empty map for a preference the driver set at another length.
+                guard generation == requestGeneration else { return }
+                result = try await fetchLoop(origin, targetKm, nil, weights)
+            }
             guard generation == requestGeneration else { return }
             response = result
             // Re-fit the time estimate on what the router actually returned.
@@ -263,14 +278,14 @@ final class LoopModel {
             UserDefaults.standard.set(targetKm, forKey: Self.targetKey)
         } catch {
             guard generation == requestGeneration else { return }
-            // A failed regenerate leaves the loop that is already on screen
+            // A failed compass tap leaves the loop that is already on screen
             // alone. Blanking the map because one direction had nothing in it
             // would throw away a perfectly good drive.
             if !regenerating { response = nil }
             errorText = error.localizedDescription
         }
         isLoading = false
-        isRegenerating = false
+        pendingSector = nil
     }
 
     /// Per-beauty-type weights, so the tune screen shapes a loop the same way it
