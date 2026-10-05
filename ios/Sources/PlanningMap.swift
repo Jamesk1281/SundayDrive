@@ -91,28 +91,126 @@ struct PlanningMap: View {
 
 // MARK: - Framing
 
+extension PlanningMap {
+    /// A pin on the map, and how far its artwork stands above the coordinate
+    /// it marks. The camera has to keep the artwork clear of the status bar,
+    /// not just the coordinate.
+    struct Pin {
+        let coordinate: CLLocationCoordinate2D
+        let reach: CGFloat
+
+        /// `endpointDot`: 17 pt across and centred on its coordinate, plus a
+        /// point of shadow.
+        static func dot(_ coordinate: CLLocationCoordinate2D) -> Pin {
+            Pin(coordinate: coordinate, reach: 10)
+        }
+
+        /// A `Marker` balloon stands on its coordinate: 31 × 35 pt with its tip
+        /// on the point, measured on iOS 26.4.
+        static func marker(_ coordinate: CLLocationCoordinate2D) -> Pin {
+            Pin(coordinate: coordinate, reach: 35)
+        }
+    }
+
+    /// What the camera fits on each stage: the line, and every pin the content
+    /// builder above draws on it. Here rather than in `PlanningView` so that a
+    /// pin added there is not missed here.
+    static func framedContent(_ stage: PlanStage,
+                              _ model: RouteModel) -> (line: [CLLocationCoordinate2D]?, pins: [Pin]) {
+        var pins: [Pin] = []
+        switch stage {
+        case .home:
+            return (nil, [])
+        case .directions:
+            if let start = model.start { pins.append(.dot(start)) }
+            if let end = model.end { pins.append(.marker(end)) }
+            return (model.response?.scenic.coordinates, pins)
+        case .loop:
+            if let start = model.loops.start { pins.append(.dot(start)) }
+            if let turnaround = model.loops.response?.meta.turnaroundCoordinate {
+                pins.append(.marker(turnaround))
+            }
+            return (model.loops.response?.loop.coordinates, pins)
+        }
+    }
+}
+
 extension MapCameraPosition {
-    /// Fit a line into the map card.
+    /// Fit a line, and the pins drawn on it, into the part of the map card the
+    /// driver can see.
     ///
-    /// Plain padding on all four sides, which it could not be before: the old
-    /// `ContentView.frame(_:)` extended the rect *downwards* by
-    /// `max(h × 1.4, w × 0.9)` so that MapKit centring the taller rect left the
-    /// route in the upper half, clear of the sheet. With the map bounded, there
-    /// is nothing to dodge.
-    static func fitting(_ coordinates: [CLLocationCoordinate2D]?) -> MapCameraPosition? {
+    /// **The card runs under the status bar, and MapKit cannot tell.** The page
+    /// ignores the top safe area so the map can run full-bleed, and inside that
+    /// region SwiftUI reports a top inset of zero. A plain `.rect` was
+    /// therefore fitted to the whole card, and on the short loop card the top
+    /// of the route landed under the clock and the Dynamic Island: on a loop
+    /// heading south, its start pin. So the fit is done here, in
+    /// points, against `topInset`. The line keeps the padding it always had
+    /// (12% of its width each side, 22% of its height above and below), now
+    /// fitted into the card *below* the strip. Each pin's artwork has to clear
+    /// the strip as well, not just its coordinate: a `Marker` stands 35 pt tall,
+    /// more than 22% of a loop's height on this card, so a turnaround at the
+    /// top of a loop needs room of its own.
+    ///
+    /// What comes back is the whole card as a rect in map points: the strip,
+    /// the route and its padding, and any slack. It has the card's shape, so
+    /// MapKit shows exactly that rect, and only if the card has that `card`
+    /// size when the camera is applied. That is why `PlanningView.refit` waits
+    /// for the card to stop changing height before it moves the camera.
+    ///
+    /// No size yet (before the first layout) falls back to fitting the whole
+    /// card, which is what this did before it knew about the strip.
+    static func fitting(_ coordinates: [CLLocationCoordinate2D]?,
+                        pins: [PlanningMap.Pin] = [],
+                        card: CGSize, topInset: CGFloat) -> MapCameraPosition? {
         guard let coords = coordinates, !coords.isEmpty else { return nil }
+        let line = coords.map(MKMapPoint.init)
         var rect = MKMapRect.null
-        for coord in coords {
-            let point = MKMapPoint(coord)
+        for point in line + pins.map({ MKMapPoint($0.coordinate) }) {
             rect = rect.union(MKMapRect(x: point.x, y: point.y, width: 0, height: 0))
         }
-        // More headroom than sides: the card is wide and short, and the top of
-        // a loop is where its turnaround marker sits.
+        // More headroom than sides: the card is wide and short.
         let padded = MKMapRect(x: rect.origin.x - rect.size.width * 0.12,
                                y: rect.origin.y - rect.size.height * 0.22,
                                width: rect.size.width * 1.24,
                                height: rect.size.height * 1.44)
-        return .rect(padded)
+
+        let width = Double(card.width), height = Double(card.height)
+        let strip = min(max(Double(topInset), 0), height)
+        let visible = height - strip
+        guard width > 0, visible > 0 else { return .rect(padded) }
+
+        // What has to clear the strip, as a map y and the points it needs above
+        // that y. The line's own top needs half its 6 pt stroke. A card too
+        // short to fit a pin at all cannot honour it, so that pin is dropped
+        // rather than shrinking the route to nothing.
+        let topOfLine = line.map(\.y).min() ?? padded.minY
+        let reaches: [(y: Double, points: Double)] =
+            (pins.map { (MKMapPoint($0.coordinate).y, Double($0.reach)) } + [(topOfLine, 3)])
+            .filter { $0.points < visible }
+
+        // Map points per screen point: the smallest scale (the closest view)
+        // that fits the padded line across the card, into the height below
+        // the strip, and with every pin's artwork below the strip too.
+        var scale = max(padded.width / width, padded.height / visible)
+        for reach in reaches {
+            scale = max(scale, (padded.maxY - reach.y) / (visible - reach.points))
+        }
+        guard scale > 0, scale.isFinite else { return nil }
+
+        // Where the card's top edge may sit, in map y: no lower than keeps the
+        // padded bottom on the card, no higher than keeps everything out of
+        // the strip. Halfway between shares any slack above and below.
+        var highest = padded.minY - strip * scale
+        for reach in reaches {
+            highest = min(highest, reach.y - (strip + reach.points) * scale)
+        }
+        let lowest = padded.maxY - height * scale
+
+        return .rect(MKMapRect(x: padded.midX - width * scale / 2,
+                               y: (lowest + highest) / 2,
+                               width: width * scale,
+                               height: height * scale))
     }
 
     /// Frame a single point — a start with no destination yet, or the user's

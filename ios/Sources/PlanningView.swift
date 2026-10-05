@@ -40,6 +40,15 @@ struct PlanningView: View {
     @State private var showingSources = false
     /// True while any address field on the current stage has the keyboard.
     @State private var isSearching = false
+    /// The card's width, and how much of its top runs under the status bar
+    /// and the Dynamic Island. `refit` frames routes against both.
+    @State private var cardWidth: CGFloat = 0
+    @State private var topInset: CGFloat = 0
+    /// The height the card last changed to, and when. See `refit`.
+    @State private var cardChange = (height: CGFloat(0), at: Date.distantPast)
+    /// Ticks whenever the camera is told to go somewhere, so a fit still
+    /// waiting for the card to stop moving cannot land on top of a newer one.
+    @State private var fitGeneration = 0
 
     /// Shown once, on the first launch that ever reaches this screen. It is
     /// also permanently reachable from Sources — two ways in, one view, one
@@ -76,6 +85,11 @@ struct PlanningView: View {
         // The map card runs under the status bar; everything below it sits in
         // the safe area, including the credit line above the home indicator.
         .ignoresSafeArea(edges: .top)
+        // Read here, outside `ignoresSafeArea`. Inside it the top inset reads
+        // as zero, and that is how routes came to be framed under the clock.
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { cardWidth = $0 }
+        .onChange(of: mapHeight, initial: true) { _, height in cardChange = (height, .now) }
         .animation(.smooth(duration: 0.28), value: stage)
         .sheet(isPresented: $showingTaste) { TuneView(model: model) }
         .sheet(isPresented: $showingSources) { AboutView() }
@@ -100,10 +114,12 @@ struct PlanningView: View {
         }
         .onChange(of: model.start?.latitude) {
             guard model.response == nil, let start = model.start else { return }
+            fitGeneration += 1
             withAnimation { camera = .around(start) }
         }
         .onChange(of: model.loops.start?.latitude) {
             guard model.loops.response == nil, let start = model.loops.start else { return }
+            fitGeneration += 1
             withAnimation { camera = .around(start) }
         }
     }
@@ -124,14 +140,39 @@ struct PlanningView: View {
         }
     }
 
+    /// Frame the stage's line, for the height the card is heading to.
+    ///
+    /// **After the card has stopped moving.** The change that brings a route
+    /// usually resizes the card as well (300 pt to 200 for the first loop), and
+    /// MapKit works out where an animated camera will end from the card's
+    /// height *when the animation starts*. It keeps that region, not that
+    /// scale, as the card goes on moving. So a fit started together with the
+    /// resize could come out wrong by as much as the ratio of the two heights.
+    /// On main the first Concord loop put its start pin 31 pt down the card in
+    /// one run and 18 pt in the next. A fit applied just as the card began to
+    /// shrink came out 1.5× too far out. Setting the camera without
+    /// animation did not save it either: MapKit's scale drifted about 4% as the
+    /// card shrank underneath it. So the fit waits out the card's own 0.34 s
+    /// animation. At 0.4 s the spring still left it 0.4% out; at 0.5 s it
+    /// measured exact. A fit with no resize in flight, such as another
+    /// direction or a new pref, moves at once as before.
     private func refit() {
-        let line: [CLLocationCoordinate2D]?
-        switch stage {
-        case .home:       line = nil
-        case .directions: line = model.response?.scenic.coordinates
-        case .loop:       line = model.loops.response?.loop.coordinates
+        fitGeneration += 1
+        let generation = fitGeneration
+        let (line, pins) = PlanningMap.framedContent(stage, model)
+        guard let fitted = MapCameraPosition.fitting(line, pins: pins,
+                                                     card: CGSize(width: cardWidth, height: mapHeight),
+                                                     topInset: topInset) else { return }
+        // The height's own `onChange` may not have run yet in this update.
+        let sinceResize = cardChange.height == mapHeight ? Date.now.timeIntervalSince(cardChange.at) : 0
+        let wait = 0.5 - sinceResize
+        guard wait > 0 else {
+            withAnimation { camera = fitted }
+            return
         }
-        if let fitted = MapCameraPosition.fitting(line) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(wait))
+            guard generation == fitGeneration else { return }
             withAnimation { camera = fitted }
         }
     }
