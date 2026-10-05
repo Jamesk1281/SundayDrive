@@ -116,7 +116,7 @@ You are responsible at all times for the safe operation of your vehicle and for 
 The Developer is solely responsible for providing any maintenance and support services for the App, as specified in this Agreement or as required under applicable law. You and the Developer acknowledge that Apple has no obligation whatsoever to furnish any maintenance and support services with respect to the App. The App is free, and the Developer may change, suspend or discontinue it, including the routing service it depends on, at any time.
 
 5. WARRANTY
-To the maximum extent permitted by applicable law, the App is provided "as is" and "as available", without warranty of any kind, and the Developer disclaims all warranties, express or implied. To the extent any warranty cannot be disclaimed under applicable law, the Developer, not Apple, is solely responsible for it. In the event of any failure of the App to conform to any applicable warranty, you may notify Apple, and Apple will refund the purchase price, if any, for the App to you. To the maximum extent permitted by applicable law, Apple will have no other warranty obligation whatsoever with respect to the App, and any other claims, losses, liabilities, damages, costs or expenses attributable to any failure to conform to any warranty will be the Developer's sole responsibility.
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, AND THE DEVELOPER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY AND NON-INFRINGEMENT. To the extent any warranty cannot be disclaimed under applicable law, the Developer, not Apple, is solely responsible for it. In the event of any failure of the App to conform to any applicable warranty, you may notify Apple, and Apple will refund the purchase price, if any, for the App to you. To the maximum extent permitted by applicable law, Apple will have no other warranty obligation whatsoever with respect to the App, and any other claims, losses, liabilities, damages, costs or expenses attributable to any failure to conform to any warranty will be the Developer's sole responsibility.
 
 6. PRODUCT CLAIMS
 You and the Developer acknowledge that the Developer, not Apple, is responsible for addressing any claims by you or any third party relating to the App or your possession and use of the App, including, but not limited to: (i) product liability claims; (ii) any claim that the App fails to conform to any applicable legal or regulatory requirement; and (iii) claims arising under consumer protection, privacy or similar legislation. This Agreement does not limit the Developer's liability to you beyond what is permitted by applicable law.
@@ -134,7 +134,7 @@ You must comply with applicable third-party terms of agreement when using the Ap
 You and the Developer acknowledge and agree that Apple, and Apple's subsidiaries, are third-party beneficiaries of this Agreement, and that, upon your acceptance of the terms and conditions of this Agreement, Apple will have the right (and will be deemed to have accepted the right) to enforce this Agreement against you as a third-party beneficiary thereof.
 
 11. LIMITATION OF LIABILITY
-To the extent not prohibited by applicable law, in no event will the Developer be liable for personal injury, or for any incidental, special, indirect or consequential damages whatsoever, arising out of or related to your use of or inability to use the App, however caused, regardless of the theory of liability, even if the Developer has been advised of the possibility of such damages.
+TO THE EXTENT NOT PROHIBITED BY APPLICABLE LAW, IN NO EVENT WILL THE DEVELOPER BE LIABLE FOR PERSONAL INJURY, OR FOR ANY INCIDENTAL, SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES WHATSOEVER, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE APP, HOWEVER CAUSED, REGARDLESS OF THE THEORY OF LIABILITY, EVEN IF THE DEVELOPER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 12. PRIVACY
 The App's privacy policy is at https://jamesk1281.github.io/SundayDrive/privacy/
@@ -173,6 +173,13 @@ Email: support@jameskouvlis.com
   seasons yet (`pre-submission-review-verdict.md` C-1).
 - §2's Apache sentence stops the EULA from appearing to take back what
   `LICENSE` grants.
+- The §5 disclaimer and §11 are in capitals on purpose. The field is plain
+  text, so capitals are the only way to make them conspicuous, which is what
+  US law asks of a warranty disclaimer (UCC §2-316). §5 also names
+  merchantability, as §2-316(2) expects. Don't "fix the shouting".
+- §14's email, and the privacy policy's, live on `jameskouvlis.com`, which
+  **expires 2026-10-28** (whois, 2026-10-05). Renew it before submitting; if
+  it lapses, the EULA's contact address dies with it.
 - There is no governing-law clause. Add one only if a state is chosen on
   purpose.
 
