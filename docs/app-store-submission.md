@@ -47,7 +47,7 @@ cannot be edited, so **a custom EULA is required.**
 - It is defined at `ios/Sources/AboutView.swift:107-108`.
 - It is rendered in exactly one place, `BeforeYouDriveView.swift:35`. That
   view is shown at first launch and can be reached at any time from the
-  Sources screen, which is one tap from planning (`PlanningView.swift:81`).
+  Sources screen, which is one tap from planning (`PlanningView.swift:95`).
 - `ios/Tests/AttributionTests.swift:152-153` asserts it character for
   character, and an uppercase guard stops anyone "fixing the shouting".
 
@@ -187,7 +187,7 @@ URL must resolve to a public page at submission time and stay up afterwards.
 - It is published from `site/privacy/index.html` by
   `.github/workflows/pages.yml`. That workflow uploads `site/` only; never
   serve Pages from `/docs`.
-- It is linked inside the app at `AboutView.swift:302` (`PrivacyPolicy.url`),
+- It is linked inside the app at `AboutView.swift:324` (`PrivacyPolicy.url`),
   as guideline 5.1.1(i) asks.
 - Its contact address is `privacy@jameskouvlis.com`, and
   `tests/test_privacy_page.py` fails if the placeholder returns.
@@ -255,7 +255,7 @@ writes it to disk" has the right conclusion for the wrong reason.
 | Financial Info | No | — | — | — | No purchases, no payment code |
 | Contacts | No | — | — | — | No Contacts framework import |
 | User Content | No | — | — | — | Drive recording and scenery verdicts are switched off (`DriveTrace.isEnabled = false`); when on, they stayed in the app's own `Documents/traces` with no upload path |
-| Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift`, `RouteModel.swift:149-160`, `LoopModel.swift:108-128`), never to the routing server, which only ever receives resolved coordinates. Recent destinations stay on the phone |
+| Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift`, `RouteModel.swift:161-172`, `LoopModel.swift:113-135`), never to the routing server, which only ever receives resolved coordinates. Recent destinations stay on the phone |
 | Browsing History | No | — | — | — | No web view, no browser |
 | Identifiers | No | — | — | — | No IDFA, no IDFV, no account, no device name read |
 | Purchases | No | — | — | — | No StoreKit |
@@ -319,11 +319,11 @@ region note at the end of this section.
 and it declares `UIBackgroundModes: [location, audio]` in `ios/project.yml`.
 - With when-in-use authorization, background location is permitted for
   navigation as long as the blue status-bar indicator shows. The app opts
-  into it (`LocationManager.swift:196`) and switches it off when navigation
+  into it (`LocationManager.swift:223`) and switches it off when navigation
   ends.
 - Without it, a locked phone or an incoming call silently ends the drive.
 - **It never requests "always" authorization**, only
-  `requestWhenInUseAuthorization` (`LocationManager.swift:182`, `:287`).
+  `requestWhenInUseAuthorization` (`LocationManager.swift:209`, `:315`).
 
 **Why does it need the `audio` background mode?** For spoken guidance, and it
 is not optional. On a physical phone on 2026-08-30:

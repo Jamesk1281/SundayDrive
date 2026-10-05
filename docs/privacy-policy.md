@@ -16,9 +16,9 @@
 - Approximate-location behaviour tested and described 2026-10-01 (§2.2).
 - The stored-settings list corrected the same day (§3, §5).
 - The uses of location completed 2026-10-04, with a new purpose string (§2):
-  planning from where you are, and the on-device New England check. That
-  check is built on a parallel branch (`docs/new-england-only-brief.md`), so
-  §2 item 2 cites the brief, not code, and the two branches merge together.
+  planning from where you are, and the on-device New England check. The
+  check and this text were merged together on 2026-10-05, so §2 item 2 now
+  cites the check's code.
 
 **It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
 decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
@@ -55,7 +55,7 @@ to find out what would have to change first.
 **No account, no identity.** The app never asks for a name, an email address, a
 phone number or a password, and it has no server-side user record to attach one
 to. `server/app.py` exposes two endpoints, `/api/route` and `/api/loop`
-(`server/app.py:211`, `:288`); neither takes or issues an identifier.
+(`server/app.py:262`, `:353`); neither takes or issues an identifier.
 
 **No tracking, no analytics, no advertising.** The shipped binary contains **no
 third-party code at all** — no analytics SDK, no crash reporter, no ad network.
@@ -75,12 +75,12 @@ searched for.
 
 | What | Where |
 | --- | --- |
-| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-50`, written by `RouteModel.swift:182-189` |
-| The length of the last loop you asked for | `ios/Sources/LoopModel.swift:51-52`, `:247` |
+| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-56`, written by `RouteModel.swift:202-209` |
+| The length of the last loop you asked for | `ios/Sources/LoopModel.swift:56-57`, `:263` |
 | The chosen guidance voice | `ios/Sources/VoiceCatalogue.swift:118-119` |
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
 | Whether voice guidance is muted | `ios/Sources/VoiceGuide.swift:351-352` |
-| Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:47` |
+| Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:56` |
 | Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:262`, read by `ContentView.swift:23` |
 
 ---
@@ -100,14 +100,19 @@ all three, because App Review Guideline 5.1.1(ii) asks it to describe the use
    outside it that it cannot plan from where they are. **The check runs on the
    phone and sends the location nowhere.** It tests the fix against an outline
    of the six states built into the app, with no network call and no
-   geocoding (`docs/new-england-only-brief.md` §A and trap 4). It is also why
-   the prompt can appear at first launch: the app asks once, after the
-   "Before you drive" notice (the same brief, §D).
+   geocoding (`NewEngland.contains`, `NewEngland.swift:29`, over the outline
+   in `NewEnglandBoundary.swift`, which `tools/build_new_england_boundary.py`
+   generates from public-domain Census boundaries). The fix comes from
+   `LocationManager.roughLocation()` (`LocationManager.swift:375`), which never
+   asks for precise location. It is also why the prompt can appear at first
+   launch: the app asks once, after the "Before you drive" notice
+   (`ContentView.swift:67`, then `RouteModel.checkWhereabouts`,
+   `RouteModel.swift:266`).
 3. **Turn-by-turn guidance while you drive** (`LocationManager.start()`,
-   `LocationManager.swift:180-199`), in the background too (below).
+   `LocationManager.swift:207-226`), in the background too (below).
 
-It requests *when in use* authorization only (`LocationManager.swift:182`,
-`:287`) — never "always" — and the purpose string the system shows you is the
+It requests *when in use* authorization only (`LocationManager.swift:209`,
+`:315`) — never "always" — and the purpose string the system shows you is the
 one at `ios/project.yml:39`: "Your location is used to plan drives from where
 you are, to check that you’re in New England, and to guide you turn by turn."
 `tests/test_privacy_page.py` fails if the published page quotes anything
@@ -129,14 +134,14 @@ exists anywhere in the project.
 **Location continues while the app is in the background, and the blue bar shows
 whenever it does.** `UIBackgroundModes` includes `location`
 (`ios/project.yml:68-69`), and the app opts into
-`showsBackgroundLocationIndicator` (`LocationManager.swift:195-196`), so
+`showsBackgroundLocationIndicator` (`LocationManager.swift:222-223`), so
 background location is always visible in the status bar. Without this, a
 locked phone or an incoming call silently ends a drive; the reasoning is written
 out at `ios/project.yml:47-67`. Background updates are switched off again when
-navigation stops (`LocationManager.swift:208`).
+navigation stops (`LocationManager.swift:235`).
 
 **Accuracy is set to `kCLLocationAccuracyBestForNavigation`**
-(`LocationManager.swift:141`) with no distance filter (`:153`) — about one fix
+(`LocationManager.swift:168`) with no distance filter (`:180`) — about one fix
 per second while driving. This is the accuracy turn-by-turn guidance needs; it
 is also the most precise location iOS will give an app.
 
@@ -158,7 +163,7 @@ timestamp, no trace, no history.
 
 **The server stores nothing.** `server/app.py` has no database, no log file and
 no request logging — it prints two startup lines and nothing per request
-(`server/app.py:93`, `:120`), and `serve.py` runs it under `waitress`, which
+(`server/app.py:116`, `:145`), and `serve.py` runs it under `waitress`, which
 does not write an access log by default. **Checked on the live machine
 on 2026-09-29.** After real route requests had passed through it, a search for
 a request coordinate found nothing. The search covered the routing server's
@@ -194,7 +199,7 @@ name is a §7 question.
 
 **The request also passes through Cloudflare, which can still read it.** The
 deployed backend is reached through a Cloudflare tunnel that terminates TLS
-(`server/DEPLOY.md:8-14`, `:118-123`). The coordinates travel in the request
+(`server/DEPLOY.md:8-14`, `:121-126`). The coordinates travel in the request
 body, not the URL, so they are not in the URLs that access logs record by
 default. That narrows the exposure; it does not remove Cloudflare from the
 path. Terminating TLS means Cloudflare's edge can technically read the body as
@@ -211,7 +216,7 @@ described here does not send it.
 **(b) To Apple, for the map, search and place names.** The map is Apple's
 (`MapKit`). Typing an address sends it to Apple's search service
 (`MKLocalSearchCompleter` in `SearchCompleter.swift:17`, `MKLocalSearch` in
-`RouteModel.swift:125` and `LoopModel.swift:78`), and naming the place you are
+`RouteModel.swift:184` and `LoopModel.swift:135`), and naming the place you are
 starting from sends a coordinate to Apple's reverse geocoder
 (`PlaceNaming.swift:46`). Apple handles that data under Apple's own privacy
 policy, not this one. **Addresses you type are never sent to the routing
@@ -221,13 +226,13 @@ server** — only the coordinates Apple resolves them to.
 
 Turn-by-turn guidance needs precise location, and the app does not navigate on
 approximate location. It acts only on fixes with a stated error of 65 m or less
-(`usableAccuracy`, `LocationManager.swift:76`), and an approximate fix is
+(`usableAccuracy`, `LocationManager.swift:99`), and an approximate fix is
 kilometres wide: the one measured below was 11,920 m.
 
 **If location is allowed but Precise Location is off, the app asks for precise
 location.** It asks when a drive starts and when "My Location" is tapped while
 planning (`requestTemporaryFullAccuracyAuthorization`,
-`LocationManager.swift:188-190` and `:237-239`). iOS shows its own prompt,
+`LocationManager.swift:215-217` and `:265-267`). iOS shows its own prompt,
 *Allow "Sunday Drive" to use your precise location once?*, with the purpose
 string from the `NSLocationTemporaryUsageDescriptionDictionary` entry in
 `ios/project.yml`: "Turn-by-turn guidance needs your precise location to follow
@@ -259,8 +264,8 @@ discarded.*
 
 **The app does not record drives.** `RouteModel.startNavigation` and
 `startLoopDrive` open a `DriveTrace` only when `DriveTrace.isEnabled`, and that
-constant is `false` (`DriveTrace.swift`, `RouteModel.swift:274-276`,
-`:298-300`). With no trace, nothing from a drive is written anywhere: fixes are
+constant is `false` (`DriveTrace.swift`, `RouteModel.swift:321-323`,
+`:345-347`). With no trace, nothing from a drive is written anywhere: fixes are
 used to follow the route and then dropped, and the scenery-verdict buttons and
 the arrival card's "How was the road?" are not shown
 (`NavigationModel.canRecordMarks`).
