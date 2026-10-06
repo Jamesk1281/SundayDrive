@@ -3,8 +3,8 @@ import XCTest
 @testable import SundayDrive
 
 /// Loop-tab tests. Every one of these is a *sequence* of requests — which
-/// direction comes next, which of two overlapping responses wins, what stays on
-/// screen when a shuffle fails — so they go through `LoopModel.fetchLoop` with a
+/// direction is asked for, which of two overlapping responses wins, what stays
+/// on screen when a compass tap fails — so they go through `LoopModel.fetchLoop` with a
 /// stub rather than a backend.
 ///
 /// The fixtures build their JSON and decode it once. Deliberately not via

@@ -106,7 +106,7 @@ struct LoopView: View {
                                 + "\(loops.targetKm.wholeMilesFromKm) miles")
 
             // Not the small-caps label style the rest of the design uses for
-            // ends: "3 HR 50" is a duration shouted, and these two move as the
+            // ends: "8 HR" is a duration shouted, and these two move as the
             // estimate re-fits.
             HStack {
                 Text(TimeText.compact(minutes: loops.estimatedMinutes(forKm: LoopModel.minKm)))
@@ -190,7 +190,10 @@ struct LoopView: View {
     // MARK: - Which way
 
     private func directionPicker(_ response: LoopResponse) -> some View {
-        let count = loops.directionCount
+        // The direction on screen counts even when the server did not list it
+        // as an alternative, so the caption never says "the only direction"
+        // about a different one.
+        let count = loops.availableSectors.union([response.meta.sector]).count
         return HStack(spacing: 18) {
             LoopCompass(current: response.meta.sector,
                         available: loops.availableSectors,

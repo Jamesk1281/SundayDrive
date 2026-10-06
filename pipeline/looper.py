@@ -110,7 +110,7 @@ from scipy.sparse.csgraph import dijkstra
 # ban cannot: on the 17.2% of starts that are dead ends it still returns a loop.
 PENALTY = 3.0
 
-# Compass octants, from due north, clockwise. What the regenerate button varies:
+# Compass octants, from due north, clockwise. What the app's compass sets:
 # eight loops built one per sector from a Needham start shared a median of 1% of
 # their roads, so these really are different drives and not jitters of one.
 SECTORS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
@@ -152,10 +152,14 @@ SPAN_PICKS = 5
 #
 # At the extreme it is worse than inaccurate. Measured on the New England graph,
 # a Boston start at 20 km has candidate counts of 1,422 north and **1**
-# south-east: the harbour leaves exactly one loop that way, so `regenerate`
-# offers a whole direction that returns the same drive every time. Massachusetts
+# south-east: the harbour leaves exactly one loop that way, so the compass
+# would offer a whole direction that returns the same drive every time. Massachusetts
 # alone had zero there and the direction was correctly hidden; the wider graph
 # turned "none" into "one", which reads as a real option and is not.
+#
+# `plan` applies the same cut to a requested sector, so a direction the app
+# remembered from another length or start and that has since thinned out is
+# refused like an empty one rather than served as one degraded drive.
 MIN_SECTOR_CANDIDATES = SPAN_PICKS
 
 # A turnaround closer than this makes a loop that leaves and returns along the
@@ -170,7 +174,8 @@ MIN_LEG_KM = 0.5
 # at 300 and 400 km: built length within 4.3% of target, at most 3% doubled
 # back, ~0.5 s each, 8.2-9.0 h of driving at 400. The cost does not grow with
 # length, because every Dijkstra here already runs over the whole graph. What
-# does shrink is choice: at 400 km most starts have one or two directions.
+# does shrink is choice: at 400 km the same starts offer two to seven
+# directions (Chatham 2, Provincetown 3, Boston and Needham 6, Gloucester 7).
 MIN_TARGET_KM, MAX_TARGET_KM = 5.0, 400.0
 
 # The score at or above which a road counts as properly beautiful — see
@@ -374,8 +379,10 @@ class LoopPlanner:
         start a 10 km request has only 21 candidates, and below about 15 km in
         open country there is genuinely nothing to return.
 
-        `sector` is what the regenerate button varies. Leave it None for the
-        first loop and the best-scoring direction wins.
+        `sector` is what the app's compass sets. Leave it None and the
+        best-scoring direction wins. A sector holding fewer than
+        `MIN_SECTOR_CANDIDATES` returns None, the same rule `sectors()` uses to
+        decide what to offer.
 
         `on` is the request's date, and the roads closed for the season then
         are not driven (`Router._weights`). A loop needs no other handling: the
@@ -387,7 +394,8 @@ class LoopPlanner:
         target_km = float(np.clip(target_km, MIN_TARGET_KM, MAX_TARGET_KM))
         fields = self._fields(start, pref, weights, avoid_unpaved, on)
         idx = self.candidates(fields, target_km, sector=sector)
-        if not len(idx):
+        if not len(idx) or (sector is not None
+                            and len(idx) < MIN_SECTOR_CANDIDATES):
             return None
 
         built = [loop for loop in

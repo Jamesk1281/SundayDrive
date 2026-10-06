@@ -10,7 +10,6 @@ from datetime import date
 import pytest
 
 from conftest import DATA, ROOT, ROUTER_DATA
-from looper import MAX_TARGET_KM, MIN_TARGET_KM
 from router import BEAUTIFUL_SCORE
 
 
@@ -379,7 +378,10 @@ def test_a_loop_too_short_for_the_geography_says_so(client):
 
 
 def test_the_distance_is_clamped_not_rejected(client):
-    for km, expected in ((1, MIN_TARGET_KM), (9999, MAX_TARGET_KM)):
+    # Literals, not `looper`'s constants: a test that imports the clamp it
+    # asserts against passes at any value. 5 and 400 are `LoopModel.minKm` and
+    # `maxKm` in ios/Sources/LoopModel.swift, which has to change with them.
+    for km, expected in ((1, 5.0), (9999, 400.0)):
         meta = client.get(f"/api/loop?from={NEEDHAM}&km={km}").get_json()["meta"]
         assert meta["target_km"] == expected
 

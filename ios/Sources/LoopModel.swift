@@ -4,8 +4,8 @@ import Observation
 
 /// How loops are fetched. Tests substitute a stub, the same seam and for the
 /// same reason as `RouteFetcher`: every interesting behaviour here — which
-/// direction comes next, which of two overlapping requests wins, what survives a
-/// failed shuffle — is a sequence of requests, and a test that needs a live
+/// direction is asked for, which of two overlapping requests wins, what survives
+/// a failed compass tap — is a sequence of requests, and a test that needs a live
 /// backend and a real Massachusetts graph to see it does not get written.
 typealias LoopFetcher = (CLLocationCoordinate2D, Double, String?,
                          [String: Double]) async throws -> LoopResponse
@@ -87,8 +87,10 @@ final class LoopModel {
     /// flashing its loading state.
     var pendingSector: String?
 
-    /// The last direction the driver chose on the compass. Carried into every
-    /// later request — a new length, a new start, a new taste — so dragging the
+    /// The last direction the driver chose on the compass, or tapped while it
+    /// was on screen. Set only once a loop that way has come back, so it never
+    /// names a direction the map is not showing. Carried into every later
+    /// request — a new length or a new start — so dragging the
     /// slider does not swing a westward drive round to whatever the server
     /// would have picked. Nil until they choose, which leaves it to the server.
     private(set) var preferredSector: String?
@@ -207,18 +209,24 @@ final class LoopModel {
     }
 
     func clear() {
+        // A request still in flight must not put a loop back under an empty
+        // start, so it is made stale; and since a stale request returns
+        // without resetting anything, its busy flags are reset here.
+        requestGeneration += 1
         start = nil
         startQuery = ""
         response = nil
         errorText = nil
         preferredSector = nil
+        pendingSector = nil
+        isLoading = false
     }
 
     // MARK: - Asking for loops
 
     /// Ask for a loop in the direction the driver last chose, or the server's
-    /// choice if they have not. Used for the first loop and after the distance,
-    /// start or taste changes.
+    /// choice if they have not. Used for the first loop and after the distance
+    /// or start changes.
     func generate() async {
         await fetch(sector: preferredSector, regenerating: false)
     }
@@ -229,13 +237,22 @@ final class LoopModel {
     /// for: those are the ones that actually hold a loop of this length, and
     /// the compass greys out the rest — a coastal start has fewer than eight,
     /// and some of the missing ones are the ocean. Tapping the direction already
-    /// on screen does nothing.
+    /// on screen asks for nothing, but keeps it as the choice.
+    ///
+    /// Ignored while any loop is on its way: the directions on the compass
+    /// belong to the loop on screen, and a new length or start being fetched
+    /// may not have them.
     func head(_ sector: String) async {
-        guard let response, sector != response.meta.sector,
-              availableSectors.contains(sector) else { return }
-        preferredSector = sector
+        guard let response, start != nil, !isLoading, pendingSector == nil
+        else { return }
+        if sector == response.meta.sector {
+            preferredSector = sector
+            return
+        }
+        guard availableSectors.contains(sector) else { return }
         pendingSector = sector
         await fetch(sector: sector, regenerating: true)
+        if self.response?.meta.sector == sector { preferredSector = sector }
     }
 
     /// The directions that hold a loop of this length from this start.
@@ -257,9 +274,10 @@ final class LoopModel {
             let result: LoopResponse
             do {
                 result = try await fetchLoop(origin, targetKm, sector, weights)
-            } catch where sector != nil && !regenerating {
+            } catch RouteService.ServiceError.server(_) where sector != nil && !regenerating {
                 // The remembered direction has nothing at this length or from
-                // this start. Better the server's choice than an error and an
+                // this start — the server's own refusal, not a dead network,
+                // which a second request would only wait on twice. Better the server's choice than an error and an
                 // empty map for a preference the driver set at another length.
                 guard generation == requestGeneration else { return }
                 result = try await fetchLoop(origin, targetKm, nil, weights)

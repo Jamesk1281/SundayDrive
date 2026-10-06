@@ -381,10 +381,9 @@ final class RouteModel {
         // Same reasoning for the loop tab: `startLoopDrive` leaves from
         // `loops.start` without consulting the current fix, so a finished loop
         // left armed could be tapped again and replay a drive from wherever it
-        // began, hours and kilometres ago.
-        loops.start = nil
-        loops.startQuery = ""
-        loops.response = nil
+        // began, hours and kilometres ago. `clear()` rather than the fields by
+        // hand, so the compass direction is forgotten with the start.
+        loops.clear()
     }
 
     /// Ask the backend for the fastest and scenic routes at the current preference.

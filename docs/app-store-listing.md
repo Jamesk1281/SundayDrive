@@ -103,7 +103,7 @@ change the description in the same commit.
 | "Some drives cost nothing extra" | `RouteResults.swift:237` "at no extra time" |
 | Loop from a starting point, "short spin to a whole day" | typed start in `LoopView`; `LoopModel.minKm`/`maxKm` = 5–400 km, 8.2–9.0 h at the top end measured from six starts (`MAX_TARGET_KM` comment in `pipeline/looper.py`) |
 | Pick another direction on the compass | `LoopCompass.swift`; `LoopModel.head` |
-| Beautiful miles, doubles back | `LoopView.swift:291-307` |
+| Beautiful miles, doubles back | `LoopView.swift:152-170` |
 | Six scenery types, reshape in the background | `BeautyType.all`; `TuneView.swift:30` |
 | Score components, highways score low | `docs/scoring.md` opening paragraph (water, coast, forest/parks, farmland, viewpoints, curvature, relief, highway penalty) |
 | Spoken directions, current road, reroute | `VoiceGuide.swift`; `NavView.swift:548-560`; `NavView.swift:255` "Off route / Finding a way back" |
