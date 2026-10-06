@@ -24,7 +24,7 @@ it is what makes the replacement a continuation rather than an abandonment.
 
 `/api/loop` takes one endpoint and a length instead of two endpoints, and
 returns a closed scenic drive of about that length. `sector` (a compass octant)
-is what a regenerate button varies; the populated ones come back in
+is what the app's compass sets; the populated ones come back in
 `alternatives`, and asking is the point — a coastal start has fewer than eight.
 The loop-specific numbers live in `meta` rather than in the Feature's
 properties, so the same client type decodes a loop and a route.
@@ -121,20 +121,20 @@ ROUTER = Router(PROCESSED)
 # identical data — a false alarm in the one number a smoke check compares.
 # Loops are served from the same graph. The planner is cheap to construct — it
 # holds a reference and nothing else — but it caches two ~25 MB Dijkstra passes
-# per (start, pref, weights) so that pressing regenerate does not repeat them.
+# per (start, pref, weights) so that tapping another direction does not repeat them.
 #
 # One lock around every call, because waitress is threaded and those caches are
 # plain dicts. Serialising is also the right answer on merit: a loop is ~0.7 s of
 # CPU-bound numpy, so two at once would contend for the same cores and finish no
-# sooner, and the second request is almost always the same user pressing the
-# button again.
+# sooner, and the second request is almost always the same user tapping the
+# compass again.
 LOOPER = LoopPlanner(ROUTER)
 LOOP_LOCK = threading.Lock()
 
 # Built loops, keyed by the whole request. The planner's caches make a *new* loop
 # cost ~0.65 s; this makes an *identical* request cost nothing, which is the
-# common interaction and not an edge case — shuffling forward through the
-# directions and then back to the one you liked is how this button gets used.
+# common interaction and not an edge case — trying another direction on the
+# compass and then going back to the one you liked is how it gets used.
 # The graph is loaded once for the life of the process, but the roads closed
 # for the season change on fixed dates while it runs, so the key carries the
 # closure version too. Without it a loop cached on Oct 14 would go on being
@@ -371,8 +371,9 @@ def api_loop():
         weights = _parse_weights(args)
         avoid_unpaved = _parse_avoid_unpaved(args)
     except (KeyError, ValueError):
-        return jsonify(error="need from=lat,lon[&km=5..200][&pref=0..1]"
-                             "[&sector=N|NE|E|SE|S|SW|W|NW][&w_<type>=...]"), 400
+        return jsonify(error=f"need from=lat,lon[&km={MIN_TARGET_KM:.0f}.."
+                             f"{MAX_TARGET_KM:.0f}][&pref=0..1]"
+                             f"[&sector={'|'.join(SECTORS)}][&w_<type>=...]"), 400
 
     sector = args.get("sector") or None
     if sector is not None and sector not in SECTORS:

@@ -470,7 +470,7 @@ GET /api/loop?from=LAT,LON&km=40[&pref=0..1][&w_<type>=...]
               [&session=<token>][&sector=NE][&exclude=<id>,<id>]
 ```
 
-- `km` — the slider. Clamp to 5–200. Snap the start with `Router.snap` (no
+- `km` — the slider. Clamp to 5–200 (5–400 since 2026-10-05). Snap the start with `Router.snap` (no
   heading: a loop is planned from a parked car), and reject beyond `SNAP_MAX_M`
   exactly as `/api/route` does.
 - `session` — an opaque token the server returns with the first response and the
@@ -511,7 +511,8 @@ the safe size, not 8. Two consequences to hand to whoever builds this:
 ### What the iOS tab needs (not designed here)
 
 A start field defaulting to current location; one distance slider (5–200 km,
-live, free to drag); a regenerate button; the loop drawn as a closed line with
+now 5–400; live, free to drag); a regenerate button (since 2026-10-05, a
+compass); the loop drawn as a closed line with
 the turnaround marked; the three quality numbers from §7 with repeated-km
 visible; a "directions available" affordance driven by `alternatives` that shows
 five or six when that is all the geography has; and a graceful state for

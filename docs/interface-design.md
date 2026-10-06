@@ -308,7 +308,7 @@ routes.
 
 One field (where from), one dial (how long), and the loop.
 
-**The dial reads in time, not distance.** Today it is 5–200 km with the caption
+**The dial reads in time, not distance.** Today it is 5–400 km (5–200 until 2026-10-05) with the caption
 "about 25 miles" (`LoopPanel.swift:151–166`). The request is a distance; what a
 driver has is a span of time. The request still goes to the API in kilometres, because
 that is what `/api/loop` takes; the label converts, and — the part that keeps it
@@ -330,7 +330,9 @@ being orange, which in this palette means an alert (§7.2) — it becomes a plai
 line with a symbol, and only turns red past `repeatedFraction > 0.15`.
 
 Then **Try another direction (5)**, which already names how many there really
-are rather than implying endless variety, and **Start driving**.
+are rather than implying endless variety, and **Start driving**. (Replaced on
+2026-10-05 by an eight-point compass, `LoopCompass.swift`, which greys out the
+directions with no loop rather than counting them; the heading line moved there.)
 
 ### 4.5 What you like
 
@@ -792,7 +794,7 @@ they survive:
 | `repeated_km` always shown | The one number that says a loop is really an out-and-back |
 | The `Town centers` note | A product admitting a measurement went against it. Model for the voice |
 | `beautiful_km` over `mean_score` on screen | Nobody has a feel for 4.2 against 5.1, and the mean rose on 27 of the 30 trips where the good road went *down* |
-| `Try another direction (5)` | Names how many there really are rather than implying endless variety |
+| `Try another direction (5)`, now the loop compass | Names how many there really are rather than implying endless variety |
 | Untappable numbers under the resting thumb | A hand on the phone mid-drive cannot fire anything |
 | `contentShape(Rectangle())` on every full-width row | Half of every suggestion row was dead space without it |
 | Verbatim credit strings, and their capitalisation | Somebody else's text |

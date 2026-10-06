@@ -18,8 +18,9 @@ struct LoopCompass: View {
     let pending: String?
     var choose: (String) -> Void
 
-    /// Wide enough that neighbouring points sit 45 pt apart centre to centre,
-    /// so each 44 pt target is its own: 2π × 58 / 8 ≈ 45.5.
+    /// Wide enough that neighbouring points sit just over 44 pt apart centre to
+    /// centre, so each 44 pt target is its own. That is the chord, not the arc:
+    /// 2 × 58 × sin 22.5° ≈ 44.4, so any smaller radius makes them overlap.
     static let diameter: CGFloat = 160
     private static let radius: CGFloat = 58
     private static let point: CGFloat = 40
@@ -49,6 +50,10 @@ struct LoopCompass: View {
             }
         }
         .frame(width: Self.diameter, height: Self.diameter)
+        // Seeded on appear, so the first change has an angle to turn from.
+        // Left nil, that change renders at the new angle unanimated and the
+        // needle jumps.
+        .onAppear { needleAngle = Self.angle(of: current) }
         .onChange(of: current) { _, new in
             let from = needleAngle ?? Self.angle(of: new)
             let delta = (Self.angle(of: new) - from).truncatingRemainder(dividingBy: 360)
@@ -83,11 +88,13 @@ struct LoopCompass: View {
         .buttonStyle(.plain)
         // Not disabled when current: a disabled button is drawn faded, and the
         // one point that must read clearest is the one you are on. Tapping it
-        // is a no-op in `LoopModel.head` instead.
-        .disabled(!isAvailable)
+        // is a no-op in `LoopModel.head` instead. The server can serve a loop in
+        // a direction it does not list as an alternative, so `current` is
+        // checked here rather than assumed to be in `available`.
+        .disabled(!isAvailable && !isCurrent)
         .accessibilityLabel(name)
         .accessibilityAddTraits(isCurrent ? .isSelected : [])
-        .accessibilityHint(isAvailable ? "" : "No loop this long that way")
+        .accessibilityHint(isAvailable || isCurrent ? "" : "No loop this long that way")
     }
 
     private static func angle(of sector: String) -> Double {
