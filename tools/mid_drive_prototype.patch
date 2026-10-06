@@ -1,0 +1,731 @@
+The prototype measured in docs/mid-drive-recovery-plan.md, as a patch to
+ios/Sources at 191e15c, on top of tools/mid_drive_personas.patch. Apply it to a
+scratch copy, never to the tree:
+
+    git archive 191e15c ios tools | tar -x -C <scratch>
+    cd <scratch> && git apply <repo>/tools/mid_drive_personas.patch \
+                 && git apply <repo>/tools/mid_drive_prototype.patch
+
+It is evidence for the plan, not the implementation: it is written to be
+measured, not reviewed. What it adds:
+- Geo.swift: `progress(... notAfter:)`, an upper bound, and `passes(...)`,
+  every pass of the line near a point with its direction;
+- NavigationModel.swift: the wrong-way detector (plan, section 4.2, armed on
+  course-aligned forward progress), the loop far-point cap (4.4), failed
+  requests counted apart from the reroute backoff with a `networkReachable`
+  seam and `connectivityRestored()` (3.1), `connectivity` and `distanceToLine`
+  for the banner;
+- VoiceGuide.swift: `announceRecovery`, one latched prompt;
+- NavView.swift: the banner rows of the plan's section 2 table;
+- the harness: deadZone / loopDeadZone (no path, then the path returns), and
+  wrong-way detections recorded per drive and per replay;
+- ios/Tests/BannerShotTests.swift, which renders the real NavView in each new
+  banner state on a fixture route (TEST_RUNNER_SUNDAYDRIVE_SHOTS=<dir>).
+
+diff --git a/ios/Sources/Geo.swift b/ios/Sources/Geo.swift
+index 544d66b..16c57ae 100644
+--- a/ios/Sources/Geo.swift
++++ b/ios/Sources/Geo.swift
+@@ -126,6 +126,7 @@ let progressContinuityWeight: Double = 0.05
+ func progress(of point: CLLocationCoordinate2D,
+               along line: [CLLocationCoordinate2D],
+               notBefore: Double = 0,
++              notAfter: Double = .infinity,
+               near: Double? = nil) -> RouteProgress {
+     guard line.count >= 2 else {
+         let here = CLLocation(latitude: point.latitude, longitude: point.longitude)
+@@ -163,7 +164,7 @@ func progress(of point: CLLocationCoordinate2D,
+ 
+         // Segments wholly behind us belong to an earlier pass along the same
+         // road, not to where the driver is now.
+-        if travelled + length >= notBefore {
++        if travelled + length >= notBefore && travelled <= notAfter {
+             distances[i] = distance
+             alongs[i] = travelled + t * length
+             ends[i] = t
+@@ -214,6 +215,53 @@ func progress(of point: CLLocationCoordinate2D,
+                          travelled: along)
+ }
+ 
++/// Every pass of the line within `within` metres of a point: for each run of
++/// adjacent segments that come that close, the nearest one's along-distance,
++/// offset and bearing. A run is split where the line itself turns back (a
++/// planned U-turn), so the two legs of one stay two passes.
++func passes(of point: CLLocationCoordinate2D, along line: [CLLocationCoordinate2D],
++            within: Double, notAfter: Double = .infinity)
++    -> [(along: Double, offset: Double, bearing: Double)] {
++    guard line.count >= 2 else { return [] }
++    let mLat = 111_320.0
++    var out: [(along: Double, offset: Double, bearing: Double)] = []
++    var travelled = 0.0
++    var run: (along: Double, offset: Double, bearing: Double)?
++    var lastHit = -2
++    var lastBearing = 0.0
++    for i in 0 ..< line.count - 1 {
++        if travelled > notAfter { break }
++        let p = line[i], q = line[i + 1]
++        let mLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
++        let ax = (p.longitude - point.longitude) * mLon, ay = (p.latitude - point.latitude) * mLat
++        let bx = (q.longitude - point.longitude) * mLon, by = (q.latitude - point.latitude) * mLat
++        let dx = bx - ax, dy = by - ay
++        let len2 = dx * dx + dy * dy, len = len2.squareRoot()
++        if len > 0 {
++            let t = max(0, min(1, -(ax * dx + ay * dy) / len2))
++            let cx = ax + t * dx, cy = ay + t * dy
++            let d = (cx * cx + cy * cy).squareRoot()
++            if d <= within {
++                let bearing = (atan2(dx, dy) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
++                var turn = abs(bearing - lastBearing).truncatingRemainder(dividingBy: 360)
++                if turn > 180 { turn = 360 - turn }
++                let cand = (along: travelled + t * len, offset: d, bearing: bearing)
++                if i == lastHit + 1, turn < 120, let r = run {
++                    if d < r.offset { run = cand }
++                } else {
++                    if let r = run { out.append(r) }
++                    run = cand
++                }
++                lastHit = i
++                lastBearing = bearing
++            }
++        }
++        travelled += len
++    }
++    if let r = run { out.append(r) }
++    return out
++}
++
+ enum TimeText {
+     /// "48 min", or "1 hr 30" once it is worth splitting. Used by the loop
+     /// dial's estimate, the loop card and the arrival card, so the three cannot
+diff --git a/ios/Sources/NavView.swift b/ios/Sources/NavView.swift
+index 635521b..766c09c 100644
+--- a/ios/Sources/NavView.swift
++++ b/ios/Sources/NavView.swift
+@@ -254,6 +254,26 @@ struct NavView: View {
+             return BannerText(symbol: "arrow.triangle.2.circlepath", alert: true,
+                               over: "Off route", main: "Finding a way back…")
+         }
++        if nav.wrongWay {
++            return BannerText(symbol: "arrow.uturn.down", alert: true,
++                              over: nav.connectivity == .ok ? "Wrong way" : "Wrong way · No connection",
++                              main: "Turn around when possible")
++        }
++        if nav.isOffTheLine {
++            let away = "route \(distanceText(nav.distanceToLine)) away"
++            switch nav.connectivity {
++            case .noNetwork:
++                return BannerText(symbol: "antenna.radiowaves.left.and.right.slash", alert: true,
++                                  over: "No signal · \(away)", main: "Head back to your route")
++            case .serverUnreachable:
++                return BannerText(symbol: "exclamationmark.icloud", alert: true,
++                                  over: "Can't reach Sunday Drive · \(away)",
++                                  main: "Head back to your route")
++            case .ok:
++                return BannerText(symbol: "arrow.uturn.backward", alert: true,
++                                  over: "Off route · \(away)", main: "Head back to your route")
++            }
++        }
+         // No accepted fix, no position, so no distance to give. Asked of
+         // `lastFixAt` rather than of the distance, because a driver who really
+         // is at the start of the route reads close to 0 as well.
+diff --git a/ios/Sources/NavigationModel.swift b/ios/Sources/NavigationModel.swift
+index 85e4757..9737da6 100644
+--- a/ios/Sources/NavigationModel.swift
++++ b/ios/Sources/NavigationModel.swift
+@@ -144,6 +144,154 @@ final class NavigationModel {
+     /// Fixes in a row that have read off-route — see `offRouteFixesToReroute`.
+     private var consecutiveOffRouteFixes = 0
+ 
++    // MARK: Prototype — wrong way along the route, and a reroute that failed
++
++    private(set) var wrongWay = false
++    private(set) var wrongWayEvents = 0
++    private var wrongWayStreak = 0
++    private var wrongWayBack = 0.0
++    private var wrongWayLastAlong: Double?
++    private static let wrongWayFixes = 5
++    private static let wrongWayBackMeters = 40.0
++    private static let wrongWayMinSpeed: CLLocationSpeed = 3
++    private static let wrongWayMaxAccuracy = 30.0
++    /// The detector arms on a line only once the car has been seen going the
++    /// right way along it this far. A replacement that opens with a U-turn
++    /// runs against the car until it turns, and that is the line's own
++    /// instruction, not a wrong way: every opposed run of five fixes or more in
++    /// the twelve recorded drives began one second after such an adoption.
++    private static let wrongWayArmMeters = 100.0
++    private var lineFirstMatch: Double?
++    private var linePeak = 0.0
++    /// v3: metres gone forward along this line on fixes whose course agrees
++    /// with it. What arms the detector.
++    private var alignedProgress = 0.0
++    private var lastAlignedAlong: Double?
++    /// Cumulative length at each vertex, by `progress`'s own measure, so the
++    /// line's direction at a match is a binary search rather than a scan.
++    private var lineCum: [Double] = []
++
++    private func buildLineCum() {
++        var c = [0.0]
++        c.reserveCapacity(coordinates.count)
++        for i in 0 ..< max(0, coordinates.count - 1) {
++            let p = coordinates[i], q = coordinates[i + 1]
++            let mLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
++            let dx = (q.longitude - p.longitude) * mLon, dy = (q.latitude - p.latitude) * 111_320.0
++            c.append(c.last! + (dx * dx + dy * dy).squareRoot())
++        }
++        lineCum = c
++    }
++
++    private func lineBearing(at along: Double) -> Double? {
++        guard coordinates.count >= 2, lineCum.count == coordinates.count else { return nil }
++        var lo = 0, hi = lineCum.count - 1
++        while hi - lo > 1 {
++            let mid = (lo + hi) / 2
++            if lineCum[mid] <= along { lo = mid } else { hi = mid }
++        }
++        let i = min(lo, coordinates.count - 2)
++        let p = coordinates[i], q = coordinates[i + 1]
++        let mLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
++        let dx = (q.longitude - p.longitude) * mLon, dy = (q.latitude - p.latitude) * 111_320.0
++        guard dx != 0 || dy != 0 else { return nil }
++        return (atan2(dx, dy) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
++    }
++
++    enum Connectivity: Equatable { case ok, noNetwork, serverUnreachable }
++    private(set) var connectivity: Connectivity = .ok
++    private var consecutiveFailures = 0
++    private var lastAttemptFailed = false
++    private var announcedNoConnection = false
++    /// The seam a `NWPathMonitor` would sit behind. True when the phone has a
++    /// path to the internet at all.
++    var networkReachable: () -> Bool = { true }
++    private var failureCooldown: TimeInterval {
++        min(15 * pow(2, Double(max(0, consecutiveFailures - 1))), 60)
++    }
++    /// Straight-line distance to the nearest point of the line not far behind
++    /// the driver, for the off-route banner.
++    private(set) var distanceToLine: Double = 0
++
++    /// Before a loop's far point, the match may not land beyond it.
++    private var farPointCap: Double {
++        guard let loop = loopTurnaround, !passedTurnaround else { return .infinity }
++        return loop.along + 25
++    }
++
++    var isOffTheLine: Bool {
++        guard hasJoinedRoute, !awaitingJoin, let here = lastProgress else { return false }
++        return here.offRoute > Self.offRouteMeters
++    }
++
++    /// Connectivity has come back (the path monitor's callback, in a real build).
++    func connectivityRestored() {
++        guard lastAttemptFailed else { return }
++        lastRerouteAttempt = .distantPast
++        lastRerouteOrigin = nil
++    }
++
++    private var lastHereAlong: Double?
++    private var lastHereAt: Date?
++
++    private func trackWrongWay(_ location: CLLocation, _ here: RouteProgress) {
++        defer { lastHereAlong = here.travelled; lastHereAt = now() }
++        guard hasJoinedRoute, !awaitingJoin, !arrived else { resetWrongWay(); return }
++        func angle(_ b: Double) -> Double {
++            let d = abs(location.course - b).truncatingRemainder(dividingBy: 360)
++            return d > 180 ? 360 - d : d
++        }
++        // v3 arming: forward progress counts only on fixes whose course agrees
++        // with the line where the car is matched.
++        if location.speed >= Self.wrongWayMinSpeed, location.course >= 0,
++           location.horizontalAccuracy > 0,
++           location.horizontalAccuracy <= Self.wrongWayMaxAccuracy,
++           here.offRoute <= Self.joinConfirmMeters,
++           let bearing = lineBearing(at: here.travelled), angle(bearing) <= 60 {
++            if let last = lastAlignedAlong {
++                alignedProgress += max(0, min(100, here.travelled - last))
++            }
++            lastAlignedAlong = here.travelled
++        } else {
++            lastAlignedAlong = nil
++        }
++        guard alignedProgress >= Self.wrongWayArmMeters else { resetWrongWay(); return }
++        // A fix that cannot say which way the car points neither builds the
++        // case nor clears it.
++        guard location.speed >= Self.wrongWayMinSpeed, location.course >= 0,
++              location.horizontalAccuracy > 0,
++              location.horizontalAccuracy <= Self.wrongWayMaxAccuracy else { return }
++        // The common case costs nothing: a match moving forward along the line
++        // at about the car's speed is a car going the right way.
++        if !wrongWay, wrongWayStreak == 0, let a = lastHereAlong, let t0 = lastHereAt {
++            let dt = now().timeIntervalSince(t0)
++            if dt > 0, here.offRoute <= Self.joinConfirmMeters,
++               here.travelled - a >= 0.5 * location.speed * dt { return }
++        }
++        let free = progress(of: location.coordinate, along: coordinates,
++                            notBefore: 0, notAfter: farPointCap, near: travelled)
++        guard free.offRoute <= Self.joinConfirmMeters else { resetWrongWay(); return }
++        let near = passes(of: location.coordinate, along: coordinates,
++                          within: free.offRoute + 5, notAfter: farPointCap)
++        if near.contains(where: { angle($0.bearing) <= 60 }) { resetWrongWay(); return }
++        guard let pass = near.filter({ angle($0.bearing) >= 120 })
++                .min(by: { abs($0.along - travelled) < abs($1.along - travelled) })
++        else { resetWrongWay(); return }
++        if let last = wrongWayLastAlong { wrongWayBack += max(-60, min(60, last - pass.along)) }
++        wrongWayLastAlong = pass.along
++        wrongWayStreak += 1
++        if wrongWayStreak >= Self.wrongWayFixes, wrongWayBack >= Self.wrongWayBackMeters, !wrongWay {
++            wrongWay = true
++            wrongWayEvents += 1
++            trace?.phase("wrongway")
++            voice?.announceRecovery("Turn around when possible.")
++        }
++    }
++
++    private func resetWrongWay() {
++        wrongWay = false; wrongWayStreak = 0; wrongWayBack = 0; wrongWayLastAlong = nil
++    }
++
+     /// How close counts as arriving.
+     private static let arrivalMeters: Double = 40
+ 
+@@ -610,6 +758,7 @@ final class NavigationModel {
+         // Last, and after every stored property: it reads `steps` and
+         // `coordinates` back off `self`.
+         self.stepRemaining = Self.remainingAtEachStep(of: steps, along: coordinates)
++        buildLineCum()
+         trace?.route(route, reason: "start")
+         if trace != nil { startWatchdog() }
+         // Under the controls, with the recording state and the reply to a tap —
+@@ -907,6 +1056,7 @@ final class NavigationModel {
+         let floor = hasJoinedRoute ? max(0, travelled - Self.backtrackToleranceMeters) : 0
+         let here = reseatIfPinned(progress(of: location.coordinate,
+                                            along: coordinates, notBefore: floor,
++                                           notAfter: farPointCap,
+                                            near: hasJoinedRoute ? travelled : 0),
+                                   at: location)
+         lastProgress = here
+@@ -955,6 +1105,8 @@ final class NavigationModel {
+             // The first trustworthy look at where this line puts the driver.
+             // `runningBackwards` measures against it; `adopt` clears it.
+             if matchAtAdoption == nil { matchAtAdoption = here.travelled }
++            if lineFirstMatch == nil { lineFirstMatch = here.travelled }
++            linePeak = max(linePeak, travelled)
+         }
+ 
+         // Arrival is having driven the line, not being near a particular point.
+@@ -1007,6 +1159,12 @@ final class NavigationModel {
+         // to reach, so they are legitimately off it until they get there.
+         settleAwaitingJoin(here)
+         trackSettling(here)
++        trackWrongWay(location, here)
++        if isOffTheLine {
++            distanceToLine = progress(of: location.coordinate, along: coordinates,
++                                      notBefore: max(0, travelled - 300),
++                                      notAfter: farPointCap, near: travelled).offRoute
++        }
+ 
+         // How much evidence there is that the driver has actually left the road.
+         // An unambiguous excursion counts for the whole streak at once, so a
+@@ -1031,15 +1189,19 @@ final class NavigationModel {
+         // is still on their way to the line it put them on, and the backoff
+         // inside `rerouteCooldown` stops a *correct* one being asked for over
+         // and over by a driver who is not going to take it.
++        let offRouteCase = here.offRoute > Self.offRouteMeters
++            && consecutiveOffRouteFixes >= Self.offRouteFixesToReroute
++        let cooldown = lastAttemptFailed ? failureCooldown : rerouteCooldown
++        let waitingForNetwork = lastAttemptFailed && !networkReachable()
+         if armedForReroute,
+            !isRerouting,
+            !awaitingJoin,
+            here.remaining > Self.noRerouteWithinMeters,
+-           now().timeIntervalSince(lastRerouteAttempt) > rerouteCooldown,
++           !waitingForNetwork,
++           now().timeIntervalSince(lastRerouteAttempt) > cooldown,
+            hasMovedSinceLastReroute(location),
+-           here.offRoute > Self.offRouteMeters,
+-           consecutiveOffRouteFixes >= Self.offRouteFixesToReroute {
+-            Task { await reroute(from: location, reason: "offroute") }
++           offRouteCase || wrongWay {
++            Task { await reroute(from: location, reason: wrongWay && !offRouteCase ? "wrongway" : "offroute") }
+         }
+     }
+ 
+@@ -1094,7 +1256,7 @@ final class NavigationModel {
+         // Unconstrained in what it may reach, but still nearest to the driver
+         // among passes that tie: the earliest pass is kilometres back on a loop.
+         let free = progress(of: location.coordinate, along: coordinates,
+-                            notBefore: 0, near: travelled)
++                            notBefore: 0, notAfter: farPointCap, near: travelled)
+         guard free.offRoute <= Self.joinConfirmMeters,
+               travelled - free.travelled <= Self.reseatWindowMeters else { return here }
+         travelled = free.travelled
+@@ -1375,17 +1537,38 @@ final class NavigationModel {
+         let askedPref = pref
+         // A loop that has not reached its far point must be pinned through it;
+         // anything else asks for the short way home. See `loopWaypoint`.
+-        let reply: RouteResponse?
+-        if let via = loopWaypoint {
+-            reply = try? await fetchLoopResume(origin.coordinate, via, destination,
+-                                               askedPref, weights, askedHeading)
+-        } else {
+-            reply = try? await fetchRoute(origin.coordinate, destination,
+-                                          askedPref, weights, askedHeading)
+-        }
++        var reply: RouteResponse?
++        var failure: Error?
++        do {
++            if let via = loopWaypoint {
++                reply = try await fetchLoopResume(origin.coordinate, via, destination,
++                                                  askedPref, weights, askedHeading)
++            } else {
++                reply = try await fetchRoute(origin.coordinate, destination,
++                                             askedPref, weights, askedHeading)
++            }
++        } catch { failure = error }
+         guard let response = reply
+         else {
+             guard generation == rerouteGeneration else { return .superseded }
++            if reason == "offroute" || reason == "wrongway" {
++                if case .server(_)? = failure as? RouteService.ServiceError {
++                    // The server answered and said no: an unhelpful success.
++                    consecutiveReroutes += 1
++                    lastAttemptFailed = false
++                    return .failed
++                }
++                consecutiveFailures += 1
++                lastAttemptFailed = true
++                connectivity = networkReachable() ? .serverUnreachable : .noNetwork
++                if !announcedNoConnection {
++                    announcedNoConnection = true
++                    voice?.announceRecovery(wrongWay
++                        ? "No connection. Turn around when possible."
++                        : "No connection. Head back to your route.")
++                }
++                return .failed
++            }
+             // A request that never lands is the plainest case of asking not
+             // helping, so it backs off with the rest. Reaching the 120 s cap
+             // takes four consecutive failures, by which point the network is
+@@ -1393,9 +1576,12 @@ final class NavigationModel {
+             // battery to no end. `trackSettling` clears the counter as soon as
+             // the driver holds the line for 30 s, so one dropped request costs
+             // a single doubling rather than the drive.
+-            if reason == "offroute" { consecutiveReroutes += 1 }
+             return .failed
+         }
++        consecutiveFailures = 0
++        lastAttemptFailed = false
++        connectivity = .ok
++        announcedNoConnection = false
+         guard generation == rerouteGeneration else { return .superseded }
+         // The drive can end while a reroute is in the air. `update` stops
+         // looking at fixes once `arrived` latches and NavView stops the
+@@ -1425,7 +1611,7 @@ final class NavigationModel {
+         // Only off-route reroutes back off. A user tapping "fastest" has asked
+         // for this one and is owed it immediately, and counting it would then
+         // slow down the recovery they asked for.
+-        if reason == "offroute" {
++        if reason == "offroute" || reason == "wrongway" {
+             consecutiveReroutes += 1
+             onRouteSince = nil
+         }
+@@ -1525,6 +1711,11 @@ final class NavigationModel {
+         currentStep = 0
+         travelled = 0
+         matchAtAdoption = nil
++        lineFirstMatch = nil
++        linePeak = 0
++        alignedProgress = 0
++        lastAlignedAlong = nil
++        buildLineCum()
+         remainingMeters = feature.properties.km * 1000
+         remainingMinutes = feature.properties.minutes
+         // The driver has not reached this line yet — it begins at a junction
+@@ -1534,6 +1725,7 @@ final class NavigationModel {
+         awaitingJoinSince = now()
+         // Evidence about the *old* line says nothing about this one.
+         consecutiveOffRouteFixes = 0
++        resetWrongWay()
+         // Nor does anything already said. A prepare in flight may be about a
+         // maneuver this route no longer contains, which is not stale but wrong,
+         // so it is cut mid-word. `awaitingJoin` above then holds the silence
+diff --git a/ios/Sources/VoiceGuide.swift b/ios/Sources/VoiceGuide.swift
+index 1a94888..5c8bde3 100644
+--- a/ios/Sources/VoiceGuide.swift
++++ b/ios/Sources/VoiceGuide.swift
+@@ -435,6 +435,16 @@ final class VoiceGuide {
+ 
+     /// Arrival. Spoken from `update`'s early return, because `arrived` latches
+     /// there and nothing after it ever runs again.
++    /// Prototype: a recovery prompt, said once per call through the same latch.
++    func announceRecovery(_ text: String) {
++        recoveryCount += 1
++        let key = Announcement(generation &+ 1_000_000 &+ recoveryCount,
++                               at: CLLocationCoordinate2D(latitude: 0, longitude: 0),
++                               phase: .arrival)
++        deliver(key, text)
++    }
++    private var recoveryCount = 0
++
+     func announceArrival() {
+         let key = Announcement(generation, at: CLLocationCoordinate2D(latitude: 0, longitude: 0),
+                                phase: .arrival)
+diff --git a/ios/Tests/BannerShotTests.swift b/ios/Tests/BannerShotTests.swift
+new file mode 100644
+index 0000000..6e017a5
+--- /dev/null
++++ b/ios/Tests/BannerShotTests.swift
+@@ -0,0 +1,104 @@
++import CoreLocation
++import SwiftUI
++import UIKit
++import XCTest
++@testable import SundayDrive
++
++/// Mid-drive recovery study: the prototype's banner states, rendered from the
++/// real `NavView` on a fixture route, for the plan. Scratch only.
++@MainActor
++final class BannerShotTests: XCTestCase {
++
++    private var out: URL {
++        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SUNDAYDRIVE_SHOTS"]
++            ?? NSTemporaryDirectory())
++    }
++
++    private func render(_ nav: NavigationModel, _ name: String) throws {
++        let view = NavView(nav: nav, locationManager: LocationManager(),
++                           destinationName: "Test", onEnd: {})
++        let host = UIHostingController(rootView: view)
++        let scene = UIApplication.shared.connectedScenes
++            .compactMap { $0 as? UIWindowScene }.first!
++        let window = UIWindow(windowScene: scene)
++        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
++        window.windowLevel = .alert + 1
++        window.rootViewController = host
++        window.makeKeyAndVisible()
++        RunLoop.main.run(until: Date().addingTimeInterval(2))
++        let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
++            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
++        }
++        try image.pngData()!.write(to: out.appendingPathComponent(name + ".png"))
++        let text = NavView.bannerText(nav: nav, location: LocationManager())
++        print("SHOT \(name): [\(text.over)] \(text.main)")
++        window.isHidden = true
++    }
++
++    private var clock = Date(timeIntervalSince1970: 1_790_000_000)
++
++    private func model(_ fail: Error, reachable: Bool) -> NavigationModel {
++        let nav = NavigationModel(route: Fixture.routeWithRoadNames(), destination: Fixture.north(5000),
++                                  pref: 0.5, weights: [:])
++        nav.now = { [unowned self] in self.clock }
++        nav.fetchRoute = { _, _, _, _, _ in throw fail }
++        nav.networkReachable = { reachable }
++        return nav
++    }
++
++    private func feed(_ nav: NavigationModel, _ fix: CLLocation) async {
++        clock = clock.addingTimeInterval(1)
++        let f = CLLocation(coordinate: fix.coordinate, altitude: 0, horizontalAccuracy: 5,
++                           verticalAccuracy: 5, course: fix.course, speed: fix.speed,
++                           timestamp: clock)
++        nav.update(f)
++        for _ in 0..<5 { await Task.yield() }
++        while nav.isRerouting { try? await Task.sleep(for: .milliseconds(5)) }
++    }
++
++    /// Forward along the line to 1,500 m, then a U-turn and back.
++    private func wrongWay(_ nav: NavigationModel) async {
++        for m in stride(from: 0.0, through: 1500, by: 15) {
++            await feed(nav, Fixture.movingFix(Fixture.north(m), course: 0, speed: 15))
++        }
++        for m in stride(from: 1485.0, through: 1300, by: -15) {
++            await feed(nav, Fixture.movingFix(Fixture.north(m), course: 180, speed: 15))
++        }
++    }
++
++    /// Forward to 2,000 m, then east off the line onto a road that is not on it.
++    private func offRoute(_ nav: NavigationModel) async {
++        for m in stride(from: 0.0, through: 2000, by: 15) {
++            await feed(nav, Fixture.movingFix(Fixture.north(m), course: 0, speed: 15))
++        }
++        let corner = Fixture.north(2000)
++        for e in stride(from: 15.0, through: 450, by: 15) {
++            let p = CLLocationCoordinate2D(latitude: corner.latitude,
++                                           longitude: corner.longitude
++                                               + e / (111_320.0 * cos(corner.latitude * .pi / 180)))
++            await feed(nav, Fixture.movingFix(p, course: 90, speed: 15))
++        }
++    }
++
++    func test_shots() async throws {
++        var nav = model(RouteService.ServiceError.server("no route found"), reachable: true)
++        await wrongWay(nav)
++        try render(nav, "wrong-way")
++
++        nav = model(RouteService.ServiceError.offline, reachable: false)
++        await wrongWay(nav)
++        try render(nav, "wrong-way-no-signal")
++
++        nav = model(RouteService.ServiceError.offline, reachable: false)
++        await offRoute(nav)
++        try render(nav, "off-route-no-signal")
++
++        nav = model(RouteService.ServiceError.unreachable(530), reachable: true)
++        await offRoute(nav)
++        try render(nav, "off-route-server-down")
++
++        nav = model(RouteService.ServiceError.server("no route found"), reachable: true)
++        await offRoute(nav)
++        try render(nav, "off-route-connected")
++    }
++}
+diff --git a/ios/Tests/DriveReplay.swift b/ios/Tests/DriveReplay.swift
+index f12e745..a309ba0 100644
+--- a/ios/Tests/DriveReplay.swift
++++ b/ios/Tests/DriveReplay.swift
+@@ -201,6 +201,8 @@ enum DriveReplay {
+         /// How many fixes were fed before the drive ended or paused itself, or
+         /// all of them if it did neither.
+         var fixesFed = 0
++        var wrongWayEvents = 0
++        var wrongWayAt: [Double] = []
+     }
+ 
+     /// Mutable replay state, in a class because `fetchRoute` is called from a
+@@ -310,6 +312,10 @@ enum DriveReplay {
+             }
+ 
+             deepestStep = max(deepestStep, model.currentStep)
++            if model.wrongWayEvents != outcome.wrongWayEvents {
++                outcome.wrongWayEvents = model.wrongWayEvents
++                outcome.wrongWayAt.append(fix.timestamp.timeIntervalSince(drive.fixes[0].timestamp))
++            }
+             if model.arrived { break }
+             // The app stops location when a drive pauses, so no fix after this
+             // one would ever have reached the model.
+diff --git a/ios/Tests/ReplayDumpTests.swift b/ios/Tests/ReplayDumpTests.swift
+index a02923f..cb3539d 100644
+--- a/ios/Tests/ReplayDumpTests.swift
++++ b/ios/Tests/ReplayDumpTests.swift
+@@ -19,7 +19,7 @@ final class ReplayDumpTests: XCTestCase {
+                 "same": o.sameLineReplies, "describable": o.describableFixes,
+                 "repeats": o.repeatsWithoutARouteChange.count, "said": o.said,
+             ]
+-            //WRONGWAY
++            row["wrongWayEvents"] = o.wrongWayEvents; row["wrongWayAt"] = o.wrongWayAt
+             let data = try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
+             text += String(decoding: data, as: UTF8.self) + "\n"
+         }
+diff --git a/ios/Tests/SimulatedDrive.swift b/ios/Tests/SimulatedDrive.swift
+index 072dd02..6734702 100644
+--- a/ios/Tests/SimulatedDrive.swift
++++ b/ios/Tests/SimulatedDrive.swift
+@@ -26,10 +26,10 @@ import XCTest
+ enum Persona: String, CaseIterable, Codable {
+     case perfect, noisy, dropout, stopAndGo, missedTurn, wrongWayStart, earlyStop
+     case loopPerfect, loopLate, loopEarly
+-    case wrongWayAlong, loopWrongWay, serverDown, loopServerDown
++    case wrongWayAlong, loopWrongWay, serverDown, loopServerDown, deadZone, loopDeadZone
+     case spike, canyon, loopMild, loopSpike, loopCanyon
+ 
+-    var isLoop: Bool { [.loopPerfect, .loopLate, .loopEarly, .loopWrongWay, .loopServerDown,
++    var isLoop: Bool { [.loopPerfect, .loopLate, .loopEarly, .loopWrongWay, .loopServerDown, .loopDeadZone,
+                         .loopMild, .loopSpike, .loopCanyon].contains(self) }
+     /// Personas that never leave the road; any reroute they cause is the
+     /// model's doing.
+@@ -90,6 +90,9 @@ struct DriveRecord: Encodable {
+     var outageBanner: [String] = []
+     var outageUtterances = 0
+     var outageFixes = 0, outageRerouting = 0
++    var wrongWayFirstS: Double?, wrongWayFirstM: Double?
++    var wrongWayFalse = 0, wrongWayEvents = 0
++    var recoverySaid: [String] = []
+     var detour: String?
+     var violations: [String] = []
+     var samples: [String] = []
+@@ -257,6 +260,9 @@ final class SimulatedDrive {
+         if outageActive, let a = outageStart {
+             record.outageAttempts.append(t.timeIntervalSince(a))
+             record.failedReroutes += 1
++            if persona == .serverDown || persona == .loopServerDown {
++                throw RouteService.ServiceError.unreachable(530)
++            }
+             throw RouteService.ServiceError.offline
+         }
+         do {
+@@ -284,6 +290,11 @@ final class SimulatedDrive {
+             }
+         }
+         if outageActive { record.outageUtterances += 1 }
++        if text.hasPrefix("Turn around") || text.hasPrefix("No connection") {
++            if record.recoverySaid.count < 6 {
++                record.recoverySaid.append("t=\(Int(t.timeIntervalSince(t0)))s\(reversing ? " (reversing)" : ""): \(text)")
++            }
++        }
+         let kind = text == "You have arrived." ? "arrival"
+             : text.hasPrefix("In ") ? "prepare" : "final"
+         let cur = model.currentStep
+@@ -333,6 +344,10 @@ final class SimulatedDrive {
+         var gapUntil = t0, dwellUntil = t0, parkUntil = t0
+         noise = script.noise
+         canyonOffset = rng.uniform(0, 240)
++        if persona == .deadZone || persona == .loopDeadZone {
++            model.networkReachable = { [unowned self] in !self.outageActive }
++        }
++        var restored = false
+         var endSince: Date?
+         var parkedDone = false
+         var lateral = 0.0
+@@ -409,6 +424,10 @@ final class SimulatedDrive {
+                 }
+             }
+             if stationary { truthSpeed = 0 }
++            if !restored, let b = outageEnd, t >= b, persona == .deadZone || persona == .loopDeadZone {
++                restored = true
++                model.connectivityRestored()
++            }
+             if t < gapUntil { continue }
+             await emit(stationary: stationary, noisy: script.noisy, lateral: &lateral)
+         }
+@@ -576,6 +595,18 @@ final class SimulatedDrive {
+             }
+         }
+ 
++        if model.wrongWayEvents != record.wrongWayEvents {
++            record.wrongWayEvents = model.wrongWayEvents
++            if reversing, record.wrongWayFirstS == nil, let rs = revStart {
++                record.wrongWayFirstS = t.timeIntervalSince(rs)
++                record.wrongWayFirstM = s
++            } else if !reversing {
++                record.wrongWayFalse += 1
++                if record.samples.count < 8 {
++                    record.samples.append("t=\(Int(record.simSeconds))s wrong-way fired off the reversal: \(bannerNow)")
++                }
++            }
++        }
+         if reversing, let rs = revStart {
+             switch model.currentRoad {
+             case .offRoute: record.revRoadOff += 1
+@@ -905,9 +936,9 @@ enum Staging {
+             }
+             script.reverse = (at, back)
+             return .script(script, "U-turn on the route at \(Int(at)) m, \(Int(back)) m back along it")
+-        case .serverDown, .loopServerDown:
++        case .serverDown, .loopServerDown, .deadZone, .loopDeadZone:
+             let staged: Staged
+-            if persona == .serverDown {
++            if persona == .serverDown || persona == .deadZone {
+                 staged = try await missedTurn(route, line, steps, stepS,
+                                               window: 400...(line.length - 700), prefer: 0.4, far: true)
+             } else {
+diff --git a/ios/Tests/SimulatedDriveTests.swift b/ios/Tests/SimulatedDriveTests.swift
+index 924a8b2..d919d26 100644
+--- a/ios/Tests/SimulatedDriveTests.swift
++++ b/ios/Tests/SimulatedDriveTests.swift
+@@ -274,4 +274,6 @@ final class SimulatedDriveTests: XCTestCase {
+     func test_18_loopMild() async throws { try await drive(.loopMild) }
+     func test_19_loopSpike() async throws { try await drive(.loopSpike) }
+     func test_20_loopCanyon() async throws { try await drive(.loopCanyon) }
++    func test_21_deadZone() async throws { try await drive(.deadZone) }
++    func test_22_loopDeadZone() async throws { try await drive(.loopDeadZone) }
+ }
