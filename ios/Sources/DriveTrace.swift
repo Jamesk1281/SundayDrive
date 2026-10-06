@@ -72,7 +72,15 @@ final class DriveTrace {
     /// `true` for a build that records, and the whole feature comes back as it
     /// was. The privacy texts say the app does not record, so a build with this
     /// on must never ship.
+    ///
+    /// On in Debug builds since 2026-10-06, for test drives. Release builds
+    /// (TestFlight, the App Store) stay off, which is what the privacy texts
+    /// describe.
+    #if DEBUG
+    static let isEnabled = true
+    #else
     static let isEnabled = false
+    #endif
 
     /// Where this drive is being written, for anyone who wants to show or share
     /// it. Traces live in Documents so `UIFileSharingEnabled` exposes them to
