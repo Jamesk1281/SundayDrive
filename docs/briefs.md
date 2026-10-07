@@ -64,6 +64,15 @@ a brief by name or trap number means the copy at `a2ddddc`.
 | `docs/archive/new-england-terrain-brief.md` | `pipeline/elevation.py:50-58`, [new-england-terrain-findings.md](new-england-terrain-findings.md) |
 | `docs/archive/voice-guidance-plan-brief.md` | `VoiceGuide.swift:12-20`, [voice-guidance-plan.md](voice-guidance-plan.md) §3 |
 
+## Briefs deleted after 2026-10-05
+
+These were committed with their answer and deleted later, so they are not
+at `a2ddddc`. Read each at the commit named.
+
+| brief | read it with | its answer lives in |
+| --- | --- | --- |
+| `docs/mid-drive-recovery-brief.md` | `git show fe5cab0:docs/mid-drive-recovery-brief.md` | [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
+
 ## Briefs kept out of history
 
 A brief that quoted the private drive traces (street names, clock times) is
