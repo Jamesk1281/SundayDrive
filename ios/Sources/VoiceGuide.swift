@@ -442,6 +442,22 @@ final class VoiceGuide {
         deliver(key, "You have arrived.")
     }
 
+    /// Something the drive has to say that is not a maneuver: "Turn around
+    /// when possible." when the car is going the wrong way along its line,
+    /// "No connection. Head back to your route." when a reroute failed
+    /// (docs/mid-drive-recovery-plan.md, section 2).
+    ///
+    /// Said every time it is asked: `NavigationModel` holds the once-per-
+    /// episode rule, because only it knows when an episode ends. Latched like
+    /// any announcement, so a muted voice stays silent rather than saving it
+    /// up, and each call is its own key, so a later episode is said again.
+    func announceRecovery(_ text: String) {
+        recoveries += 1
+        deliver(Announcement(generation, at: CLLocationCoordinate2D(latitude: 0, longitude: 0),
+                             phase: .recovery(recoveries)), text)
+    }
+    private var recoveries = 0
+
     /// Latch first, speak second — and latch even when muted, so unmuting does
     /// not release a backlog. A refusal from the audio session un-latches
     /// again, so the next fix retries.
@@ -485,8 +501,12 @@ final class VoiceGuide {
     /// `adopt` sets `awaitingJoin`, and announcements are gated on the same
     /// predicate the banner is, so the voice waits for the driver to reach the
     /// junction exactly as the screen does.
+    ///
+    /// A recovery line in flight is the exception and finishes: it is about
+    /// the drive, not a maneuver on the old route, and "Turn around when
+    /// possible" is usually what announced the reroute now landing.
     func routeAdopted() {
-        speaker.stop()
+        if case .recovery? = inFlight?.phase {} else { speaker.stop() }
         generation += 1
         inFlight = nil
         spoken.removeAll()
@@ -544,7 +564,7 @@ final class VoiceGuide {
 /// One announcement, identified by the maneuver's place rather than its index
 /// or its wording — see `VoiceGuide.spoken`.
 private struct Announcement: Hashable {
-    enum Phase { case prepare, final, arrival }
+    enum Phase: Hashable { case prepare, final, arrival, recovery(Int) }
 
     let generation: Int
     /// Hundred-thousandths of a degree, which is about a metre. Two maneuvers

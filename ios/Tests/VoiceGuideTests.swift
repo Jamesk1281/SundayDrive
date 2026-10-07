@@ -457,7 +457,8 @@ final class VoiceGuideIntegrationTests: XCTestCase {
         // catch a latch that clears on every reply (see
         // `docs/voice-guidance-plan.md` §10). What is needed is a stray and
         // return quick enough that the driver is still approaching a maneuver
-        // they have already been told about. A GPS glitch does exactly this.
+        // they have already been told about. Two glitched fixes in a row do
+        // exactly this; one no longer reroutes (drive simulation, Finding 2).
         let backend = RerouteTests.Backend()
         let speaker = VoiceGuideTests.FakeSpeaker()
         let model = NavigationModel(route: Fixture.straightRoute(),
@@ -474,11 +475,13 @@ final class VoiceGuideIntegrationTests: XCTestCase {
         XCTAssertEqual(speaker.said, ["Head north on Test Road",
                                       "In a quarter mile, turn right onto Elm Street"])
 
-        // One fix 300 m to the side. Past `offRouteCertainMeters`, so it arms
-        // the whole streak at once and re-routes immediately.
-        let aside = CLLocationCoordinate2D(latitude: Fixture.north(700).latitude,
-                                           longitude: Fixture.origin.longitude + 300 / 82_600)
-        model.update(Fixture.movingFix(aside, course: 0, speed: 13.4))
+        // Two fixes 300 m to the side. Past `offRouteCertainMeters`, so the
+        // second arms the whole streak and re-routes immediately.
+        for northing in [690.0, 700] {
+            let aside = CLLocationCoordinate2D(latitude: Fixture.north(northing).latitude,
+                                               longitude: Fixture.origin.longitude + 300 / 82_600)
+            model.update(Fixture.movingFix(aside, course: 0, speed: 13.4))
+        }
         let deadline = Date().addingTimeInterval(2)
         while backend.inFlight == 0, Date() < deadline {
             try? await Task.sleep(for: .milliseconds(2))

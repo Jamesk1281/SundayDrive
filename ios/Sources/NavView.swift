@@ -250,9 +250,50 @@ struct NavView: View {
                               over: "Precise Location is off",
                               main: "Turn it on in Settings to navigate")
         }
+        // Mid-drive recovery, in the order of docs/mid-drive-recovery-plan.md,
+        // section 2: first match wins. Words only, like the two above; the
+        // distance says "away", never "ahead", because it is a straight line.
+        if nav.wrongWay {
+            // Until the replacement lands, which then gives its own first
+            // instruction. With the failure beside it when the reroute failed.
+            let over: String
+            switch nav.lostConnection {
+            case nil: over = "Wrong way"
+            case .noSignal: over = "Wrong way · No signal"
+            case .serverUnreachable: over = "Wrong way · No connection"
+            }
+            return BannerText(symbol: "arrow.uturn.down", alert: true,
+                              over: over, main: "Turn around when possible")
+        }
+        // "route 0.3 mi away" bound together with no-break spaces: beside the
+        // mute button the line is too long for one row on every phone, and a
+        // break inside the distance ("route 0.3 / mi away") is the one that
+        // misreads. It breaks at the "·" instead.
+        let away = "route \(distanceText(nav.distanceToLine)) away"
+            .replacingOccurrences(of: " ", with: "\u{00A0}")
+        if let lost = nav.offLineFailure {
+            // Held through a retry in flight: that the last request failed is
+            // still the truth until one lands.
+            switch lost {
+            case .noSignal:
+                return BannerText(symbol: "antenna.radiowaves.left.and.right.slash", alert: true,
+                                  over: "No signal · \(away)", main: "Head back to your route")
+            case .serverUnreachable:
+                return BannerText(symbol: "exclamationmark.icloud", alert: true,
+                                  over: "No connection · \(away)", main: "Head back to your route")
+            }
+        }
         if nav.isRerouting {
             return BannerText(symbol: "arrow.triangle.2.circlepath", alert: true,
                               over: "Off route", main: "Finding a way back…")
+        }
+        if nav.isOffTheLine {
+            // Off the line with no reroute in hand: inside the backoff, handed
+            // the same line back, or the server said no. The abandoned line's
+            // next maneuver used to stay here, pointing at a road behind.
+            return BannerText(symbol: "arrow.uturn.backward", alert: true,
+                              over: "Off route · \(away)",
+                              main: "Head back to your route")
         }
         // No accepted fix, no position, so no distance to give. Asked of
         // `lastFixAt` rather than of the distance, because a driver who really

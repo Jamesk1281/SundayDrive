@@ -87,6 +87,11 @@ REQUIRED_FIELDS = {
     "end": {"t", "ts", "reason"},
 }
 
+# A `reroute` record (one per reroute attempt, failures included; see
+# `DriveTrace.reroute`) is written and deliberately not read here: like any
+# type this file does not know, it is skipped, and
+# `test_a_record_type_the_analysis_does_not_read_changes_nothing` holds that.
+
 # A `route` record may also carry the request it answered — `req_lat`, `req_lon`,
 # `req_heading`, `req_pref` — which is what makes "was the server right to send
 # this?" answerable from a drive rather than a matter of opinion. Optional, and

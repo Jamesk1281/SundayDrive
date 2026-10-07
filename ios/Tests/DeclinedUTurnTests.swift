@@ -54,6 +54,15 @@ final class DeclinedUTurnTests: XCTestCase {
         Fixture.fix(Fixture.offset(east: 300, north: northing))
     }
 
+    /// Leave the road at `northing`: two fixes off it in a row, a second's
+    /// driving apart, since past 200 m one is a spike rather than a departure
+    /// (drive simulation, Finding 2; docs/mid-drive-recovery.md).
+    private func leave(_ model: NavigationModel, _ backend: Backend,
+                       at northing: Double) async {
+        await drive(model, backend, to: offRoad(northing - 15))
+        await drive(model, backend, to: offRoad(northing))
+    }
+
     private func waitFor(_ condition: @MainActor () -> Bool,
                          _ message: String = "condition never held",
                          file: StaticString = #filePath, line: UInt = #line) async {
@@ -94,12 +103,13 @@ final class DeclinedUTurnTests: XCTestCase {
 
     /// Off the road at 900 m, rerouted onto `turnaround`, back on the road
     /// under its return leg — and then on north, past the junction it turned
-    /// around at, until the off-route check asks again from 1,400 m.
+    /// around at, until the off-route check asks again from 1,400 m: the
+    /// second fix in a row past 200 m beyond the end of that line.
     private func declineAUTurn(_ model: NavigationModel, _ backend: Backend,
                                _ turnaround: RouteFeature? = nil,
                                then reply: RouteFeature) async {
         backend.replies = [turnaround ?? uTurn()]
-        await drive(model, backend, to: offRoad(900))
+        await leave(model, backend, at: 900)
         XCTAssertEqual(backend.asked, ["plain"])
         XCTAssertEqual(model.currentInstruction, "Make a U-turn on Test Road")
         for northing in stride(from: 900.0, through: 1100.0, by: 50) {
@@ -107,6 +117,7 @@ final class DeclinedUTurnTests: XCTestCase {
         }
         advance(30)
         backend.replies = [reply]
+        await drive(model, backend, to: Fixture.fixAt(1385))
         await drive(model, backend, to: Fixture.fixAt(1400))
     }
 
@@ -129,7 +140,7 @@ final class DeclinedUTurnTests: XCTestCase {
         let backend = Backend()
         let model = driving(backend)
         backend.replies = [uTurn()]
-        await drive(model, backend, to: offRoad(900))
+        await leave(model, backend, at: 900)
         XCTAssertEqual(backend.asked, ["plain"])
         XCTAssertFalse(model.declinedUTurn)
     }
@@ -143,7 +154,7 @@ final class DeclinedUTurnTests: XCTestCase {
         let backend = Backend()
         let model = driving(backend)
         backend.replies = [Fixture.uTurnAheadRoute(start: 1000, backMeters: 1200)]
-        await drive(model, backend, to: offRoad(900))
+        await leave(model, backend, at: 900)
         for northing in stride(from: 1000.0, through: 1250.0, by: 50) {
             await drive(model, backend, to: Fixture.fixAt(northing))
         }
@@ -177,7 +188,7 @@ final class DeclinedUTurnTests: XCTestCase {
         let backend = Backend()
         let model = driving(backend)
         backend.replies = [uTurn()]
-        await drive(model, backend, to: offRoad(900))
+        await leave(model, backend, at: 900)
         for northing in stride(from: 900.0, through: 1050.0, by: 50) {
             await drive(model, backend, to: Fixture.fixAt(northing))
         }
@@ -231,7 +242,7 @@ final class DeclinedUTurnTests: XCTestCase {
         // So the next departure is a fresh one, and its first U-turn is offered.
         advance(200)
         backend.replies = [ahead(from: 2400)]
-        await drive(model, backend, to: offRoad(2300))
+        await leave(model, backend, at: 2300)
         XCTAssertEqual(backend.asked, ["plain", "ahead", "plain"])
     }
 
@@ -239,7 +250,7 @@ final class DeclinedUTurnTests: XCTestCase {
         let backend = Backend()
         let model = driving(backend)
         backend.replies = [uTurn()]
-        await drive(model, backend, to: offRoad(900))
+        await leave(model, backend, at: 900)
         await drive(model, backend, to: Fixture.fixAt(900))
         // Turned round, and 120 m back down the road the route sent them.
         for northing in stride(from: 880.0, through: 780.0, by: -20) {
@@ -248,7 +259,7 @@ final class DeclinedUTurnTests: XCTestCase {
         XCTAssertEqual(model.currentInstruction, "Turn right onto Cliff Street")
         advance(60)
         backend.replies = [ahead(from: 800)]
-        await drive(model, backend, to: offRoad(700))
+        await leave(model, backend, at: 700)
         XCTAssertEqual(backend.asked, ["plain", "plain"])
         XCTAssertFalse(model.declinedUTurn)
     }

@@ -62,6 +62,10 @@ final class RerouteTests: XCTestCase {
     }
 
     /// Drift 300 m east of the line — well past the 60 m off-route threshold.
+    ///
+    /// A departure is two of these in a row, a second's driving apart: past
+    /// 200 m one fix is a spike, not a turn off the road (drive simulation,
+    /// Finding 2; docs/mid-drive-recovery.md).
     private func offRoute(_ metres: Double) -> CLLocation {
         Fixture.fix(CLLocationCoordinate2D(
             latitude: Fixture.north(metres).latitude,
@@ -87,6 +91,7 @@ final class RerouteTests: XCTestCase {
     func test_straying_off_the_line_asks_for_a_new_route() async {
         let backend = Backend()
         let model = joined(backend)
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         XCTAssertTrue(model.isRerouting)
@@ -105,6 +110,7 @@ final class RerouteTests: XCTestCase {
         let model = joined(backend)
         var clock = Date()
         model.now = { clock }
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: namedRoute("Continue on New Road"))
@@ -130,6 +136,7 @@ final class RerouteTests: XCTestCase {
         let (model, advance) = await afterAReroute(backend)
 
         advance(20)                                  // well past the 8 s cooldown
+        model.update(offRoute(1185))
         model.update(offRoute(1200))                 // and 400 m further on
         try? await Task.sleep(for: .milliseconds(50))
 
@@ -145,6 +152,7 @@ final class RerouteTests: XCTestCase {
 
         model.update(Fixture.fixAt(1000))            // joins the new line
         advance(20)
+        model.update(offRoute(1385))
         model.update(offRoute(1400))                 // then strays off it
 
         await waitFor { backend.inFlight == 2 }
@@ -159,6 +167,7 @@ final class RerouteTests: XCTestCase {
         let (model, advance) = await afterAReroute(backend)
 
         advance(60)                                  // past joinGraceSeconds (45)
+        model.update(offRoute(1185))
         model.update(offRoute(1200))
 
         await waitFor { backend.inFlight == 2 }
@@ -196,13 +205,14 @@ final class RerouteTests: XCTestCase {
         // Eleven seconds after the reroute: past the flat 8 s cooldown that let
         // every one of those ten attempts through, inside the doubled one.
         advance(6)
+        model.update(beside(300, at: 985))
         model.update(beside(300, at: 1000))
         try? await Task.sleep(for: .milliseconds(30))
         XCTAssertEqual(backend.inFlight, 1,
                        "8 s was enough to ask again before; 11 s must not be")
 
         // Past the doubled interval it is allowed through, so this is a delay
-        // and not a latch.
+        // and not a latch. Still off the road: the third fix out in a row.
         advance(20)
         model.update(beside(300, at: 1200))
         await waitFor { backend.inFlight == 2 }
@@ -217,6 +227,7 @@ final class RerouteTests: XCTestCase {
         advance(5)
         model.update(Fixture.fixAt(900))
         advance(20)                                  // clears 16 s, so it fires
+        model.update(beside(300, at: 985))
         model.update(beside(300, at: 1000))
         await waitFor { backend.inFlight == 2 }
         backend.reply(1, with: namedRoute("Continue on New Road"))
@@ -225,6 +236,7 @@ final class RerouteTests: XCTestCase {
         advance(5)
         model.update(Fixture.fixAt(1100))
         advance(20)                                  // 25 s: cleared 16, not 32
+        model.update(beside(300, at: 1185))
         model.update(beside(300, at: 1200))
         try? await Task.sleep(for: .milliseconds(30))
         XCTAssertEqual(backend.inFlight, 2,
@@ -243,6 +255,7 @@ final class RerouteTests: XCTestCase {
             model.update(Fixture.fixAt(northing))
         }
         advance(9)                                   // only just past the base 8 s
+        model.update(beside(300, at: 1585))
         model.update(beside(300, at: 1600))
 
         await waitFor { backend.inFlight == 2 }
@@ -330,6 +343,7 @@ final class RerouteTests: XCTestCase {
         model.update(Fixture.fixAt(500))
         XCTAssertEqual(model.currentRoad, .named("Test Road"))
 
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         let replacement = Fixture.routeWithRoadNames(
@@ -372,6 +386,7 @@ final class RerouteTests: XCTestCase {
                                     pref: 0.8, weights: [:])
         model.fetchRoute = backend.fetch
         model.update(Fixture.fixAt(500))
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         // The same line back again, which is the server's right answer when the
@@ -402,6 +417,7 @@ final class RerouteTests: XCTestCase {
         let backend = Backend()
         let model = joined(backend)
 
+        model.update(beside(300, at: 4885))
         model.update(beside(300, at: 4900))          // 100 m of route left
         try? await Task.sleep(for: .milliseconds(30))
         XCTAssertEqual(backend.inFlight, 0)
@@ -413,6 +429,7 @@ final class RerouteTests: XCTestCase {
         let backend = Backend()
         let model = joined(backend)
 
+        model.update(beside(300, at: 1985))
         model.update(beside(300, at: 2000))
         await waitFor { backend.inFlight == 1 }
     }
@@ -426,6 +443,8 @@ final class RerouteTests: XCTestCase {
         // drive was rerouted backwards down a road it was already committed to.
         let backend = Backend()
         let model = joined(backend)
+        model.update(Fixture.movingFix(offRoute(785).coordinate,
+                                       course: 90, speed: 20))
         model.update(Fixture.movingFix(offRoute(800).coordinate,
                                        course: 90, speed: 20))
         await waitFor { backend.inFlight == 1 }
@@ -439,6 +458,8 @@ final class RerouteTests: XCTestCase {
         // the wrong end of the road with no distance check to catch it.
         let backend = Backend()
         let model = joined(backend)
+        model.update(Fixture.movingFix(offRoute(785).coordinate,
+                                       course: 90, speed: 0.4))
         model.update(Fixture.movingFix(offRoute(800).coordinate,
                                        course: 90, speed: 0.4))
         await waitFor { backend.inFlight == 1 }
@@ -451,6 +472,7 @@ final class RerouteTests: XCTestCase {
         // number is how it would become a confident due north.
         let backend = Backend()
         let model = joined(backend)
+        model.update(offRoute(785))
         model.update(offRoute(800))                  // plain fix: course -1
         await waitFor { backend.inFlight == 1 }
         XCTAssertEqual(backend.headingsRequested, [nil])
@@ -509,6 +531,7 @@ final class RerouteTests: XCTestCase {
         let backend = Backend()
         let model = joined(backend)
 
+        model.update(offRoute(785))
         model.update(offRoute(800))                       // request 0: scenic
         await waitFor { backend.inFlight == 1 }
         Task { await model.switchToFastest(from: Fixture.fixAt(800)) }
@@ -533,6 +556,7 @@ final class RerouteTests: XCTestCase {
         let backend = Backend()
         let model = joined(backend)
 
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         Task { await model.switchToFastest(from: Fixture.fixAt(800)) }
@@ -549,10 +573,13 @@ final class RerouteTests: XCTestCase {
 
     func test_a_failed_reroute_is_not_retried_on_every_fix() async {
         // Off-route checks run on every GPS tick; without a cooldown a server
-        // blip would be hammered several times a second.
+        // blip would be hammered several times a second. A failed request has
+        // its own clock now, off the backoff: the path coming back, or 15 s
+        // (docs/mid-drive-recovery-plan.md, section 3.1).
         let backend = Backend()
         let model = joined(backend)
 
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         backend.fail(0)
@@ -563,7 +590,7 @@ final class RerouteTests: XCTestCase {
         }
         try? await Task.sleep(for: .milliseconds(50))
         XCTAssertEqual(backend.prefsRequested.count, 1,
-                       "the 8 s cooldown should have suppressed the retries")
+                       "the 15 s failure retry should have suppressed the retries")
     }
 
     // MARK: - The first turn of a reroute, withheld (2026-08-25)
@@ -580,6 +607,7 @@ final class RerouteTests: XCTestCase {
         let model = joined(backend)
         var clock = Date()
         model.now = { clock }
+        model.update(offRoute(offRouteAt - 15))
         model.update(offRoute(offRouteAt))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: Fixture.response(fastest: feature, scenic: feature))
@@ -741,6 +769,7 @@ final class RerouteTests: XCTestCase {
         // off-route recovery stays armed for the rest of the drive.
         let backend = Backend()
         let model = joined(backend)
+        model.update(offRoute(785))
         model.update(offRoute(800))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: namedRoute("Continue on New Road"))

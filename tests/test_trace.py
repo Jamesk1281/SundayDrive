@@ -642,6 +642,32 @@ def test_the_analysis_reads_only_fields_it_declares(tmp_path):
     assert at.headline(steps.assign(assumed_ms=20.0))["km"] > 0
 
 
+def test_a_record_type_the_analysis_does_not_read_changes_nothing(tmp_path):
+    """The app writes a `reroute` record for every reroute attempt, and may add
+    types again. Every reader here selects records by type, so an unknown one
+    must leave the numbers exactly as they were.
+    """
+    base = [
+        {"t": "drive", "ts": 0.0, "pref": 0.5},
+        {"t": "route", "ts": 1.0, "seq": 0, "reason": "start", "km": 1.0,
+         "minutes": 2.0, "coords": [[-71.0, 42.0], [-71.0, 42.01]], "steps": []},
+        *fixes([(20.0, 10), (0.0, 20), (20.0, 10)]).to_dict("records"),
+        {"t": "end", "ts": 99.0, "reason": "arrived"},
+    ]
+    attempt = {"t": "reroute", "ts": 5.0, "reason": "offroute", "req_lat": 42.0,
+               "req_lon": -71.0, "req_pref": 0.5, "outcome": "failed",
+               "error_class": "offline", "path": False, "elapsed_s": 0.02}
+    with_attempt = base[:3] + [attempt] + base[3:]
+
+    def numbers(records):
+        loaded = at.load(trace_file(tmp_path, records))
+        parts = at.segments(loaded)
+        steps = at.steps(parts[0][1])
+        return len(parts), len(steps), len(at.stops(steps))
+
+    assert numbers(with_attempt) == numbers(base)
+
+
 # --- against the real graph ---------------------------------------------------
 
 def test_fixes_snap_to_the_road_they_were_driven_on(edges):

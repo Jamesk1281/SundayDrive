@@ -329,7 +329,19 @@ final class RouteModel {
         // phone locked — see `LocationManager.onFix` — and a drive that only
         // runs while someone is looking at it is not a drive we can measure.
         locationManager.onFix = { [weak session] location in session?.update(location) }
+        watchConnectivity(session)
         nav = session
+    }
+
+    /// The phone's network path, for every drive. See `Connectivity`.
+    private let connectivity = Connectivity()
+
+    /// Let a drive ask whether there is a network path, and tell it when one
+    /// comes back, so a failed reroute is retried on that second rather than
+    /// on a timer (docs/mid-drive-recovery-plan.md, section 3.1).
+    private func watchConnectivity(_ session: NavigationModel) {
+        session.networkReachable = { [connectivity] in connectivity.hasPath }
+        connectivity.onRestored = { [weak session] in session?.connectivityRestored() }
     }
 
     /// Begin live navigation around a generated loop.
@@ -351,6 +363,7 @@ final class RouteModel {
             turnaround: response.meta.turnaroundCoordinate,
             voice: VoiceGuide(speaker: SystemSpeaker()))
         locationManager.onFix = { [weak session] location in session?.update(location) }
+        watchConnectivity(session)
         nav = session
     }
 

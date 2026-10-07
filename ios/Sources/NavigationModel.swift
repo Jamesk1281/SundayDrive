@@ -134,15 +134,26 @@ final class NavigationModel {
     /// demands persistence; this one used to fire on a single sample.
     private static let offRouteFixesToReroute = 3
 
-    /// Past this, one fix is enough. No plausible GPS error puts a car 200 m
-    /// from the road it is driving on, so a reading this far out is a driver who
-    /// has genuinely turned off — and making them wait three fixes for a reroute
-    /// they obviously need would be its own defect. Hysteresis is for the
-    /// ambiguous band just past `offRouteMeters`, not for leaving the route.
+    /// Past this, two fixes in a row are enough. No plausible GPS error puts a
+    /// car 200 m from the road it is driving on, so a reading this far out is
+    /// a driver who has genuinely turned off — and making them wait three fixes
+    /// for a reroute they obviously need would be its own defect. Hysteresis is
+    /// for the ambiguous band just past `offRouteMeters`, not for leaving the
+    /// route.
+    ///
+    /// Two and not one, because one is a spike. A single fix thrown 220–450 m
+    /// rerouted the driver every time in the 2026-10-05 drive simulation
+    /// (Finding 2): 1,468 requests over 79 routes, and a spoken U-turn for a
+    /// road 2 km behind the car. Two in a row cut that to 20, and a real wrong
+    /// turn rerouted no later, because it produces a second far fix a second
+    /// after the first.
     private static let offRouteCertainMeters: Double = 200
+    private static let offRouteCertainFixes = 2
 
     /// Fixes in a row that have read off-route — see `offRouteFixesToReroute`.
     private var consecutiveOffRouteFixes = 0
+    /// Of those, the ones in a row past `offRouteCertainMeters`.
+    private var consecutiveFarFixes = 0
 
     /// How close counts as arriving.
     private static let arrivalMeters: Double = 40
@@ -338,6 +349,10 @@ final class NavigationModel {
     /// which leaves the driver past it having never been near it. Proximity
     /// catches that; on its own it would miss a driver whose fixes are coarse
     /// enough to skip the radius entirely.
+    ///
+    /// Reaching it along the line now means driving there: `farPointCap`
+    /// keeps every match short of it until it has been passed, so a jump to
+    /// the return leg can no longer latch this.
     private func trackTurnaround(_ location: CLLocation, _ here: RouteProgress) {
         guard let loop = loopTurnaround, !passedTurnaround else { return }
         if here.travelled >= loop.along
@@ -345,6 +360,31 @@ final class NavigationModel {
             passedTurnaround = true
         }
     }
+
+    /// How far along the line a match may land, on a loop that has not yet
+    /// reached its far point: the far point and a little more. Unbounded on
+    /// every other drive, and on a loop once the far point has gone by.
+    ///
+    /// Where a loop drives a road twice, the two passes are the same
+    /// coordinates, and nothing else stopped a match jumping from the outbound
+    /// pass to the return one: one noisy fix, or a car turned back on the
+    /// outbound pass, which is driving the return pass forwards. The jump then
+    /// latched `passedTurnaround`, every later reroute asked for the short way
+    /// home, and the loop was gone without a word. Measured in the plan
+    /// (docs/mid-drive-recovery-plan.md, section 4.4): under the drive
+    /// simulation's spikes the 26 loops drove 13% of their planned length,
+    /// 101% with this; under real-trace noise, 92% against 99.9%.
+    ///
+    /// The return leg lies beyond the far point by construction, so this
+    /// closes the drive simulation's Finding 1 for the outbound half of every
+    /// loop. It does not close it within the return half.
+    private var farPointCap: Double {
+        guard let loop = loopTurnaround, !passedTurnaround else { return .infinity }
+        return loop.along + Self.farPointCapSlackMeters
+    }
+
+    /// Room past the far point for a match on a car standing at it.
+    private static let farPointCapSlackMeters: Double = 25
 
     /// When the last reroute was attempted. Off-route checks run on every GPS
     /// tick — about 1 Hz, moving or not, since `LocationManager` carries no
@@ -476,6 +516,280 @@ final class NavigationModel {
     private func hasMovedSinceLastReroute(_ location: CLLocation) -> Bool {
         guard let origin = lastRerouteOrigin else { return true }
         return location.distance(to: origin) >= Self.rerouteMinMovementMeters
+    }
+
+    // MARK: - When a reroute fails
+
+    /// Why the last automatic reroute got nothing back, while it still
+    /// matters: from the failure until a request lands or the driver is back
+    /// on the line. Nil otherwise. What the off-route banner says
+    /// (docs/mid-drive-recovery-plan.md, section 2, rows 2–4).
+    enum LostConnection: Equatable {
+        /// The request failed and the phone has no network path at all.
+        case noSignal
+        /// There is a path, and nothing usable came down it: a 5xx,
+        /// Cloudflare's 530 for an absent origin, a timeout, an undecodable
+        /// reply. Said as "No connection", because "Can't reach Sunday Drive"
+        /// wraps the banner (plan, section 2).
+        case serverUnreachable
+    }
+    private(set) var lostConnection: LostConnection?
+
+    /// What became of a request that brought back no route.
+    ///
+    /// Two kinds, because they want opposite things (plan, section 3.1). A
+    /// server that answered "no" is up, and asking again from a few metres on
+    /// gets the same answer: that is the unhelpful success the backoff exists
+    /// for. A request that never landed says nothing about the route, and
+    /// asking again *does* help once the network is back — which the backoff,
+    /// counting failures with the rest, made wait a median 64 s.
+    enum RerouteFailure: Equatable {
+        /// The server's own message ("no route found", "closed for the
+        /// season").
+        case server(String)
+        case lost(LostConnection)
+    }
+
+    /// Whether the phone has a network path, from `Connectivity` in a real
+    /// drive. A seam the tests drive. It classifies a failure and decides
+    /// whether a timer may retry one; it never stops a request being made.
+    var networkReachable: () -> Bool = { true }
+
+    /// Failed requests in a row — network failures only, never a `.server`
+    /// answer. Kept apart from `consecutiveReroutes` so a dead zone cannot
+    /// climb the backoff; reset by any request that lands, and by the driver
+    /// getting back on the line on their own.
+    private var consecutiveFailures = 0
+    private var lastFailureAt: Date = .distantPast
+
+    /// Set when the network path comes back after a failure: the next fix asks
+    /// at once, once. See `connectivityRestored`.
+    private var retryOnPathReturn = false
+
+    /// Whether "No connection. Head back to your route." has been said in this
+    /// episode. One spoken line per episode, which ends when a request lands
+    /// or the driver is back on the line.
+    private var announcedLostConnection = false
+
+    /// How long after a failure, with a network path, before a timer may try
+    /// again: 15 s, 30 s, then every 60 s (plan, section 3.1). A path that is
+    /// up and carrying nothing is a weak signal or our server down, and a
+    /// minute between tries costs about 0.6% of a battery an hour more than
+    /// the old backoff (section 3.2).
+    private var failureRetryInterval: TimeInterval {
+        [15, 30, 60][min(max(consecutiveFailures, 1), 3) - 1]
+    }
+
+    /// Whether the clocks allow an automatic reroute now. After an unhelpful
+    /// success, the backoff. After a failure, the path coming back, or the
+    /// failure timer while a path exists — and never a timer while there is
+    /// none, when a request could only fail again before it left the phone.
+    private var rerouteDue: Bool {
+        guard consecutiveFailures > 0 else {
+            return now().timeIntervalSince(lastRerouteAttempt) > rerouteCooldown
+        }
+        if retryOnPathReturn { return true }
+        guard networkReachable() else { return false }
+        return now().timeIntervalSince(lastFailureAt) >= failureRetryInterval
+    }
+
+    /// The network path has come back — `Connectivity`'s callback in a real
+    /// drive. If the last request failed, the next fix asks again, wherever
+    /// the car is: the movement guard is for a parked car that keeps being
+    /// handed a route it cannot reach, not for one that waited out a dead zone.
+    func connectivityRestored() {
+        guard consecutiveFailures > 0 else { return }
+        retryOnPathReturn = true
+        lastRerouteOrigin = nil
+    }
+
+    /// A request landed, with a route or with the server's own "no": the
+    /// network works, and the episode is over.
+    private func connectionWorked() {
+        consecutiveFailures = 0
+        retryOnPathReturn = false
+        lostConnection = nil
+        announcedLostConnection = false
+    }
+
+    /// The driver is back on the line without a reroute landing, which ends
+    /// the episode too: the banner returns to the route's own instruction,
+    /// and a later departure is a new one, whose first request is tried at
+    /// once and said once if it fails. Not while going the wrong way along
+    /// the line, which is on it and still needs the failure shown (row 2).
+    private func trackLostConnection(_ here: RouteProgress) {
+        guard consecutiveFailures > 0 || lostConnection != nil,
+              hasJoinedRoute, !wrongWay,
+              here.offRoute <= Self.joinConfirmMeters else { return }
+        connectionWorked()
+    }
+
+    /// Straight-line distance from the car to the nearest point of its line
+    /// no more than 300 m behind where it was last matched, for "route 0.3 mi
+    /// away". Never an earlier pass of a loop, and never "ahead": it is a
+    /// straight line, which can be a river away from the road back (plan,
+    /// section 5.2). Refreshed only while an off-route banner shows it.
+    private(set) var distanceToLine: Double = 0
+    private static let distanceToLineBehindMeters: Double = 300
+
+    /// Whether the car has left its line, as far as the screen is concerned:
+    /// the same evidence that makes a reroute due, on a line it has reached,
+    /// with more than `noRerouteWithinMeters` to go. Inside that the driver
+    /// is parking, and the last instruction stays (plan, section 2, row 6).
+    var isOffTheLine: Bool {
+        guard offLineBannerApplies, let here = lastProgress else { return false }
+        return here.offRoute > Self.offRouteMeters
+            && consecutiveOffRouteFixes >= Self.offRouteFixesToReroute
+    }
+
+    /// The failure to show in the off-route banner, or nil — the same
+    /// conditions as `isOffTheLine` apart from the distance, since a failed
+    /// request is already the evidence.
+    var offLineFailure: LostConnection? {
+        offLineBannerApplies ? lostConnection : nil
+    }
+
+    /// Off a line the car has reached. `awaitingJoin` is a car on its way to
+    /// a replacement that starts at a junction ahead, which is not off route —
+    /// unless the replacement was the same line handed back (`merge`), when
+    /// the car is exactly as far off it as before.
+    private var offLineBannerApplies: Bool {
+        guard !arrived, hasJoinedRoute, !awaitingJoin || awaitingMergedLine,
+              let here = lastProgress else { return false }
+        return here.remaining > Self.noRerouteWithinMeters
+    }
+
+    /// Whether the line now awaited is the one already being followed — set
+    /// by `merge`, cleared by `adopt`.
+    private var awaitingMergedLine = false
+
+    // MARK: - Wrong way along the route
+
+    /// True while the car is driving its own line backwards, from the fix the
+    /// detector fires on until the replacement lands, the car turns round or
+    /// it leaves the line.
+    ///
+    /// `travelled` cannot say this (plan, section 4.1). Driving back along the
+    /// line keeps the match on it, `reseatIfPinned` walks the match back with
+    /// the car, and `offRoute` never builds a streak; on drive-2026-10-06-192759
+    /// that was about 200 fixes and 1.9 km with the banner pointing at the road
+    /// behind. And `travelled` falls for three cars doing nothing wrong: one
+    /// on a road a loop drives twice, one on a replacement that opens with a
+    /// U-turn, and any car `reseatIfPinned` re-seats. What tells them apart is
+    /// the heading: on a road driven twice the two passes run opposite ways,
+    /// and a car going the wrong way agrees with neither.
+    private(set) var wrongWay = false
+
+    /// Votes in a row: fixes whose course runs against every pass of the line
+    /// where the car is. Five, over 40 m of the line gone backwards, before it
+    /// fires — on the plan's runs that is 4–5 s and 48–60 m.
+    private var wrongWayVotes = 0
+    private var wrongWayBackMeters = 0.0
+    private var wrongWayLastAlong: Double?
+    private static let wrongWayFixes = 5
+    private static let wrongWayMinBackMeters: Double = 40
+
+    /// A fix can say which way the car points only at speed, with a course,
+    /// and accurate enough to place it on one road. Any other fix neither
+    /// builds the case nor clears it, so a car slowing to turn round keeps its
+    /// evidence, and a canyon (worse than 30 m) can never make one.
+    private static let wrongWayMinSpeed: CLLocationSpeed = 3
+    private static let wrongWayMaxAccuracy: Double = 30
+
+    /// Within this of a pass, the car's course agrees with it; this far or
+    /// more against every pass, it is a vote.
+    private static let alignedDegrees: Double = 60
+    private static let opposedDegrees: Double = 120
+
+    /// The detector arms on a line only once the car has gone this far the
+    /// right way along it, counted on fixes whose course agrees with the line
+    /// where the car is matched.
+    ///
+    /// Aligned progress, and not the furthest match since adoption, which was
+    /// the prototype's first version and fired on a real replay: a replacement
+    /// doubled back past the car, which crept 40 m "forward" along it while
+    /// pointing the other way. A replacement that opens with a U-turn runs
+    /// against the car until it turns, and its own first instruction already
+    /// says so. In the twelve older recorded drives, eight of the nine opposed
+    /// runs of five fixes or more began one second after such an adoption.
+    private static let wrongWayArmMeters: Double = 100
+    private var alignedProgress = 0.0
+    private var lastAlignedAlong: Double?
+
+    /// The line's cumulative length at each vertex, rebuilt with the line, so
+    /// its direction at a match is a binary search.
+    private var lineLengths: [Double] = []
+
+    /// Where the previous fix matched, and when, for the cheap common case.
+    private var previousMatch: (along: Double, at: Date)?
+
+    private func trackWrongWay(_ location: CLLocation, _ here: RouteProgress) {
+        defer { previousMatch = (here.travelled, now()) }
+        guard hasJoinedRoute, !awaitingJoin, !arrived else { resetWrongWay(); return }
+        let readable = location.speed >= Self.wrongWayMinSpeed && location.course >= 0
+            && location.horizontalAccuracy > 0
+            && location.horizontalAccuracy <= Self.wrongWayMaxAccuracy
+
+        // Arming: forward progress, on fixes that agree with the line.
+        if readable, here.offRoute <= Self.joinConfirmMeters,
+           let along = lineBearing(of: coordinates, lengths: lineLengths, at: here.travelled),
+           angleBetween(location.course, along) <= Self.alignedDegrees {
+            if let last = lastAlignedAlong {
+                alignedProgress += max(0, min(100, here.travelled - last))
+            }
+            lastAlignedAlong = here.travelled
+        } else {
+            lastAlignedAlong = nil
+        }
+        guard alignedProgress >= Self.wrongWayArmMeters else { resetWrongWay(); return }
+        guard readable else { return }
+
+        // The common case costs nothing: a match moving forward at about the
+        // car's speed is a car going the right way.
+        if !wrongWay, wrongWayVotes == 0, let previous = previousMatch,
+           here.offRoute <= Self.joinConfirmMeters {
+            let dt = now().timeIntervalSince(previous.at)
+            if dt > 0, here.travelled - previous.along >= 0.5 * location.speed * dt { return }
+        }
+
+        // Off the line is the ordinary off-route path's business. Asked of the
+        // whole line, not the floor-constrained match, which a car running back
+        // past the floor pulls away from the road it is on.
+        let free = progress(of: location.coordinate, along: coordinates,
+                            notBefore: 0, notAfter: farPointCap, near: travelled)
+        guard free.offRoute <= Self.joinConfirmMeters else { resetWrongWay(); return }
+        let near = passes(of: location.coordinate, along: coordinates,
+                          within: free.offRoute + 5, notAfter: farPointCap)
+        if near.contains(where: { angleBetween(location.course, $0.bearing) <= Self.alignedDegrees }) {
+            resetWrongWay()
+            return
+        }
+        guard let pass = near
+            .filter({ angleBetween(location.course, $0.bearing) >= Self.opposedDegrees })
+            .min(by: { abs($0.along - travelled) < abs($1.along - travelled) })
+        else { resetWrongWay(); return }
+
+        if let last = wrongWayLastAlong {
+            wrongWayBackMeters += max(-60, min(60, last - pass.along))
+        }
+        wrongWayLastAlong = pass.along
+        wrongWayVotes += 1
+        guard !wrongWay, wrongWayVotes >= Self.wrongWayFixes,
+              wrongWayBackMeters >= Self.wrongWayMinBackMeters else { return }
+        wrongWay = true
+        trace?.phase("wrongway")
+        // Once per episode, decision D3: on the fix that opens it. The banner
+        // holds the words, and the replacement speaks next.
+        voice?.announceRecovery("Turn around when possible.")
+    }
+
+    /// The case is closed: the car turned round, left the line, or is on a
+    /// line it has not yet gone the right way along.
+    private func resetWrongWay() {
+        wrongWay = false
+        wrongWayVotes = 0
+        wrongWayBackMeters = 0
+        wrongWayLastAlong = nil
     }
 
     /// Set when a replacement route is adopted, and cleared once the driver
@@ -674,6 +988,7 @@ final class NavigationModel {
         // Last, and after every stored property: it reads `steps` and
         // `coordinates` back off `self`.
         self.stepRemaining = Self.remainingAtEachStep(of: steps, along: coordinates)
+        self.lineLengths = cumulativeLengths(of: coordinates)
         trace?.route(route, reason: "start")
         if trace != nil { startWatchdog() }
         // Under the controls, with the recording state and the reply to a tap —
@@ -968,9 +1283,11 @@ final class NavigationModel {
         // nothing is known, so the whole line is fair game. Among passes that
         // tie, nearest to `travelled` and not to the floor: just past a U-turn
         // the floor still reaches back onto the outbound leg.
+        // On a loop short of its far point, never beyond it — see `farPointCap`.
         let floor = hasJoinedRoute ? max(0, travelled - Self.backtrackToleranceMeters) : 0
         let here = reseatIfPinned(progress(of: location.coordinate,
                                            along: coordinates, notBefore: floor,
+                                           notAfter: farPointCap,
                                            near: hasJoinedRoute ? travelled : 0),
                                   at: location)
         lastProgress = here
@@ -1072,19 +1389,13 @@ final class NavigationModel {
         settleAwaitingJoin(here)
         trackSettling(here)
         trackFollowing(here)
-
-        // How much evidence there is that the driver has actually left the road.
-        // An unambiguous excursion counts for the whole streak at once, so a
-        // genuine wrong turn still reroutes on the fix that reveals it. Nearer
-        // the threshold it takes persistence — and a fix whose stated error is
-        // itself comparable to the threshold says nothing either way, so it
-        // neither builds the streak nor clears it.
-        if here.offRoute > Self.offRouteCertainMeters {
-            consecutiveOffRouteFixes = Self.offRouteFixesToReroute
-        } else if location.horizontalAccuracy < Self.offRouteMeters {
-            consecutiveOffRouteFixes = here.offRoute > Self.offRouteMeters
-                ? consecutiveOffRouteFixes + 1
-                : 0
+        trackWrongWay(location, here)
+        trackLostConnection(here)
+        countOffRouteEvidence(location, here)
+        if isOffTheLine || offLineFailure != nil {
+            distanceToLine = progress(of: location.coordinate, along: coordinates,
+                                      notBefore: max(0, travelled - Self.distanceToLineBehindMeters),
+                                      notAfter: farPointCap, near: travelled).offRoute
         }
 
         // Strayed well off the line — re-route from here, keeping the same
@@ -1095,16 +1406,53 @@ final class NavigationModel {
         // car, `awaitingJoin` stops a successful one retrying while the driver
         // is still on their way to the line it put them on, and the backoff
         // inside `rerouteCooldown` stops a *correct* one being asked for over
-        // and over by a driver who is not going to take it.
+        // and over by a driver who is not going to take it. `rerouteDue` keeps
+        // a failed request off that backoff (plan, section 3.1).
+        //
+        // Going the wrong way along the line asks at once, with the heading,
+        // under the same guards and through the same `reroute` — so it sends
+        // `declined_uturn` when that is set, and goes via the far point on a
+        // loop that has not reached it (decision D2).
+        let offRouteDue = here.offRoute > Self.offRouteMeters
+            && consecutiveOffRouteFixes >= Self.offRouteFixesToReroute
         if armedForReroute,
            !isRerouting,
            !awaitingJoin,
            here.remaining > Self.noRerouteWithinMeters,
-           now().timeIntervalSince(lastRerouteAttempt) > rerouteCooldown,
+           rerouteDue,
            hasMovedSinceLastReroute(location),
-           here.offRoute > Self.offRouteMeters,
-           consecutiveOffRouteFixes >= Self.offRouteFixesToReroute {
-            Task { await reroute(from: location, reason: "offroute") }
+           offRouteDue || wrongWay {
+            let reason = wrongWay && !offRouteDue ? "wrongway" : "offroute"
+            Task { await reroute(from: location, reason: reason) }
+        }
+    }
+
+    /// How much evidence there is that the driver has actually left the road.
+    ///
+    /// Nearer the threshold it takes persistence, three fixes. Past
+    /// `offRouteCertainMeters` two in a row are the whole streak, so a genuine
+    /// wrong turn still reroutes a second after it shows and one spike does
+    /// not. And a fix counts as off only when it is further off than its own
+    /// stated error allows, `offRoute > offRouteMeters + horizontalAccuracy`:
+    /// a fix 70 m out at a stated 55 m is not evidence of leaving the road. In
+    /// the drive simulation's canyon multipath that took reroutes of drivers
+    /// who never left the road from 310 to 0 (Finding 3). Such a fix neither
+    /// builds the streak nor clears it, and nor does one whose stated error is
+    /// itself as wide as the threshold.
+    private func countOffRouteEvidence(_ location: CLLocation, _ here: RouteProgress) {
+        if here.offRoute > Self.offRouteCertainMeters {
+            consecutiveFarFixes += 1
+            consecutiveOffRouteFixes = consecutiveFarFixes >= Self.offRouteCertainFixes
+                ? max(consecutiveOffRouteFixes + 1, Self.offRouteFixesToReroute)
+                : consecutiveOffRouteFixes + 1
+            return
+        }
+        consecutiveFarFixes = 0
+        guard location.horizontalAccuracy < Self.offRouteMeters else { return }
+        if here.offRoute > Self.offRouteMeters + max(0, location.horizontalAccuracy) {
+            consecutiveOffRouteFixes += 1
+        } else if here.offRoute <= Self.offRouteMeters {
+            consecutiveOffRouteFixes = 0
         }
     }
 
@@ -1159,7 +1507,7 @@ final class NavigationModel {
         // Unconstrained in what it may reach, but still nearest to the driver
         // among passes that tie: the earliest pass is kilometres back on a loop.
         let free = progress(of: location.coordinate, along: coordinates,
-                            notBefore: 0, near: travelled)
+                            notBefore: 0, notAfter: farPointCap, near: travelled)
         guard free.offRoute <= Self.joinConfirmMeters,
               travelled - free.travelled <= Self.reseatWindowMeters else { return here }
         travelled = free.travelled
@@ -1387,7 +1735,8 @@ final class NavigationModel {
         // arriving mid-flight abandons the attempt with nothing newer behind
         // it, so leaving the state set stranded `followingFastest` and `pref`
         // at 0 for the rest of the session on a switch that never happened.
-        switch await reroute(from: location, reason: "fastest") {
+        let outcome = await reroute(from: location, reason: "fastest")
+        switch outcome {
         case .failed, .ended:
             followingFastest = false
             pref = previousPref
@@ -1402,6 +1751,13 @@ final class NavigationModel {
             // later reroute of this loop into the short way home — the bug
             // `LoopRerouteTests` exists to stop.
             passedTurnaround = previousPassedTurnaround
+            // And say so: in a dead zone the tap used to do nothing at all
+            // (plan, section 2, row 10). The server's own "no" is its message.
+            switch outcome {
+            case .failed(.lost): report("Can't switch — no connection.")
+            case .failed(.server(let message)): report(message)
+            default: break
+            }
         case .adopted, .superseded:
             break
         }
@@ -1411,9 +1767,17 @@ final class NavigationModel {
     /// `adopted` and `superseded` leave the caller's state alone (the route is
     /// live, or a newer request owns it), while `failed` and `ended` mean
     /// nothing else is coming and any state staked on this attempt has to be
-    /// unwound by whoever staked it.
+    /// unwound by whoever staked it. `failed` says why, so a failed "fastest"
+    /// can say so too.
     private enum RerouteOutcome {
-        case adopted, failed, superseded, ended
+        case adopted, failed(RerouteFailure), superseded, ended
+    }
+
+    /// Off-route and wrong-way reroutes: the automatic ones, which back off,
+    /// count failures and speak. "fastest" is the driver's own and does none
+    /// of that.
+    private static func isAutomatic(_ reason: String) -> Bool {
+        reason == "offroute" || reason == "wrongway"
     }
 
     @discardableResult
@@ -1443,37 +1807,55 @@ final class NavigationModel {
         if route.properties.turnaround_m != nil, !followedCurrentRoute {
             declinedUTurn = true
         }
+        // The path-restored retry is this one.
+        retryOnPathReturn = false
+        let started = now()
         // A loop that has not reached its far point must be pinned through it;
         // anything else asks for the short way home. See `loopWaypoint`.
-        let reply: RouteResponse?
-        let askedDeclined: Bool
-        if let via = loopWaypoint {
-            askedDeclined = false
-            reply = try? await fetchLoopResume(origin.coordinate, via, destination,
-                                               askedPref, weights, askedHeading)
-        } else if declinedUTurn {
-            askedDeclined = true
-            reply = try? await fetchRouteKeepingAhead(origin.coordinate, destination,
-                                                      askedPref, weights, askedHeading)
-        } else {
-            askedDeclined = false
-            reply = try? await fetchRoute(origin.coordinate, destination,
-                                          askedPref, weights, askedHeading)
+        let via = loopWaypoint
+        let askedDeclined = via == nil && declinedUTurn
+        var reply: RouteResponse?
+        var thrown: Error?
+        do {
+            if let via {
+                reply = try await fetchLoopResume(origin.coordinate, via, destination,
+                                                  askedPref, weights, askedHeading)
+            } else if askedDeclined {
+                reply = try await fetchRouteKeepingAhead(origin.coordinate, destination,
+                                                         askedPref, weights, askedHeading)
+            } else {
+                reply = try await fetchRoute(origin.coordinate, destination,
+                                             askedPref, weights, askedHeading)
+            }
+        } catch {
+            thrown = error
+        }
+        // One trace record per attempt, whatever became of it.
+        func record(_ outcome: String, _ error: Error? = nil, path: Bool? = nil) {
+            let detail = Self.traceDetail(of: error)
+            trace?.reroute(reason: reason, from: origin.coordinate, heading: askedHeading,
+                           pref: askedPref, declinedUTurn: askedDeclined, via: via != nil,
+                           outcome: outcome, elapsed: now().timeIntervalSince(started),
+                           errorClass: detail.errorClass, status: detail.status,
+                           message: detail.message, path: path)
         }
         guard let response = reply
         else {
-            guard generation == rerouteGeneration else { return .superseded }
-            // A request that never lands is the plainest case of asking not
-            // helping, so it backs off with the rest. Reaching the 120 s cap
-            // takes four consecutive failures, by which point the network is
-            // gone and retrying every eight seconds is a radio draining the
-            // battery to no end. `trackSettling` clears the counter as soon as
-            // the driver holds the line for 30 s, so one dropped request costs
-            // a single doubling rather than the drive.
-            if reason == "offroute" { consecutiveReroutes += 1 }
-            return .failed
+            guard generation == rerouteGeneration else {
+                record("superseded", thrown)
+                return .superseded
+            }
+            let hasPath = networkReachable()
+            record("failed", thrown, path: hasPath)
+            let failure = Self.classify(thrown, hasPath: hasPath)
+            noteFailure(failure, reason: reason)
+            return .failed(failure)
         }
-        guard generation == rerouteGeneration else { return .superseded }
+        guard generation == rerouteGeneration else {
+            record("superseded")
+            return .superseded
+        }
+        connectionWorked()
         // The drive can end while a reroute is in the air. `update` stops
         // looking at fixes once `arrived` latches and NavView stops the
         // location stream with it, so a route adopted after that point is
@@ -1484,7 +1866,10 @@ final class NavigationModel {
         // Paused, likewise: a route landing then would set `hasJoinedRoute` by
         // hand under the paused card, and the drive resumed would be a joined
         // one the driver never saw begin.
-        guard !arrived, !stalled else { return .ended }
+        guard !arrived, !stalled else {
+            record("ended")
+            return .ended
+        }
 
         let replacement = wantFastest ? response.fastest : response.scenic
         // The server is entitled to hand back the route the driver is already
@@ -1496,15 +1881,17 @@ final class NavigationModel {
             merge(replacement, reason: reason, from: origin.coordinate,
                   heading: askedHeading, pref: askedPref,
                   declinedUTurn: askedDeclined)
+            record("merged")
         } else {
             adopt(replacement, reason: reason, from: origin.coordinate,
                   heading: askedHeading, pref: askedPref,
                   declinedUTurn: askedDeclined)
+            record("adopted")
         }
-        // Only off-route reroutes back off. A user tapping "fastest" has asked
+        // Only automatic reroutes back off. A user tapping "fastest" has asked
         // for this one and is owed it immediately, and counting it would then
         // slow down the recovery they asked for.
-        if reason == "offroute" {
+        if Self.isAutomatic(reason) {
             consecutiveReroutes += 1
             onRouteSince = nil
         }
@@ -1517,6 +1904,60 @@ final class NavigationModel {
         // becoming an 8-second loop.
         hasJoinedRoute = true
         return .adopted
+    }
+
+    /// Which kind of failure a thrown error is. Only the server's own message
+    /// is `.server`; everything else — no connection, a refused one, a
+    /// timeout, a 5xx or Cloudflare's 530, an undecodable reply, anything
+    /// unforeseen — is a request that did not land, told apart by the path.
+    private static func classify(_ error: Error?, hasPath: Bool) -> RerouteFailure {
+        if case .server(let message)? = error as? RouteService.ServiceError {
+            return .server(message)
+        }
+        return .lost(hasPath ? .serverUnreachable : .noSignal)
+    }
+
+    /// The trace's account of a thrown error — see `DriveTrace.reroute`.
+    private static func traceDetail(of error: Error?)
+        -> (errorClass: String?, status: Int?, message: String?) {
+        guard let error else { return (nil, nil, nil) }
+        switch error as? RouteService.ServiceError {
+        case .server(let message)?: return ("server", nil, message)
+        case .unreachable(let status)?: return ("unreachable", status, nil)
+        case .offline?: return ("offline", nil, nil)
+        case .badResponse?: return ("bad_response", nil, nil)
+        case nil: return ("other", nil, nil)
+        }
+    }
+
+    /// Book a failed request against the right counter, and tell the driver.
+    ///
+    /// The server's own "no" is an unhelpful success: it backs off with the
+    /// other answers the driver is not taking, and its message goes under the
+    /// trip card (plan, section 2, row 5). A request that never landed never
+    /// touches `consecutiveReroutes` — that was P-04 — but its own counter,
+    /// and the banner says so: "No signal" with no path, "No connection" with
+    /// one. Said once per episode, unless the car is going the wrong way, when
+    /// "Turn around when possible" has already been said and is still the
+    /// instruction (row 2). A failed "fastest" leaves every counter as it was:
+    /// `switchToFastest` restores its own state and says why.
+    private func noteFailure(_ failure: RerouteFailure, reason: String) {
+        switch failure {
+        case .server(let message):
+            connectionWorked()
+            guard Self.isAutomatic(reason) else { return }
+            consecutiveReroutes += 1
+            onRouteSince = nil
+            report(message)
+        case .lost(let lost):
+            guard Self.isAutomatic(reason) else { return }
+            consecutiveFailures += 1
+            lastFailureAt = now()
+            lostConnection = lost
+            guard !wrongWay, !announcedLostConnection else { return }
+            announcedLostConnection = true
+            voice?.announceRecovery("No connection. Head back to your route.")
+        }
     }
 
     /// Whether a replacement covers exactly the ground already being driven.
@@ -1574,6 +2015,7 @@ final class NavigationModel {
         // very next fix, so it costs nothing there.
         awaitingJoin = true
         awaitingJoinSince = now()
+        awaitingMergedLine = true
         // Nothing to un-say. Same line, same place on it, so an utterance in
         // flight is still true and the latch still describes what the driver
         // has heard — which is the whole point of keying it on the maneuver's
@@ -1606,6 +2048,14 @@ final class NavigationModel {
         currentStep = 0
         travelled = 0
         matchAtAdoption = nil
+        // The wrong-way detector starts over on the new line: disarmed until
+        // the car has gone the right way along it, so a replacement that opens
+        // with a U-turn cannot fire it (plan, section 4.1, case 2).
+        lineLengths = cumulativeLengths(of: coordinates)
+        alignedProgress = 0
+        lastAlignedAlong = nil
+        previousMatch = nil
+        resetWrongWay()
         // Not yet driven, whatever was true of the line before. `declinedUTurn`
         // is left alone: whether the driver has taken *a* route is what clears
         // it, and they have not taken this one yet.
@@ -1617,8 +2067,10 @@ final class NavigationModel {
         // triggers its own replacement on the very next fix.
         awaitingJoin = true
         awaitingJoinSince = now()
+        awaitingMergedLine = false
         // Evidence about the *old* line says nothing about this one.
         consecutiveOffRouteFixes = 0
+        consecutiveFarFixes = 0
         // Nor does anything already said. A prepare in flight may be about a
         // maneuver this route no longer contains, which is not stale but wrong,
         // so it is cut mid-word. `awaitingJoin` above then holds the silence

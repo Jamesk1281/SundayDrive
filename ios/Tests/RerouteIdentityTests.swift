@@ -67,6 +67,7 @@ final class RerouteIdentityTests: XCTestCase {
         model.update(Fixture.fixAt(1500))
         XCTAssertEqual(model.currentStep, 2, "1.5 km along is past two maneuvers")
 
+        model.update(beside(300, at: 1485))
         model.update(beside(300, at: 1500))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: sameLineReworded())
@@ -88,6 +89,7 @@ final class RerouteIdentityTests: XCTestCase {
         model.update(Fixture.fixAt(1500))
         XCTAssertEqual(model.currentInstruction, "Turn left onto Oak Street")
 
+        model.update(beside(300, at: 1485))
         model.update(beside(300, at: 1500))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: sameLineReworded())
@@ -107,12 +109,14 @@ final class RerouteIdentityTests: XCTestCase {
         let (model, advance) = joined(backend)
 
         model.update(Fixture.fixAt(1500))
+        model.update(beside(300, at: 1485))
         model.update(beside(300, at: 1500))
         await waitFor { backend.inFlight == 1 }
         backend.reply(0, with: sameLineReworded())
         await waitFor { !model.isRerouting }
 
         advance(20)                              // well past the 8 s cooldown
+        model.update(beside(300, at: 1885))
         model.update(beside(300, at: 1900))      // still 300 m off, still moving
         try? await Task.sleep(for: .milliseconds(50))
 
@@ -130,6 +134,7 @@ final class RerouteIdentityTests: XCTestCase {
         model.update(Fixture.fixAt(1500))
         XCTAssertEqual(model.currentStep, 2)
 
+        model.update(beside(300, at: 1485))
         model.update(beside(300, at: 1500))
         await waitFor { backend.inFlight == 1 }
         let elsewhere = Fixture.straightRoute(
@@ -190,6 +195,7 @@ final class RerouteIdentityTests: XCTestCase {
         model.fetchRoute = backend.fetch
 
         model.update(Fixture.fixAt(500))
+        model.update(beside(300, at: 485))
         model.update(beside(300, at: 500))
         await waitFor { backend.inFlight == 1 }
     }
@@ -204,6 +210,7 @@ final class RerouteIdentityTests: XCTestCase {
         let backend = RerouteTests.Backend()
         let (model, advance) = joined(backend)
 
+        model.update(beside(300, at: 785))
         model.update(beside(300, at: 800))                 // request 0
         await waitFor { backend.inFlight == 1 }
         let replacement = Fixture.straightRoute(
@@ -221,6 +228,7 @@ final class RerouteIdentityTests: XCTestCase {
         await waitFor { !model.isRerouting }
 
         advance(9)                                         // clears 8 s, not 16 s
+        model.update(beside(300, at: 1085))
         model.update(beside(300, at: 1100))
         try? await Task.sleep(for: .milliseconds(50))
 
@@ -228,24 +236,30 @@ final class RerouteIdentityTests: XCTestCase {
                        "a fastest tap that failed handed back the base interval")
     }
 
-    func test_a_reroute_that_never_lands_still_costs_an_interval() async {
-        // The backoff counted only reroutes that *succeeded*, so against a
+    func test_a_reroute_that_never_lands_is_not_asked_straight_back() async {
+        // The backoff once counted only reroutes that *succeeded*, so against a
         // server that was down the interval stayed at the 8 s base for as long
-        // as the driver kept driving. A request that never lands is the plainest
-        // case of asking not helping.
+        // as the driver kept driving. Then failures were folded into the
+        // backoff, which made recovery wait a median 64 s after the signal came
+        // back (P-04). A failure has its own clock now, off the backoff: the
+        // path coming back, or 15 s, 30 s, then 60 s with a path
+        // (docs/mid-drive-recovery-plan.md, section 3.1). Nine seconds is
+        // still too soon.
         let backend = RerouteTests.Backend()
         let (model, advance) = joined(backend)
 
+        model.update(beside(300, at: 785))
         model.update(beside(300, at: 800))
         await waitFor { backend.inFlight == 1 }
         backend.fail(0)
         await waitFor { !model.isRerouting }
 
-        advance(9)                                         // clears 8 s, not 16 s
+        advance(9)                                         // clears 8 s, not 15 s
+        model.update(beside(300, at: 985))
         model.update(beside(300, at: 1000))
         try? await Task.sleep(for: .milliseconds(50))
 
         XCTAssertEqual(backend.inFlight, 1,
-                       "a reroute that failed cost nothing and asked straight back")
+                       "a reroute that failed asked straight back")
     }
 }

@@ -69,12 +69,15 @@ enum DriveReplay {
         /// Every route the drive was handed, in the order it was handed them —
         /// the first is the one it set off on.
         let routes: [RouteFeature]
+        /// When each of those was recorded — see `Tape.Mode.asRecorded`.
+        let routeTimes: [Date]
         let fixes: [CLLocation]
 
         init?(contentsOf url: URL) {
             guard let text = try? String(contentsOf: url, encoding: .utf8) else { return nil }
             var header: [String: Any]?
             var routes: [RouteFeature] = []
+            var routeTimes: [Date] = []
             var fixes: [CLLocation] = []
 
             for line in text.split(separator: "\n", omittingEmptySubsequences: true) {
@@ -84,7 +87,10 @@ enum DriveReplay {
                 switch record["t"] as? String {
                 case "drive": header = record
                 case "route":
-                    if let feature = DriveReplay.feature(from: record) { routes.append(feature) }
+                    if let feature = DriveReplay.feature(from: record) {
+                        routes.append(feature)
+                        routeTimes.append(Date(timeIntervalSince1970: record["ts"] as? Double ?? 0))
+                    }
                 case "fix":
                     if let fix = DriveReplay.location(from: record) { fixes.append(fix) }
                 default: break
@@ -98,6 +104,7 @@ enum DriveReplay {
             self.pref = header["pref"] as? Double ?? 0.5
             self.weights = header["weights"] as? [String: Double] ?? [:]
             self.routes = routes
+            self.routeTimes = routeTimes
             self.fixes = fixes
         }
 
@@ -201,6 +208,33 @@ enum DriveReplay {
         /// How many fixes were fed before the drive ended or paused itself, or
         /// all of them if it did neither.
         var fixesFed = 0
+        /// When each reroute was asked for, in seconds from the first fix.
+        var requestsAt: [Double] = []
+        /// When each utterance was heard, in seconds from the first fix.
+        var saidAt: [Double] = []
+        /// When "Turn around when possible." was said — the wrong-way
+        /// detector firing — in seconds from the first fix. Read off the voice
+        /// rather than `wrongWay`, which a reply landing within the same fix
+        /// clears before anything outside the model can see it.
+        var wrongWayAt: [Double] { zip(said, saidAt).filter { $0.0 == wrongWayLine }.map(\.1) }
+        /// Requests the tape failed — see `Tape.Mode.asRecorded`.
+        var failedRequests = 0
+    }
+
+    static let wrongWayLine = "Turn around when possible."
+
+    /// How the tape answers a reroute request.
+    enum Mode {
+        /// The next recorded route, whenever asked: what the drive was given,
+        /// in order. A replay that asks at a moment the drive did not gets a
+        /// route recorded somewhere else.
+        case inOrder
+        /// The next recorded route only once the drive is within 30 s of when
+        /// it really landed; every request before that fails, as the drive's
+        /// own must have, since nothing landed (P-04,
+        /// docs/mid-drive-recovery.md). What lets a replay reach a stretch the
+        /// drive spent on a line it could not replace.
+        case asRecorded
     }
 
     /// Mutable replay state, in a class because `fetchRoute` is called from a
@@ -211,6 +245,8 @@ enum DriveReplay {
         /// Replies that handed back the line already being followed — decided
         /// here, where both the reply and the route in force are in hand.
         var sameLineReplies = 0
+        var requestsAt: [Double] = []
+        var failed = 0
     }
 
     /// Feed a recorded drive through a real `NavigationModel` with a real
@@ -221,8 +257,8 @@ enum DriveReplay {
     /// during a replay that takes half a second, and a drive that really
     /// re-routed thirteen times would exercise one.
     @MainActor
-    static func run(_ drive: RecordedDrive,
-                    speaker: VoiceGuideTests.FakeSpeaker) async -> Outcome {
+    static func run(_ drive: RecordedDrive, speaker: VoiceGuideTests.FakeSpeaker,
+                    mode: Mode = .inOrder) async -> Outcome {
         var outcome = Outcome()
         outcome.name = drive.name
         let voice = VoiceGuide(speaker: speaker, muted: false)
@@ -235,8 +271,14 @@ enum DriveReplay {
         let tape = Tape()
         model.fetchRoute = { [weak model] _, _, _, _, _ in
             tape.repliesHandedOut += 1
+            tape.requestsAt.append((clock.timeIntervalSince(drive.fixes[0].timestamp) * 10).rounded() / 10)
             let inForce = await model?.route.coordinates ?? []
             let feature: RouteFeature
+            if mode == .asRecorded, tape.nextRoute < drive.routes.count,
+               clock < drive.routeTimes[tape.nextRoute].addingTimeInterval(-30) {
+                tape.failed += 1
+                throw RouteService.ServiceError.offline
+            }
             if tape.nextRoute < drive.routes.count {
                 feature = drive.routes[tape.nextRoute]
                 tape.nextRoute += 1
@@ -306,6 +348,8 @@ enum DriveReplay {
                     }
                     saidSinceRouteChange.insert(key)
                 }
+                let at = fix.timestamp.timeIntervalSince(drive.fixes[0].timestamp)
+                outcome.saidAt += Array(repeating: at, count: speaker.said.count - heard)
                 heard = speaker.said.count
             }
 
@@ -325,6 +369,8 @@ enum DriveReplay {
         outcome.repliesGiven = tape.repliesHandedOut
         outcome.sameLineReplies = tape.sameLineReplies
         outcome.describableFixes = describable
+        outcome.requestsAt = tape.requestsAt
+        outcome.failedRequests = tape.failed
         return outcome
     }
 }

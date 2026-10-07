@@ -264,6 +264,54 @@ final class DriveTrace {
         append(record, flush: true)
     }
 
+    /// One reroute attempt, whatever became of it.
+    ///
+    /// A `route` record is written only for a reply that was taken, so a
+    /// request that failed used to leave nothing: on drive-2026-10-06-192759
+    /// the car sat up to 829 m off its line for about 470 s, and only a replay
+    /// could say it had asked five times. With one of these per attempt, a
+    /// silence in a trace is a measurement (docs/mid-drive-recovery.md).
+    ///
+    /// Written when the attempt ends, after the `route` record of a reply that
+    /// was adopted or merged. `outcome` is one of `adopted`, `merged`,
+    /// `failed`, `superseded` (a newer request owns the drive) or `ended` (the
+    /// drive arrived or paused while this one was in the air). A failure
+    /// carries `error_class` — `server` (the server answered no, with
+    /// `message`), `unreachable` (with the HTTP `status`), `bad_response`,
+    /// `offline` (nothing answered: no connection, a refused one, or a
+    /// timeout, which `elapsed_s` tells apart) or `other` — and `path`, whether
+    /// the phone had a network path when it failed. `tools/analyze_trace.py`
+    /// skips the type, like any it does not read.
+    func reroute(reason: String, from origin: CLLocationCoordinate2D,
+                 heading: CLLocationDirection?, pref: Double, declinedUTurn: Bool,
+                 via: Bool, outcome: String, elapsed: TimeInterval,
+                 errorClass: String? = nil, status: Int? = nil, message: String? = nil,
+                 path: Bool? = nil) {
+        // Not after `end`, the file's terminator: an attempt the arrival ended
+        // has nothing to add to a drive that is over.
+        guard !finished else { return }
+        var record: [String: Any] = [
+            "t": "reroute",
+            "ts": Self.now(),
+            "reason": reason,
+            "req_lat": origin.latitude,
+            "req_lon": origin.longitude,
+            "req_pref": pref,
+            "outcome": outcome,
+            // Milliseconds are plenty: what matters is a failure in 0.02 s (no
+            // path) against one at the 15 s timeout.
+            "elapsed_s": (elapsed * 1000).rounded() / 1000,
+        ]
+        if let heading { record["req_heading"] = heading }
+        if declinedUTurn { record["req_declined_uturn"] = true }
+        if via { record["req_via"] = true }
+        if let errorClass { record["error_class"] = errorClass }
+        if let status { record["status"] = status }
+        if let message { record["message"] = message }
+        if let path { record["path"] = path }
+        append(record, flush: true)
+    }
+
     /// One GPS update and where it landed on the route.
     ///
     /// Both halves are needed. The raw fix is the only unprocessed evidence — if

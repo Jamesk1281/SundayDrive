@@ -74,12 +74,16 @@ final class LoopRerouteTests: XCTestCase {
         return nav
     }
 
-    /// Drag the driver a long way sideways and let the guards run.
+    /// Drag the driver a long way sideways and let the guards run: two fixes
+    /// in a row, since past 200 m one is a spike rather than a departure
+    /// (drive simulation, Finding 2; docs/mid-drive-recovery.md).
     private func goOffRoute(_ nav: NavigationModel, at meters: Double) {
-        let away = CLLocationCoordinate2D(
-            latitude: Fixture.north(meters).latitude,
-            longitude: Fixture.origin.longitude + 0.02)   // ~1.6 km east
-        nav.update(Fixture.fix(away))
+        for along in [meters - 15, meters] {
+            let away = CLLocationCoordinate2D(
+                latitude: Fixture.north(along).latitude,
+                longitude: Fixture.origin.longitude + 0.02)   // ~1.6 km east
+            nav.update(Fixture.fix(away))
+        }
     }
 
     // MARK: - Before the far point

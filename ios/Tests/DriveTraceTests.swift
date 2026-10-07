@@ -127,10 +127,21 @@ final class DriveTraceTests: XCTestCase {
             "phase": ["t", "ts", "phase"],
             "end": ["t", "ts", "reason"],
         ]
+        // Written, and not read by the analysis, which skips any type it does
+        // not know (tests/test_trace.py checks it does). Listed so a new type is
+        // a decision rather than an accident; `reroute` is read by whoever
+        // studies a drive's silences (docs/mid-drive-recovery.md).
+        let unread = [
+            "reroute": ["t", "ts", "reason", "req_lat", "req_lon", "req_pref",
+                        "outcome", "elapsed_s"],
+        ]
 
         let trace = self.trace()
         trace.route(Fixture.straightRoute(), reason: "start")
         trace.fix(Fixture.fixAt(10), progress: progress(travelled: 10), joined: true, step: 0)
+        trace.reroute(reason: "offroute", from: Fixture.north(10), heading: 90, pref: 0.7,
+                      declinedUTurn: false, via: false, outcome: "failed", elapsed: 0.02,
+                      errorClass: "offline", path: false)
         trace.mark(SceneryVerdict.nice.rawValue, progress: progress(travelled: 10),
                    location: Fixture.fixAt(10), joined: true, step: 0)
         trace.phase("background")
@@ -138,13 +149,16 @@ final class DriveTraceTests: XCTestCase {
 
         let written = records(of: trace)
         XCTAssertEqual(Set(written.compactMap { $0["t"] as? String }),
-                       Set(required.keys), "every record type should appear")
+                       Set(required.keys).union(unread.keys), "every record type should appear")
         for record in written {
             let kind = record["t"] as? String ?? "?"
             for field in required[kind] ?? [] {
                 XCTAssertNotNil(record[field],
                                 "a \(kind) record must carry '\(field)' — "
                                 + "tools/analyze_trace.py reads it")
+            }
+            for field in unread[kind] ?? [] {
+                XCTAssertNotNil(record[field], "a \(kind) record must carry '\(field)'")
             }
         }
     }
@@ -553,8 +567,10 @@ final class DriveTraceTests: XCTestCase {
         }
 
         model.update(Fixture.fixAt(500))                       // on the line
-        model.update(Fixture.fix(CLLocationCoordinate2D(       // 300 m east of it
-            latitude: Fixture.north(800).latitude, longitude: -71.0 + 300 / 82_600)))
+        for northing in [785.0, 800] {                         // 300 m east of it,
+            model.update(Fixture.fix(CLLocationCoordinate2D(   // twice: one is a spike
+                latitude: Fixture.north(northing).latitude, longitude: -71.0 + 300 / 82_600)))
+        }
 
         let deadline = Date().addingTimeInterval(2)
         while model.isRerouting || Date() < deadline {
@@ -621,7 +637,11 @@ final class DriveTraceTests: XCTestCase {
             CLLocationCoordinate2D(latitude: Fixture.north(800).latitude,
                                    longitude: -71.0 + 300 / 82_600),
             course: 15, speed: 20)                             // and fast enough to
-        model.update(strayed)                                  // have a real heading
+        model.update(Fixture.movingFix(                        // have a real heading;
+            CLLocationCoordinate2D(latitude: Fixture.north(785).latitude,
+                                   longitude: -71.0 + 300 / 82_600),
+            course: 15, speed: 20))                            // one fix out is a spike
+        model.update(strayed)
 
         let deadline = Date().addingTimeInterval(2)
         while Date() < deadline {

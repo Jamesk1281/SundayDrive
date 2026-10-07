@@ -123,9 +123,17 @@ let progressContinuityWeight: Double = 0.05
 /// `near` defaults to `notBefore`, which is right for a caller with a floor
 /// just behind the driver; one asking the unconstrained question passes the
 /// driver's position explicitly.
+///
+/// `notAfter` is the other bound, and only a loop short of its far point
+/// passes one: segments that begin beyond it are not considered. A loop's
+/// return leg lies beyond its far point by construction, so this is what
+/// stops one noisy fix, or a car turned back on a road the loop drives twice,
+/// matching the return pass and silently latching "past the far point"
+/// (docs/mid-drive-recovery-plan.md, section 4.4).
 func progress(of point: CLLocationCoordinate2D,
               along line: [CLLocationCoordinate2D],
               notBefore: Double = 0,
+              notAfter: Double = .infinity,
               near: Double? = nil) -> RouteProgress {
     guard line.count >= 2 else {
         let here = CLLocation(latitude: point.latitude, longitude: point.longitude)
@@ -163,7 +171,7 @@ func progress(of point: CLLocationCoordinate2D,
 
         // Segments wholly behind us belong to an earlier pass along the same
         // road, not to where the driver is now.
-        if travelled + length >= notBefore {
+        if travelled + length >= notBefore && travelled <= notAfter {
             distances[i] = distance
             alongs[i] = travelled + t * length
             ends[i] = t
@@ -212,6 +220,115 @@ func progress(of point: CLLocationCoordinate2D,
     return RouteProgress(offRoute: distances[chosen],
                          remaining: max(0, travelled - along),
                          travelled: along)
+}
+
+/// One pass of a line near a point: how far along the line its nearest point
+/// sits, how far off it the point is, and which way the line runs there, in
+/// degrees clockwise from north.
+struct LinePass {
+    let along: Double
+    let offset: Double
+    let bearing: Double
+}
+
+/// Every pass of the line within `within` metres of a point.
+///
+/// For each run of adjacent segments that come that close, the nearest one.
+/// A run is split where the line itself turns back by 120 degrees or more —
+/// a planned U-turn, or the tip of an out-and-back — so the two legs of one
+/// stay two passes, running in opposite directions. That is what the
+/// wrong-way detector reads: on a road a route drives twice, the car's course
+/// agrees with one of the passes, and a car going the wrong way agrees with
+/// none (docs/mid-drive-recovery-plan.md, section 4.2). Measured in the same
+/// per-segment frame as `progress`, so the two agree on `along`. Segments
+/// beginning beyond `notAfter` are left out, as in `progress`.
+func passes(of point: CLLocationCoordinate2D, along line: [CLLocationCoordinate2D],
+            within: Double, notAfter: Double = .infinity) -> [LinePass] {
+    guard line.count >= 2 else { return [] }
+    var out: [LinePass] = []
+    var run: LinePass?
+    var travelled = 0.0
+    var lastHit = -2
+    var lastBearing = 0.0
+    for i in 0 ..< line.count - 1 {
+        if travelled > notAfter { break }
+        let p = line[i], q = line[i + 1]
+        let metersPerDegLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
+        let ax = (p.longitude - point.longitude) * metersPerDegLon
+        let ay = (p.latitude - point.latitude) * 111_320.0
+        let dx = (q.longitude - p.longitude) * metersPerDegLon
+        let dy = (q.latitude - p.latitude) * 111_320.0
+        let lengthSquared = dx * dx + dy * dy
+        let length = lengthSquared.squareRoot()
+        if length > 0 {
+            let t = max(0, min(1, -(ax * dx + ay * dy) / lengthSquared))
+            let cx = ax + t * dx, cy = ay + t * dy
+            let offset = (cx * cx + cy * cy).squareRoot()
+            if offset <= within {
+                let bearing = compassBearing(dx: dx, dy: dy)
+                let candidate = LinePass(along: travelled + t * length, offset: offset,
+                                         bearing: bearing)
+                if i == lastHit + 1, angleBetween(bearing, lastBearing) < 120, let current = run {
+                    if offset < current.offset { run = candidate }
+                } else {
+                    if let current = run { out.append(current) }
+                    run = candidate
+                }
+                lastHit = i
+                lastBearing = bearing
+            }
+        }
+        travelled += length
+    }
+    if let current = run { out.append(current) }
+    return out
+}
+
+/// Cumulative length of a line at each of its vertices, in `progress`'s own
+/// per-segment measure, so a position along the line can be turned back into
+/// a segment by binary search rather than a scan.
+func cumulativeLengths(of line: [CLLocationCoordinate2D]) -> [Double] {
+    var out = [0.0]
+    out.reserveCapacity(line.count)
+    for i in 0 ..< max(0, line.count - 1) {
+        let p = line[i], q = line[i + 1]
+        let metersPerDegLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
+        let dx = (q.longitude - p.longitude) * metersPerDegLon
+        let dy = (q.latitude - p.latitude) * 111_320.0
+        out.append(out[out.count - 1] + (dx * dx + dy * dy).squareRoot())
+    }
+    return out
+}
+
+/// Which way the line runs at a position along it, in degrees clockwise from
+/// north, or nil on a line too short or a zero-length segment. `lengths` is
+/// `cumulativeLengths(of: line)`.
+func lineBearing(of line: [CLLocationCoordinate2D], lengths: [Double],
+                 at along: Double) -> Double? {
+    guard line.count >= 2, lengths.count == line.count else { return nil }
+    var lo = 0, hi = lengths.count - 1
+    while hi - lo > 1 {
+        let mid = (lo + hi) / 2
+        if lengths[mid] <= along { lo = mid } else { hi = mid }
+    }
+    let i = min(lo, line.count - 2)
+    let p = line[i], q = line[i + 1]
+    let metersPerDegLon = 111_320.0 * cos((p.latitude + q.latitude) / 2 * .pi / 180)
+    let dx = (q.longitude - p.longitude) * metersPerDegLon
+    let dy = (q.latitude - p.latitude) * 111_320.0
+    guard dx != 0 || dy != 0 else { return nil }
+    return compassBearing(dx: dx, dy: dy)
+}
+
+/// Degrees clockwise from north of an east/north displacement, in [0, 360).
+private func compassBearing(dx: Double, dy: Double) -> Double {
+    (atan2(dx, dy) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+}
+
+/// The smaller angle between two compass bearings, in [0, 180].
+func angleBetween(_ a: Double, _ b: Double) -> Double {
+    let d = abs(a - b).truncatingRemainder(dividingBy: 360)
+    return d > 180 ? 360 - d : d
 }
 
 enum TimeText {
