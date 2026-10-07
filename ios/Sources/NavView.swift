@@ -106,6 +106,16 @@ struct NavView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        // Nothing on this screen takes text, so nothing on it should ever make
+        // room for a keyboard. Without this the furniture rode the keyboard
+        // region like any bottom inset, and iOS 26 can leave that region stale
+        // at a keyboard's height — the planning screen's, from typing the
+        // destination — installing it as the app goes to the background. The
+        // trip card then came back from an app switch parked mid-screen until
+        // a rotation re-measured it (developer.apple.com/forums/thread/804413).
+        // It has to sit outside the `safeAreaInset`s: inside them the inset
+        // content is already placed against the keyboard.
+        .ignoresSafeArea(.keyboard)
         .animation(.smooth(duration: 0.4), value: nav.arrived)
         .animation(.smooth(duration: 0.4), value: nav.stalled)
         .onAppear {
