@@ -396,6 +396,37 @@ SNAP_HEADING_SLACK_M = 20.0
 # this is measured on 0..90.
 SNAP_HEADING_DEG = 40.0
 
+# --- Turning the driver around ------------------------------------------------
+# What "this route turns you around" means, and what a reroute asked for after
+# the driver declined a U-turn is kept from doing. docs/reroute-uturn.md has
+# the measurements.
+#
+# A route turns the driver around if, within its first TURN_BACK_WITHIN_M, it
+# drives through the strip behind them — up to TURN_BACK_WITHIN_M back and
+# TURN_BACK_STRIP_M either side of the line they are travelling on — heading at
+# least TURN_BACK_DEGREES away from their course. Geometric on purpose: the
+# same move is worded "Make a U-turn on X", "Head west on X ... Make a U-turn
+# to stay on X" and "Sharp right onto Y" in the recorded drives, and a rule that
+# read the words, or only the first step, would miss two of the three.
+#
+# Measured on the 26 reroutes of the 2026-10-06 drives that sent a heading: the
+# 13 that turned the driver around came back within 13 m of the line behind
+# the car, entering the strip between 16 and 632 m along; of the other 13, the
+# nearest that line any of them came while heading back was 95 m. The strip's
+# 40 m sits in that gap, and the 1,000 m window covers 632 m with room (and the
+# 727 m of a rebuilt 2026-08-22 request). 120 degrees is "going back", where a
+# road crossing behind the car at a right angle is not.
+TURN_BACK_WITHIN_M = 1000.0
+TURN_BACK_STRIP_M = 40.0
+TURN_BACK_DEGREES = 120.0
+# How much longer, in minutes, the route that goes on ahead may be than the one
+# that turns around before the turnaround is offered again anyway. A decision,
+# not a measurement: over 87 random departures with a way ahead
+# (tools/replay_uturn.py --sample 400), going on cost a median 1.5 minutes,
+# p95 8.9 and at worst 42.7. Fifteen leaves every traced case alone and
+# catches the two worst of those.
+TURN_BACK_CAP_MIN = 15.0
+
 # How far past the nearest road `snap` first looks for one a car can use, when
 # the nearest is closed to cars where the point is, and the furthest it will go
 # before giving up and keeping the closed one. The search doubles from the
@@ -1865,7 +1896,17 @@ class Router:
 
     def route(self, src_idx: int, dst_idx: int, pref: float, weights: dict = None,
               heading: float | None = None, avoid_unpaved: float = 1.0,
-              on: date | None = None):
+              on: date | None = None, origin: tuple[float, float] | None = None,
+              keep_ahead: bool = False):
+        """The cheapest route from `src_idx` to `dst_idx`.
+
+        `origin` is where the driver is, as (lat, lon), and `heading` which way
+        they are going. Together they let the result say whether it turns them
+        around (`RouteResult.turns_around`). `keep_ahead` asks for a route that
+        does not, for a driver who has already declined one; it applies only
+        when the cheapest route turns around, so any other request is untouched.
+        See `_keep_ahead`.
+        """
         # Scored once, then used for both jobs: choosing the route and reporting
         # it. They used to disagree — the router optimized the live re-blend
         # while RouteResult.mean_score read the stored neutral column, so a user
@@ -1875,10 +1916,6 @@ class Router:
         scores = self._edge_scores(weights or {})
         # `on` closes the roads shut for the season that day; see `_weights`.
         w = self._weights(pref, scores, avoid_unpaved, on)
-        # Collapse parallel edges to the cheapest weight per node-pair, so the
-        # cost matrix has one entry per pair (no summed duplicates).
-        pair_w = np.full(self.n_pairs, np.inf)
-        np.minimum.at(pair_w, self.slot_pair, w)
         # A junction split for turn restrictions stands at several indices, one
         # per approach that forbids something. Any of them is a legitimate place
         # to *arrive* — the restriction is on continuing through, and a route
@@ -1890,6 +1927,69 @@ class Router:
         targets = self.node_copies.get(dst_idx)
         if targets is None:
             targets = np.array([dst_idx])
+        path = self._cheapest(src_idx, targets, pref, w)
+        if path is None:
+            return None
+        aiming = (heading if heading is not None and 0.0 <= heading < 360.0
+                  else None)
+        result = self._collect(path, w, scores, heading,
+                               origin if aiming is not None else None)
+        if keep_ahead and result.turns_around:
+            return self._keep_ahead(result, src_idx, targets, pref, w, scores,
+                                    aiming, origin)
+        return result
+
+    def _keep_ahead(self, turnaround, src_idx, targets, pref, w, scores,
+                    heading, origin):
+        """The route that goes on ahead, for a driver who declined `turnaround`.
+
+        Searched with every road through the strip behind the driver closed in
+        the direction that leads back over it (`_behind_strip`), which is the
+        same test `turns_around` applies to the result, so the route found
+        cannot turn them around — at the start, one junction on, or round the
+        block. Only the start of the search changes: nothing here touches
+        snapping or any penalty.
+
+        `turnaround` comes back instead when there is no way on (a dead end, a
+        cul-de-sac: 46 of 133 random departures that turned around had none)
+        or when going on costs more than TURN_BACK_CAP_MIN extra minutes. Both
+        say so on the result, which still `turns_around`. docs/reroute-uturn.md.
+        """
+        x, y = _TO_M.transform(origin[1], origin[0])
+        w_ahead = w.copy()
+        w_ahead[self._turn_back_slots(_behind_strip(x, y, heading), heading)] = np.inf
+        path = self._cheapest(src_idx, targets, pref, w_ahead)
+        if path is None:
+            return turnaround
+        ahead = self._collect(path, w_ahead, scores, heading, origin)
+        if ahead.minutes - turnaround.minutes > TURN_BACK_CAP_MIN:
+            return turnaround
+        return ahead
+
+    def _turn_back_slots(self, strip, heading: float) -> np.ndarray:
+        """Directed slots whose road runs through `strip` heading back, at
+        least TURN_BACK_DEGREES from `heading`.
+
+        Per direction of each road, so the way the driver came stays open and
+        only the way back closes. A one-way carriageway beside them — a divided
+        road's other half, where "U-turn to stay on" turnarounds come back — is
+        a road of its own and closes the same way.
+        """
+        fwd = np.zeros(len(self._edge_geom_m), dtype=bool)
+        rev = np.zeros(len(self._edge_geom_m), dtype=bool)
+        for e in self._edge_tree.query(strip):
+            e = int(e)
+            xy = shapely.get_coordinates(self._edge_geom_m[e])
+            fwd[e] = _turning_back(xy, strip, heading).any()
+            rev[e] = _turning_back(xy[::-1], strip, heading).any()
+        return np.flatnonzero(np.where(self.flip, rev[self.eidx], fwd[self.eidx]))
+
+    def _cheapest(self, src_idx, targets, pref, w):
+        """The cheapest node path under directed weights `w`, or None."""
+        # Collapse parallel edges to the cheapest weight per node-pair, so the
+        # cost matrix has one entry per pair (no summed duplicates).
+        pair_w = np.full(self.n_pairs, np.inf)
+        np.minimum.at(pair_w, self.slot_pair, w)
         # The fastest arm, and only it, goes through A*. At pref = 1 even a
         # *perfect* heuristic still settles 78-93% of the graph on a long
         # route, and a Python heap costs 3.6x what scipy's C does at equal
@@ -1902,9 +2002,7 @@ class Router:
             path = self._astar(src_idx, targets, pair_w)
         if path is _ASTAR_GAVE_UP:
             path = self._dijkstra_path(src_idx, targets, pair_w)
-        if path is None:
-            return None
-        return self._collect(path, w, scores, heading)
+        return path
 
     def _dijkstra_path(self, src_idx, targets, pair_w):
         """Cheapest node path to any of `targets`, by settling the whole graph.
@@ -2051,7 +2149,7 @@ class Router:
                     heappush(heap, (nd + float(h[v]), nd, v))
         return None
 
-    def _collect(self, path, w, scores, heading=None):
+    def _collect(self, path, w, scores, heading=None, origin=None):
         """Turn a Dijkstra node path into the chosen edges, in travel order.
 
         Dijkstra hands back a sequence of node indices. For each hop (a -> b) we
@@ -2111,7 +2209,7 @@ class Router:
         return RouteResult(rows, stitch(coords), coords, scores[edge_rows],
                            nodes=real, context=self.maneuver_context,
                            edge_minutes=self.d_minutes[chosen],
-                           start_heading=heading)
+                           start_heading=heading, origin=origin)
 
 
 def stitch(coord_arrays):
@@ -2169,6 +2267,78 @@ def _turn_delta(bearing_in, bearing_out):
     """Signed heading change in degrees, -180..180. Positive = right turn
     (bearings increase clockwise)."""
     return (bearing_out - bearing_in + 180) % 360 - 180
+
+
+def _behind_strip(x: float, y: float, heading: float):
+    """The ground a turnaround drives back over: TURN_BACK_WITHIN_M behind a
+    driver at projected (x, y) on `heading`, TURN_BACK_STRIP_M either side.
+
+    Behind and not around. A road that curves through 180 degrees ahead of the
+    car heads back too, and measured on the 2026-10-06 drives one did so 95 m
+    to the side of a car that had done nothing but drive on; what tells a
+    turnaround apart is that it comes back over the road already driven.
+    """
+    hx, hy = math.sin(math.radians(heading)), math.cos(math.radians(heading))
+    back, side = TURN_BACK_WITHIN_M, TURN_BACK_STRIP_M
+    corners = [(x - a * hx + s * hy, y - a * hy - s * hx)
+               for a, s in [(0.0, -side), (0.0, side), (back, side), (back, -side)]]
+    strip = shapely.Polygon(corners)
+    shapely.prepare(strip)
+    return strip
+
+
+def turnaround_at(lonlat: np.ndarray, origin: tuple[float, float],
+                  heading: float) -> float | None:
+    """How far along a route, as [lon, lat] points from its start, it begins
+    to turn a driver at `origin` (lat, lon) on `heading` around: the first
+    point, within TURN_BACK_WITHIN_M, where it drives through the strip
+    behind them heading back. None if it never does.
+
+    The distance and not just the fact, because the app has to tell a U-turn
+    the driver followed from one they declined, and a route can lead them
+    legitimately ahead for hundreds of metres before it turns them round: in
+    the "Make a U-turn to stay on" form the recorded ones did so after 304 to
+    632 m. Having driven that far along it proves nothing; having driven past
+    this point does.
+
+    A function and not only a `RouteResult` property so the replay in
+    tools/replay_uturn.py judges the routes the drives were really sent by the
+    same test.
+    """
+    lonlat = np.asarray(lonlat, dtype=float)
+    if len(lonlat) < 2:
+        return None
+    x, y = _TO_M.transform(lonlat[:, 0], lonlat[:, 1])
+    line = shapely.LineString(np.column_stack([x, y]))
+    if line.length > TURN_BACK_WITHIN_M:
+        line = substring(line, 0.0, TURN_BACK_WITHIN_M)
+    xy = shapely.get_coordinates(line)
+    ox, oy = _TO_M.transform(origin[1], origin[0])
+    strip = _behind_strip(ox, oy, heading)
+    back = np.flatnonzero(_turning_back(xy, strip, heading))
+    if not len(back):
+        return None
+    k = int(back[0])
+    along = float(np.hypot(*np.diff(xy[:k + 1], axis=0).T).sum())
+    segment = shapely.LineString(xy[k:k + 2])
+    return along + shapely.Point(xy[k]).distance(segment.intersection(strip))
+
+
+def _turning_back(xy: np.ndarray, strip, heading: float) -> np.ndarray:
+    """Per segment of the projected polyline `xy`, whether it runs through
+    `strip` heading at least TURN_BACK_DEGREES from `heading`."""
+    if len(xy) < 2:
+        return np.zeros(0, dtype=bool)
+    d = np.diff(xy, axis=0)
+    bearing = np.degrees(np.arctan2(d[:, 0], d[:, 1]))
+    away = np.abs((bearing - heading + 180.0) % 360.0 - 180.0)
+    moving = (d[:, 0] != 0.0) | (d[:, 1] != 0.0)
+    back = moving & (away >= TURN_BACK_DEGREES)
+    if not back.any():
+        return back
+    segments = shapely.linestrings(np.stack([xy[:-1][back], xy[1:][back]], axis=1))
+    back[back] = shapely.intersects(segments, strip)
+    return back
 
 
 # How far back from a junction the approach heading is measured, and how far
@@ -2392,7 +2562,7 @@ class ManeuverContext:
 class RouteResult:
     def __init__(self, edge_rows: gpd.GeoDataFrame, line, edge_coords=None,
                  scores=None, nodes=None, context: "ManeuverContext" = None,
-                 edge_minutes=None, start_heading=None):
+                 edge_minutes=None, start_heading=None, origin=None):
         self.edges = edge_rows
         self.line = line
         # Per-edge travel time in travel order, as weighted. None falls back to
@@ -2417,6 +2587,9 @@ class RouteResult:
         # `steps` — and only to say what the driver has to *do*, which a
         # compass departure cannot express to a car already moving.
         self.start_heading = start_heading
+        # Where the driver was, as (lat, lon), when `start_heading` was read;
+        # None when it was not sent. Only `turnaround_m` reads it.
+        self.origin = origin
         self._steps = None      # memo for steps(); see there
 
     def _column(self, name):
@@ -2436,6 +2609,28 @@ class RouteResult:
     @cached_property
     def km(self):
         return self.edges["length_m"].sum() / 1000.0
+
+    @cached_property
+    def turnaround_m(self) -> float | None:
+        """How far along this route it begins to send the driver back the way
+        they came, or None if it doesn't: within its first TURN_BACK_WITHIN_M
+        it drives through the strip behind them, heading back
+        (`turnaround_at`).
+
+        None for a route with no heading or no origin to judge by, which is
+        every route planned from a standstill. The app keeps it, and when the
+        driver leaves a route that turned them around without having driven
+        past this point, says so on the next request (`declined_uturn`), which
+        is what `Router.route(keep_ahead=True)` answers. docs/reroute-uturn.md.
+        """
+        if self.start_heading is None or self.origin is None or self.line is None:
+            return None
+        return turnaround_at(shapely.get_coordinates(self.line), self.origin,
+                             self.start_heading)
+
+    @property
+    def turns_around(self) -> bool:
+        return self.turnaround_m is not None
 
     @cached_property
     def minutes(self):
@@ -2910,6 +3105,14 @@ class RouteResult:
                 "beautiful_score": BEAUTIFUL_SCORE,
                 "scenery_km": {k: round(v, 1) for k, v in self.scenery_km().items()},
                 "steps": self.steps(),
+                # Whether the route opens by sending a moving driver back the
+                # way they came, by geometry and not by its wording, and how
+                # far along it starts to. The app needs both to know that a
+                # route it is leaving was a U-turn the driver declined.
+                # docs/reroute-uturn.md.
+                "turns_around": self.turns_around,
+                "turnaround_m": (None if self.turnaround_m is None
+                                 else round(self.turnaround_m)),
             },
         }
 

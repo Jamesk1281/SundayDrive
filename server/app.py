@@ -193,6 +193,18 @@ def _parse_heading(args):
     return value % 360.0
 
 
+def _parse_declined_uturn(args):
+    """Whether the driver has just declined a route that turned them around.
+
+    Sent by the app, on a reroute, when the route it is leaving opened by
+    turning the driver back (`turns_around` on that route) and they kept going
+    instead. The reply then goes on ahead if there is a reasonable way to:
+    at most one U-turn per departure. Absent means today's behaviour, which is
+    what every client built before this sends. docs/reroute-uturn.md.
+    """
+    return args.get("declined_uturn", "") in ("1", "true")
+
+
 def _parse_avoid_unpaved(args):
     """How hard to steer around dirt roads, as a multiple of the calibrated
     default (`router.UNPAVED_AVOID_MIN_PER_KM`). 0 accepts them freely, 1.0 is
@@ -268,12 +280,14 @@ def api_route():
         pref = float(args.get("pref", 0.5))
         avoid_unpaved = _parse_avoid_unpaved(args)
         heading = _parse_heading(args)
+        declined_uturn = _parse_declined_uturn(args)
         weights = _parse_weights(args)
         raw_via = args.get("via")
         via = _parse_ll(raw_via) if raw_via else None
     except (KeyError, ValueError):
         return jsonify(error="need from=lat,lon&to=lat,lon[&pref=0..1]"
-                             "[&heading=0..360][&via=lat,lon][&w_<type>=...]"), 400
+                             "[&heading=0..360][&declined_uturn=1]"
+                             "[&via=lat,lon][&w_<type>=...]"), 400
     day = _today()
 
     # Heading applies to the start only: it says which way the driver is
@@ -327,6 +341,13 @@ def api_route():
         # different node than the one `snap` returned above, which `resume` has
         # no way to express. A rejoin that opens by turning the car around is
         # worth fixing; see docs/loop-routes-design.md.
+        #
+        # `declined_uturn` is ignored here for the same reason, and accepted
+        # rather than refused so a client that sends it on every reroute still
+        # gets its rejoin. Without a heading there is no "behind" to keep the
+        # route out of, and the app never sends it on this path anyway: these
+        # routes carry no `turns_around`, so nothing here can be declined.
+        # docs/reroute-uturn.md.
         if closed:
             return jsonify(error=CLOSED_FOR_SEASON), 404
         if fastest is None or scenic is None:
@@ -334,11 +355,17 @@ def api_route():
         scenic = _no_worse_than_fastest(fastest, scenic)
         return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
+    # `origin` lets each route say whether it turns the driver around, and
+    # `keep_ahead` asks for one that doesn't once they have declined one.
+    # Both arms, so a driver who declined a U-turn and then tapped "fastest"
+    # is not handed the same U-turn on the fast roads. docs/reroute-uturn.md.
     fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
-                           avoid_unpaved=avoid_unpaved, on=day)
+                           avoid_unpaved=avoid_unpaved, on=day, origin=a,
+                           keep_ahead=declined_uturn)
     scenic = (fastest if pref == 0.0
               else ROUTER.route(s, t, pref, weights, heading=heading,
-                                avoid_unpaved=avoid_unpaved, on=day))
+                                avoid_unpaved=avoid_unpaved, on=day, origin=a,
+                                keep_ahead=declined_uturn))
     if fastest is None or scenic is None:
         # A route on the graph with nothing closed means the closures are what
         # cut it off: the destination is up a road shut for the season, or

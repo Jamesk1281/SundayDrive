@@ -267,6 +267,16 @@ final class NavigationModel {
                                      weights: weights, heading: heading)
     }
 
+    /// How replacement routes are fetched once the driver has declined a
+    /// U-turn — see `declinedUTurn`. The same request with `declined_uturn`
+    /// set, and its own seam rather than a sixth argument on `RouteFetcher`, so
+    /// every existing stub is untouched and a test can tell which was asked.
+    var fetchRouteKeepingAhead: RouteFetcher = { from, to, pref, weights, heading in
+        try await RouteService.route(from: from, to: to, pref: pref,
+                                     weights: weights, heading: heading,
+                                     declinedUTurn: true)
+    }
+
     /// How a loop's replacement routes are fetched, pinned through its far point.
     var fetchLoopResume: LoopResumeFetcher = { from, via, to, pref, weights, heading in
         try await RouteService.route(from: from, to: to, via: via, pref: pref,
@@ -521,6 +531,60 @@ final class NavigationModel {
         if here.offRoute <= Self.joinConfirmMeters || expired {
             awaitingJoin = false
             awaitingJoinSince = nil
+        }
+    }
+
+    /// Set once the driver has declined a route that turned them around, and
+    /// sent with every reroute (`fetchRouteKeepingAhead`) until they have
+    /// driven one: at most one U-turn per departure.
+    ///
+    /// The server can only answer the question it is asked. A reroute is asked
+    /// from where the car is now, so when the driver ignores "Make a U-turn"
+    /// and keeps going, the next request is the same question from a few
+    /// hundred metres on, and its answer is usually the same U-turn. On
+    /// 2026-10-06 one drive was told to turn around five times in 103 seconds;
+    /// one of the five was the driver's own "switch to fastest". Backing off
+    /// only changes when the same U-turn comes back.
+    ///
+    /// Declined means rerouting away from a route whose `turnaround_m` the
+    /// driver never drove past, for any reason, the driver's own "fastest"
+    /// included; and `switchToFastest`, which resets the backoff and unwinds
+    /// a failed switch, leaves this alone either way. Cleared only
+    /// in `trackFollowing`, once the driver is on a route and has driven
+    /// `declinedUTurnProgressMeters` past where it turned them around, or past
+    /// where they joined one that goes on ahead. Not sent on a loop's rejoin,
+    /// which the server plans without a heading. docs/reroute-uturn.md.
+    private(set) var declinedUTurn = false
+
+    /// Whether the driver has driven the route now being followed — see
+    /// `trackFollowing`. Reset by `adopt`.
+    private var followedCurrentRoute = false
+
+    /// How far past a route's turnaround, or past where they joined a route
+    /// that has none, the driver must drive on it for it to count as followed.
+    ///
+    /// Past the turnaround and not merely along the route, because a route can
+    /// lead the driver ahead for hundreds of metres before turning them round:
+    /// "Head west ... Make a U-turn to stay on", 304 to 632 m in. And a margin
+    /// past it, because at the instant a U-turn route is adopted the car is
+    /// standing on its return leg, matched right at the turnaround. A hundred
+    /// metres is several fixes of real driving — 29 m apart at 65 mph — where
+    /// the match on a car standing on its route wobbles under 3 m
+    /// (`reverseMatchMeters`).
+    static let declinedUTurnProgressMeters: Double = 100
+
+    /// Note that the driver has driven the current route, and forgive a
+    /// declined U-turn once they have. See `declinedUTurn`.
+    private func trackFollowing(_ here: RouteProgress) {
+        guard !followedCurrentRoute, hasJoinedRoute, !awaitingJoin,
+              let joined = matchAtAdoption,
+              here.offRoute <= Self.joinConfirmMeters,
+              !runningBackwards(here) else { return }
+        let mark = max(route.properties.turnaround_m ?? 0, joined)
+            + Self.declinedUTurnProgressMeters
+        if here.travelled >= mark {
+            followedCurrentRoute = true
+            declinedUTurn = false
         }
     }
 
@@ -1007,6 +1071,7 @@ final class NavigationModel {
         // to reach, so they are legitimately off it until they get there.
         settleAwaitingJoin(here)
         trackSettling(here)
+        trackFollowing(here)
 
         // How much evidence there is that the driver has actually left the road.
         // An unambiguous excursion counts for the whole streak at once, so a
@@ -1373,13 +1438,25 @@ final class NavigationModel {
         // what was asked is what makes the answer checkable afterwards.
         let askedHeading = Self.usableHeading(origin)
         let askedPref = pref
+        // Leaving a route that turned the driver around, without having taken
+        // the turn, is declining it — whatever the reason for leaving.
+        if route.properties.turnaround_m != nil, !followedCurrentRoute {
+            declinedUTurn = true
+        }
         // A loop that has not reached its far point must be pinned through it;
         // anything else asks for the short way home. See `loopWaypoint`.
         let reply: RouteResponse?
+        let askedDeclined: Bool
         if let via = loopWaypoint {
+            askedDeclined = false
             reply = try? await fetchLoopResume(origin.coordinate, via, destination,
                                                askedPref, weights, askedHeading)
+        } else if declinedUTurn {
+            askedDeclined = true
+            reply = try? await fetchRouteKeepingAhead(origin.coordinate, destination,
+                                                      askedPref, weights, askedHeading)
         } else {
+            askedDeclined = false
             reply = try? await fetchRoute(origin.coordinate, destination,
                                           askedPref, weights, askedHeading)
         }
@@ -1417,10 +1494,12 @@ final class NavigationModel {
         // join gate against a line the car never left.
         if sameLine(as: replacement) {
             merge(replacement, reason: reason, from: origin.coordinate,
-                  heading: askedHeading, pref: askedPref)
+                  heading: askedHeading, pref: askedPref,
+                  declinedUTurn: askedDeclined)
         } else {
             adopt(replacement, reason: reason, from: origin.coordinate,
-                  heading: askedHeading, pref: askedPref)
+                  heading: askedHeading, pref: askedPref,
+                  declinedUTurn: askedDeclined)
         }
         // Only off-route reroutes back off. A user tapping "fastest" has asked
         // for this one and is owed it immediately, and counting it would then
@@ -1469,9 +1548,10 @@ final class NavigationModel {
     private func merge(_ feature: RouteFeature, reason: String,
                        from origin: CLLocationCoordinate2D? = nil,
                        heading: CLLocationDirection? = nil,
-                       pref: Double? = nil) {
+                       pref: Double? = nil, declinedUTurn: Bool = false) {
         trace?.route(feature, reason: reason + "-same",
-                     from: origin, heading: heading, pref: pref)
+                     from: origin, heading: heading, pref: pref,
+                     declinedUTurn: declinedUTurn)
         route = feature
         steps = feature.properties.steps
         // Against `coordinates`, which by definition are the feature's own.
@@ -1505,12 +1585,13 @@ final class NavigationModel {
     private func adopt(_ feature: RouteFeature, reason: String,
                        from origin: CLLocationCoordinate2D? = nil,
                        heading: CLLocationDirection? = nil,
-                       pref: Double? = nil) {
+                       pref: Double? = nil, declinedUTurn: Bool = false) {
         // Recorded before the state changes under it. `travelled` restarts at
         // zero on the new line, so a trace that didn't know the line had been
         // replaced would read the reset as the car teleporting backwards.
         trace?.route(feature, reason: reason,
-                     from: origin, heading: heading, pref: pref)
+                     from: origin, heading: heading, pref: pref,
+                     declinedUTurn: declinedUTurn)
         route = feature
         steps = feature.properties.steps
         coordinates = feature.coordinates
@@ -1525,6 +1606,10 @@ final class NavigationModel {
         currentStep = 0
         travelled = 0
         matchAtAdoption = nil
+        // Not yet driven, whatever was true of the line before. `declinedUTurn`
+        // is left alone: whether the driver has taken *a* route is what clears
+        // it, and they have not taken this one yet.
+        followedCurrentRoute = false
         remainingMeters = feature.properties.km * 1000
         remainingMinutes = feature.properties.minutes
         // The driver has not reached this line yet — it begins at a junction

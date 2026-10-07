@@ -216,7 +216,7 @@ final class DriveTrace {
     func route(_ feature: RouteFeature, reason: String,
                from origin: CLLocationCoordinate2D? = nil,
                heading: CLLocationDirection? = nil,
-               pref: Double? = nil) {
+               pref: Double? = nil, declinedUTurn: Bool = false) {
         routeSeq += 1
         var record: [String: Any] = [
             "t": "route",
@@ -254,6 +254,13 @@ final class DriveTrace {
         // itself the thing worth knowing when a route opens the wrong way.
         if let heading { record["req_heading"] = heading }
         if let pref { record["req_pref"] = pref }
+        // Both halves of the declined-U-turn rule, so a replay can check it:
+        // whether this request said a U-turn had been declined, and where this
+        // route itself turns the driver around (docs/reroute-uturn.md).
+        if declinedUTurn { record["req_declined_uturn"] = true }
+        if let turnaround = feature.properties.turnaround_m {
+            record["turnaround_m"] = turnaround
+        }
         append(record, flush: true)
     }
 

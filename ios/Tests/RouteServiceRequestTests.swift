@@ -89,6 +89,19 @@ final class RouteServiceRequestTests: XCTestCase {
         ])
     }
 
+    func test_a_declined_u_turn_is_said_in_the_body_and_only_when_it_happened() {
+        // docs/reroute-uturn.md. Absent unless set, which is what keeps every
+        // request an old build sends exactly as it was.
+        let request = RouteService.routeRequest(from: start, to: end, pref: 0.5,
+                                                heading: 90, declinedUTurn: true,
+                                                base: base)
+        assertNoCoordinateInURL(request, [start, end])
+        XCTAssertEqual(form(request)["declined_uturn"], "1")
+        let plain = RouteService.routeRequest(from: start, to: end, pref: 0.5,
+                                              heading: 90, base: base)
+        XCTAssertNil(form(plain)["declined_uturn"])
+    }
+
     func test_a_loop_request_carries_its_start_in_the_body() {
         let request = RouteService.loopRequest(
             from: start, km: 40, sector: "NE", weights: ["water": 2.5], base: base)

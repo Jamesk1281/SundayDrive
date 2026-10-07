@@ -63,3 +63,13 @@ a brief by name or trap number means the copy at `a2ddddc`.
 | `docs/archive/landcover-implementation-brief.md` | [geodata-sources-findings.md](geodata-sources-findings.md), [geodata-peer-review-verdict.md](geodata-peer-review-verdict.md) |
 | `docs/archive/new-england-terrain-brief.md` | `pipeline/elevation.py:50-58`, [new-england-terrain-findings.md](new-england-terrain-findings.md) |
 | `docs/archive/voice-guidance-plan-brief.md` | `VoiceGuide.swift:12-20`, [voice-guidance-plan.md](voice-guidance-plan.md) §3 |
+
+## Briefs kept out of history
+
+A brief that quoted the private drive traces (street names, clock times) is
+never committed to `main`, so it does not exist in the public history at all.
+Its answer document is self-contained.
+
+| brief | its answer lives in |
+| --- | --- |
+| `docs/reroute-uturn-brief.md` | [reroute-uturn.md](reroute-uturn.md) |

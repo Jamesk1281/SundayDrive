@@ -132,16 +132,24 @@ enum RouteService {
     ///     plain replacement is the short way home and throws the rest of the
     ///     drive away; pinning through the loop's far point makes it a rejoin.
     ///     Note the server ignores `heading` when `via` is set.
+    ///   - declinedUTurn: the driver has just left a route that turned them
+    ///     around without taking it. The server then keeps the replacement
+    ///     going on ahead where there is a reasonable way to, so a driver is
+    ///     told to turn around at most once per departure. It needs `heading`
+    ///     to know which way "ahead" is, and is ignored with `via`.
+    ///     docs/reroute-uturn.md.
     static func route(
         from start: CLLocationCoordinate2D,
         to end: CLLocationCoordinate2D,
         via: CLLocationCoordinate2D? = nil,
         pref: Double,
         weights: [String: Double] = [:],
-        heading: CLLocationDirection? = nil
+        heading: CLLocationDirection? = nil,
+        declinedUTurn: Bool = false
     ) async throws -> RouteResponse {
         try await send(routeRequest(from: start, to: end, via: via, pref: pref,
-                                    weights: weights, heading: heading))
+                                    weights: weights, heading: heading,
+                                    declinedUTurn: declinedUTurn))
     }
 
     /// The request `route(...)` sends, built without sending it so the one
@@ -154,6 +162,7 @@ enum RouteService {
         pref: Double,
         weights: [String: Double] = [:],
         heading: CLLocationDirection? = nil,
+        declinedUTurn: Bool = false,
         base: String = baseURL
     ) -> URLRequest {
         // The body: from=lat,lon&to=lat,lon&pref=0.50&w_coast=...
@@ -167,7 +176,8 @@ enum RouteService {
             [URLQueryItem(name: "heading", value: headingParameter($0))]
         } ?? []) + (via.map {
             [URLQueryItem(name: "via", value: "\($0.latitude),\($0.longitude)")]
-        } ?? []))
+        } ?? []) + (declinedUTurn
+            ? [URLQueryItem(name: "declined_uturn", value: "1")] : []))
     }
 
     /// Request one scenic loop from a start point, of about `km`.

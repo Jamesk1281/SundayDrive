@@ -595,3 +595,70 @@ def test_a_post_reads_its_body_and_not_its_url(client):
     assert r.status_code == 400
     r = client.post(f"/api/loop?from={NEEDHAM}&km=40", data={})
     assert r.status_code == 400
+
+
+# --- declined_uturn: at most one U-turn per departure -------------------------
+# docs/reroute-uturn.md. The car is the 2026-08-22 one test_routing.py's "a
+# reroute that must double back says so" pins, north-west on Bedford Street.
+# Not with that test's destination: the API snaps a pin through the car-park
+# access layer, and that lot's entrance is on the road ahead. This one is a
+# point on Bedford Street 600 m behind the car, so the cheapest route turns it
+# around (0.7 min) and the one that doesn't takes 7.5.
+
+BEDFORD_HERE = "42.479463,-71.255401"
+BEDFORD_BEHIND = "42.475215,-71.250901"
+
+
+def _bedford(client, **extra):
+    r = client.post("/api/route", data={"from": BEDFORD_HERE, "to": BEDFORD_BEHIND,
+                                        "pref": "0.70", "heading": "322.0",
+                                        **extra})
+    assert r.status_code == 200
+    return r.get_json()
+
+
+def test_every_route_says_whether_it_turns_the_driver_around(client):
+    """The app needs it to know that a route it is leaving was a U-turn."""
+    for feature in _bedford(client).values():
+        assert feature["properties"]["turns_around"] is True
+    # Planned from a standstill there is no behind, so never.
+    body = client.post("/api/route", data={"from": BEDFORD_HERE,
+                                           "to": BEDFORD_BEHIND}).get_json()
+    for feature in body.values():
+        assert feature["properties"]["turns_around"] is False
+
+
+def test_a_client_that_never_sends_the_flag_gets_todays_route(client):
+    """Every build in the store. The server ships separately from the app, so
+    it must not change a single route for a client that never asks."""
+    old = _bedford(client)
+    assert old["fastest"]["properties"]["steps"][0]["modifier"] == "uturn"
+    assert _bedford(client, declined_uturn="0") == old
+    assert _bedford(client, declined_uturn="") == old
+
+
+def test_a_declined_u_turn_is_not_offered_again(client):
+    for feature in _bedford(client, declined_uturn="1").values():
+        props = feature["properties"]
+        assert props["turns_around"] is False
+        assert props["steps"][0]["modifier"] != "uturn"
+
+
+def test_switching_to_fastest_after_a_declined_u_turn_goes_on_ahead(client):
+    """Seq 17 of the worst recorded run was the driver's own "switch to
+    fastest", and it U-turned straight after a declined one."""
+    body = _bedford(client, pref="0.00", declined_uturn="1")
+    assert body["fastest"]["properties"]["turns_around"] is False
+    assert body["fastest"]["properties"]["steps"][0]["modifier"] != "uturn"
+
+
+def test_the_loop_rejoin_accepts_the_flag_and_ignores_it(client):
+    """`via` drops the heading, so there is no behind to keep out of. A client
+    sending the flag there anyway still gets its rejoin, unchanged."""
+    to = NEEDHAM.replace("42.2809", "42.2909")
+    params = {"from": NEEDHAM, "to": to, "via": WORCESTER, "pref": "1.00",
+              "heading": "90.0"}
+    plain = client.post("/api/route", data=params)
+    flagged = client.post("/api/route", data={**params, "declined_uturn": "1"})
+    assert plain.status_code == flagged.status_code == 200
+    assert flagged.get_json() == plain.get_json()

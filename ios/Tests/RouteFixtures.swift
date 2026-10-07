@@ -95,10 +95,15 @@ enum Fixture {
     /// exactly wrong for deciding which maneuvers have been driven.
     ///
     /// `steps` are (metres along the route, instruction), as in `straightRoute`.
+    ///
+    /// `turnaroundM` is the server's `turnaround_m`: how far along the line it
+    /// starts to turn the driver around. Nil leaves the key off, which is what
+    /// a backend that predates it sends.
     static func uTurnRoute(start: Double, lengthMeters: Double = 530,
                            vertexSpacing: Double = 50,
                            steps: [(Double, String)],
-                           minutes: Double = 2) -> RouteFeature {
+                           minutes: Double = 2,
+                           turnaroundM: Double? = nil) -> RouteFeature {
         let count = Int(lengthMeters / vertexSpacing)
         let coordinates = (0...count).map { i -> [Double] in
             let c = north(start - Double(i) * vertexSpacing)
@@ -108,7 +113,39 @@ enum Fixture {
                               km: lengthMeters / 1000, minutes: minutes,
                               steps: steps.map { along, text in
                                   (north(start - along), text, nil)
-                              }))
+                              },
+                              turnaroundM: turnaroundM))
+    }
+
+    /// A replacement that leads the driver on ahead and only then turns them
+    /// around: north from `start` for `aheadMeters`, across to the other
+    /// carriageway `besideMeters` east, and back south past where it began.
+    ///
+    /// The "Head west on X ... Make a U-turn to stay on X" shape of
+    /// `drive-2026-08-25-202122` and `drive-2026-10-06-164801`, where the
+    /// recorded routes came back past the car 304 to 632 m along. Its
+    /// `turnaround_m` is where it starts back down the far carriageway.
+    static func uTurnAheadRoute(start: Double, aheadMeters: Double = 300,
+                                besideMeters: Double = 15,
+                                backMeters: Double = 600) -> RouteFeature {
+        var points: [[Double]] = []
+        func add(_ east: Double, _ northing: Double) {
+            let c = offset(east: east, north: northing)
+            points.append([c.longitude, c.latitude])
+        }
+        for n in stride(from: start, through: start + aheadMeters, by: 50) { add(0, n) }
+        for n in stride(from: start + aheadMeters, through: start + aheadMeters - backMeters,
+                        by: -50) { add(besideMeters, n) }
+        let steps: [(CLLocationCoordinate2D, String, String?)] = [
+            (north(start), "Head north on Test Road", "Test Road"),
+            (north(start + aheadMeters), "Make a U-turn to stay on Test Road", "Test Road"),
+            (offset(east: besideMeters, north: start + aheadMeters - backMeters),
+             "Arrive at your destination", ""),
+        ]
+        return decode(feature(coordinates: points,
+                              km: (aheadMeters + besideMeters + backMeters) / 1000,
+                              minutes: 2, steps: steps,
+                              turnaroundM: aheadMeters + besideMeters))
     }
 
     /// A point `east`/`north` metres from the fixture origin.
@@ -186,6 +223,7 @@ enum Fixture {
                         steps: [(CLLocationCoordinate2D, String, String?)],
                         meanScore: Double = 6.0,
                         beautifulKm: Double? = nil,
+                        turnaroundM: Double? = nil,
                         sceneryKm: [String: Double] = ["water": 3.0, "coast": 0.0,
                                                        "forest/park": 2.0]) -> [String: Any] {
         var properties: [String: Any] = [
@@ -219,6 +257,10 @@ enum Fixture {
             properties["beautiful_km"] = beautifulKm
             properties["beautiful_score"] = 7.0
         }
+        if let turnaroundM {
+            properties["turns_around"] = true
+            properties["turnaround_m"] = turnaroundM
+        }
         return [
             "type": "Feature",
             "geometry": ["type": "LineString", "coordinates": coordinates],
@@ -240,7 +282,8 @@ enum Fixture {
                 km: feature.properties.km, minutes: feature.properties.minutes,
                 steps: feature.properties.steps.map {
                     ($0.coordinate, $0.instruction, $0.name)
-                })
+                },
+                turnaroundM: feature.properties.turnaround_m)
         }
         let data = try! JSONSerialization.data(
             withJSONObject: ["fastest": encode(fastest), "scenic": encode(scenic)])

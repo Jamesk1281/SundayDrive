@@ -178,6 +178,17 @@ struct RouteProps: Decodable {
     let scenery_km: [String: Double]
     /// Turn-by-turn maneuvers from start to destination, for live navigation.
     let steps: [RouteStep]
+    /// How far along this route, in metres, it starts to send the driver back
+    /// the way they came, or nil if it doesn't. Judged by the server from the
+    /// geometry against the heading the reroute sent, so a "Make a U-turn", a
+    /// "U-turn to stay on" one junction on and a "Sharp right" that doubles
+    /// back all count, and a route planned from a standstill never does.
+    ///
+    /// `NavigationModel` reads it to know that a route the driver is leaving
+    /// was a U-turn they declined (docs/reroute-uturn.md). Optional for the
+    /// same reason as `beautiful_km`: a backend that predates it leaves it
+    /// off, and nil is then "not a U-turn", which is today's behaviour.
+    let turnaround_m: Double?
 
     /// The scenery features in display order, dropping any the route barely
     /// touches, so the breakdown only shows what's relevant.
