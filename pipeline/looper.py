@@ -358,7 +358,13 @@ class LoopPlanner:
         array work over every node in the state, measured at 1.1 ms.
         """
         km = fields.loop_km
+        # Never round on private road off the main public network
+        # (`Router.private_inside`): the way there and back would be a
+        # private road in the middle of the drive, which
+        # `Router._weights` prices out of every route and a turnaround would
+        # bring back in (docs/state-road-class.md, "Loops").
         ok = (fields.reachable
+              & ~self.router.private_inside
               & (np.abs(km - target_km) <= tolerance * target_km)
               & (fields.out.km >= MIN_LEG_KM))
         idx = np.where(ok)[0]
@@ -542,7 +548,14 @@ class LoopPlanner:
         # was driven, only that one may be penalised, and the cheapest weight for
         # the pair may now belong to the other road.
         w_slot = cost.w_slot.copy()
-        w_slot[np.isin(r.eidx, out_edges)] *= penalty
+        # Not on a private road, which a loop drives twice only when it starts
+        # on one: scaling PRIVATE_ENTRY_MIN would make any other way back onto
+        # it worth a detour of thousands of minutes (docs/state-road-class.md,
+        # "Loops").
+        retraced = np.isin(r.eidx, out_edges)
+        if r._private_slot_mask is not None:
+            retraced &= ~r._private_slot_mask
+        w_slot[retraced] *= penalty
         pair_w = np.full(r.n_pairs, np.inf)
         np.minimum.at(pair_w, r.slot_pair, w_slot)
 

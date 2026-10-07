@@ -401,8 +401,12 @@ class TestTheTable:
 
     def test_the_router_loaded_all_of_it(self, closed_router, table):
         c = closed_router.closed_to_cars
-        shut = table[table["rule"] == "edge"]
-        assert len(c.edges) == shut["edge"].nunique()
+        shut = set(table.loc[table["rule"] == "edge", "edge"])
+        # The roads a state DOT closes arrive as rows of the same table
+        # (docs/state-road-class.md), and must all be there too.
+        if closed_router.state_roads is not None:
+            shut |= set(closed_router.state_roads.edges["closed"].tolist())
+        assert len(c.edges) == len(shut)
         assert len(c.through) == table.loc[table["rule"] == "through", "osm_id"].nunique()
         assert len(closed_router._through_split) == len(c.through)
 

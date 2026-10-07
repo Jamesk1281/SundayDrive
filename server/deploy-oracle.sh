@@ -18,8 +18,9 @@ MONITOR_KEYWORD=794685   # the UptimeRobot keyword: graph_nodes.parquet's row co
 REQUIRED="graph_edges graph_nodes turn_restrictions"
 # Optional to the server, which starts without them. Not optional to a driver:
 # without seasonal_closures the box routes over roads closed for the winter, and
-# without closed_to_cars through locked gates and onto roads closed to cars.
-OPTIONAL="access_ways access_entries seasonal_closures closed_to_cars"
+# without closed_to_cars through locked gates and onto roads closed to cars, and
+# without state_road_class onto Class VI and private roads (docs/state-road-class.md).
+OPTIONAL="access_ways access_entries seasonal_closures closed_to_cars state_road_class"
 
 dry_run=0 force_restart=0
 for arg in "$@"; do
@@ -89,6 +90,7 @@ for p in $REQUIRED $OPTIONAL; do
     case $p in
       seasonal_closures) cost="routes will use roads closed for the season (pipeline/closures.py builds it)" ;;
       closed_to_cars) cost="routes will drive through locked gates and roads closed to cars (pipeline/closures.py builds it)" ;;
+      state_road_class) cost="routes will drive NH Class VI, VT trails and through private roads (pipeline/state_roads.py builds it)" ;;
       *) cost="destinations will snap to the wrong road" ;;
     esac
     echo "    warning: no $p.parquet on the Mac; $cost"
@@ -172,9 +174,10 @@ if ! health=$(box 'for i in $(seq 90); do curl -sf http://127.0.0.1:5057/api/hea
   die "the API did not answer within 180 s of the restart"
 fi
 echo "    $health, after $(( $(date +%s) - started )) s"
-# The router logs both closure counts at load, flushed so the journal keeps
-# them. "none" or no line at all means the box is routing over closed roads.
-for what in 'seasonal closures' 'closed to cars'; do
+# The router logs the closure and road-class counts at load, flushed so the
+# journal keeps them. "none" or no line at all means the box is routing over
+# closed roads.
+for what in 'seasonal closures' 'closed to cars' 'state road classes'; do
   line=$(box "sudo journalctl -u sundaydrive-api --since @$started --no-pager -o cat | grep '$what' | tail -1" || true)
   echo "    ${line:-warning: no '$what' line in the journal since the restart}"
 done

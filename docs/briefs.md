@@ -74,3 +74,4 @@ Its answer document is self-contained.
 | --- | --- |
 | `docs/reroute-uturn-brief.md` | [reroute-uturn.md](reroute-uturn.md) |
 | `docs/mid-drive-recovery-build-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), designed in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
+| `docs/state-road-class-brief.md` | [state-road-class.md](state-road-class.md) |

@@ -53,7 +53,7 @@ it is a ford (`ford=yes`), and a node closes the road it stands on when
 `barrier_closes` says so. Where that node stands decides what is closed; see
 `join_closed_to_cars`.
 
-Usage: python closures.py <input.osm.pbf> <processed_dir>
+Usage: python closures.py <input.osm.pbf> <processed_dir> [<out_dir>]
 """
 
 import re
@@ -628,8 +628,12 @@ def _window_label(window):
     return f"{_MONTHS[sm - 1].title()} {sd} - {_MONTHS[em - 1].title()} {ed}"
 
 
-def main(pbf_path: str, processed_dir: str):
+def main(pbf_path: str, processed_dir: str, out_dir: str = None):
+    """Read processed_dir's graph, and write both tables into `out_dir`
+    (processed_dir unless given, which is how to try a rule change without
+    touching the tables a deploy ships)."""
     d = Path(processed_dir)
+    out = Path(out_dir or processed_dir)
     t0 = time.time()
     found = scan(pbf_path)
     drivable, closed, skipped = found.drivable, found.closed, found.skipped
@@ -645,7 +649,7 @@ def main(pbf_path: str, processed_dir: str):
     edges = gpd.read_parquet(d / "graph_edges.parquet",
                              columns=["u", "v", "length_m", "score", "name", "geometry"])
     table = join(closed, edges)
-    table.to_parquet(d / "seasonal_closures.parquet", index=False)
+    table.to_parquet(out / "seasonal_closures.parquet", index=False)
 
     unique = table.drop_duplicates("edge")
     km = unique["length_m"].sum() / 1000.0
@@ -674,7 +678,7 @@ def main(pbf_path: str, processed_dir: str):
           f"in {time.time() - t0:.0f}s")
 
     cars, left = join_closed_to_cars(found.ways, found.barriers, edges)
-    cars.to_parquet(d / "closed_to_cars.parquet", index=False)
+    cars.to_parquet(out / "closed_to_cars.parquet", index=False)
     _report(found, cars, left)
     print(f"wrote closed_to_cars.parquet ({len(cars):,} rows) "
           f"in {time.time() - t0:.0f}s")
@@ -724,4 +728,4 @@ def _report(found, cars, left):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:4])
