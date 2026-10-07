@@ -26,11 +26,15 @@ import XCTest
 enum Persona: String, CaseIterable, Codable {
     case perfect, noisy, dropout, stopAndGo, missedTurn, wrongWayStart, earlyStop
     case loopPerfect, loopLate, loopEarly
+    case wrongWayAlong, loopWrongWay, serverDown, loopServerDown, deadZone, loopDeadZone
+    case spike, canyon, loopMild, loopSpike, loopCanyon
 
-    var isLoop: Bool { [.loopPerfect, .loopLate, .loopEarly].contains(self) }
+    var isLoop: Bool { [.loopPerfect, .loopLate, .loopEarly, .loopWrongWay, .loopServerDown, .loopDeadZone,
+                        .loopMild, .loopSpike, .loopCanyon].contains(self) }
     /// Personas that never leave the road; any reroute they cause is the
     /// model's doing.
-    var staysOnRoute: Bool { [.perfect, .noisy, .dropout, .stopAndGo, .earlyStop, .loopPerfect].contains(self) }
+    var staysOnRoute: Bool { [.perfect, .noisy, .dropout, .stopAndGo, .earlyStop, .loopPerfect,
+                              .spike, .canyon, .loopMild, .loopSpike, .loopCanyon].contains(self) }
 }
 
 /// A route ready to drive, fetched once per process.
@@ -71,14 +75,40 @@ struct DriveRecord: Encodable {
     /// Reroutes whose opening maneuver was driven through and never spoken.
     var openingsDriven = 0, openingsUnspoken = 0, passedInGap = 0
     var stalls = 0
+    // Wrong way along the route (mid-drive recovery study).
+    var revDone = false, revBackM = 0.0
+    var revFirstRequestS: Double?, revFirstRequestM: Double?
+    var revRequests = 0, revUtterances = 0
+    var revSaid: [String] = []
+    var revRoadOff = 0, revRoadNamed = 0, revRoadUnknown = 0
+    var revBanner: [String] = []
+    var revJoinedNew = false
+    // Server down mid-drive.
+    var outageS = 0.0
+    var outageAttempts: [Double] = []
+    var recoveryAfterS: Double?
+    var outageBanner: [String] = []
+    var outageUtterances = 0
+    var outageFixes = 0, outageRerouting = 0
+    // The wrong-way detector: when it fired during the reversal (seconds and
+    // metres after the U-turn), and how often it fired anywhere else.
+    var wrongWayFirstS: Double?, wrongWayFirstM: Double?
+    var wrongWayFalse = 0, wrongWayEvents = 0
+    /// The recovery lines heard, and when.
+    var recoverySaid: [String] = []
     var detour: String?
     var violations: [String] = []
     var samples: [String] = []
 }
 
 /// Behaviour a persona adds on top of driving the line.
+enum Noise { case none, mild, spike, canyon }
+
 struct Script {
     var noisy = false
+    var noise: Noise = .none
+    var reverse: (at: Double, back: Double)?
+    var outageSeconds: Double?
     var gaps: [(s: Double, seconds: Double)] = []
     var dwells: [(s: Double, seconds: Double)] = []
     var deviation: (s: Double, path: Polyline, into: Double)?
@@ -140,6 +170,29 @@ final class SimulatedDrive {
     private var utterances: [Utterance] = []
     private var passed: [Passed] = []
     private var deviationStart: Date?
+    // Mid-drive recovery study.
+    private var reversing = false
+    private var revStart: Date?
+    private var revAt = 0.0, revBack = 0.0
+    private var outageStart: Date?, outageEnd: Date?
+    private var noise: Noise = .none
+    private var canyonOffset = 0.0
+    private let bannerLocation = LocationManager()
+    private var outageActive: Bool {
+        guard let a = outageStart, let b = outageEnd else { return false }
+        return t >= a && t < b
+    }
+    private var bannerNow: String {
+        let b = NavView.bannerText(nav: model, location: bannerLocation)
+        let road: String
+        switch model.currentRoad {
+        case .named(let r): road = "named(\(r))"
+        case .offRoute: road = "Off your route"
+        case .unknown: road = "-"
+        }
+        return "[\(b.over)] \(b.main) | road: \(road) | rem \(Int(model.remainingMeters)) m"
+            + (model.isLoopBeforeFarPoint ? " | before far point" : "")
+    }
     private var parkedAt: Date?
     private var traceLines: [String] = []
 
@@ -200,9 +253,30 @@ final class SimulatedDrive {
                          via: CLLocationCoordinate2D?, pref: Double,
                          heading: CLLocationDirection?) async throws -> RouteResponse {
         record.rerouteRequests += 1
+        if reversing {
+            record.revRequests += 1
+            if record.revFirstRequestS == nil, let rs = revStart {
+                record.revFirstRequestS = t.timeIntervalSince(rs)
+                record.revFirstRequestM = s
+            }
+        }
+        if outageActive, let a = outageStart {
+            record.outageAttempts.append(t.timeIntervalSince(a))
+            record.failedReroutes += 1
+            // The production outage is Cloudflare answering 530 for an absent
+            // origin; a dead zone is no connection at all.
+            if persona == .serverDown || persona == .loopServerDown {
+                throw RouteService.ServiceError.unreachable(530)
+            }
+            throw RouteService.ServiceError.offline
+        }
         do {
-            return try await server.route(from: from, to: to, via: via, pref: pref,
-                                          heading: heading)
+            let reply = try await server.route(from: from, to: to, via: via, pref: pref,
+                                               heading: heading)
+            if let b = outageEnd, t >= b, record.recoveryAfterS == nil {
+                record.recoveryAfterS = t.timeIntervalSince(b)
+            }
+            return reply
         } catch {
             record.failedReroutes += 1
             if record.samples.count < 8 { record.samples.append("reroute failed: \(error)") }
@@ -214,6 +288,33 @@ final class SimulatedDrive {
 
     private func heard(_ text: String) {
         if E2E.tracing { traceLines.append("{\"said\": \"\(text)\", \"t\": \(t.timeIntervalSince(t0))}") }
+        if reversing {
+            record.revUtterances += 1
+            if record.revSaid.count < 6 {
+                record.revSaid.append("t+\(Int(t.timeIntervalSince(revStart ?? t)))s: \(text)")
+            }
+        }
+        if outageActive { record.outageUtterances += 1 }
+        // The detector firing, read off the voice: it says this once per
+        // detection, and a reply landing within the same fix clears
+        // `wrongWay` before the per-fix measurement could see it.
+        if text == "Turn around when possible." {
+            record.wrongWayEvents += 1
+            if reversing, record.wrongWayFirstS == nil, let rs = revStart {
+                record.wrongWayFirstS = t.timeIntervalSince(rs)
+                record.wrongWayFirstM = s
+            } else if !reversing {
+                record.wrongWayFalse += 1
+                if record.samples.count < 8 {
+                    record.samples.append("t=\(Int(record.simSeconds))s wrong-way fired off the reversal: \(bannerNow)")
+                }
+            }
+        }
+        if text.hasPrefix("Turn around") || text.hasPrefix("No connection") {
+            if record.recoverySaid.count < 6 {
+                record.recoverySaid.append("t=\(Int(t.timeIntervalSince(t0)))s\(reversing ? " (reversing)" : ""): \(text)")
+            }
+        }
         let kind = text == "You have arrived." ? "arrival"
             : text.hasPrefix("In ") ? "prepare" : "final"
         let cur = model.currentStep
@@ -261,6 +362,14 @@ final class SimulatedDrive {
         var gaps = script.gaps, dwells = script.dwells
         var deviation = script.deviation
         var gapUntil = t0, dwellUntil = t0, parkUntil = t0
+        noise = script.noise
+        canyonOffset = rng.uniform(0, 240)
+        // A dead zone has no network path while it lasts, and the path coming
+        // back is what `Connectivity` reports in a real drive.
+        if persona == .deadZone || persona == .loopDeadZone {
+            model.networkReachable = { [unowned self] in !self.outageActive }
+        }
+        var restored = false
         var endSince: Date?
         var parkedDone = false
         var lateral = 0.0
@@ -293,6 +402,28 @@ final class SimulatedDrive {
                     }
                     if let d = deviation, before < d.s, s >= d.s {
                         path = d.path; s = d.into; onModelLine = false; deviation = nil
+                        if let o = script.outageSeconds {
+                            outageStart = t; outageEnd = t.addingTimeInterval(o); record.outageS = o
+                        }
+                    }
+                    if let r = script.reverse, !reversing, !record.revDone, before < r.at, s >= r.at {
+                        // A U-turn on the route itself, then back along it.
+                        let back = Array(line.slice(r.at - r.back, r.at).reversed())
+                        let fwd = Array(line.slice(r.at - r.back, line.length).dropFirst())
+                        path = Polyline(back + fwd)
+                        s = 0; onModelLine = false; reversing = true; revStart = t
+                        revAt = r.at; revBack = r.back
+                        record.revDone = true
+                    }
+                }
+                if reversing, s >= revBack {
+                    // Turned round again, having driven `revBack` the wrong way.
+                    reversing = false
+                    record.revBackM = revBack
+                    if gen == 0 {
+                        path = line; s = revAt - revBack; onModelLine = true
+                        lastExp = expectedStep(at: s); lastStep = model.currentStep
+                        lastRemaining = model.remainingMeters
                     }
                 }
                 if script.earlyStop, onModelLine, !parkedDone, line.length - s <= 150 {
@@ -315,6 +446,10 @@ final class SimulatedDrive {
                 }
             }
             if stationary { truthSpeed = 0 }
+            if !restored, let b = outageEnd, t >= b, persona == .deadZone || persona == .loopDeadZone {
+                restored = true
+                model.connectivityRestored()
+            }
             if t < gapUntil { continue }
             await emit(stationary: stationary, noisy: script.noisy, lateral: &lateral)
         }
@@ -346,6 +481,25 @@ final class SimulatedDrive {
         if stationary {
             shown = Earth.offset(truth, bearing: rng.uniform(0, 360), meters: rng.uniform(0, 3))
             accuracy = 8; course = -1; speed = 0
+        } else if noise == .mild {
+            shown = Earth.offset(truth, bearing: course + 90, meters: 3 * rng.gaussian())
+            shown = Earth.offset(shown, bearing: course, meters: 2 * rng.gaussian())
+            accuracy = rng.uniform(3, 10)
+            course = (course + 2 * rng.gaussian() + 360).truncatingRemainder(dividingBy: 360)
+        } else if noise == .spike {
+            if rng.uniform(0, 1) < 1.0 / 150 {
+                shown = Earth.offset(truth, bearing: rng.uniform(0, 360), meters: rng.uniform(220, 450))
+                accuracy = rng.uniform(20, 35)
+            }
+        } else if noise == .canyon {
+            let phase = (t.timeIntervalSince(t0) + canyonOffset).truncatingRemainder(dividingBy: 240)
+            if phase < 40 {
+                lateral = 0.8 * lateral + 0.6 * 35 * rng.gaussian()
+                shown = Earth.offset(truth, bearing: course + 90, meters: max(-90, min(90, lateral)))
+                accuracy = rng.uniform(30, 60)
+            } else {
+                lateral = 0
+            }
         } else if noisy {
             // AR(1) lateral error with a 10 m standard deviation, capped at
             // 15 m, and a 50 m jump one fix in 150.
@@ -454,6 +608,7 @@ final class SimulatedDrive {
                 if gen >= 1, let opening = openings[gen], at <= opening.s + 30 {
                     joinedOpenings.append(gen)
                 }
+                if reversing { record.revJoinedNew = true; record.revBackM = s; reversing = false }
                 path = line; s = at; onModelLine = true; walking = false
                 joinWindow = nil; joinS = s
                 lastExp = expectedStep(at: s)
@@ -462,6 +617,25 @@ final class SimulatedDrive {
             }
         }
 
+        if reversing, let rs = revStart {
+            switch model.currentRoad {
+            case .offRoute: record.revRoadOff += 1
+            case .named: record.revRoadNamed += 1
+            case .unknown: record.revRoadUnknown += 1
+            }
+            let since = Int(t.timeIntervalSince(rs))
+            if since % 10 == 0, record.revBanner.count < 30 {
+                record.revBanner.append("t+\(since)s back \(Int(s)) m req=\(record.revRequests): \(bannerNow)")
+            }
+        }
+        if outageActive, let a = outageStart {
+            record.outageFixes += 1
+            if model.isRerouting { record.outageRerouting += 1 }
+            let since = Int(t.timeIntervalSince(a))
+            if since % 15 == 0, record.outageBanner.count < 20 {
+                record.outageBanner.append("t+\(since)s: \(bannerNow)")
+            }
+        }
         if onModelLine && !adopted {
             measureOnLine(merged: merged)
         } else if !onModelLine && !walking {
@@ -757,6 +931,41 @@ enum Staging {
                                         prefer: persona == .loopLate ? 0.75 : 0.25)
         case .wrongWayStart:
             return try await wrongWay(route, line)
+        case .wrongWayAlong, .loopWrongWay:
+            let at: Double
+            if persona == .loopWrongWay {
+                guard let turn = route.turnaround else { return .unstageable("not a loop") }
+                let turnS = line.project(turn).s
+                at = max(2500, min(0.3 * line.length, turnS - 1000))
+            } else {
+                at = max(2000, 0.4 * line.length)
+            }
+            let back = min(2000, at - 300)
+            guard at < line.length - 1500, back >= 800 else {
+                return .unstageable("route too short to drive back along")
+            }
+            script.reverse = (at, back)
+            return .script(script, "U-turn on the route at \(Int(at)) m, \(Int(back)) m back along it")
+        case .serverDown, .loopServerDown, .deadZone, .loopDeadZone:
+            let staged: Staged
+            if persona == .serverDown || persona == .deadZone {
+                staged = try await missedTurn(route, line, steps, stepS,
+                                              window: 400...(line.length - 700), prefer: 0.4, far: true)
+            } else {
+                guard let turn = route.turnaround else { return .unstageable("not a loop") }
+                let turnS = line.project(turn).s
+                staged = try await missedTurn(route, line, steps, stepS,
+                                              window: (0.1 * line.length)...(turnS - 700), prefer: 0.25, far: true)
+            }
+            guard case .script(var s2, let note) = staged else { return staged }
+            s2.outageSeconds = 180
+            return .script(s2, (note ?? "") + "; server down for 180 s from the deviation")
+        case .spike, .loopSpike:
+            script.noise = .spike
+        case .canyon, .loopCanyon:
+            script.noise = .canyon
+        case .loopMild:
+            script.noise = .mild
         }
         return .script(script, nil)
     }
@@ -768,7 +977,7 @@ enum Staging {
     /// route.
     static func missedTurn(_ route: PlannedRoute, _ line: Polyline, _ steps: [RouteStep],
                             _ stepS: [Double], window: ClosedRange<Double>,
-                            prefer: Double) async throws -> Staged {
+                            prefer: Double, far: Bool = false) async throws -> Staged {
         guard window.lowerBound < window.upperBound else {
             return .unstageable("route too short to miss a turn and still be rerouted")
         }
@@ -789,7 +998,9 @@ enum Staging {
             let junction = line.point(at: js)
             let approach = Earth.bearing(line.point(at: max(0, js - 40)), junction)
             let from = line.point(at: max(0, js - 25))
-            for (d, off) in [(700.0, 0.0), (500, -35), (500, 35)] {
+            let reach: [(Double, Double)] = far ? [(3000.0, 0.0), (2500, -35), (2500, 35), (1500, 0)]
+                                                : [(700.0, 0.0), (500, -35), (500, 35)]
+            for (d, off) in reach {
                 let target = Earth.offset(junction, bearing: approach + off, meters: d)
                 let response: RouteResponse
                 do {
@@ -803,7 +1014,7 @@ enum Staging {
                 let detour = Polyline(response.fastest.coordinates)
                 guard detour.length > 300 else { rejects.append("k\(k) short"); continue }
                 let entry = detour.project(junction, lo: 0, hi: min(detour.length, 200))
-                guard entry.offset <= 20, detour.length - entry.s > 250 else {
+                guard entry.offset <= 20, detour.length - entry.s > (far ? 1200 : 250) else {
                     rejects.append("k\(k) misses junction by \(Int(entry.offset)) m"); continue
                 }
                 let probe = detour.point(at: entry.s + 250)

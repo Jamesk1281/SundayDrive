@@ -265,4 +265,15 @@ final class SimulatedDriveTests: XCTestCase {
     func test_09_loopPerfect() async throws { try await drive(.loopPerfect) }
     func test_10_loopLate() async throws { try await drive(.loopLate) }
     func test_11_loopEarly() async throws { try await drive(.loopEarly) }
+    func test_12_wrongWayAlong() async throws { try await drive(.wrongWayAlong) }
+    func test_13_loopWrongWay() async throws { try await drive(.loopWrongWay) }
+    func test_14_serverDown() async throws { try await drive(.serverDown) }
+    func test_15_loopServerDown() async throws { try await drive(.loopServerDown) }
+    func test_16_spike() async throws { try await drive(.spike) }
+    func test_17_canyon() async throws { try await drive(.canyon) }
+    func test_18_loopMild() async throws { try await drive(.loopMild) }
+    func test_19_loopSpike() async throws { try await drive(.loopSpike) }
+    func test_20_loopCanyon() async throws { try await drive(.loopCanyon) }
+    func test_21_deadZone() async throws { try await drive(.deadZone) }
+    func test_22_loopDeadZone() async throws { try await drive(.loopDeadZone) }
 }
