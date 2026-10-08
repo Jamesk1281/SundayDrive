@@ -3,9 +3,11 @@
 Loads the routing graph once at startup and serves:
   GET  /api/route?from=LAT,LON&to=LAT,LON&pref=0.5[&heading=DEG][&via=LAT,LON]
                                             [&avoid_unpaved=0..2]
-                 [&w_<type>=...]
+                 [&w_<type>=...][&options=1]
+                 [&leave=LAT,LON,DEG][&rejoin=LAT,LON,DEG]
                               -> {"fastest": <GeoJSON Feature>,
-                                  "scenic":  <GeoJSON Feature>}
+                                  "scenic":  <GeoJSON Feature>,
+                                  ["options": {"default": i, "menu": [...]}]}
   GET  /api/loop?from=LAT,LON&km=40[&pref=1.0][&sector=NE][&w_<type>=...]
                               -> {"loop": <GeoJSON Feature>, "meta": {...},
                                   "alternatives": [...], "note": null|str}
@@ -35,6 +37,15 @@ start snaps to the end of its road that lies ahead rather than the nearer one,
 so a mid-drive reroute doesn't open by turning the driver around. Send it only
 while moving; omit it when planning from a parked car.
 
+`options=1` asks for the menu of in-between scenic routes the app turns into
+slider detents (pipeline/options.py, docs/route-options.md). It is honoured
+only when the server runs with SUNDAYDRIVE_ROUTE_OPTIONS=1, and only when no
+other plan or loop is computing; otherwise the reply is today's, with no
+`options`. With options, `scenic` is the menu's default option in full detail.
+`leave` and `rejoin` are an option's switch points: the scenic stretch between
+them at pref 1, fastest roads either side. They are how the app fetches an
+option in full and how it reroutes one mid-drive.
+
 Every route and loop avoids the roads OpenStreetMap marks closed for the season
 on the day of the request, in New England's time zone (pipeline/closures.py).
 When the only way to a destination is one of them, /api/route says so: a 404
@@ -46,6 +57,7 @@ Run:  python server/app.py [processed_dir]   (default: data/processed)
 import os
 import sys
 import threading
+from contextlib import contextmanager
 from pathlib import Path
 
 from flask import Flask, jsonify, request
@@ -58,6 +70,7 @@ from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
                     LoopPlanner)  # noqa: E402
 from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED, Router,  # noqa: E402
                     region_today)
+import options as route_options  # noqa: E402
 
 # How far a user may push a single beauty type. 0 ignores it; the upper bound
 # keeps one cranked slider from completely swamping the others.
@@ -106,6 +119,12 @@ PROCESSED = (os.environ.get("SUNDAYDRIVE_DATA")
              or os.environ.get("VICTORYLAP_DATA")
              or os.environ.get("SCENIC_DATA", str(ROOT / "data" / "processed")))
 
+# Route options (pipeline/options.py) are off unless this is set. They cost
+# about twice today's plan on the box (docs/route-options.md, "Capacity"), so
+# the owner turns them on after measuring there, and can turn them off again
+# with a restart and no deploy.
+ROUTE_OPTIONS = os.environ.get("SUNDAYDRIVE_ROUTE_OPTIONS", "") in ("1", "true")
+
 app = Flask(__name__, static_folder=None)
 CORS(app)
 # Gzip responses. Route GeoJSON is large and very repetitive (coordinate
@@ -141,6 +160,37 @@ LOOP_LOCK = threading.Lock()
 # served over Lincoln Gap after Oct 15.
 LOOP_RESULTS = {}
 LOOP_RESULTS_MAX = 16
+
+# How many /api/route and /api/loop requests are computing right now.
+#
+# The guard that keeps route options from ever making a driver wait. Routing
+# holds the GIL, so requests run one at a time in effect, and a plan with
+# options costs about twice one without. A burst is where that hurts: the app
+# gives up at 20 s and a queue twice as slow to drain fills twice as fast
+# (review finding K-1). So options are computed only by a request that found
+# nothing else running, and they give up between phases the moment anything
+# else arrives — the reply is then today's, without `options`, which every
+# client handles. docs/route-options.md, "The busy guard".
+IN_FLIGHT = 0
+IN_FLIGHT_LOCK = threading.Lock()
+
+
+@contextmanager
+def _computing():
+    """Count this request as computing; yields whether it is the only one."""
+    global IN_FLIGHT
+    with IN_FLIGHT_LOCK:
+        IN_FLIGHT += 1
+        alone = IN_FLIGHT == 1
+    try:
+        yield alone
+    finally:
+        with IN_FLIGHT_LOCK:
+            IN_FLIGHT -= 1
+
+
+def _not_alone():
+    return IN_FLIGHT > 1 or LOOP_LOCK.locked()
 
 print(f"ready: {len(ROUTER.nodes):,} nodes "
       f"({ROUTER.n:,} routing slots after turn-restriction splits)")
@@ -230,6 +280,22 @@ def _parse_weights(args):
     return weights
 
 
+def _parse_switch(args, name):
+    """One of an option's switch points, `lat,lon,heading`, or None.
+
+    A point on the scenic road and the way along it the route drives, never
+    a node id: ids change with every rebuild, and the request that fetches an
+    option can land on the other box (docs/route-options.md, "Switch points").
+    """
+    raw = args.get(name)
+    if not raw:
+        return None
+    lat, lon, heading = (float(x) for x in raw.split(","))
+    if not 0.0 <= heading <= 360.0:
+        raise ValueError(name)
+    return lat, lon, heading % 360.0
+
+
 def _no_worse_than_fastest(fastest, scenic):
     """The scenic route, or the fastest one when "scenic" came back scoring lower.
 
@@ -284,10 +350,22 @@ def api_route():
         weights = _parse_weights(args)
         raw_via = args.get("via")
         via = _parse_ll(raw_via) if raw_via else None
+        leave = _parse_switch(args, "leave")
+        rejoin = _parse_switch(args, "rejoin")
+        want_options = args.get("options", "") in ("1", "true")
     except (KeyError, ValueError):
         return jsonify(error="need from=lat,lon&to=lat,lon[&pref=0..1]"
                              "[&heading=0..360][&declined_uturn=1]"
-                             "[&via=lat,lon][&w_<type>=...]"), 400
+                             "[&via=lat,lon][&w_<type>=...][&options=1]"
+                             "[&leave=lat,lon,deg][&rejoin=lat,lon,deg]"), 400
+    with _computing() as alone:
+        return _route(a, b, pref, avoid_unpaved, heading, declined_uturn,
+                      weights, via, leave, rejoin,
+                      want_options and ROUTE_OPTIONS and alone)
+
+
+def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
+           leave, rejoin, with_options):
     day = _today()
 
     # Heading applies to the start only: it says which way the driver is
@@ -355,6 +433,44 @@ def api_route():
         scenic = _no_worse_than_fastest(fastest, scenic)
         return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
+    # The menu of in-between routes, for a plan. Never for a reroute, which
+    # carries a heading or a declined U-turn or switch points, and never when
+    # anything else is computing: `plan` returns None the moment another
+    # request arrives, and the reply below is today's.
+    if (with_options and heading is None and not declined_uturn
+            and leave is None and rejoin is None):
+        plan = route_options.plan(ROUTER, s, t, weights, avoid_unpaved,
+                                  on=day, abort=_not_alone)
+        if plan is not None:
+            return jsonify(fastest=plan.fastest.geojson(),
+                           scenic=route_options.feature(plan.scenic),
+                           options=plan.options_json())
+
+    # One option of a menu, in full: fetched when the driver settles on it,
+    # and asked again by legs when they leave it mid-drive.
+    if leave is not None or rejoin is not None:
+        fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
+                               avoid_unpaved=avoid_unpaved, on=day, origin=a,
+                               keep_ahead=declined_uturn)
+        try:
+            scenic = route_options.spliced_route(
+                ROUTER, s, t, leave, rejoin, weights, avoid_unpaved, on=day,
+                heading=heading, origin=a, keep_ahead=declined_uturn)
+        except route_options.SwitchPointNotFound:
+            # A graph rebuilt under a plan. The stretch's road has gone, so
+            # the nearest thing to the driver's choice is the scenic route;
+            # an error here would leave a driver mid-drive with nothing.
+            scenic = ROUTER.route(s, t, pref, weights, heading=heading,
+                                  avoid_unpaved=avoid_unpaved, on=day,
+                                  origin=a, keep_ahead=declined_uturn)
+        if fastest is not None and scenic is not None:
+            scenic = _no_worse_than_fastest(fastest, scenic)
+            return jsonify(fastest=fastest.geojson(),
+                           scenic=route_options.feature(scenic))
+        if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
+            return jsonify(error=CLOSED_FOR_SEASON), 404
+        return jsonify(error="no route found between those points"), 404
+
     # `origin` lets each route say whether it turns the driver around, and
     # `keep_ahead` asks for one that doesn't once they have declined one.
     # Both arms, so a driver who declined a U-turn and then tapped "fastest"
@@ -416,6 +532,11 @@ def api_loop():
         return jsonify(error="point is outside the covered road network "
                              f"(currently {REGION})"), 400
 
+    with _computing():
+        return _loop(start, target_km, pref, weights, sector, avoid_unpaved, day)
+
+
+def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
     target_km = max(MIN_TARGET_KM, min(MAX_TARGET_KM, target_km))
     key = (start, round(target_km, 1), round(pref, 4), sector,
            tuple(sorted(weights.items())), round(avoid_unpaved, 4),
@@ -502,7 +623,8 @@ def index():
         endpoints={
             "/api/route": ("from=LAT,LON&to=LAT,LON[&pref=0..1][&via=LAT,LON]"
                            "[&avoid_unpaved=0..2]"
-                           "[&w_<type>=0..4]"),
+                           "[&w_<type>=0..4][&options=1]"
+                           "[&leave=LAT,LON,DEG][&rejoin=LAT,LON,DEG]"),
             "/api/loop": (f"from=LAT,LON&km={MIN_TARGET_KM:.0f}..{MAX_TARGET_KM:.0f}"
                           "[&sector=NE][&pref=0..1][&w_<type>=0..4]"
                           "[&avoid_unpaved=0..2]"),
