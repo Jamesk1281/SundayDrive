@@ -272,8 +272,10 @@ discarded.*
 
 **The App Store build does not record drives.** `RouteModel.startNavigation`
 and `startLoopDrive` open a `DriveTrace` only when `DriveTrace.isEnabled`, and
-in a Release build that is `DriveTrace.isTestFlight`, false for an App Store
-install (`DriveTrace.swift`). With no trace, nothing from a drive is written anywhere: fixes are
+in a Release build that is `false` unless the build was archived with
+`RECORD_DRIVES`, and even then only for a TestFlight install
+(`DriveTrace.isTestFlight`, `DriveTrace.swift`). The build submitted to the
+App Store is archived without the flag. With no trace, nothing from a drive is written anywhere: fixes are
 used to follow the route and then dropped, and the scenery-verdict buttons and
 the arrival card's "How was the road?" are not shown
 (`NavigationModel.canRecordMarks`). The one exception is a number: a drive
@@ -291,9 +293,10 @@ recording with no consent step runs into App Review guideline 2.5.14
 `DriveTrace.isEnabled` back on reverses this section, §5 and the published
 page**, and needs a consent step first (§8).
 
-**TestFlight builds record every navigated drive** (since 2026-10-08, owner
-decision), detected at runtime from the receipt name (`sandboxReceipt`), so the
-same binary stops recording when it ships to the store. A trace is the
+**TestFlight recording builds record every navigated drive** (since
+2026-10-08, owner decision): archived with `RECORD_DRIVES`, and recording only
+when the receipt is named `sandboxReceipt`. App Review installs from that
+sandbox too, which is why the submitted build leaves the flag out. A trace is the
 2026-09-29 format: the raw fix once a second, the route, verdicts, background
 transitions and how the drive ended, written to `Documents/traces`, never
 uploaded, never deleted automatically, included in backups. The nav screen's

@@ -97,7 +97,7 @@ targets:
         # "Cannot find type X in scope" with the file plainly on disk.
         DEVELOPMENT_TEAM: 28ZU5P5GC3
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: NO

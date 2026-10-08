@@ -73,18 +73,23 @@ final class DriveTrace {
     /// was. The privacy texts say the app does not record, so a build with this
     /// on must never ship.
     ///
-    /// On in Debug builds since 2026-10-06, for test drives, and in TestFlight
-    /// builds since 2026-10-08, so friends' test drives come back as traces. The
-    /// App Store build stays off, which is what the privacy texts describe for
-    /// it; they say TestFlight builds record.
+    /// On in Debug builds since 2026-10-06, for test drives. A Release build
+    /// records only when archived with `RECORD_DRIVES` (2026-10-08), as a
+    /// TestFlight-only build for friends' test drives, and even then only when
+    /// installed from TestFlight: a recording build that reached the store by
+    /// mistake would still be off for its users. App Review installs from the
+    /// same sandbox as TestFlight, so the build submitted for review is
+    /// archived without the flag and has no recording at all.
     ///
-    /// TestFlight is decided at runtime rather than by a build flag, because
-    /// the binary Apple ships from the App Store is the very one uploaded to
-    /// TestFlight. A flag set for the beta would ship to the store with it.
+    /// To archive a recording build, add to the `xcodebuild archive` line:
+    ///     SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RECORD_DRIVES'
+    /// and never select that build for an App Store version.
     #if DEBUG
     static let isEnabled = true
-    #else
+    #elseif RECORD_DRIVES
     static let isEnabled = isTestFlight
+    #else
+    static let isEnabled = false
     #endif
 
     /// Whether this install came from TestFlight. A TestFlight install's receipt
