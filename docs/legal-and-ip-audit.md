@@ -50,7 +50,8 @@ Worth stating first because it is the one place with genuinely nothing to do.
 - `ios/project.yml` declares **no Swift Package, no CocoaPods, no Carthage**, and
   there is no `Package.swift` or `.xcworkspace`. The app imports only
   `SwiftUI`, `MapKit`, `CoreLocation`, `AVFoundation`, `UIKit`, `Foundation`,
-  `Observation` — all Apple frameworks.
+  `Observation`, `StoreKit` (the rating request only, since 2026-10-08) — all
+  Apple frameworks.
 - **So the thing that ships to users contains no third-party code at all.** No
   NOTICES file, no bundled licence list, no copyleft exposure in the binary.
 

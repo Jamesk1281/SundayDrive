@@ -265,7 +265,7 @@ writes it to disk" has the right conclusion for the wrong reason.
 | Search History | No | — | — | — | Typed addresses go to **Apple's** `MKLocalSearchCompleter`/`MKLocalSearch` (`SearchCompleter.swift`, `RouteModel.swift:161-172`, `LoopModel.swift:113-135`), never to the routing server, which only ever receives resolved coordinates. Recent destinations stay on the phone |
 | Browsing History | No | — | — | — | No web view, no browser |
 | Identifiers | No | — | — | — | No IDFA, no IDFV, no account, no device name read |
-| Purchases | No | — | — | — | No StoreKit |
+| Purchases | No | — | — | — | No in-app purchase. StoreKit is imported only for the system rating request (`docs/rating-prompt.md`) |
 | Usage Data | No | — | — | — | No analytics SDK; the binary contains no third-party code at all (`docs/legal-and-ip-audit.md` §1) |
 | Diagnostics | No | — | — | — | No crash reporter, no telemetry |
 | Sensitive Info | No | — | — | — | — |

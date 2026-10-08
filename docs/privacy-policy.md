@@ -19,6 +19,8 @@
   planning from where you are, and the on-device New England check. The
   check and this text were merged together on 2026-10-05, so §2 item 2 now
   cites the check's code.
+- The rating prompt's two stored values added 2026-10-08 (§1, §3), with the
+  `StoreKit` import that asks for the system's rating sheet.
 
 **It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
 decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
@@ -61,7 +63,10 @@ to. `server/app.py` exposes two endpoints, `/api/route` and `/api/loop`
 third-party code at all** — no analytics SDK, no crash reporter, no ad network.
 `ios/project.yml` declares no Swift Package, no CocoaPods and no Carthage, and
 the only `import`s across `ios/Sources` are Apple's own: `SwiftUI`, `MapKit`,
-`CoreLocation`, `AVFoundation`, `UIKit`, `Foundation`, `Observation`. There is
+`CoreLocation`, `AVFoundation`, `UIKit`, `Foundation`, `Observation`, and
+`StoreKit`, used only for the system's rating request
+(`@Environment(\.requestReview)`, `ContentView.swift:38`), which sends
+nothing of the app's own. There is
 no IDFA, no App Tracking Transparency prompt, and nothing to put in a tracking
 domains list.
 
@@ -81,7 +86,8 @@ searched for.
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
 | Whether voice guidance is muted | `ios/Sources/VoiceGuide.swift:351-352` |
 | Whether the one-time "Before you drive" notice has been shown | `ios/Sources/PlanningView.swift:56` |
-| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:262`, read by `ContentView.swift:23` |
+| Whether the app follows the phone's light or dark appearance | `ios/Sources/AboutView.swift:262`, read by `ContentView.swift:24` |
+| **How many drives have reached their destination** after ten minutes or more, and the app version the app last asked for a rating in, so it asks for a rating after the second such drive and at most once per version (`docs/rating-prompt.md`). A count and a version number: nothing about where or when | `ios/Sources/RatingPrompt.swift:31-32`, written by `:65` and `:76` |
 
 ---
 
@@ -106,7 +112,7 @@ all three, because App Review Guideline 5.1.1(ii) asks it to describe the use
    `LocationManager.roughLocation()` (`LocationManager.swift:375`), which never
    asks for precise location. It is also why the prompt can appear at first
    launch: the app asks once, after the "Before you drive" notice
-   (`ContentView.swift:67`, then `RouteModel.checkWhereabouts`,
+   (`ContentView.swift:72`, then `RouteModel.checkWhereabouts`,
    `RouteModel.swift:266`).
 3. **Turn-by-turn guidance while you drive** (`LocationManager.start()`,
    `LocationManager.swift:207-226`), in the background too (below).
@@ -268,7 +274,10 @@ constant is `false` (`DriveTrace.swift`, `RouteModel.swift:321-323`,
 `:345-347`). With no trace, nothing from a drive is written anywhere: fixes are
 used to follow the route and then dropped, and the scenery-verdict buttons and
 the arrival card's "How was the road?" are not shown
-(`NavigationModel.canRecordMarks`).
+(`NavigationModel.canRecordMarks`). The one exception is a number: a drive
+that reaches its destination after ten minutes or more adds one to the
+rating prompt's count (§1, `RatingPrompt.swift:65`). Where, when and how far
+are not kept.
 
 *History.* Until 2026-10-04 every navigated drive was recorded
 unconditionally, to `Documents/traces`, as a once-per-second log of the raw
@@ -407,6 +416,9 @@ Re-check it if any of these change, because each one is load-bearing above:
   nowhere.
 - **A new use of location.** The purpose string has to name it (§2), and the
   page quotes the string.
+- **Anything new stored by `RatingPrompt`.** §1 and the published page say
+  it keeps a count of arrived drives and one version string, and §3 says the
+  count is all a drive leaves behind.
 - **`DriveTrace.isEnabled` set to `true`.** §3, §5 and the published page all
   say the app does not record. Re-enabling it needs a consent step (App Review
   2.5.14) and this document's 2026-09-29 recording text back.
