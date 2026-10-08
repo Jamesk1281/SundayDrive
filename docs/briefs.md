@@ -73,3 +73,4 @@ Its answer document is self-contained.
 | brief | its answer lives in |
 | --- | --- |
 | `docs/reroute-uturn-brief.md` | [reroute-uturn.md](reroute-uturn.md) |
+| `docs/mid-drive-recovery-build-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), designed in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
