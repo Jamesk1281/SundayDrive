@@ -1,0 +1,334 @@
+{
+ "fastest": {
+  "minutes": 181.2797529275088,
+  "km": 330.90867362372074,
+  "beautiful_km": 14.619817869499567
+ },
+ "pure": {
+  "0.5": {
+   "extra": 138.17681150257914,
+   "bkm": 135.150612045257
+  },
+  "0.75": {
+   "extra": 145.28663384424914,
+   "bkm": 141.5912711905769
+  },
+  "1.0": {
+   "extra": 181.21707640657718,
+   "bkm": 189.89254620247343
+  }
+ },
+ "sweep": [
+  [
+   0.05,
+   16.4,
+   30.4
+  ],
+  [
+   0.1,
+   111.6,
+   65.3
+  ],
+  [
+   0.15,
+   114.1,
+   66.2
+  ],
+  [
+   0.2,
+   114.1,
+   66.2
+  ],
+  [
+   0.25,
+   138.2,
+   74.9
+  ],
+  [
+   0.3,
+   138.2,
+   74.9
+  ],
+  [
+   0.35,
+   138.2,
+   74.9
+  ],
+  [
+   0.4,
+   142.4,
+   76.8
+  ],
+  [
+   0.45,
+   142.4,
+   76.8
+  ],
+  [
+   0.5,
+   142.4,
+   76.8
+  ],
+  [
+   0.55,
+   145.3,
+   78.9
+  ],
+  [
+   0.6,
+   175.7,
+   107.4
+  ],
+  [
+   0.65,
+   175.7,
+   107.4
+  ],
+  [
+   0.7,
+   175.7,
+   107.4
+  ],
+  [
+   0.75,
+   175.7,
+   107.4
+  ],
+  [
+   0.8,
+   175.7,
+   107.4
+  ],
+  [
+   0.85,
+   175.7,
+   107.4
+  ],
+  [
+   0.9,
+   181.1,
+   108.6
+  ],
+  [
+   0.95,
+   181.1,
+   108.6
+  ],
+  [
+   1.0,
+   181.2,
+   108.9
+  ]
+ ],
+ "options": [
+  {
+   "budget": 5,
+   "extra_min": 3.8,
+   "beautiful_km": 18.2,
+   "gain_mi": 2.2,
+   "km": 331.0,
+   "family": "B",
+   "pref": 1.0,
+   "scenic_from": [
+    42.3027,
+    -71.2547
+   ],
+   "scenic_on": "Brookside Road",
+   "scenic_to": [
+    42.2802,
+    -71.2384
+   ],
+   "then": "(arrive)"
+  },
+  {
+   "budget": 10,
+   "extra_min": 8.7,
+   "beautiful_km": 25.3,
+   "gain_mi": 6.6,
+   "km": 323.0,
+   "family": "A",
+   "pref": 0.5,
+   "scenic_from": [
+    44.1901,
+    -72.8244
+   ],
+   "scenic_on": "VT 100 / Main Street",
+   "scenic_to": [
+    44.109,
+    -72.8587
+   ],
+   "then": "Covered Bridge Road"
+  },
+  {
+   "budget": 15,
+   "extra_min": 8.7,
+   "beautiful_km": 25.3,
+   "gain_mi": 6.6,
+   "km": 323.0,
+   "family": "A",
+   "pref": 0.5,
+   "scenic_from": [
+    44.1901,
+    -72.8244
+   ],
+   "scenic_on": "VT 100 / Main Street",
+   "scenic_to": [
+    44.109,
+    -72.8587
+   ],
+   "then": "Covered Bridge Road"
+  },
+  {
+   "budget": 20,
+   "extra_min": 16.4,
+   "beautiful_km": 63.5,
+   "gain_mi": 30.4,
+   "km": 326.0,
+   "family": "C",
+   "pref": 0.5,
+   "scenic_from": [
+    44.0818,
+    -72.859
+   ],
+   "scenic_on": "VT 100 / Vermont Route 100",
+   "scenic_to": [
+    43.7742,
+    -72.7624
+   ],
+   "then": "VT 107 / Vermont Route 107"
+  },
+  {
+   "budget": 30,
+   "extra_min": 16.4,
+   "beautiful_km": 63.5,
+   "gain_mi": 30.4,
+   "km": 326.0,
+   "family": "C",
+   "pref": 0.5,
+   "scenic_from": [
+    44.0818,
+    -72.859
+   ],
+   "scenic_on": "VT 100 / Vermont Route 100",
+   "scenic_to": [
+    43.7742,
+    -72.7624
+   ],
+   "then": "VT 107 / Vermont Route 107"
+  },
+  {
+   "budget": 45,
+   "extra_min": 43.7,
+   "beautiful_km": 96.0,
+   "gain_mi": 50.6,
+   "km": 342.0,
+   "family": "C",
+   "pref": 1.0,
+   "scenic_from": [
+    43.6581,
+    -72.7732
+   ],
+   "scenic_on": "US 4;VT 100 / U.S. Route 4",
+   "scenic_to": [
+    43.6075,
+    -72.7512
+   ],
+   "then": "US 4;VT 100 / U.S. Route 4"
+  },
+  {
+   "budget": 60,
+   "extra_min": 58.7,
+   "beautiful_km": 103.8,
+   "gain_mi": 55.4,
+   "km": 352.0,
+   "family": "A",
+   "pref": 0.5,
+   "scenic_from": [
+    44.1901,
+    -72.8244
+   ],
+   "scenic_on": "VT 100 / Main Street",
+   "scenic_to": [
+    43.5352,
+    -72.7426
+   ],
+   "then": "VT 100 / Vermont Route 100"
+  },
+  {
+   "budget": 75,
+   "extra_min": 63.3,
+   "beautiful_km": 105.3,
+   "gain_mi": 56.4,
+   "km": 352.0,
+   "family": "A",
+   "pref": 1.0,
+   "scenic_from": [
+    44.1901,
+    -72.8244
+   ],
+   "scenic_on": "VT 100 / Main Street",
+   "scenic_to": [
+    43.5299,
+    -72.7389
+   ],
+   "then": "VT 100 / Vermont Route 100"
+  },
+  {
+   "budget": 90,
+   "extra_min": 82.4,
+   "beautiful_km": 111.1,
+   "gain_mi": 60.0,
+   "km": 383.0,
+   "family": "C",
+   "pref": 1.0,
+   "scenic_from": [
+    44.017,
+    -72.8505
+   ],
+   "scenic_on": "VT 100 / Vermont Route 100",
+   "scenic_to": [
+    43.3964,
+    -72.6965
+   ],
+   "then": "VT 103 / Main Street"
+  },
+  {
+   "budget": 120,
+   "extra_min": 116.8,
+   "beautiful_km": 153.6,
+   "gain_mi": 86.4,
+   "km": 342.0,
+   "family": "C",
+   "pref": 1.0,
+   "scenic_from": [
+    43.6581,
+    -72.7732
+   ],
+   "scenic_on": "US 4;VT 100 / U.S. Route 4",
+   "scenic_to": [
+    42.8136,
+    -72.5347
+   ],
+   "then": "NH 119 / Brattleboro Road"
+  },
+  {
+   "budget": 150,
+   "extra_min": 149.9,
+   "beautiful_km": 176.7,
+   "gain_mi": 100.7,
+   "km": 338.0,
+   "family": "A",
+   "pref": 1.0,
+   "scenic_from": [
+    44.1901,
+    -72.8244
+   ],
+   "scenic_on": "VT 100 / Main Street",
+   "scenic_to": [
+    42.566,
+    -71.7793
+   ],
+   "then": "Bemis Road"
+  }
+ ]
+}
