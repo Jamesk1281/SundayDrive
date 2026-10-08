@@ -47,7 +47,15 @@ PINE = "#2F5A47"
 NAME = "Sunday Drive"
 SUBTITLE = "The scenic route, on purpose"
 
-# (raw capture, headline with the accent in *stars*, the line under it).
+# Light text and accent for the headline over a photo, where cream and rust
+# would sink into the sky. The accent is the app's own route orange.
+PAPER = "#FFF8EC"
+ROUTE = "#F2A25A"
+
+# (raw capture, headline with the accent in *stars*, the line under it, and
+# optionally a photo behind it: (file in photos/, CSS object-position)).
+# The photos are the owner's own, from drives on 2026-10-06, re-encoded with
+# no metadata at all, because a phone photo's EXIF carries where it was taken.
 # Claims follow docs/app-store-listing.md: the trade is against the app's own
 # fastest route, "best-scoring" not "most beautiful", and New England is said
 # in the first frame because only the first three show in search. The accent
@@ -55,13 +63,15 @@ SUBTITLE = "The scenic route, on purpose"
 SHOTS = [
     ("1-route-comparison.jpg",
      "Trade minutes for *the view*",
-     "Every road in New England is scored for scenery. One slider sets what the view is worth to you."),
+     "Every road in New England is scored for scenery. One slider sets what the view is worth to you.",
+     ("french-king-gorge.jpg", "50% 50%")),  # the Connecticut River from Route 2
     ("2-loop.jpg",
      "Nowhere to be? *Take a loop.*",
      "Pick how long you have. It plans a round trip over the best-scoring roads nearby, and brings you home."),
     ("3-driving.jpg",
      "Every turn, *out loud*",
-     "Spoken directions, the next turn always on screen, and a new route if you miss one."),
+     "Spoken directions, the next turn always on screen, and a new route if you miss one.",
+     ("gravel-road.jpg", "50% 50%")),  # cropped to the road: no dashboard, no roof edge
     ("4-home.jpg",
      "Somewhere, or *nowhere at all*",
      "Search for a destination, or loop from where you are. Free, with no account and no ads."),
@@ -98,20 +108,33 @@ def phone_html(src, screen_w, left, top, style=""):
             f'<img src="{src.as_uri()}" style="height:{screen_h}px;border-radius:{radius}px"></div>')
 
 
-def screenshot_page(raw, headline, sub):
-    # The whole phone fits under the header, 110 px clear of the foot.
+def screenshot_page(raw, headline, sub, photo=None):
+    # The whole phone fits under the header, 110 px clear of the foot. With a
+    # photo, it fills the page and an ink wash behind the header keeps the
+    # type readable against sky.
     top, foot = 660, 110
     screen_w = round((H - top - foot) / (H / W + 2 / 50))
     left = (W - screen_w - 2 * round(screen_w / 50)) // 2
+    head_color, accent, sub_color, backdrop = INK, RUST, "rgba(43,33,27,.72)", ""
+    if photo:
+        name, position = photo
+        head_color, accent, sub_color = PAPER, ROUTE, "rgba(255,248,236,.9)"
+        backdrop = (f'<img class="photo" src="{(HERE / "photos" / name).as_uri()}" '
+                    f'style="object-position:{position}"><div class="wash"></div>')
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{{margin:0;width:{W}px;height:{H}px;overflow:hidden;background:{CREAM}}}
-body{{font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;color:{INK};position:relative}}
-.head{{position:absolute;left:96px;right:96px;top:150px}}
+body{{font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;color:{head_color};position:relative}}
+.photo{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}}
+.wash{{position:absolute;left:0;right:0;top:0;height:1100px;
+  background:linear-gradient(rgba(30,22,17,.5),rgba(30,22,17,.25) 55%,rgba(30,22,17,0))}}
+.head{{position:absolute;left:96px;right:96px;top:150px;{"text-shadow:0 2px 18px rgba(20,14,10,.55)" if photo else ""}}}
 h1{{margin:0;font-size:128px;line-height:1.02;font-weight:800;letter-spacing:-0.025em}}
-h1 em{{font-style:normal;color:{RUST};display:block}}
-p{{margin:34px 0 0;font-size:50px;line-height:1.3;font-weight:500;color:rgba(43,33,27,.72);letter-spacing:-0.005em}}
+h1 em{{font-style:normal;color:{accent};display:block}}
+p{{margin:34px 0 0;font-size:50px;line-height:1.3;font-weight:500;color:{sub_color};letter-spacing:-0.005em}}
 {phone_css()}
+.phone{{z-index:1}}
 </style></head><body>
+{backdrop}
 <div class="head"><h1>{headline_html(headline)}</h1><p>{html.escape(sub)}</p></div>
 {phone_html(HERE / raw, screen_w, left, top)}
 </body></html>"""
@@ -266,9 +289,9 @@ def _chrome(profile, src, out_png, width, height, scale):
 def main():
     OUT.mkdir(exist_ok=True)
     finished = []
-    for raw, headline, sub in SHOTS:
+    for raw, headline, sub, *photo in SHOTS:
         png = OUT / (pathlib.Path(raw).stem + ".png")
-        render(screenshot_page(raw, headline, sub), png, W, H)
+        render(screenshot_page(raw, headline, sub, *photo), png, W, H)
         jpg = png.with_suffix(".jpg")
         subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "92",
                         str(png), "--out", str(jpg)], check=True, capture_output=True)
