@@ -373,7 +373,8 @@ final class RouteModel {
     /// — see `DriveTrace`. Free-flow travel times are the biggest known
     /// inaccuracy in the app, and a drive is the only place the real numbers
     /// exist; recording by default is what makes each one count instead of being
-    /// a drive you have to take again. It is off for launch, so `trace` is nil.
+    /// a drive you have to take again. It is off in App Store builds, where
+    /// `trace` is nil.
     ///
     /// On a menu the drive leaves with `drivePref`, and the route's own
     /// switch points, which `NavigationModel` reroutes by.

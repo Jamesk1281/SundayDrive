@@ -73,14 +73,26 @@ final class DriveTrace {
     /// was. The privacy texts say the app does not record, so a build with this
     /// on must never ship.
     ///
-    /// On in Debug builds since 2026-10-06, for test drives. Release builds
-    /// (TestFlight, the App Store) stay off, which is what the privacy texts
-    /// describe.
+    /// On in Debug builds since 2026-10-06, for test drives, and in TestFlight
+    /// builds since 2026-10-08, so friends' test drives come back as traces. The
+    /// App Store build stays off, which is what the privacy texts describe for
+    /// it; they say TestFlight builds record.
+    ///
+    /// TestFlight is decided at runtime rather than by a build flag, because
+    /// the binary Apple ships from the App Store is the very one uploaded to
+    /// TestFlight. A flag set for the beta would ship to the store with it.
     #if DEBUG
     static let isEnabled = true
     #else
-    static let isEnabled = false
+    static let isEnabled = isTestFlight
     #endif
+
+    /// Whether this install came from TestFlight. A TestFlight install's receipt
+    /// is named `sandboxReceipt`, an App Store install's `receipt`. Only the
+    /// URL is read, which iOS sets by environment whether or not the file is
+    /// on disk yet, so this needs no network and no StoreKit.
+    static let isTestFlight =
+        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
 
     /// Where this drive is being written, for anyone who wants to show or share
     /// it. Traces live in Documents so `UIFileSharingEnabled` exposes them to

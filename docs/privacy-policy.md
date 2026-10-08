@@ -21,6 +21,8 @@
   cites the check's code.
 - The rating prompt's two stored values added 2026-10-08 (§1, §3), with the
   `StoreKit` import that asks for the system's rating sheet.
+- TestFlight builds record drives again, 2026-10-08 (§3), by owner decision:
+  disclosed here and by the recording dot, with no consent step.
 
 **It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
 decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
@@ -268,10 +270,10 @@ discarded.*
 
 ## 3. Drive recordings
 
-**The app does not record drives.** `RouteModel.startNavigation` and
-`startLoopDrive` open a `DriveTrace` only when `DriveTrace.isEnabled`, and that
-constant is `false` (`DriveTrace.swift`, `RouteModel.swift:321-323`,
-`:345-347`). With no trace, nothing from a drive is written anywhere: fixes are
+**The App Store build does not record drives.** `RouteModel.startNavigation`
+and `startLoopDrive` open a `DriveTrace` only when `DriveTrace.isEnabled`, and
+in a Release build that is `DriveTrace.isTestFlight`, false for an App Store
+install (`DriveTrace.swift`). With no trace, nothing from a drive is written anywhere: fixes are
 used to follow the route and then dropped, and the scenery-verdict buttons and
 the arrival card's "How was the road?" are not shown
 (`NavigationModel.canRecordMarks`). The one exception is a number: a drive
@@ -289,9 +291,18 @@ recording with no consent step runs into App Review guideline 2.5.14
 `DriveTrace.isEnabled` back on reverses this section, §5 and the published
 page**, and needs a consent step first (§8).
 
+**TestFlight builds record every navigated drive** (since 2026-10-08, owner
+decision), detected at runtime from the receipt name (`sandboxReceipt`), so the
+same binary stops recording when it ships to the store. A trace is the
+2026-09-29 format: the raw fix once a second, the route, verdicts, background
+transitions and how the drive ended, written to `Documents/traces`, never
+uploaded, never deleted automatically, included in backups. The nav screen's
+dot (`NavView.tripStats`) shows it. **There is no consent step**; the owner
+chose disclosure only, knowing beta review may raise 2.5.14.
+
 `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`
 (`ios/project.yml:76-77`) still expose the app's `Documents` folder to the
-Files app; with recording off it stays empty.
+Files app; in an App Store build it stays empty.
 
 ---
 
@@ -419,9 +430,9 @@ Re-check it if any of these change, because each one is load-bearing above:
 - **Anything new stored by `RatingPrompt`.** §1 and the published page say
   it keeps a count of arrived drives and one version string, and §3 says the
   count is all a drive leaves behind.
-- **`DriveTrace.isEnabled` set to `true`.** §3, §5 and the published page all
-  say the app does not record. Re-enabling it needs a consent step (App Review
-  2.5.14) and this document's 2026-09-29 recording text back.
+- **`DriveTrace.isEnabled` true in an App Store install.** §3 and the
+  published page say only TestFlight builds record. Recording in the store
+  build needs a consent step (App Review 2.5.14).
 - **A change to anything in §§0–6 must also change `site/privacy/index.html`.**
   That page is the published copy, and nothing checks the two against each
   other except this line. The one exception is the location purpose string:
