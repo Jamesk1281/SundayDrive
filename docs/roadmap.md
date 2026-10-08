@@ -126,6 +126,13 @@ measured; `[ ]` is open, with what it is waiting on.
 - [ ] **The 500 m reroute re-seat window is argued, not fitted.** Bounded by one
       measured case (282 m). A drive deliberately routed over a road the route
       uses twice would calibrate it — `docs/reroute-audit.md`
+- [ ] **Route options are built and off.** The dial's in-between routes,
+      spliced off one scenic base, close the Waitsfield → Needham gap (+16 or
+      +112, now 12 detents) and cut the median gap from 0.55 to 0.25 of the
+      detour across 44 sampled trips.
+      Waiting on the owner to measure on the box and set
+      `SUNDAYDRIVE_ROUTE_OPTIONS=1`, a phone build, and a drive that misses a
+      turn before and after the scenic stretch — `docs/route-options.md`
 - [ ] **App Store submission: the engineering is mostly done, and the rest is
       paperwork plus the open verdict items.**
       - Membership was accepted 2026-10-03.
