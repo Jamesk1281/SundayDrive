@@ -155,6 +155,13 @@ final class MidDriveRecoveryTests: XCTestCase {
             (RouteService.ServiceError.unreachable(502), true, noConnection, "a 5xx"),
             (RouteService.ServiceError.badResponse, true, noConnection, "an undecodable reply"),
             (URLError(.timedOut), true, noConnection, "anything unforeseen"),
+            // Planning's own words for a timeout change nothing here.
+            (RouteService.ServiceError.timedOut, true, noConnection, "a timeout"),
+            (RouteService.ServiceError.timedOut, false, noSignal, "a timeout, no path"),
+            // Never sent to a driver, and never the server's "no" if it were:
+            // that would climb the backoff (docs/loop-lock-contention.md).
+            (RouteService.ServiceError.busy("Busy planning other drives."), true,
+             noConnection, "a busy refusal"),
             (RouteService.ServiceError.server("no route found"), true, offRoute, "the server's no"),
         ]
         for (error, hasPath, expected, label) in cases {

@@ -2026,6 +2026,12 @@ final class NavigationModel {
     /// is `.server`; everything else — no connection, a refused one, a
     /// timeout, a 5xx or Cloudflare's 530, an undecodable reply, anything
     /// unforeseen — is a request that did not land, told apart by the path.
+    ///
+    /// That includes `.busy`, though nothing a driver sends should ever get
+    /// one: only loop builds are refused (docs/loop-lock-contention.md). If
+    /// one ever does, it must not be booked as the server's "no", which
+    /// climbs the reroute backoff and shows "Busy planning other drives"
+    /// under the trip card.
     private static func classify(_ error: Error?, hasPath: Bool) -> RerouteFailure {
         if case .server(let message)? = error as? RouteService.ServiceError {
             return .server(message)
@@ -2039,7 +2045,9 @@ final class NavigationModel {
         guard let error else { return (nil, nil, nil) }
         switch error as? RouteService.ServiceError {
         case .server(let message)?: return ("server", nil, message)
+        case .busy(let message)?: return ("busy", 503, message)
         case .unreachable(let status)?: return ("unreachable", status, nil)
+        case .timedOut?: return ("timed_out", nil, nil)
         case .offline?: return ("offline", nil, nil)
         case .badResponse?: return ("bad_response", nil, nil)
         case nil: return ("other", nil, nil)

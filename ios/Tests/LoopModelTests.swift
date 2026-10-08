@@ -197,6 +197,31 @@ final class LoopModelTests: XCTestCase {
         XCTAssertEqual(model.preferredSector, "W")
     }
 
+    func test_a_busy_server_does_not_fire_the_direction_fallback() async {
+        // Busy is not the server's "no": asking again at once, with no
+        // direction, would land on the same busy server and, if it got
+        // through, show a loop the driver didn't ask for.
+        // docs/loop-lock-contention.md.
+        var asked: [String?] = []
+        var busy = false
+        let model = model { _, km, sector, _ in
+            asked.append(sector)
+            if busy {
+                throw RouteService.ServiceError.busy("Busy planning other drives. Try again in a moment.")
+            }
+            return self.loopResponse(km: km, targetKm: km, sector: sector ?? "N",
+                                     sectors: ["N", "W"])
+        }
+        await model.generate()
+        await model.head("W")
+        busy = true
+        model.targetKm = 60
+        await model.generate()
+        XCTAssertEqual(asked, [nil, "W", "W"])
+        XCTAssertEqual(model.errorText, "Busy planning other drives. Try again in a moment.")
+        XCTAssertEqual(model.preferredSector, "W")
+    }
+
     func test_clearing_the_start_forgets_the_direction() async {
         let model = model { _, _, sector, _ in self.loopResponse(sector: sector ?? "N") }
         await model.generate()

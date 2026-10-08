@@ -29,7 +29,11 @@ returns a closed scenic drive of about that length. `sector` (a compass octant)
 is what the app's compass sets; the populated ones come back in
 `alternatives`, and asking is the point — a coastal start has fewer than eight.
 The loop-specific numbers live in `meta` rather than in the Feature's
-properties, so the same client type decodes a loop and a route.
+properties, so the same client type decodes a loop and a route. A loop that
+has to be built while another build is running is refused with a 503 and a
+JSON `error`, rather than queued (docs/loop-lock-contention.md); one already
+built for the same request is always served. Nothing on `/api/route` is ever
+refused this way.
 
 `heading` (0..360, 0=N, clockwise) is the driver's course over ground, and
 applies to `from` only — a destination has no travel direction. With it, the
@@ -142,13 +146,30 @@ ROUTER = Router(PROCESSED)
 # holds a reference and nothing else — but it caches two ~25 MB Dijkstra passes
 # per (start, pref, weights) so that tapping another direction does not repeat them.
 #
-# One lock around every call, because waitress is threaded and those caches are
-# plain dicts. Serialising is also the right answer on merit: a loop is ~0.7 s of
-# CPU-bound numpy, so two at once would contend for the same cores and finish no
-# sooner, and the second request is almost always the same user tapping the
-# compass again.
+# One lock around every build, because waitress is threaded and those caches
+# are plain dicts. Serialising is also the right answer on merit: a loop is
+# ~0.7 s of CPU-bound numpy, so two at once would contend for the same cores and
+# finish no sooner, and the second request is almost always the same user
+# tapping the compass again.
 LOOPER = LoopPlanner(ROUTER)
 LOOP_LOCK = threading.Lock()
+
+# The mid-drive loop rejoin (`via`) has a planner and a lock of its own, so a
+# driver who missed a turn waits only for another driver's rejoin, never behind
+# everyone's "Try another direction" (review finding K-1). The price is a second
+# set of cost models, ~30 MB each, and a first rejoin per weight set that builds
+# its own instead of finding the loop build's. docs/loop-lock-contention.md.
+REJOINER = LoopPlanner(ROUTER)
+REJOIN_LOCK = threading.Lock()
+
+# How long a loop build waits for the one already running before it is refused
+# with a 503. Never zero: the usual overlap is one person releasing the distance
+# slider twice, whose second request should wait for their first rather than be
+# told the server is busy. Short, because every waiting build holds one of
+# waitress's four threads, and a driver's reroute needs one.
+# docs/loop-lock-contention.md, "The wait".
+LOOP_BUSY_WAIT_S = 1.5
+LOOP_BUSY = "Busy planning other drives. Try again in a moment."
 
 # Built loops, keyed by the whole request. The planner's caches make a *new* loop
 # cost ~0.65 s; this makes an *identical* request cost nothing, which is the
@@ -158,8 +179,12 @@ LOOP_LOCK = threading.Lock()
 # for the season change on fixed dates while it runs, so the key carries the
 # closure version too. Without it a loop cached on Oct 14 would go on being
 # served over Lincoln Gap after Oct 15.
+#
+# Under its own lock, not the build's: a cached loop is answered while another
+# build runs, and is never refused as busy.
 LOOP_RESULTS = {}
 LOOP_RESULTS_MAX = 16
+LOOP_RESULTS_LOCK = threading.Lock()
 
 # How many /api/route and /api/loop requests are computing right now.
 #
@@ -190,7 +215,9 @@ def _computing():
 
 
 def _not_alone():
-    return IN_FLIGHT > 1 or LOOP_LOCK.locked()
+    # A rejoin is counted through IN_FLIGHT, because it runs inside
+    # `api_route`'s `_computing()`; the locks are belt and braces.
+    return IN_FLIGHT > 1 or LOOP_LOCK.locked() or REJOIN_LOCK.locked()
 
 print(f"ready: {len(ROUTER.nodes):,} nodes "
       f"({ROUTER.n:,} routing slots after turn-restriction splits)")
@@ -401,18 +428,22 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         if w_off > SNAP_MAX_M:
             return jsonify(error="that waypoint is outside the covered road "
                                  f"network (currently {REGION})"), 400
-        # Under the loop planner's lock: `resume` reads the same cached cost
-        # models that `/api/loop` fills, and they are plain dicts.
-        with LOOP_LOCK:
-            fastest = LOOPER.resume(s, w, t, 0.0, weights, avoid_unpaved, on=day)
+        # The rejoin's own planner and lock, never the loop builds': a driver
+        # is not queued behind anyone's "Try another direction", and is never
+        # refused as busy (docs/loop-lock-contention.md). Still inside
+        # `api_route`'s `_computing()`, which is how the route options' busy
+        # guard sees a driver and gives way.
+        with REJOIN_LOCK:
+            fastest = REJOINER.resume(s, w, t, 0.0, weights, avoid_unpaved,
+                                      on=day)
             scenic = (fastest if pref == 0.0
-                      else LOOPER.resume(s, w, t, pref, weights,
-                                         avoid_unpaved, on=day))
+                      else REJOINER.resume(s, w, t, pref, weights,
+                                           avoid_unpaved, on=day))
             # Asked again with nothing closed only when it failed, so the
             # common case pays nothing for the better message.
             closed = ((fastest is None or scenic is None)
-                      and LOOPER.resume(s, w, t, 0.0, weights,
-                                        avoid_unpaved) is not None)
+                      and REJOINER.resume(s, w, t, 0.0, weights,
+                                          avoid_unpaved) is not None)
         # `heading` is deliberately dropped here. It picks which end of the
         # driver's road to leave from, and this caller is mid-drive, so it
         # matters — but honouring it would mean starting the search from a
@@ -541,10 +572,19 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
     key = (start, round(target_km, 1), round(pref, 4), sector,
            tuple(sorted(weights.items())), round(avoid_unpaved, 4),
            ROUTER.closure_version(day))
-    with LOOP_LOCK:
-        cached = LOOP_RESULTS.pop(key, None)
+    cached = _cached_loop(key)
+    if cached is not None:
+        return jsonify(cached)
+    # Refused rather than queued: a build waiting on the lock holds a waitress
+    # thread, and four of them starved every driver's reroute (K-1). Loop
+    # builds only — nothing a driver sends mid-drive comes through here.
+    if not LOOP_LOCK.acquire(timeout=LOOP_BUSY_WAIT_S):
+        return jsonify(error=LOOP_BUSY), 503
+    try:
+        # The build just waited for may have been this same request, sent
+        # twice.
+        cached = _cached_loop(key)
         if cached is not None:
-            LOOP_RESULTS[key] = cached          # move to the warm end
             return jsonify(cached)
         loop = LOOPER.plan(start, target_km, pref, weights, sector=sector,
                            avoid_unpaved=avoid_unpaved, on=day)
@@ -559,6 +599,8 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
             return jsonify(error="no loop of that length from there." + hint), 404
         available = LOOPER.sectors(start, loop.target_km, pref, weights,
                                    avoid_unpaved, on=day)
+    finally:
+        LOOP_LOCK.release()
 
     note = None
     if loop.repeated_fraction > LOOP_RETRACE_NOTE:
@@ -592,11 +634,20 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
                       for name, count in available.items()],
         note=note,
     )
-    with LOOP_LOCK:
+    with LOOP_RESULTS_LOCK:
         LOOP_RESULTS[key] = body
         while len(LOOP_RESULTS) > LOOP_RESULTS_MAX:
             LOOP_RESULTS.pop(next(iter(LOOP_RESULTS)))
     return jsonify(body)
+
+
+def _cached_loop(key):
+    """A loop already built for exactly this request, or None."""
+    with LOOP_RESULTS_LOCK:
+        cached = LOOP_RESULTS.pop(key, None)
+        if cached is not None:
+            LOOP_RESULTS[key] = cached          # move to the warm end
+        return cached
 
 
 @app.get("/api/health")

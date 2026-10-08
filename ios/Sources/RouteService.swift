@@ -60,6 +60,17 @@ enum RouteService {
         /// backend behind it is down. The status is worth carrying for a bug
         /// report and worth nothing to the driver, so it goes in a parenthesis.
         case unreachable(Int)
+        /// The backend's own 503: it was already building a loop, and refused
+        /// this one rather than queue it. Its own case, never `.server`,
+        /// because `.server` means "the server's answer is no": the loop
+        /// page's sector fallback would turn it into a second request at once,
+        /// and mid-drive it would climb the reroute backoff. Only `/api/loop`
+        /// sends it. docs/loop-lock-contention.md.
+        case busy(String)
+        /// No answer inside the timeout. Not `.offline`, which blames the
+        /// phone, and not `.busy`, which blames the server: a weak signal and
+        /// a loaded server both end here, so the words take neither side.
+        case timedOut
         /// The request never reached a server at all. Different advice, so a
         /// different case: nothing about the routing service will fix it.
         case offline
@@ -69,9 +80,13 @@ enum RouteService {
         var errorDescription: String? {
             switch self {
             case let .server(message): return message
+            case let .busy(message): return message
             case let .unreachable(status):
                 return "The routing service isn't reachable right now. "
                     + "Try again in a moment. (HTTP \(status))"
+            case .timedOut:
+                return "The routing service didn't answer in time. "
+                    + "Try again in a moment."
             case .offline:
                 return "No connection to the routing service. Check your network."
             // A decode failure otherwise surfaces as Foundation's "The data
@@ -295,19 +310,12 @@ enum RouteService {
         let response: URLResponse
         do {
             (data, response) = try await session.data(for: request)
-        } catch is URLError {
-            // Thrown before any status code exists, so nothing answered.
-            throw ServiceError.offline
+        } catch let error as URLError {
+            throw failure(error)
         }
 
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-            // The backend's own message whenever there is one to lift. A rate
-            // limiter or a tunnel answers in HTML, not our JSON shape, and that
-            // is the case the status code alone used to leak into the sheet.
-            if let message = try? JSONDecoder().decode([String: String].self, from: data)["error"] {
-                throw ServiceError.server(message)
-            }
-            throw ServiceError.unreachable(http.statusCode)
+            throw failure(status: http.statusCode, body: data)
         }
 
         do {
@@ -315,5 +323,31 @@ enum RouteService {
         } catch {
             throw ServiceError.badResponse
         }
+    }
+
+    /// A request that threw before any status code existed. Split out of
+    /// `send` so the mapping has a test without a network call.
+    static func failure(_ error: URLError) -> ServiceError {
+        // Something may have answered, slowly; the phone is not the only
+        // suspect, so it gets words of its own (docs/loop-lock-contention.md).
+        if error.code == .timedOut { return .timedOut }
+        // Anything else was thrown before reaching a server, so nothing
+        // answered.
+        return .offline
+    }
+
+    /// A reply that wasn't a 200. Split out of `send` so the mapping has a
+    /// test without a network call.
+    static func failure(status: Int, body: Data) -> ServiceError {
+        // The backend's own message whenever there is one to lift. A rate
+        // limiter or a tunnel answers in HTML, not our JSON shape, and that
+        // is the case the status code alone used to leak into the sheet.
+        guard let message = try? JSONDecoder().decode([String: String].self, from: body)["error"]
+        else { return .unreachable(status) }
+        // A 503 with our JSON is the backend refusing a loop build because
+        // it is already running one — checked before `.server`, which means
+        // something else entirely to both callers. A 503 without it is a
+        // tunnel or a proxy, and stays `.unreachable`.
+        return status == 503 ? .busy(message) : .server(message)
     }
 }
