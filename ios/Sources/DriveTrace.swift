@@ -287,9 +287,10 @@ final class DriveTrace {
     /// `failed`, `superseded` (a newer request owns the drive) or `ended` (the
     /// drive arrived or paused while this one was in the air). A failure
     /// carries `error_class` — `server` (the server answered no, with
-    /// `message`), `unreachable` (with the HTTP `status`), `bad_response`,
-    /// `offline` (nothing answered: no connection, a refused one, or a
-    /// timeout, which `elapsed_s` tells apart) or `other` — and `path`, whether
+    /// `message`), `busy` (a loop build refused, status 503, with `message`;
+    /// never expected here), `unreachable` (with the HTTP `status`),
+    /// `bad_response`, `timed_out`, `offline` (nothing answered: no
+    /// connection or a refused one) or `other` — and `path`, whether
     /// the phone had a network path when it failed. `tools/analyze_trace.py`
     /// skips the type, like any it does not read.
     func reroute(reason: String, from origin: CLLocationCoordinate2D,

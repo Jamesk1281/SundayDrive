@@ -106,12 +106,15 @@ One `reroute` record per attempt, written when the attempt ends, after the
      "req_lat":…,"req_lon":…,"req_heading":…,"req_pref":…,
      "req_declined_uturn":true,"req_via":true,
      "outcome":"adopted"|"merged"|"failed"|"superseded"|"ended",
-     "error_class":"server"|"unreachable"|"offline"|"bad_response"|"other",
+     "error_class":"server"|"busy"|"unreachable"|"timed_out"|"offline"|"bad_response"|"other",
      "status":530,"message":"…","path":true|false,"elapsed_s":0.021}
 
 `req_heading`, `req_declined_uturn`, `req_via` and the failure fields appear
 only when they apply. `elapsed_s` is what tells a failure with no path
-(milliseconds) from a timeout (15 s). The detector firing is also marked
+(milliseconds) from a timeout (15 s); since K-1's fix a timeout is also its own
+class, `timed_out`, where it used to be written as `offline`. `busy` (status
+503) is the server refusing a loop build, which no reroute should ever see
+(docs/loop-lock-contention.md). The detector firing is also marked
 with `{"t":"phase","phase":"wrongway"}`.
 
 An attempt the arrival ended is not written: `end` is the file's terminator,

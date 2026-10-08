@@ -277,7 +277,9 @@ final class LoopModel {
             } catch RouteService.ServiceError.server(_) where sector != nil && !regenerating {
                 // The remembered direction has nothing at this length or from
                 // this start — the server's own refusal, not a dead network,
-                // which a second request would only wait on twice. Better the server's choice than an error and an
+                // which a second request would only wait on twice. Nor `.busy`,
+                // which a second request would only add to
+                // (docs/loop-lock-contention.md). Better the server's choice than an error and an
                 // empty map for a preference the driver set at another length.
                 guard generation == requestGeneration else { return }
                 result = try await fetchLoop(origin, targetKm, nil, weights)

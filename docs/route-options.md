@@ -121,6 +121,10 @@ U-turn or switch points) or for "switch to fastest" (pref 0 plus heading).
 So in a burst, the queue drains at today's rate. The guard is what keeps K-1
 where it was, rather than letting it get twice as easy to hit.
 
+Since K-1's fix ([loop-lock-contention.md](loop-lock-contention.md)) the
+loop rejoin has its own `REJOIN_LOCK`. It still runs inside `_computing()`,
+so `IN_FLIGHT` sees it, and `_not_alone()` reads both locks.
+
 ### The app
 
 - **Detents.** When the plan has a menu, `PrefDial` shows `OptionDial`: one

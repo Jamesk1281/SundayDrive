@@ -1,0 +1,116 @@
+{
+ "label": "after-opt0-1",
+ "runs": [
+  {
+   "clients": 0,
+   "rows": {
+    "rejoin": {
+     "median": 1.5174571659954381,
+     "max": 1.5948668330020155,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 0.4987660000042524,
+     "max": 0.5685086250014137,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.10271250000369037,
+     "max": 0.11151045899896417,
+     "n": 5,
+     "over_20s": 0
+    }
+   },
+   "planners": {}
+  },
+  {
+   "clients": 1,
+   "rows": {
+    "rejoin": {
+     "median": 1.8582102500004112,
+     "max": 2.595733709000342,
+     "n": 15,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 0.9175754160023644,
+     "max": 1.549056041003496,
+     "n": 15,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.4181153749959776,
+     "max": 0.5934750419983175,
+     "n": 15,
+     "over_20s": 0
+    }
+   },
+   "planners": {
+    "built": 8
+   },
+   "ratios": {
+    "rejoin": 1.22,
+    "route_default": 1.84,
+    "route_fastest": 4.07
+   }
+  },
+  {
+   "clients": 0,
+   "rows": {
+    "rejoin": {
+     "median": 1.468975916999625,
+     "max": 1.638044125000306,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 0.48647629100014456,
+     "max": 0.5158521250050399,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.09730229200067697,
+     "max": 0.1005537499950151,
+     "n": 5,
+     "over_20s": 0
+    }
+   },
+   "planners": {}
+  },
+  {
+   "clients": 4,
+   "rows": {
+    "rejoin": {
+     "median": 1.8478827500002808,
+     "max": 2.5822892080032034,
+     "n": 13,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 1.2011959579976974,
+     "max": 1.8752545000024838,
+     "n": 13,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.4557367909947061,
+     "max": 0.5816861249986687,
+     "n": 13,
+     "over_20s": 0
+    }
+   },
+   "planners": {
+    "built": 17,
+    "busy": 48
+   },
+   "ratios": {
+    "rejoin": 1.26,
+    "route_default": 2.47,
+    "route_fastest": 4.68
+   }
+  }
+ ]
+}

@@ -24,7 +24,11 @@
 >   (`DriveTrace.isEnabled = false`), code kept. The privacy texts say the app
 >   does not record.
 > - C-3.
-> - K-1.
+> - K-1. **Merged 2026-10-08**, not deployed:
+>   the rejoin has its own lock, and loop builds answer 503 instead of
+>   queueing. With 4 clients planning loops, a rejoin went from ×7–8 to
+>   ×1.2–1.3 and a default route from ×13–29 to ×0.9–1.8
+>   ([loop-lock-contention.md](loop-lock-contention.md)).
 > - A "Clear recent destinations" control.
 >
 > Everything below is as reviewed at `6f26edf`.
