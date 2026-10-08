@@ -1,7 +1,8 @@
 # Loop planning no longer starves driving traffic (K-1)
 
 **Status:** built 2026-10-08 on `claude/loop-lock-contention`, against `main`
-at `8ad257f`, and merged into `main` the same day. Not deployed. In `server/app.py`, `REJOIN_LOCK`,
+at `8ad257f`, and merged into `main` the same day. Deployed to the box the same day
+(`a6778b6`), and measured there in [load-test-oracle.md](load-test-oracle.md#after-k-1). In `server/app.py`, `REJOIN_LOCK`,
 `LOOP_WAIT_SLOT` and `LOOP_BUSY_WAIT_S = 5.0` are the fix. In
 `ios/Sources/RouteService.swift`, `ServiceError.busy` and `.timedOut` are the
 client's half. The dispatch brief, `docs/loop-lock-contention-brief.md`, is

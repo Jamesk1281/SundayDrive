@@ -201,6 +201,10 @@ def closed_loop(base, makers, clients, duration, seed):
             dt, st = post(base, path, params)
             with lock:
                 samples.append((kind, dt, st))
+            if st == 503:
+                # Since K-1 a loop build is refused when one is running; a
+                # person taps again after a moment, not at once.
+                stop.wait(1.0)
 
     threads = [threading.Thread(target=worker, args=(i,)) for i in range(clients)]
     for t in threads:
