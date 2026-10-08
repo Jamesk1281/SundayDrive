@@ -57,24 +57,36 @@ struct NavView: View {
     /// same as a tunnel.
     @Environment(\.scenePhase) private var scenePhase
 
+    /// The camera as `RouteArrows` needs it; nil until it first settles.
+    @State private var arrowFrame: RouteArrows.Frame?
+
     var body: some View {
-        Map(position: $camera) {
-            MapPolyline(coordinates: nav.coordinates)
-                .stroke(nav.followingFastest ? Color.slate : Color.amber,
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            Marker("Destination", coordinate: nav.destination).tint(Color.endPin)
-            UserAnnotation()
+        MapReader { proxy in
+            Map(position: $camera) {
+                MapPolyline(coordinates: nav.coordinates)
+                    .stroke(nav.followingFastest ? Color.slate : Color.amber,
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+                // Which way, along the whole line: behind the car too, so a
+                // driver turned round on a road the route uses twice can see
+                // which pass they are on.
+                RouteArrowsContent(line: nav.coordinates, frame: arrowFrame, style: .driving)
+                Marker("Destination", coordinate: nav.destination).tint(Color.endPin)
+                UserAnnotation()
+            }
+            // Nothing on a driving basemap should compete with the route line. The
+            // POI pins are the only thing on it with comparable contrast, and a
+            // driver has no use for a coffee shop they are passing at 50 mph.
+            .mapStyle(.standard(pointsOfInterest: .excludingAll))
+            // North stops being obvious the moment the map turns with the car, and
+            // on a scenic drive "which way am I actually pointing" is a question
+            // worth answering without leaving the app. MapKit's own compass hides
+            // itself at north-up and appears as soon as the map rotates, which in
+            // a heading-up drive means it is simply always there.
+            .mapControls { MapCompass() }
+            .onMapCameraChange(frequency: .onEnd) { context in
+                arrowFrame = RouteArrows.Frame(proxy: proxy, context: context)
+            }
         }
-        // Nothing on a driving basemap should compete with the route line. The
-        // POI pins are the only thing on it with comparable contrast, and a
-        // driver has no use for a coffee shop they are passing at 50 mph.
-        .mapStyle(.standard(pointsOfInterest: .excludingAll))
-        // North stops being obvious the moment the map turns with the car, and
-        // on a scenic drive "which way am I actually pointing" is a question
-        // worth answering without leaving the app. MapKit's own compass hides
-        // itself at north-up and appears as soon as the map rotates, which in
-        // a heading-up drive means it is simply always there.
-        .mapControls { MapCompass() }
         .ignoresSafeArea()
         .safeAreaInset(edge: .top) { banner }
         .safeAreaInset(edge: .bottom) { furniture }
@@ -94,6 +106,16 @@ struct NavView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        // Nothing on this screen takes text, so nothing on it should ever make
+        // room for a keyboard. Without this the furniture rode the keyboard
+        // region like any bottom inset, and iOS 26 can leave that region stale
+        // at a keyboard's height — the planning screen's, from typing the
+        // destination — installing it as the app goes to the background. The
+        // trip card then came back from an app switch parked mid-screen until
+        // a rotation re-measured it (developer.apple.com/forums/thread/804413).
+        // It has to sit outside the `safeAreaInset`s: inside them the inset
+        // content is already placed against the keyboard.
+        .ignoresSafeArea(.keyboard)
         .animation(.smooth(duration: 0.4), value: nav.arrived)
         .animation(.smooth(duration: 0.4), value: nav.stalled)
         .onAppear {

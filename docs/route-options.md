@@ -1,13 +1,14 @@
 # Route options: the in-between routes behind the dial
 
-**Status:** built on branch `claude/keen-yonath-de1e89` off `main` at
-`f99c22e`; not merged, not deployed, **off by default**. The server computes
-options only with `SUNDAYDRIVE_ROUTE_OPTIONS=1` (`server/app.py`,
-`ROUTE_OPTIONS`). Code: `pipeline/options.py` (new), `server/app.py`, and
+**Status:** merged into `main` 2026-10-07 and deployed to the Oracle box
+**with options off**: the server computes them only with
+`SUNDAYDRIVE_ROUTE_OPTIONS=1` (`server/app.py`, `ROUTE_OPTIONS`), which is not
+set there. Code: `pipeline/options.py`, `server/app.py`, and
 `ios/Sources/{Models,RouteService,RouteModel,DirectionsView,PlanningMap,
 NavigationModel,DriveTrace}.swift`. Tests: `tests/test_options.py` (30) and
 `ios/Tests/RouteOptionsTests.swift` (18). The study scripts and raw results
-are in [route-options-study/](route-options-study/).
+are in [route-options-study/](route-options-study/). "The brief" below is the
+dispatch brief, `git show e26766a:docs/route-options-brief.md`.
 
 ## The problem, in one paragraph
 

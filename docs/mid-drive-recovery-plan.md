@@ -1,7 +1,14 @@
 # Mid-drive recovery: lost server, lost signal, wrong way, offline rerouting
 
-**Status: a plan for the owner to choose from.** Written 2026-10-05 against
-`main` at `191e15c`. Nothing in `ios/`, `server/` or `pipeline/` was changed.
+**Status: a plan, partly decided and not yet built.** D1–D4 were answered on
+2026-10-07 (§8.3); D5 and the new D9 are open. The build is out as a separate
+branch, whose record will be `docs/mid-drive-recovery.md` (not on `main` at
+`7ce5ef4`). Written 2026-10-05 against `main` at `191e15c`; **revised
+2026-10-07 at `7ce5ef4` with the drives of 2026-10-06**
+(§1.5, §4.3, §4.6, §7.2, §7.3, §8, §10), which are the first rural ones on
+record and the first to meet both failures for real. Where the revision
+replaces a figure, the 2026-10-05 one is kept beside it. Nothing in `ios/`,
+`server/` or `pipeline/` was changed.
 Every number below was measured for this document, with the method and the
 command to rerun it. Experiments that needed changed app code ran in scratch
 copies made with `git archive HEAD ios tools`, never in the tree.
@@ -13,6 +20,43 @@ when it cannot reach its server, and whether it should be able to reroute
 without one.
 
 ## The answer, on one page
+
+**What the 2026-10-06 drives changed (2026-10-07).** Six traces, four of them
+real drives, 757 km joined — 2.5 times everything recorded before — on rural
+roads in three states. What they add, each measured in the section named:
+
+- **Both failures happened on a real drive, back to back (§1.5).** A route
+  sent the car onto a road it could not drive. The driver turned back and
+  drove 1.9 km backwards along the route, then 3.2 km on a detour up to
+  829 m from it. That was 469 s, and today's build, replayed on those fixes,
+  shows the abandoned road's "Continue onto …" the whole way, its distance
+  growing as the car drove off, and says nothing. Replayed with each recorded
+  reply only at the moment it was asked for, today's build asks **5 times**
+  in that stretch; the trace holds no reply to any of them, while all six of
+  the drive's other requests were answered. So P-04 is not a persona any
+  more.
+- **The wrong-way detector works on real reversals, and neither driver
+  needed the instruction it speaks (§4.6).** Replayed on all 18 recorded drives, it fired
+  twice, both on real reversals and both deliberate: once a U-turn, 7 s
+  before today's reroute would have come, and once 9 s into the reversal
+  above, after which it held "Turn around when possible" for 196 s while the
+  driver drove away on purpose. It gives way to the off-route state after
+  30 s or 300 m (§8.1, item 3b), and the wording is a new decision, D9.
+- **A wrong-way reroute must not send the driver back where they turned
+  from.** That is what the U-turn fix now on `main` (`7ce5ef4`,
+  `docs/reroute-uturn.md`) prevents, and the detector's reroute has to go
+  through it (§4.6).
+- **Real drives leave the line a quarter as often on rural roads**, 3.2 times
+  per 100 km against 11.7, but the one that got no answer went 829 m from it
+  (§7.2). With answers, the furthest was 301 m. GPS stayed good: 3 holes over
+  10 s in 757 km, the longest 15 s, which supports leaving item 5 out.
+- **Successful reroutes are quick even there**: 29 replies, a median 0.9 s
+  from request to adoption, the slowest 5.6 s (§7.2). A failure leaves no
+  record, so how long the failed ones took is unknown. The build adds a trace
+  record per attempt.
+
+The owner's answers to D1–D4, given on 2026-10-07 after the first version,
+are in §8.3.
 
 **Before submission (launch is planned for 2026-10-22, `docs/marketing-plan.md`):
 about six to seven working days, all of it on the phone, none on the server.**
@@ -46,7 +90,10 @@ about six to seven working days, all of it on the phone, none on the server.**
    loop drives, and the twelve real drives replay identically, all 306
    utterances. On missed turns it fired once in 56, and rightly: that car had
    carried straight on down a road its route had just come up (§4.3). About
-   two days.
+   two days. *(2026-10-07: it also caught both real reversals on record, in
+   6 and 9 s, and both were deliberate. So the wrong-way state must give way
+   after 30 s, and its reroute must not turn the driver back where they came
+   from: §4.6.)*
 4. **Cap a loop's match at its far point until the car has been there.** This
    is the cheapest fix for the case P-05 hides on loops, and it also covers
    the drive simulation's Finding 1 for the whole outbound half of every loop.
@@ -59,7 +106,9 @@ about six to seven working days, all of it on the phone, none on the server.**
    the drive simulation's spikes each drove at least 87% of its own length,
    where today they drive 13% of the distance and 23 of 26 stop short of half
    way; under its canyon multipath, 98% against 43%. Half a day.
-5. **Say when GPS is lost.** With recording off in every build
+5. **Say when GPS is lost.** *(Left out of the release by the owner,
+   2026-10-07; the October drives had three holes over 10 s in 757 km.)*
+   With recording off in every build
    (`DriveTrace.swift:75`), nothing redraws the screen when fixes stop: the
    only timer that would is started only when a trace exists
    (`NavigationModel.swift:614`). Half a day.
@@ -196,6 +245,60 @@ a jump, not by the far point going by.
   "closed for the season" — is `ServiceError.server` (`RouteService.swift:57`)
   and is swallowed with the rest. It is a different failure from a network
   one: the server is up and has nothing better to offer.
+
+### 1.5 Both, on a real drive (2026-10-06)
+
+Everything above was reproduced on personas. On 2026-10-06 it happened on a
+real drive (`drive-2026-10-06-192759`; aggregates and durations only, since
+the traces are private). About 2.6 hours in, the route led onto a road that
+could not be driven, which is its own fix (state road-class data, a separate
+branch). What matters here is what the app did next, which is what it will
+do the next time any route goes wrong.
+
+**What the car did**, from the trace (`tools/trace_reroute_timing.py`):
+
+| | |
+|---|---|
+| stopped at the road, turned round | about 80 m off the line for a few seconds |
+| drove back along its own route | **1,932 m, 205 consecutive fixes, 196 s**, on a line it had followed for 155 minutes |
+| left it on a detour | **192 s, 3,159 m driven, up to 829 m from the line** |
+| rejoined the same route | 3.1 km along it from where it left, 1.2 km beyond where it had turned back |
+| from first leaving the line at the road to the rejoin | **469 s, about 5 km** |
+| GPS throughout | stated accuracy 5 m, no hole in the fixes |
+| replies landing in that time | **none**; all six of the drive's other requests were answered, in under a second |
+
+**What today's build showed and said.** The same fixes, replayed through
+`NavigationModel`, `VoiceGuide` and `NavView.bannerText` at the code the
+phone ran (`83fe53a`): the banner held the abandoned road's "Continue onto
+…" for the whole 469 s, its distance rising from 0.3 to 1.5 mi as the car
+drove away from it and falling again on the detour. It was never red, and
+nothing was spoken until the car was back on the route.
+
+**What it asked.** `DriveReplay.run` cannot answer this: it hands out the
+recorded replies in order, so the first request that really failed is handed
+the next reply in the file, from 33 minutes later. A timed replay
+(`tools/timed_replay_tests.swift`, §11) answers a request only with the
+recorded reply to that request — the reply whose `req_lat`/`req_lon` is a
+fix within 3 s of it — and fails every other request with
+`URLError(.notConnectedToInternet)`. Checked first against what is known:
+across the five October drives that asked anything, it asked for **28 of
+the 29 recorded replies** within 3 s of the real request, and the 29th
+about 3 s early. On this drive it asked for all six. In those 469 s it asked
+**five more times**: once at the stop, then four times on the detour, 2,
+19, 51 and 116 s after the car passed 60 m. That is today's backoff after
+consecutive failures (§3.1). The trace holds no reply to any of them.
+
+So the five requests were made and failed, or were answered with an error,
+and the driver was told nothing: P-04 exactly. Which it was is not settled
+by the trace. A dead zone is likely on that kind of road (§7.1 has the
+state's share), but an outage of the server would look the same. The box's
+request log for those minutes would settle it, and the build adds a trace
+record for every attempt, so the next one is a measurement.
+
+The 196 s backwards is P-05 exactly, too: `travelled` fell by 1.9 km while
+the match stayed on the line, so `offRoute` never built a streak and
+nothing rerouted until the car left the road. §4.6 is what the prototype did
+with it.
 
 ---
 
@@ -360,7 +463,13 @@ correct cars do:
    one second after a replacement was adopted**, and the ninth 17 s after one,
    at a median 4.7 m/s. None began on a line the car had been following.
    Measured with `tools/trace_excursions.py`: 135 of 18,375 moving on-line
-   fixes (0.7%) pointed 120° or more against the line.
+   fixes (0.7%) pointed 120° or more against the line. The October drives
+   (2026-10-07, `tools/trace_reroute_timing.py`) say the same: 305 of 33,945
+   (0.9%), and of their nine runs of five or more, **eight began within 20 s
+   of a replacement being adopted**, the longest 19 fixes. The ninth is the
+   real reversal of §1.5, 205 fixes long, on a line the car had followed for
+   155 minutes. That is the whole separation the detector relies on, now seen
+   on real roads in both directions.
 3. **`reseatIfPinned` itself.** It moves `travelled` back by design, up to
    500 m at a time (`NavigationModel.swift:240`, `:1098-1100`), whenever the floor
    was wrong. A detector built on `travelled` would fire on every re-seat.
@@ -466,7 +575,7 @@ Nor on loops: no alarm on any of 85 loop drives, 26 under spikes, 21 under
 canyon multipath, 21 under real-trace noise and 17 with a missed turn before
 the far point. Their other columns change, because of the cap (§4.4).
 
-**The twelve real drives, replayed** (`ReplayDumpTests`; recorded fixes, the
+**The twelve August drives, replayed** (`ReplayDumpTests`; recorded fixes, the
 recorded replacement routes in order):
 
 | | identical to today's build | wrong-way alarms |
@@ -476,7 +585,38 @@ recorded replacement routes in order):
 
 None of the twelve is a loop, so the far-point cap cannot act on them. Nor
 does the retry policy, because no replayed request fails. They show that
-neither change disturbs an ordinary drive.
+neither change disturbs an ordinary drive. Rerun on 2026-10-07 with the
+prototype applied to `83fe53a`, the code the October drives ran: the same
+12 of 12.
+
+**The six October drives, replayed** (2026-10-07). The in-order replay is the
+wrong instrument for these: §1.5's drive made requests that failed, and
+`DriveReplay.run` hands each one the next reply in the file. So these use
+the timed replay of §1.5, which answers only what was really answered and
+fails the rest, on `83fe53a` with and without the prototype:
+
+| | drives | identical to today's build | wrong-way alarms |
+|---|---|---|---|
+| no reversal in the drive | 4 (two of them false starts) | **4 of 4**, every utterance and arrival | **0** |
+| a real reversal in the drive | 2 | the same, except at the reversal | **2**, one per reversal (§4.6) |
+
+On those two, the prototype's other changes are these. On §1.5's drive it
+adds the failure line of §2, "No connection. Head back to your route.", once,
+at the first failed request, and nothing else. On the U-turn drive, two
+differences are the replay's, not the prototype's: a failure line where the
+replay asked 3 s before the real request and so got no reply (§1.5), and,
+after the detection's own early request failed for the same reason, one
+replacement's opening instruction never heard. The third is a fault in the
+prototype, and the build must not copy it: when the wrong-way reroute itself failed, it spoke "Turn around when
+possible." and then "No connection. Turn around when possible." on the same
+fix. D3 says once. The failure line must replace the wrong-way line when
+both are due together, not follow it.
+
+One limit of the timed replay: a request the prototype makes at a moment the
+real drive did not can only fail, because there is no reply on record for
+it. So after a detection its later lines are those of a failed reroute,
+whether or not the server would have answered. On §1.5's drive that is very
+likely what happened anyway; on the other it is not (§4.6).
 
 One alarm in 344 drives, on `rural-013` after a missed turn, and it is not a
 false one. That route goes up a road to a planned U-turn ("Make a U-turn to
@@ -569,6 +709,65 @@ simulation's plausibility gate is still the fix for that.
   return pass going forwards, the detector sees an aligned pass and stays
   quiet, and the match jumps ahead. The spur is skipped without a word, as it
   is today. Whether a loop should do the same is decision D2.
+
+### 4.6 Two real reversals, and what they change (2026-10-07)
+
+The personas reverse by mistake, because that is how they are scripted. The
+only two reversals on record were decisions:
+
+| | a U-turn (`drive-2026-10-06-122558`) | the turn-back of §1.5 (`drive-2026-10-06-192759`) |
+|---|---|---|
+| what the driver did | slowed to about 4 m/s, turned about 150°, drove back along the line, left it 85 m later | turned back from a road that could not be driven, drove 1,932 m back along the line, then took a detour |
+| why | part of an excursion the driver chose | the route was wrong |
+| detected | **6 s and 47 m** after the first fix pointing back | **9 s and 45 m**, at 4–5 m/s |
+| today's build | reroutes 7 s later, on leaving the line at 61 m | nothing, for 196 s back and 192 s off (§1.5) |
+| the prototype | reroutes 7 s sooner; says "Turn around when possible." once | says "Turn around when possible." once, then holds **Wrong way · Turn around when possible** for 196 s as the driver drives on, then the off-route state until the rejoin |
+
+Both detections are right by the definition of §4.2, and neither is a false
+alarm. The slower detection (9 s, against the personas' 4–5 s) is the
+real-world one: a car pulling out of a turn-round is slow, and the rule asks
+for 40 m back. Read the detection time as **4–9 s and 45–60 m**.
+
+What the two change:
+
+1. **A standing instruction that the driver has declined is a wrong banner.**
+   Said once (D3), "Turn around when possible" costs a deliberate driver one
+   unneeded sentence. Held for 196 s and 1.9 km, it is a banner telling them
+   to do something they have decided not to do, which is the fault P-04 is
+   about: words that no longer describe the drive. **The wrong-way state
+   gives way to the off-route state after 30 s or 300 m of continued
+   reversal, whichever comes first** — "Off route · route 0.3 mi away · Head
+   back to your route", or its no-connection row — while the reroute retries
+   as §3 says. The U-turn above never reaches either threshold. §1.5 would
+   have switched after about 30 s. That is item 3b of §8.1, half a day. The
+   thresholds are a judgement from two drives, not a measurement, and say so
+   in the code.
+2. **The wording is a new decision, D9.** Two of two real reversals were
+   deliberate, while the detector exists for the mistaken ones. "Turn around
+   when possible" is the right sentence for a mistake. The alternative states
+   a fact rather than an instruction: **Wrong way · Your route is behind you**,
+   and no voice line, or the spoken "Your route is behind you." The
+   recommendation is to keep the instruction, said once, with the time-out of
+   point 1. Two drives are not enough to give up the words that help the
+   driver who has really gone wrong.
+3. **The detector's reroute must not send the driver back to where they
+   turned from.** It asks with the heading of a car pointing away from its
+   route, and the cheapest answer is usually to turn round: in §1.5, straight
+   back to the road that could not be driven. Since `7ce5ef4` every reply
+   says whether it turns the driver around (`turns_around`, `turnaround_m`),
+   and `NavigationModel.declinedUTurn` is set when a driver leaves a route
+   without driving 100 m past its turnaround. The next request then carries
+   `declined_uturn=1` and keeps ahead (`docs/reroute-uturn.md`). A wrong-way
+   reroute should compose with that without new code: the first reply turns
+   the driver round, as it should for a mistake, and a driver who keeps going
+   leaves it, so the second keeps ahead. It is untested, though, and it is
+   the case that matters most, so it is a test in §8.2. Do not send
+   `declined_uturn` on the first wrong-way request: at that point the
+   driver may simply have gone wrong.
+4. **An offline search has the same problem** (T1, §6.1). Inside a corridor
+   the cheapest way back is also the road the driver turned from. A local
+   search must close the stretch the car reversed off, as the server's keep-
+   ahead search closes its strip. That goes into T1's cost.
 
 ---
 
@@ -710,9 +909,12 @@ Where the car is inside the corridor but the answer differs, it is close. At
 the corridor found a way back within 10% of the server's cost from 96%, 93%
 and 70%.
 
-The real traces never put the car more than 197 m from the line it was
-following before a new line arrived (§7.2), so the 150 m row is today's common
-case and the 1,000 m row is a driver who kept going.
+The August traces never put the car more than 197 m from the line it was
+following before a new line arrived, and the October ones 301 m (§7.2), so
+the 150 m row is today's common case and the 1,000 m row is a driver who
+kept going. The one real departure that got no reply (§1.5) went 829 m from
+its line and rejoined it 3.1 km on: inside a 1,000 m corridor, outside a
+500 m one.
 
 **On the phone.** A plain binary-heap Dijkstra over an exported 500 m
 corridor, run to exhaustion with no early exit and no A*, then the cheapest
@@ -744,7 +946,12 @@ CPU is the brief's Trap 9, and on one small VM where loops already queue on
 **What it still cannot do.** Leave the corridor. A driver who ignores the
 first local reroute and keeps going eventually drives out of W, and is back
 to tier 0. And it cannot start a drive offline: the first request always
-needs the server.
+needs the server. Nor can it know a road is impassable when the graph says
+it is not. On the one real drive that needed it (§1.5), the corridor's
+cheapest way back is the road the driver had just turned back from. A local
+search has to close the stretch the car reversed off, as the server's
+keep-ahead search does (§4.6), or it repeats the server's mistake with no
+network to blame.
 
 **What it costs to build**, by part:
 
@@ -930,41 +1137,69 @@ estimate — and the trace recorder, switched back on, already logs every fix.
 
 ### 7.2 How far real drives stray
 
-From the twelve recorded drives (309 km joined, 29,736 fixes;
-`tools/trace_excursions.py`, aggregates only):
+From the recorded drives (`tools/trace_excursions.py` and
+`tools/trace_reroute_timing.py`, aggregates only). August is the twelve
+drives the first version used; October is the six of 2026-10-06, added on
+2026-10-07, four of them real drives on rural roads in three states:
 
-| | measured |
-|---|---|
-| departures from the line being followed, past 60 m | **36, or 11.7 per 100 km**, every one ended by a new line being adopted |
-| how far from that line before the new line arrived | median 67 m, p90 107 m, **max 197 m** |
-| how long | median under 1 s, p90 3 s, max 15 s |
-| the gap after a reroute before reaching the new line ("join gaps"), counted apart | 18, max 480 m from it |
-| joined km within 250 m of the line being followed | **99.9%** (100% within 500 m) |
-| joined km within 250 m / 1 km / 2 km of the *original* line | 91.2% / 96.1% / 98.7% |
-| fix holes longer than 10 s | **1 in 309 km** (11 s) |
-| stated accuracy | p50 3.0 m, p99 15.4 m, max 43.5 m |
+| | August: 12 drives, 309 km joined, 29,736 fixes | October: 6 drives, 757 km joined, 38,350 fixes |
+|---|---|---|
+| departures from the line being followed, past 60 m | **36, or 11.7 per 100 km**, every one ended by a new line being adopted | **24, or 3.2 per 100 km**; 22 ended by a new line, 2 by driving back onto it |
+| how far from that line before it ended | median 67 m, p90 107 m, **max 197 m** | median 90 m, p90 215 m, **max 829 m** (§1.5: no reply ever came); with a reply, max 301 m |
+| how long | median under 1 s, p90 3 s, max 15 s | median 3 s, p90 22 s, **max 192 s** |
+| the gap after a reroute before reaching the new line ("join gaps"), counted apart | 18, max 480 m from it | 11, max 2,430 m from it² |
+| joined km within 250 m of the line being followed | **99.9%** (100% within 500 m) | **99.3%** (99.8% within 1 km) |
+| joined km within 250 m / 1 km / 2 km of the *original* line | 91.2% / 96.1% / 98.7% | 83.7% / 85.8% / 87.8%¹ |
+| off the line, moving, 30 s or more with no reply landing ("silences") | 1, 37 s | **3**: 192 s (§1.5), 47 s and 42 s³ |
+| request to adoption, replies with a recorded origin | — (the fields postdate these drives) | **29**: median 0.88 s, p90 1.46 s, max 5.6 s |
+| fix holes longer than 10 s | **1 in 309 km** (11 s) | **3 in 757 km** (longest 15 s) |
+| stated accuracy | p50 3.0 m, p99 15.4 m, max 43.5 m | p50 4.7 m, p99 8.3 m, max 54.0 m |
 
-Two limits, both large. The drives are suburban Massachusetts with
-near-perfect GPS and a server that answered, and most were August drives whose
-reroute storms have since been fixed. So they say how far a car gets before a
-*working* reroute catches it: under 200 m. They say nothing about how far it
-gets when no reroute comes, which is the case a corridor exists for. That
-distance is the driver's, not the app's. The personas put it at the length of
-the road they leave on: 0.5–0.7 km for `missedTurn`, 1.5–3 km for
-`serverDown`.
+¹ The original line is a poor guide in October for a reason that is not
+GPS: one excursion was the driver's own choice, and one drive switched to
+the fastest route part way.
+
+² On the drive whose later half is still to be discussed with the owner,
+after a switch to the fastest route. It is counted here and not read
+further.
+
+³ Both on one drive, during its run of reroutes. The 47 s one ended with a
+reply handing back the line already being followed, inside today's backoff.
+The 42 s one began the second the last of six replacements in under three
+minutes was adopted. The timed replay finds every request in both answered
+(its one miss is the request 3 s early, §1.5), so neither is a failure.
+
+What October adds. Rural roads have fewer places to go wrong: a quarter of
+August's rate of departures. When a reroute does come, it comes as fast as
+in town, which says the reroutes that work are not the problem. The one that
+did not come let the car go four times further from the line than anything
+in August, and that is the case a corridor exists for. GPS was no worse
+than in town. The longest hole, 15 s, is the only October number that
+would have fired item 5's 10 s "No GPS" state, and three times in 757 km is
+why leaving it out of the release (D1) costs little.
+
+The limits that remain. One silence is one event, and the trace cannot say
+whether the signal or the server failed it (§1.5). Nor does a trace say how
+long a failed request took: a timeout would hold "Finding a way back…" for
+15 s each time, and the build adds the record that would show it. And how far
+a driver goes when no reroute comes is still the driver's choice. Here it
+was 3.2 km off the line, because there was a road round.
 
 ### 7.3 What that means for the corridor's width
 
 With the trigger as it is, an offline reroute would be computed with the car
-within about 200 m of its line (§7.2), so W must be at least that plus GPS
-error. The coverage of the 150 m and 400 m missed-turn rows in §6.1 is what a
+within about 200 m of its line (§7.2; 300 m on the October drives), so W must
+be at least that plus GPS error. The coverage of the 150 m and 400 m missed-turn rows in §6.1 is what a
 choice of W buys, and the 1,000 m row is the driver who kept going. At 500 m
 the corridor finds the server's own way back from 78% of 150 m excursions on
 routes and 61% of 400 m ones; at 1,000 m, from 90% and 84%, for 45 KB instead
 of 27 KB on the median route and 214 KB instead of 140 KB on a 400 km loop.
 **Ship 1,000 m.** 2,000 m would also catch most drivers who kept going for a
 kilometre (65% → 96%), for 1.6 times the bytes again. Revisit that if real
-dead-zone drives show drivers do keep going.
+dead-zone drives show drivers do keep going. The first one did keep going,
+3.2 km, but on a road that ran beside the route, never more than 829 m from
+it (§1.5). One drive says 1,000 m is enough for that kind of detour, and
+nothing yet about the others.
 
 ---
 
@@ -978,15 +1213,22 @@ accuracy-aware streak, §2 row 9), because all of them change the same lines
 of `NavigationModel.update` and `reroute`. Doing them in two branches is how
 the merge goes wrong without a conflict.
 
+**As revised on 2026-10-07.** The `:line` references below are to `191e15c`.
+`7ce5ef4` (the U-turn fix) has since changed `reroute`, `switchToFastest` and
+`DriveTrace`, so find them by symbol. The owner's scope (D1, §8.3) is items 1–4
+and 6, with 3b and 7 added here and item 5 left out.
+
 | # | change | where | estimate |
 |---|---|---|---|
 | 1 | classify a failed reroute (`.server` against the rest); `connectivity`; the banner rows 2–6 and 10 of §2; one spoken line per episode | `NavigationModel.reroute` (`:1378-1398`), `NavView.bannerText` (`:235-276`), `VoiceGuide` | 1.5 days |
 | 2 | failures get their own counter; retry when the path returns, else 15 s / 30 s / 60 s; a `Connectivity` seam the tests can drive, backed by `NWPathMonitor` | `NavigationModel` (`:381-397`, `:1034-1043`), a new `Connectivity.swift` | 1 day |
-| 3 | the wrong-way detector (§4.2) and its reroute; banner rows 1–2 | `NavigationModel`, `Geo.swift` (`passes`) | 1.5–2 days |
+| 3 | the wrong-way detector (§4.2) and its reroute; banner rows 1–2. The reroute goes through the same request path as any other, so `declined_uturn` rides on it when `declinedUTurn` is set (§4.6, point 3) | `NavigationModel`, `Geo.swift` (`passes`) | 1.5–2 days |
+| 3b | the wrong-way state gives way to the off-route state after 30 s or 300 m of continued reversal (§4.6, point 1); and when the wrong-way request fails, its failure line *replaces* "Turn around when possible" rather than following it on the same fix (§4.3) | `NavigationModel`, `VoiceGuide` | 0.5 day |
 | 4 | the loop far-point cap (§4.4) | `Geo.progress` gains `notAfter`; `update` and `reseatIfPinned` pass it | 0.5 day |
 | 5 | GPS lost: the tick on every drive, and row 8 | `NavigationModel` (`:614`, `:716-724`), `NavView` | 0.5 day |
 | 6 | tests, personas and the replay diff below | `ios/Tests` | 1–1.5 days |
-| | **total** | | **about 6–7 days** |
+| 7 | a trace record for every reroute attempt, failures included (outcome, error class, seconds taken), so the next silence like §1.5 is a measurement rather than an inference. Added by the owner's build brief, not by the first version of this plan | `DriveTrace`, `NavigationModel.reroute`, `tools/analyze_trace.py` | 0.5 day |
+| | **total**, as decided (items 1–4, 3b, 6 and 7; not 5) | | **about 6.5–7.5 days** |
 
 Nothing on the support page or the listing has to change: "needs a data
 connection" stays true. What changes is that the app says so in the moment.
@@ -1038,7 +1280,27 @@ added, in `tools/mid_drive_personas.patch`):
 **The real-trace replay diff.** Dump every recorded drive's replay before and
 after, and diff every utterance (`ReplayDumpTests`, in the personas patch).
 This is the check that caught what the personas missed on 2026-10-01
-(`docs/loop-matching-fix.md`).
+(`docs/loop-matching-fix.md`). For any drive whose requests failed, the
+in-order replay is meaningless (§1.5), so run the timed replay too
+(`tools/timed_replay_tests.swift`). What it should show on the October
+drives, from §4.3 and §4.6: the four drives without a reversal identical,
+and on the two with one, one wrong-way line each, never two lines on one
+fix, and the wrong-way banner gone within 30 s on the long one.
+
+**The two real reversals, as tests.** Both are cases the personas did not
+have, so cut each into a fixture rather than trusting the replay alone:
+
+- a car on a line it has followed a long way stops, turns round and drives
+  2 km back along it at 4–14 m/s, every request failing: detected within
+  10 s; one spoken line; **Wrong way** gives way to the off-route row after
+  30 s; the request cadence is §3's, not the backoff;
+- the same, with the server answering: the first wrong-way reply turns the
+  driver round (`turns_around` true); the car keeps going and leaves it; the
+  next request carries `declined_uturn=1`. This is the composition of §4.6,
+  point 3, and the case of §1.5 with a signal;
+- a U-turn that leaves the line 85 m later: one line, and the reroute 7 s
+  sooner than today's, with no second line when the off-route reroute would
+  have fired.
 
 **On the phone**, because the simulator cannot do it (§10):
 
@@ -1054,14 +1316,15 @@ This is the check that caught what the personas missed on 2026-10-01
 
 | # | decision | options | recommendation |
 |---|---|---|---|
-| **D1** | Take §8.1 into this release? | (a) all of it, about 6–7 working days of the 17 calendar days left before 2026-10-22; (b) items 1, 2 and 5 only, about 3 days, leaving P-05 for after launch; (c) neither | **(a)**. P-05 sends a driver the wrong way with the screen claiming nothing is wrong, and on loops it silently deletes the drive. (b) is the fallback if the drive-simulation fixes take the time |
-| **D2** | A loop turned back early on a road it drives twice, before the far point | (a) "Turn around when possible", and the reroute goes via the far point, as today's loop reroutes do; (b) take it as heading home: say "Skipping the rest of the loop", then reroute home | **(a)**. It keeps the drive the driver chose, and "Head home" is one tap away. (b) is what the code does today, silently |
-| **D3** | How often to say "Turn around when possible" | once per episode; or again for each further kilometre the wrong way | **once**. The banner holds it, and the reroute speaks next |
-| **D4** | Print "route 0.3 mi away" in the off-route banner | show it; or show only "Head back to your route" | **Show it.** On a typical missed turn it is within a quarter of the drive back (§5.2), and it tells the driver whether the route is a turn away or a valley away. It says "away", never "ahead", and the map's line (D5) shows the cases where it misleads, a river or a highway between |
-| **D5** | Widen the camera to show the route when off it | yes; no | yes, after 10 s off route. It invents no path, and it is the one thing tier 0 can show |
-| **D6** | After launch: T1, and with it ODbL data on phones | build it if §7 shows real dead zones on scenic routes; or not | **Build it, after T3a.** §7 shows the dead zones are real. As a rough product of two measured rates, taken as independent: the real drives left their line 11.7 times per 100 km (§7.2), and 4.1% of scenic km and 14.5% of loop km have no LTE from any carrier (§7.1). That is a departure with no signal about once every 200 km of scenic driving and once every 60 km of loops. The August drives overstate the first rate, so read these as upper bounds. It takes on share-alike (§9), so settle that first, with a lawyer's look at the EULA carve-out |
+| **D1** | Take §8.1 into this release? | (a) all of it, about 6–7 working days of the 17 calendar days left before 2026-10-22; (b) items 1, 2 and 5 only, about 3 days, leaving P-05 for after launch; (c) neither | **(a)**. P-05 sends a driver the wrong way with the screen claiming nothing is wrong, and on loops it silently deletes the drive. (b) is the fallback if the drive-simulation fixes take the time. **Decided 2026-10-07: (a) without item 5, and with the drive simulation's Findings 2 and 3 in the same branch.** §7.2's October GPS figures support leaving 5 out |
+| **D2** | A loop turned back early on a road it drives twice, before the far point | (a) "Turn around when possible", and the reroute goes via the far point, as today's loop reroutes do; (b) take it as heading home: say "Skipping the rest of the loop", then reroute home | **(a)**. It keeps the drive the driver chose, and "Head home" is one tap away. (b) is what the code does today, silently. **Decided: (a)** |
+| **D3** | How often to say "Turn around when possible" | once per episode; or again for each further kilometre the wrong way | **once**. The banner holds it, and the reroute speaks next. **Decided: once.** §4.6 adds that the banner must not hold the line past 30 s or 300 m |
+| **D4** | Print "route 0.3 mi away" in the off-route banner | show it; or show only "Head back to your route" | **Show it.** On a typical missed turn it is within a quarter of the drive back (§5.2), and it tells the driver whether the route is a turn away or a valley away. It says "away", never "ahead", and the map's line (D5) shows the cases where it misleads, a river or a highway between. **Decided: show it** |
+| **D5** | Widen the camera to show the route when off it | yes; no | yes, after 10 s off route. It invents no path, and it is the one thing tier 0 can show. **Not decided** as of 2026-10-07, so not built |
+| **D6** | After launch: T1, and with it ODbL data on phones | build it if §7 shows real dead zones on scenic routes; or not | **Build it, after T3a.** §7 shows the dead zones are real, and §1.5 is one met on a real drive. The first version estimated how often as a product of two rates, taken as independent: departures per 100 km (§7.2) times the share of km with no LTE from any carrier (§7.1). With August's 11.7 per 100 km that was a departure with no signal once every 200 km of scenic driving and once every 60 km of loops, called an upper bound. October's rural rate is 3.2 per 100 km, which gives once every 760 km and every 220 km. But the October drives met one in 757 km, so the product is not an upper bound after all. The likeliest reason is that the two are not independent: the roads where routes go wrong (unmaintained, unpaved, mapped long ago) are plausibly the roads with no signal. Read the rate as unknown, with one event in 1,065 recorded km. §1.5 also adds a requirement: an offline search must close the stretch the driver turned back from (§4.6, point 4). It takes on share-alike (§9), so settle that first, with a lawyer's look at the EULA carve-out |
 | **D7** | After launch: Apple's directions as the fallback when our server is down | yes; no | yes, if D8 is not enough: it is 2–3 days for the outage most likely to happen |
 | **D8** | Not this plan's, but it decides how often §8.1 is seen | renew `jameskouvlis.com`, which expires 2026-10-28 | renew it before submission. An expired domain is a total outage mid-drive for every user, which no tier here fully covers |
+| **D9** | New, 2026-10-07. What the wrong-way state says (§4.6, point 2) | (a) **Wrong way · Turn around when possible**, spoken once; (b) **Wrong way · Your route is behind you**, a fact rather than an instruction, spoken once as "Your route is behind you." | **(a)**, with the 30 s / 300 m time-out of item 3b. Both real reversals were deliberate, but the detector exists for the mistaken ones, and two drives are not enough to give up the words that help them. (b) if the owner's own test drives keep producing deliberate reversals |
 
 ---
 
@@ -1153,9 +1416,24 @@ in Python and Swift on the same data:
 - the corridor payload, coverage, server cost and search time, and a search of
   the whole graph, on the real New England graph (§5.2, §6.1–6.4);
 - mobile coverage on 1,232 routes and loops, from the FCC's provider-modelled
-  maps (§7.1).
+  maps (§7.1);
+- *(2026-10-07)* the six October drives: excursions, reply times, silences
+  and runs against the line (§7.2), and a timed replay of each through
+  `83fe53a` with and without the prototype (§1.5, §4.3, §4.6), checked
+  against the 29 replies on record. The August drives were rerun in order on
+  the same code.
 
 **Inferred, not exercised:**
+
+- **Why §1.5's five requests failed.** That they were made is the replay's,
+  exact to within 3 s on every other request of that drive. That they failed
+  is the trace's: no reply is recorded, and every reply is. Whether the
+  signal or the server failed them is not known. The box's request log for
+  those minutes would settle it, and the FCC files of §7.1 were not on disk
+  to check the place against.
+- **What the prototype would have been told on a real reversal.** A request
+  it makes where the real drive made none can only fail in the timed replay
+  (§4.3).
 
 - **A real dead zone.** The simulator reaches the network through the Mac.
   Neither `NWPathMonitor`'s behaviour as signal fades nor MapKit with no tiles
@@ -1216,6 +1494,27 @@ the tables are counts over those.
 **The real traces** (§1.4, §4.1, §7.2):
 
     <main>/.venv/bin/python tools/trace_excursions.py <main>/traces/*.ndjson
+    <main>/.venv/bin/python tools/trace_reroute_timing.py <main>/traces/*.ndjson
+
+Run each on `drive-2026-08-*` and on `drive-2026-10-06-*` separately for the
+two columns of §7.2.
+
+**The timed replay** (§1.5, §4.3, §4.6, 2026-10-07). In a scratch copy made
+from `83fe53a` exactly as above (personas patch, and the prototype patch for
+the second run), add the test and run it:
+
+    cp tools/timed_replay_tests.swift <scratch>/ios/Tests/TimedReplayTests.swift
+    ln -s <main>/traces <scratch>/traces
+    cd <scratch>/ios && xcodegen generate && xcodebuild build-for-testing … (as above)
+    TEST_RUNNER_SUNDAYDRIVE_REPLAY_OUT=<out>/timed.ndjson xcodebuild test-without-building … \
+      -only-testing:SundayDriveTests/TimedReplayTests
+
+It replays only the October traces (the older ones have no request origin
+to key on) and writes one line per drive: every request with whether it was
+answered and by which recorded reply, every banner change, every utterance,
+and the wrong-way and connectivity changes. It writes street names, from
+the banners, so its output stays in the scratch copy. The comparisons in
+§4.3 are over those lines.
 
 **The corridor** (§5.2, §6.1–6.4), with nothing else heavy on the machine,
 and never beside a serving process. It loads its own `Router`; a run peaked at

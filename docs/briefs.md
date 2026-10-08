@@ -64,6 +64,16 @@ a brief by name or trap number means the copy at `a2ddddc`.
 | `docs/archive/new-england-terrain-brief.md` | `pipeline/elevation.py:50-58`, [new-england-terrain-findings.md](new-england-terrain-findings.md) |
 | `docs/archive/voice-guidance-plan-brief.md` | `VoiceGuide.swift:12-20`, [voice-guidance-plan.md](voice-guidance-plan.md) §3 |
 
+## Briefs deleted after 2026-10-05
+
+These were committed with their answer and deleted later, so they are not
+at `a2ddddc`. Read each at the commit named.
+
+| brief | read it with | its answer lives in |
+| --- | --- | --- |
+| `docs/mid-drive-recovery-brief.md` | `git show fe5cab0:docs/mid-drive-recovery-brief.md` | [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
+| `docs/route-options-brief.md` | `git show e26766a:docs/route-options-brief.md` | [route-options.md](route-options.md), with the study in `route-options-study/` |
+
 ## Briefs kept out of history
 
 A brief that quoted the private drive traces (street names, clock times) is
@@ -74,3 +84,5 @@ Its answer document is self-contained.
 | --- | --- |
 | `docs/reroute-uturn-brief.md` | [reroute-uturn.md](reroute-uturn.md) |
 | `docs/mid-drive-recovery-build-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), designed in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
+| `docs/state-road-class-brief.md` | [state-road-class.md](state-road-class.md) |
+| `docs/side-loops-brief.md` | [side-loops-verdict.md](side-loops-verdict.md) |

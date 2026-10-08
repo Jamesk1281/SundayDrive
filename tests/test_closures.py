@@ -636,7 +636,12 @@ class TestThroughTheServer:
         assert summer.status_code == 200
 
     def test_a_loop_cached_in_july_is_not_served_in_january(self, server, monkeypatch):
-        form = {"from": self._ll(JEFFERSON), "km": "80"}
+        # 60 km, which crosses Jefferson Notch and Cherry Mountain Roads in
+        # July. The 80 km loop crossed Jefferson Notch and Mount Clinton Roads
+        # until loops stopped turning round on private road: that changed
+        # which turnarounds the planner samples, and the one it builds now
+        # misses them (docs/state-road-class.md, "Route census").
+        form = {"from": self._ll(JEFFERSON), "km": "60"}
         closed = _closed_midpoints_m(server.ROUTER, JANUARY)
         july = _on(monkeypatch, server, JULY).post("/api/loop", data=form)
         january = _on(monkeypatch, server, JANUARY).post("/api/loop", data=form)

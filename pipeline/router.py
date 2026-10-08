@@ -181,6 +181,28 @@ UNPAVED_AVOID_MIN_PER_KM = 1.0
 # strength at pref 1.0, which is the hardest this has ever avoided dirt.
 MAX_AVOID_UNPAVED = 2.0
 
+# --- Private roads -----------------------------------------------------------
+# A private road (state_road_class.parquet, rule "private") may be the start or
+# the end of a route and never the middle (docs/state-road-class.md, decision
+# 2). Priced, not banned: it is a tenth of NH and VT and where people live.
+#
+# PRIVATE_ENTRY_MIN is charged once each time a route turns onto a private road
+# from the main public network (`Router._mark_private`). A route that starts on
+# a private road drives out of it without paying, and one that ends on one pays
+# it once whichever way it comes in, so it changes nothing for either; a route
+# that could go round pays it for going through, and 10,000 minutes is a week,
+# which no detour costs. It is per entry rather than per edge so that the price
+# does not depend on how many junctions the private road happens to have.
+#
+# PRIVATE_MIN_PER_KM is the rest of the rule: once on a private road, leave it
+# by the shortest way. A start or end inside a private estate otherwise drives
+# its whole network for free, as long as it never touches the main network.
+#
+# Both are positive addends, so `w >= d_minutes` still holds and the ALT tables
+# stay admissible; and `_collect` reports `d_minutes`, so the ETA is real.
+PRIVATE_ENTRY_MIN = 10_000.0
+PRIVATE_MIN_PER_KM = 10.0
+
 # Seconds lost per traffic control *met* — P(stop) and the delay when you do
 # stop, folded into the one number a static graph can charge. Fitted by
 # `tools/fit_junction_cost.py` over all eight recorded drives: signals were met
@@ -537,10 +559,13 @@ class ClosedToCars:
         rule = table["rule"].to_numpy()
         node = (table["osm_type"] == "node").to_numpy()
         shut = rule == "edge"
+        # A row with a position closes the edge at that point, as a barrier
+        # inside it does, and one without closes all of it.
+        point = table["at_m"].notna().to_numpy()
         self.edges = np.unique(rows[shut])
-        self.whole = np.unique(rows[shut & ~node])
+        self.whole = np.unique(rows[shut & ~point])
         at = {}
-        for r, m in zip(rows[shut & node], table["at_m"].to_numpy()[shut & node]):
+        for r, m in zip(rows[shut & point], table["at_m"].to_numpy()[shut & point]):
             at.setdefault(int(r), []).append(float(m))
         self.at = {r: np.sort(np.array(m)) for r, m in at.items()}
         self.through = {}
@@ -553,8 +578,90 @@ class ClosedToCars:
                     "Rerun pipeline/closures.py against this graph.")
             self.through[int(osm_id)] = tuple(int(r) for r in group["edge"])
         self.km = float(table[shut].drop_duplicates("edge")["length_m"].sum() / 1000.0)
-        self.n_ways = int(table.loc[~node, "osm_id"].nunique())
+        way = (table["osm_type"] == "way").to_numpy()
+        self.n_ways = int(table.loc[way, "osm_id"].nunique())
         self.n_barriers = int(table.loc[shut & node, "osm_id"].nunique())
+        # The edges `StateRoadClass.closed_rows` added, which name no OSM object.
+        self.n_state = int(table.loc[table["osm_type"] == "state", "edge"].nunique())
+
+
+class StateRoadClass:
+    """What a state DOT says about this graph's roads, as rows of it.
+
+    From state_road_class.parquet (pipeline/state_roads.py), one row per
+    labelled edge, its `rule` saying what the router does with it
+    (docs/state-road-class.md):
+
+      closed    closed to cars like a locked gate, so these join
+                closed_to_cars' rows (`closed_rows`) and everything that
+                handles those handles them;
+      private   may start or end a route and never be its middle
+                (PRIVATE_ENTRY_MIN);
+      unpaved   counted as dirt by `avoid_unpaved` (`_load_unpaved`).
+    """
+
+    RULES = ("closed", "private", "unpaved")
+
+    def __init__(self, table: pd.DataFrame, edge_u: np.ndarray,
+                 edge_v: np.ndarray):
+        rows = table["edge"].to_numpy()
+        inside = (rows >= 0) & (rows < len(edge_u))
+        same = np.zeros(len(rows), bool)
+        same[inside] = ((edge_u[rows[inside]] == table["u"].to_numpy()[inside])
+                        & (edge_v[rows[inside]] == table["v"].to_numpy()[inside]))
+        if not same.all():
+            raise RuntimeError(
+                f"state_road_class.parquet names {(~same).sum():,} edges that "
+                "graph_edges.parquet does not hold at those rows, so it was built "
+                "against another graph and would label whichever roads sit there "
+                "now. Rerun pipeline/state_roads.py build against this graph.")
+        unknown = set(table["rule"]) - set(self.RULES)
+        if unknown:
+            raise RuntimeError(f"state_road_class.parquet has rules {sorted(unknown)} "
+                               "this router does not know")
+        self.table = table
+        rule = table["rule"].to_numpy()
+        self.edges = {r: np.unique(rows[rule == r]) for r in self.RULES}
+        self.km = {r: float(table.loc[rule == r, "length_m"].sum() / 1000.0)
+                   for r in self.RULES}
+
+    # How near an end of its edge a closed stretch may stop, in metres, and
+    # still close the edge whole: a sample's spacing, about.
+    WHOLE_SLACK_M = 25.0
+
+    def closed_rows(self) -> pd.DataFrame:
+        """The closed edges as closed_to_cars.parquet rows, both ways closed.
+
+        An edge closed end to end, near enough (WHOLE_SLACK_M), is one row
+        with no position, which nothing snaps to. One closed only along part
+        of its length, a road maintained up to the last house and Class VI
+        beyond, is two rows with positions, where the closed stretch starts
+        and ends: `Router.snap` treats them as two barriers inside the edge,
+        and keeps a point on the open part on its own side
+        (docs/state-road-class.md, "Partly closed edges").
+        """
+        t = self.table[self.table["rule"] == "closed"]
+        if "from_m" in t.columns:
+            start, end = t["from_m"].to_numpy(), t["to_m"].to_numpy()
+        else:
+            start = end = np.full(len(t), np.nan)
+        length = t["length_m"].to_numpy()
+        whole = (np.isnan(start) | (start <= self.WHOLE_SLACK_M)) & \
+            (np.isnan(end) | (end >= length - self.WHOLE_SLACK_M))
+
+        def rows(sel, at_m):
+            s = t[sel]
+            return pd.DataFrame({
+                "edge": s["edge"].to_numpy(), "u": s["u"].to_numpy(),
+                "v": s["v"].to_numpy(), "rule": "edge", "kind": "state_class",
+                "osm_type": "state", "osm_id": -1,
+                "tag": (s["state"] + " " + s["tag"]).to_numpy(),
+                "at_m": at_m, "name": s["name"].to_numpy(),
+                "length_m": s["length_m"].to_numpy()})
+
+        return pd.concat([rows(whole, np.nan),
+                          rows(~whole, start[~whole]), rows(~whole, end[~whole])],
+                         ignore_index=True)
 
 
 class Router:
@@ -594,6 +701,75 @@ class Router:
         self._read_access(d)
         self._read_closures(d)
         self._close_to_cars()
+        self._mark_private()
+
+    def _mark_private(self):
+        """Price the private roads so a route only starts or ends on them.
+
+        `_private_slots` are the directed slots of every private edge and
+        `_private_cost` what each adds to its weight: PRIVATE_MIN_PER_KM per
+        km, plus PRIVATE_ENTRY_MIN where the slot leaves the main public
+        network, which is a route turning onto a private road from the roads
+        everyone drives. A slot leaving anywhere else is a route already on
+        private land, and pays per km alone (docs/state-road-class.md, "The
+        private rule").
+
+        The main public network is the largest connected set of roads neither
+        private nor closed, and not merely any junction a public road meets.
+        The North Maine Woods is private road broken up by short stretches
+        nothing labels, OSM-only roads and names the guard refused; counted
+        as public, each one made a fresh entry, and a trip to Daaquam drove
+        636 km instead of 291 to turn onto private road one time fewer.
+
+        `private_inside[i]` says node index `i` (copies included) is a
+        junction on private road off the main public network, where a loop
+        must not turn round.
+
+        Never silent, for the reason `_read_closures` gives.
+        """
+        self._private_slots = None
+        self._private_cost = None
+        self.private_inside = np.zeros(self.n, bool)
+        self._private_slot_mask = None
+        s = self.state_roads
+        if s is None:
+            print(f"state road classes: none, {self._state_roads_path.name} is "
+                  "missing, so no road is private and OSM alone says what is "
+                  "unpaved", flush=True)
+            return
+        private = np.zeros(len(self.edges), bool)
+        private[s.edges["private"]] = True
+        # A public edge is one that is neither private nor closed: a closed
+        # edge gives no way on or off a private road.
+        public = ~private
+        if self.closed_to_cars is not None:
+            public[self.closed_to_cars.edges] = False
+        m = len(self.nodes)
+        ends = (self.edge_u_idx[public], self.edge_v_idx[public])
+        graph = csr_matrix((np.ones(len(ends[0])), ends), shape=(m, m))
+        _, component = connected_components(graph, directed=False)
+        touches_public = np.zeros(m, bool)
+        touches_public[ends[0]] = touches_public[ends[1]] = True
+        sizes = np.bincount(component[touches_public], minlength=m)
+        core = touches_public & (component == np.argmax(sizes))
+        touches_private = np.zeros(m, bool)
+        touches_private[self.edge_u_idx[private]] = True
+        touches_private[self.edge_v_idx[private]] = True
+        real = self.real_node.astype(np.int64)
+        self.private_inside = (touches_private & ~core)[real]
+
+        slots = np.flatnonzero(private[self.eidx])
+        cost = PRIVATE_MIN_PER_KM * self.km[self.eidx[slots]]
+        cost[core[real[self.tail[slots]]]] += PRIVATE_ENTRY_MIN
+        self._private_slots, self._private_cost = slots, cost
+        self._private_slot_mask = np.zeros(len(self.eidx), bool)
+        self._private_slot_mask[slots] = True
+        km = s.km
+        print(f"state road classes: {len(s.edges['private']):,} private edges "
+              f"({km['private']:.1f} km), start or end only; "
+              f"{len(s.edges['closed']):,} closed ({km['closed']:.1f} km); "
+              f"{len(s.edges['unpaved']):,} unpaved ({km['unpaved']:.1f} km)",
+              flush=True)
 
     def _read_closures(self, d: Path):
         """The roads OSM marks closed for the season, if the table is there.
@@ -626,14 +802,31 @@ class Router:
         every road and barrier in the graph is open, which is how this router
         behaved before the table existed. Its line is printed by
         `_close_to_cars`, once the graph it closes has been built.
+
+        The state road classes are read here too, also optional: the roads a
+        state DOT says no car can drive join OSM's closed roads as rows of the
+        same table, and the rest of what they say is used by `_load_unpaved`
+        and `_mark_private` (docs/state-road-class.md).
         """
+        u, v = self.edges["u"].to_numpy(), self.edges["v"].to_numpy()
+        state_path = d / "state_road_class.parquet"
+        self._state_roads_path = state_path
+        self.state_roads = None
+        if state_path.exists():
+            self.state_roads = StateRoadClass(pd.read_parquet(state_path), u, v)
+
         path = d / "closed_to_cars.parquet"
         self._closed_to_cars_path = path
         self.closed_to_cars = None
+        tables = []
         if path.exists():
-            self.closed_to_cars = ClosedToCars(pd.read_parquet(path),
-                                               self.edges["u"].to_numpy(),
-                                               self.edges["v"].to_numpy())
+            tables.append(pd.read_parquet(path))
+        if self.state_roads is not None and len(self.state_roads.edges["closed"]):
+            tables.append(self.state_roads.closed_rows())
+        if tables:
+            self.closed_to_cars = ClosedToCars(
+                pd.concat(tables, ignore_index=True) if len(tables) > 1 else tables[0],
+                u, v)
 
     def _close_to_cars(self):
         """Close what OSM closes to cars, for every request, and find the way
@@ -669,7 +862,8 @@ class Router:
         self._snap_closed[c.whole] = True
         self._way_out, self._way_in = self._ways_round()
         print(f"closed to cars: {len(c.edges):,} edges ({c.km:.1f} km, "
-              f"{c.n_ways:,} ways, {c.n_barriers:,} barriers and fords), "
+              f"{c.n_ways:,} ways, {c.n_barriers:,} barriers and fords, "
+              f"{c.n_state:,} by state road class), "
               f"and no driving through {len(self._through_split):,} more barriers; "
               f"{len(self._way_in):,} junctions cut off behind them", flush=True)
 
@@ -1569,7 +1763,8 @@ class Router:
         whole branch should be deleted once no deployed graph predates it.
         """
         if "unpaved_frac" in e.columns:
-            return e["unpaved_frac"].to_numpy(), e["score_adj"].to_numpy()
+            return (self._state_unpaved(e, e["unpaved_frac"].to_numpy()),
+                    e["score_adj"].to_numpy())
 
         adj = e["score_adj"].to_numpy()
         class_adj = e["highway"].map(CLASS_ADJ).fillna(0.0).to_numpy()
@@ -1582,7 +1777,27 @@ class Router:
         # Rewriting the in-memory frame (never the parquet) keeps every reader
         # on one scale.
         e["score"] = composite(blend(e[components(e)]).to_numpy(), adj)
-        return frac, adj
+        return self._state_unpaved(e, frac), adj
+
+    def _state_unpaved(self, e, frac: np.ndarray) -> np.ndarray:
+        """`frac`, for the edges `e`, with the roads a state DOT calls unpaved
+        set to all dirt.
+
+        VT Class 4 (docs/state-road-class.md, decision 3), whatever OSM says
+        of its surface. Applied after `score` is settled in either vintage,
+        because this is a fact for `avoid_unpaved` and not for the scenery
+        score (Trap 3). A router with no state table, or a stub without the
+        attribute, gets `frac` back untouched.
+        """
+        state = getattr(self, "state_roads", None)
+        if state is None or not len(state.edges["unpaved"]):
+            return frac
+        frac = np.array(frac, dtype=float)
+        # By row label, which is what the table's `edge` is, so a slice of
+        # the edges gets its own rows and no others.
+        at = e.index.get_indexer(state.edges["unpaved"])
+        frac[at[at >= 0]] = 1.0
+        return frac
 
     def _edge_scores(self, weights: dict) -> np.ndarray:
         """Per *undirected* edge 0-10 scenic score under the given beauty weights.
@@ -1639,7 +1854,10 @@ class Router:
 
         What OSM closes to cars all year is closed whatever `on` says, `None`
         included: a locked gate is locked for every purpose
-        (docs/closed-roads.md, decision 6).
+        (docs/closed-roads.md, decision 6). So are the roads a state DOT says
+        no car can drive, which arrive as rows of the same table; and its
+        private roads cost PRIVATE_ENTRY_MIN to turn onto, for every request,
+        so a route only starts or ends on one (docs/state-road-class.md).
         """
         penalty = self.km * (1.0 - scores / 10.0)           # km of "unscenic" road
         # Clamped because a negative pref raised to a fractional power is a
@@ -1656,6 +1874,8 @@ class Router:
 
         # In place, which is safe: both lines above build `w` afresh, so it is
         # never `d_minutes` itself.
+        if getattr(self, "_private_slots", None) is not None:
+            w[self._private_slots] += self._private_cost
         closed = self._closed_slots(on)
         if closed is not None:
             w[closed] += np.inf

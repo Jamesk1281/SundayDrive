@@ -6,6 +6,8 @@ score.py and router.py; keeping them here means there's one place to change when
 (say) a new road class should be considered drivable.
 """
 
+import re
+
 # OSM highway= values we treat as drivable roads. Everything else (footways,
 # cycleways, service alleys, etc.) is ignored when extracting and graph-building.
 DRIVABLE = {
@@ -81,18 +83,39 @@ def closed_to_cars(tags):
     return None
 
 
+# The checkpoints of Maine's gated logging networks, North Maine Woods and KI
+# Jo-Mary, which OSM maps as `barrier=toll_booth`: by operator, or by the names
+# the rest of them carry ("Telos Checkpoint", "Northeast Carry Electronic
+# Gate"). A toll booth is otherwise passable, and behind these lie thousands of
+# km of private logging road (docs/state-road-class.md, "Maine checkpoints").
+CHECKPOINT_OPERATOR = re.compile(r"north maine woods", re.IGNORECASE)
+CHECKPOINT_NAME = re.compile(r"\bcheckpoint\b|\belectronic gate\b", re.IGNORECASE)
+
+
+def logging_checkpoint(tags) -> bool:
+    """Whether a node with these tags is one of Maine's logging-road
+    checkpoints: a toll booth run by North Maine Woods or named as one."""
+    if (tags.get("barrier") or "").strip().lower() != "toll_booth":
+        return False
+    return bool(CHECKPOINT_OPERATOR.search(tags.get("operator") or "")
+                or CHECKPOINT_NAME.search(tags.get("name") or ""))
+
+
 def barrier_closes(tags):
     """Why a node with these tags stops a car on the road it sits on, or None.
 
     A ford stops it whatever else is tagged: a consumer car app should not plan
-    one. A PASSABLE_BARRIERS gate stops it only when its own tags close it. Any
-    other `barrier=` stops it unless its own tags open it.
+    one. So does a logging checkpoint (`logging_checkpoint`). A
+    PASSABLE_BARRIERS gate stops it only when its own tags close it. Any other
+    `barrier=` stops it unless its own tags open it.
     """
     if (tags.get("ford") or "").strip().lower() == "yes":
         return "ford=yes"
     barrier = (tags.get("barrier") or "").strip().lower()
     if not barrier:
         return None
+    if logging_checkpoint(tags):
+        return f"barrier={barrier}, logging checkpoint"
     found = car_access(tags)
     says = f"{found[0]}={found[1]}" if found else None
     if barrier in PASSABLE_BARRIERS:

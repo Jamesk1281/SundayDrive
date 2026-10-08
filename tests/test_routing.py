@@ -1317,8 +1317,12 @@ class TestBeautyWeightsAreWellBehaved:
         half = router._weights(0.5, neutral, 0.0) - router.d_minutes
         full = router._weights(1.0, neutral, 0.0) - router.d_minutes
         # Finite only: the slots closed to cars cost +inf at every pref and
-        # have no scenery cost to compare (docs/closed-roads.md).
+        # have no scenery cost to compare (docs/closed-roads.md). And not the
+        # private slots, whose charge is flat in pref like the surface cost's
+        # (docs/state-road-class.md).
         moving = np.isfinite(full) & (full > 0)
+        if router._private_slot_mask is not None:
+            moving &= ~router._private_slot_mask
         ratio = half[moving].sum() / full[moving].sum()
         assert ratio == pytest.approx(0.25, rel=1e-9), (
             f"half-strength scenery cost is {ratio:.4f} of full; expected 0.25 "
@@ -1486,9 +1490,12 @@ class TestLegacyGraphMigration:
         live = router._edge_scores({name: 1.0 for name, *_ in BEAUTY_TYPES})
         assert np.allclose(live, router.edges["score"].to_numpy(), atol=1e-9)
 
-    def test_a_modern_graph_is_taken_as_given(self, router):
+    def test_a_modern_graph_is_taken_as_given(self, router, monkeypatch):
         """When `unpaved_frac` is present the router must read it, not re-derive
-        it — the derivation is only valid while `score_adj` is class + surface."""
+        it — the derivation is only valid while `score_adj` is class + surface.
+        Without the state road classes, which overlay it and are tested in
+        tests/test_state_roads.py."""
+        monkeypatch.setattr(router, "state_roads", None)
         e = router.edges.head(50).copy()
         e["unpaved_frac"] = 0.5
         e["score_adj"] = -0.11

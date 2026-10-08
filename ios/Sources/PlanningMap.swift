@@ -20,59 +20,69 @@ struct PlanningMap: View {
     let stage: PlanStage
     @Binding var camera: MapCameraPosition
 
+    /// The camera as `RouteArrows` needs it; nil until it first settles.
+    @State private var arrowFrame: RouteArrows.Frame?
+
     var body: some View {
-        Map(position: $camera) {
-            switch stage {
-            case .home:
-                // Nothing drawn: the home screen's map answers "where am I",
-                // and `UserAnnotation` below is the whole answer.
-                MapCircle(center: .init(latitude: 0, longitude: 0), radius: 0)
-                    .foregroundStyle(.clear)
-            case .directions:
-                // The fastest arm under the scenic one, quiet and dashed: it is
-                // the reference price, not a route you can choose here.
-                if let fastest = model.response?.fastest {
-                    MapPolyline(coordinates: fastest.coordinates)
-                        .stroke(Color.slate.opacity(0.65),
-                                style: StrokeStyle(lineWidth: 3, dash: [6, 6]))
+        MapReader { proxy in
+            Map(position: $camera) {
+                switch stage {
+                case .home:
+                    // Nothing drawn: the home screen's map answers "where am I",
+                    // and `UserAnnotation` below is the whole answer.
+                    MapCircle(center: .init(latitude: 0, longitude: 0), radius: 0)
+                        .foregroundStyle(.clear)
+                case .directions:
+                    // The fastest arm under the scenic one, quiet and dashed: it is
+                    // the reference price, not a route you can choose here.
+                    if let fastest = model.response?.fastest {
+                        MapPolyline(coordinates: fastest.coordinates)
+                            .stroke(Color.slate.opacity(0.65),
+                                    style: StrokeStyle(lineWidth: 3, dash: [6, 6]))
+                    }
+                    // A menu option on its way in full is drawn from its
+                    // simplified line, so the map answers the release at once.
+                    if let scenic = model.previewLine ?? model.response?.scenic.coordinates {
+                        MapPolyline(coordinates: scenic)
+                            .stroke(Color.amber, style: StrokeStyle(lineWidth: 6,
+                                                                    lineCap: .round,
+                                                                    lineJoin: .round))
+                        RouteArrowsContent(line: scenic, frame: arrowFrame, style: .planning)
+                    }
+                    if let start = model.start { endpointDot(start, tint: .startPin, label: "Start") }
+                    if let end = model.end {
+                        Marker(model.endQuery.isEmpty ? "Destination" : model.endQuery,
+                               coordinate: end).tint(Color.endPin)
+                    }
+                case .loop:
+                    if let loop = model.loops.response?.loop {
+                        MapPolyline(coordinates: loop.coordinates)
+                            .stroke(Color.amber, style: StrokeStyle(lineWidth: 6,
+                                                                    lineCap: .round,
+                                                                    lineJoin: .round))
+                        // A loop's line is a ring, and only these say which way
+                        // round it goes.
+                        RouteArrowsContent(line: loop.coordinates, frame: arrowFrame, style: .planning)
+                    }
+                    if let start = model.loops.start {
+                        endpointDot(start, tint: .amber, label: "Start and finish")
+                    }
+                    if let turnaround = model.loops.response?.meta.turnaroundCoordinate {
+                        Marker("Turnaround", systemImage: "arrow.uturn.left",
+                               coordinate: turnaround).tint(BeautyType.hue(for: "hills"))
+                    }
                 }
-                // A menu option on its way in full is drawn from its
-                // simplified line, so the map answers the release at once.
-                if let scenic = model.previewLine ?? model.response?.scenic.coordinates {
-                    MapPolyline(coordinates: scenic)
-                        .stroke(Color.amber, style: StrokeStyle(lineWidth: 6,
-                                                                lineCap: .round,
-                                                                lineJoin: .round))
-                }
-                if let start = model.start { endpointDot(start, tint: .startPin, label: "Start") }
-                if let end = model.end {
-                    Marker(model.endQuery.isEmpty ? "Destination" : model.endQuery,
-                           coordinate: end).tint(Color.endPin)
-                }
-            case .loop:
-                if let loop = model.loops.response?.loop {
-                    MapPolyline(coordinates: loop.coordinates)
-                        .stroke(Color.amber, style: StrokeStyle(lineWidth: 6,
-                                                                lineCap: .round,
-                                                                lineJoin: .round))
-                }
-                if let start = model.loops.start {
-                    endpointDot(start, tint: .amber, label: "Start and finish")
-                }
-                if let turnaround = model.loops.response?.meta.turnaroundCoordinate {
-                    Marker("Turnaround", systemImage: "arrow.uturn.left",
-                           coordinate: turnaround).tint(BeautyType.hue(for: "hills"))
-                }
+                UserAnnotation()
             }
-            UserAnnotation()
-        }
-        .mapControls { MapUserLocationButton() }
-        // Rank search results around whatever the user is looking at. Apple's
-        // search sorts by distance from this region's center, so without it
-        // every search is answered from the middle of the state.
-        .onMapCameraChange(frequency: .onEnd) { context in
-            model.searchRegion = context.region
-            model.loops.searchRegion = context.region
+            .mapControls { MapUserLocationButton() }
+            // Rank search results around whatever the user is looking at. Apple's
+            // search sorts by distance from this region's center, so without it
+            // every search is answered from the middle of the state.
+            .onMapCameraChange(frequency: .onEnd) { context in
+                model.searchRegion = context.region
+                model.loops.searchRegion = context.region
+                arrowFrame = RouteArrows.Frame(proxy: proxy, context: context)
+            }
         }
     }
 
