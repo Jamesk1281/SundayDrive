@@ -297,8 +297,9 @@ final class SimulatedDrive {
         if outageActive { record.outageUtterances += 1 }
         // The detector firing, read off the voice: it says this once per
         // detection, and a reply landing within the same fix clears
-        // `wrongWay` before the per-fix measurement could see it.
-        if text == "Turn around when possible." {
+        // `wrongWay` before the per-fix measurement could see it. Either
+        // wording: with no path it opens "No connection.".
+        if DriveReplay.isWrongWayLine(text) {
             record.wrongWayEvents += 1
             if reversing, record.wrongWayFirstS == nil, let rs = revStart {
                 record.wrongWayFirstS = t.timeIntervalSince(rs)
