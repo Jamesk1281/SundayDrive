@@ -110,6 +110,25 @@ class TestALoopBuild:
         assert response.get_json() == {"error": server.LOOP_BUSY}
         assert server.IN_FLIGHT == 0
 
+    def test_only_one_waits_and_the_rest_are_refused_at_once(self, server, client,
+                                                             monkeypatch):
+        """Every waiter holds a waitress thread; a build and one waiter leave
+        two of the four for drivers."""
+        import time
+        monkeypatch.setattr(server, "LOOP_BUSY_WAIT_S", 60.0)
+        build, waiter = _held(server.LOOP_LOCK), _held(server.LOOP_WAIT_SLOT)
+        try:
+            started = time.perf_counter()
+            response = _post(client, "/api/loop",
+                             {"from": NEEDHAM, "km": "43", "sector": "S"}, timeout=30)
+            elapsed = time.perf_counter() - started
+        finally:
+            build.set()
+            waiter.set()
+        assert response is not None and response.status_code == 503
+        assert response.get_json() == {"error": server.LOOP_BUSY}
+        assert elapsed < 5, f"a second waiter waited {elapsed:.1f} s"
+
     def test_waits_for_a_build_that_ends_inside_the_wait(self, server, client,
                                                          monkeypatch):
         """The usual overlap is one person releasing the slider twice; their

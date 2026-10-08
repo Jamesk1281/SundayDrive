@@ -1,0 +1,116 @@
+{
+ "label": "before-opt0-1",
+ "runs": [
+  {
+   "clients": 0,
+   "rows": {
+    "rejoin": {
+     "median": 2.8136417909990996,
+     "max": 3.0029535829962697,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 0.9282771670041257,
+     "max": 0.9839784579962725,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.20523908299946925,
+     "max": 0.23050379200140014,
+     "n": 5,
+     "over_20s": 0
+    }
+   },
+   "planners": {}
+  },
+  {
+   "clients": 1,
+   "rows": {
+    "rejoin": {
+     "median": 7.576501541996549,
+     "max": 8.055706208004267,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 1.6519344999978784,
+     "max": 1.7525960839993786,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.25115933399501955,
+     "max": 0.27176962500379886,
+     "n": 5,
+     "over_20s": 0
+    }
+   },
+   "planners": {
+    "built": 6
+   },
+   "ratios": {
+    "rejoin": 2.69,
+    "route_default": 1.78,
+    "route_fastest": 1.22
+   }
+  },
+  {
+   "clients": 0,
+   "rows": {
+    "rejoin": {
+     "median": 2.7891054159990745,
+     "max": 2.8478612910039374,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 0.9840991669989307,
+     "max": 1.0315417920064647,
+     "n": 5,
+     "over_20s": 0
+    },
+    "route_fastest": {
+     "median": 0.20919995899748756,
+     "max": 0.22668558300210861,
+     "n": 5,
+     "over_20s": 0
+    }
+   },
+   "planners": {}
+  },
+  {
+   "clients": 4,
+   "rows": {
+    "rejoin": {
+     "median": 19.785658666995005,
+     "max": 19.785658666995005,
+     "n": 1,
+     "over_20s": 0
+    },
+    "route_default": {
+     "median": 28.98561362500186,
+     "max": 28.98561362500186,
+     "n": 1,
+     "over_20s": 1
+    },
+    "route_fastest": {
+     "median": 14.70609324999532,
+     "max": 14.70609324999532,
+     "n": 1,
+     "over_20s": 0
+    }
+   },
+   "planners": {
+    "built": 5,
+    "timed_out": 12
+   },
+   "ratios": {
+    "rejoin": 7.09,
+    "route_default": 29.45,
+    "route_fastest": 70.3
+   }
+  }
+ ]
+}

@@ -240,7 +240,9 @@ class _CostModel:
     """Edge weights and per-node-pair lookups for one (pref, weights) setting.
 
     Held apart from the fields below because it does not depend on the start, so
-    a user shuffling loops from one place reuses it for every press. About 30 MB.
+    a user shuffling loops from one place reuses it for every press. About 30 MB
+    on the Massachusetts graph, 82 MB on New England's
+    (docs/loop-lock-contention.md).
     """
 
     scores: np.ndarray          # per undirected edge, 0-10, under the user's weights
@@ -310,6 +312,8 @@ class LoopPlanner:
     The two caches are sized for the serving box, not for a workstation: the
     process runs around 1 GB on a laptop behind a tunnel, and a field set is
     ~25 MB while a cost model is ~30 MB. Four starts and two settings is ~160 MB.
+    Those are Massachusetts figures: on the New England graph a cost model is
+    82 MB (docs/loop-lock-contention.md).
     Both are plain insertion-ordered dicts trimmed from the front, which is a
     true LRU only if callers touch entries by going through `plan`. They do.
     """

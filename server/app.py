@@ -157,18 +157,24 @@ LOOP_LOCK = threading.Lock()
 # The mid-drive loop rejoin (`via`) has a planner and a lock of its own, so a
 # driver who missed a turn waits only for another driver's rejoin, never behind
 # everyone's "Try another direction" (review finding K-1). The price is a second
-# set of cost models, ~30 MB each, and a first rejoin per weight set that builds
-# its own instead of finding the loop build's. docs/loop-lock-contention.md.
+# pair of cost models, 82 MB each on the New England graph, and a first rejoin
+# per weight set that builds its own (~40 ms) instead of finding the loop
+# build's. docs/loop-lock-contention.md.
 REJOINER = LoopPlanner(ROUTER)
 REJOIN_LOCK = threading.Lock()
 
-# How long a loop build waits for the one already running before it is refused
-# with a 503. Never zero: the usual overlap is one person releasing the distance
-# slider twice, whose second request should wait for their first rather than be
-# told the server is busy. Short, because every waiting build holds one of
-# waitress's four threads, and a driver's reroute needs one.
+# A loop build that finds another running may wait for it, but only one at a
+# time and only this long; any other is refused with a 503 at once.
+#
+# The wait is for one person releasing the distance slider twice, whose second
+# request should follow their first rather than be told the server is busy. A
+# cold build took a median 3.1 s (p90 3.6 s) on the New England graph, so a
+# shorter wait refused that second request every time it was tried.
+# One waiter, not several, because each holds one of waitress's four threads:
+# a build and a waiter leave two for drivers, however many people tap Loop.
 # docs/loop-lock-contention.md, "The wait".
-LOOP_BUSY_WAIT_S = 1.5
+LOOP_BUSY_WAIT_S = 5.0
+LOOP_WAIT_SLOT = threading.Lock()
 LOOP_BUSY = "Busy planning other drives. Try again in a moment."
 
 # Built loops, keyed by the whole request. The planner's caches make a *new* loop
@@ -578,7 +584,7 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
     # Refused rather than queued: a build waiting on the lock holds a waitress
     # thread, and four of them starved every driver's reroute (K-1). Loop
     # builds only — nothing a driver sends mid-drive comes through here.
-    if not LOOP_LOCK.acquire(timeout=LOOP_BUSY_WAIT_S):
+    if not _acquire_loop_lock():
         return jsonify(error=LOOP_BUSY), 503
     try:
         # The build just waited for may have been this same request, sent
@@ -639,6 +645,19 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
         while len(LOOP_RESULTS) > LOOP_RESULTS_MAX:
             LOOP_RESULTS.pop(next(iter(LOOP_RESULTS)))
     return jsonify(body)
+
+
+def _acquire_loop_lock():
+    """Take the build lock: at once if it is free, else by waiting in the one
+    waiting slot for up to `LOOP_BUSY_WAIT_S`. False means refuse."""
+    if LOOP_LOCK.acquire(blocking=False):
+        return True
+    if not LOOP_WAIT_SLOT.acquire(blocking=False):
+        return False
+    try:
+        return LOOP_LOCK.acquire(timeout=LOOP_BUSY_WAIT_S)
+    finally:
+        LOOP_WAIT_SLOT.release()
 
 
 def _cached_loop(key):
