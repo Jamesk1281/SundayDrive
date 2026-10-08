@@ -1,9 +1,11 @@
 # Route options: the in-between routes behind the dial
 
-**Status:** merged into `main` 2026-10-07 and deployed to the Oracle box
-**with options off**: the server computes them only with
-`SUNDAYDRIVE_ROUTE_OPTIONS=1` (`server/app.py`, `ROUTE_OPTIONS`), which is not
-set there. Code: `pipeline/options.py`, `server/app.py`, and
+**Status:** merged into `main` 2026-10-07, deployed to the Oracle box at
+`04038d4` on 2026-10-08 **with options on**:
+`Environment=SUNDAYDRIVE_ROUTE_OPTIONS=1` is in the box's unit (the unit
+before it is at `~/sundaydrive-api.service.bak-2026-10-08`). Through the
+public URL, Waitsfield → Needham took 1.78 s with options against 1.02 s
+without, warm, network included. Code: `pipeline/options.py`, `server/app.py`, and
 `ios/Sources/{Models,RouteService,RouteModel,DirectionsView,PlanningMap,
 NavigationModel,DriveTrace}.swift`. Tests: `tests/test_options.py` (30) and
 `ios/Tests/RouteOptionsTests.swift` (18). The study scripts and raw results
@@ -271,10 +273,10 @@ brief priced the trees on top of today's request.
    `python docs/route-options-study/endpoint_batch.py <checkout> <processed-ne>
    <out dir>`, then `endpoint_analyze.py <out dir>/results.jsonl`. It sets
    the flag in its own process only.
-2. **To turn options on:** add `Environment=SUNDAYDRIVE_ROUTE_OPTIONS=1` to
-   the unit (`server/DEPLOY-oracle.md`, the `[Service]` block), then
-   `daemon-reload` and restart. To turn them off, remove the line and restart.
-   No deploy is needed either way.
+2. **Options are on** (2026-10-08). To turn them off, remove
+   `Environment=SUNDAYDRIVE_ROUTE_OPTIONS=1` from the unit
+   (`server/DEPLOY-oracle.md`, the `[Service]` block), then `daemon-reload`
+   and restart. No deploy is needed.
 3. **The phone build** is needed for the detents, the caption and rerouting
    by legs. Against a server with the flag off, the app behaves exactly as
    today.
