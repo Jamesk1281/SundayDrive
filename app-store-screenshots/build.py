@@ -6,6 +6,9 @@ Reads the four raw 6.9" captures beside this file (1320 x 2868) and writes
                                  whole capture in a phone outline below it
     header-banner.jpg            2400 x 1200: icon, name and subtitle beside
                                  three phones, for the landing page and posts
+    app-store-header-3840x1646.png          App Store Connect's Header and
+    app-store-search-results-3840x2560.png  Search Results assets (iOS 27
+                                 creative assets): headline beside the phones
     search-preview-light.png     the first three as an App Store search result
     search-preview-dark.png      would show them, at iPhone 16 Pro size (@3x)
 
@@ -114,34 +117,64 @@ p{{margin:34px 0 0;font-size:50px;line-height:1.3;font-weight:500;color:rgba(43,
 </body></html>"""
 
 
-BANNER_W, BANNER_H = 2400, 1200
+def phone_height(screen_w):
+    return round(screen_w * H / W) + 2 * round(screen_w / 50)
 
 
-def banner_page():
-    """The header banner: icon, name and subtitle left, three phones right."""
-    small, big = 430, 500
-    def h(w):
-        return round(w * H / W) + 2 * round(w / 50)
-    mid_top = (BANNER_H - h(big)) // 2
-    side_top = (BANNER_H - h(small)) // 2 + 40
+def promo_page(w, h, copy_html, big, small, cx, text_left, text_w, scale):
+    """Text left, three phones fanned right: route comparison in front, the
+    loop and the drive tilted behind it. Every phone is shown whole.
+
+    `scale` sizes the type against the 2400 x 1200 banner it was drawn for.
+    """
+    mid_top = (h - phone_height(big)) // 2
+    side_top = (h - phone_height(small)) // 2 + round(40 * scale)
+    left = cx - big // 2 - round(small * .73)
+    right = cx + big // 2 - round(small * .27)
+    f = lambda px: round(px * scale)
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{{margin:0;width:{BANNER_W}px;height:{BANNER_H}px;overflow:hidden;background:{CREAM}}}
+html,body{{margin:0;width:{w}px;height:{h}px;overflow:hidden;background:{CREAM}}}
 body{{font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;color:{INK};position:relative}}
-.copy{{position:absolute;left:150px;top:0;bottom:0;width:900px;display:flex;flex-direction:column;justify-content:center}}
-.copy img{{width:220px;height:220px;border-radius:50px;box-shadow:0 18px 40px rgba(43,33,27,.18)}}
-h1{{margin:56px 0 0;font-size:150px;line-height:1;font-weight:800;letter-spacing:-0.03em}}
-h2{{margin:22px 0 0;font-size:66px;line-height:1.1;font-weight:700;color:{RUST};letter-spacing:-0.015em}}
-p{{margin:44px 0 0;font-size:40px;line-height:1.35;font-weight:500;color:rgba(43,33,27,.72)}}
+.copy{{position:absolute;left:{text_left}px;top:0;bottom:0;width:{text_w}px;display:flex;flex-direction:column;justify-content:center}}
+.copy img{{width:{f(220)}px;height:{f(220)}px;border-radius:{f(50)}px;box-shadow:0 {f(18)}px {f(40)}px rgba(43,33,27,.18);margin-bottom:{f(56)}px}}
+h1{{margin:0;font-size:{f(150)}px;line-height:1;font-weight:800;letter-spacing:-0.03em}}
+h1 em{{font-style:normal;color:{RUST};display:block}}
+h2{{margin:{f(22)}px 0 0;font-size:{f(66)}px;line-height:1.1;font-weight:700;color:{RUST};letter-spacing:-0.015em}}
+p{{margin:{f(44)}px 0 0;font-size:{f(40)}px;line-height:1.35;font-weight:500;color:rgba(43,33,27,.72)}}
 p b{{color:{INK};font-weight:700}}
 {phone_css()}
+.phone{{box-shadow:0 {f(40)}px {f(90)}px rgba(43,33,27,.28)}}
 </style></head><body>
-<div class="copy"><img src="{ICON.as_uri()}">
-<h1>{NAME}</h1><h2>{SUBTITLE}</h2>
-<p>Every road in New England, scored for scenery.<br><b>Free on iPhone.</b> No account, no ads.</p></div>
-{phone_html(HERE / SHOTS[1][0], small, 1210, side_top, "transform:rotate(-6deg)")}
-{phone_html(HERE / SHOTS[2][0], small, 1890, side_top, "transform:rotate(6deg)")}
-{phone_html(HERE / SHOTS[0][0], big, 1525, mid_top, "z-index:2;box-shadow:0 50px 110px rgba(43,33,27,.35)")}
+<div class="copy">{copy_html}</div>
+{phone_html(HERE / SHOTS[1][0], small, left, side_top, "transform:rotate(-6deg)")}
+{phone_html(HERE / SHOTS[2][0], small, right, side_top, "transform:rotate(6deg)")}
+{phone_html(HERE / SHOTS[0][0], big, cx - big // 2, mid_top, f"z-index:2;box-shadow:0 {f(50)}px {f(110)}px rgba(43,33,27,.35)")}
 </body></html>"""
+
+
+# Copy for the App Store's own placements. Apple's creative-asset rules ban
+# pricing ("Free"), URLs and other platforms, and the store already shows the
+# icon, name and subtitle beside them, so these lead with the headline.
+STORE_COPY = (f'<h1>Trade minutes for <em>the view</em></h1>'
+              f'<p>Every road in New England, scored for scenery.</p>')
+
+# (file, width, height, copy, front phone, side phones, phones' centre x,
+#  text left, text width, type scale). Focal content stays inside the middle
+# of each canvas, because Apple crops these per device and publishes no
+# safe-area numbers, only "design around a centred safe area".
+PROMOS = [
+    # Social and landing page; not an App Store asset, so it may say "Free".
+    ("header-banner.jpg", 2400, 1200,
+     f'<img src="{ICON.as_uri()}"><h1>{NAME}</h1><h2>{SUBTITLE}</h2>'
+     f'<p>Every road in New England, scored for scenery.<br><b>Free on iPhone.</b> No account, no ads.</p>',
+     500, 430, 1750, 150, 900, 1.0),
+    # App Store Connect, Header: 21:9 at 3840 x 1646.
+    ("app-store-header-3840x1646.png", 3840, 1646, STORE_COPY,
+     640, 550, 2590, 560, 1300, 1.55),
+    # App Store Connect, Search Results: 3:2 at its 3840 x 2560 maximum.
+    ("app-store-search-results-3840x2560.png", 3840, 2560, STORE_COPY,
+     940, 800, 2600, 330, 1000, 1.75),
+]
 
 
 def search_page(shots, dark):
@@ -242,13 +275,15 @@ def main():
         png.unlink()
         finished.append(jpg)
         print(jpg.relative_to(REPO))
-    banner = HERE / "header-banner.png"
-    render(banner_page(), banner, BANNER_W, BANNER_H)
-    jpg = banner.with_suffix(".jpg")
-    subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "92",
-                    str(banner), "--out", str(jpg)], check=True, capture_output=True)
-    banner.unlink()
-    print(jpg.relative_to(REPO))
+    for name, w, h, copy_html, big, small, cx, text_left, text_w, scale in PROMOS:
+        out = HERE / name
+        png = out.with_suffix(".png")
+        render(promo_page(w, h, copy_html, big, small, cx, text_left, text_w, scale), png, w, h)
+        if out.suffix == ".jpg":
+            subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "92",
+                            str(png), "--out", str(out)], check=True, capture_output=True)
+            png.unlink()
+        print(out.relative_to(REPO))
     for dark in (False, True):
         out = HERE / f"search-preview-{'dark' if dark else 'light'}.png"
         render(search_page(finished[:3], dark), out, 390, 844, scale=3)
