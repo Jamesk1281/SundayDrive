@@ -17,6 +17,7 @@ struct HomeView: View {
     @Binding var stage: PlanStage
 
     @State private var recents: [Recent] = []
+    @State private var confirmingClear = false
 
     var body: some View {
         ScrollView {
@@ -47,7 +48,7 @@ struct HomeView: View {
                 }
 
                 if !recents.isEmpty {
-                    Text("Recent").sectionLabel().padding(.top, 6)
+                    recentHeader.padding(.top, 6)
                     VStack(spacing: 0) {
                         ForEach(Array(recents.enumerated()), id: \.element.id) { index, recent in
                             recentRow(recent)
@@ -63,6 +64,38 @@ struct HomeView: View {
         .scrollBounceBehavior(.basedOnSize)
         .task { recents = Recents.load() }
         .onChange(of: stage) { _, new in if new == .home { recents = Recents.load() } }
+    }
+
+    /// The section label, with the one way to empty the list short of
+    /// deleting the app. Asks first: the list cannot be got back, and the
+    /// button sits a thumb's width from the rows it would erase.
+    private var recentHeader: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("Recent").sectionLabel()
+            Spacer(minLength: 8)
+            Button { confirmingClear = true } label: {
+                Text("Clear")
+                    .font(.system(size: 13.5, weight: .medium))
+                    .foregroundStyle(Color.slate)
+                    // A 44 pt target inside the label, where the button
+                    // hit-tests, without making the header 44 pt tall.
+                    .padding(.vertical, 13).padding(.leading, 20)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, -13)
+            .accessibilityLabel("Clear recent destinations")
+            // On the button, so the iOS 26 popover points at it.
+            .confirmationDialog("Clear recent destinations?",
+                                isPresented: $confirmingClear, titleVisibility: .visible) {
+                Button("Clear", role: .destructive) {
+                    Recents.clear()
+                    recents = []
+                }
+            } message: {
+                Text("They are kept only on this phone, so this cannot be undone.")
+            }
+        }
     }
 
     private var loopEstimate: String {

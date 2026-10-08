@@ -166,6 +166,21 @@ final class OutsideNewEnglandTests: XCTestCase {
         XCTAssertEqual(Recents.load().map(\.name), ["Rockport"])
     }
 
+    func test_clearing_recents_empties_the_list() {
+        let key = "recentDestinations"
+        let saved = UserDefaults.standard.data(forKey: key)
+        defer {
+            if let saved { UserDefaults.standard.set(saved, forKey: key) }
+            else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        Recents.remember(Recent(name: "Rockport", subtitle: "MA",
+                                latitude: 42.6557, longitude: -70.6203))
+        XCTAssertFalse(Recents.load().isEmpty)
+
+        Recents.clear()
+        XCTAssertEqual(Recents.load(), [])
+    }
+
     // MARK: - Fixture
 
     private static func loopResponse(around start: CLLocationCoordinate2D, km: Double,

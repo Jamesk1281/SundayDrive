@@ -75,7 +75,7 @@ searched for.
 
 | What | Where |
 | --- | --- |
-| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-56`, written by `RouteModel.swift:202-209` |
+| **Your five most recent destinations**, each with its name, the town under it and its coordinates, so the home screen can offer them again | `ios/Sources/Recents.swift:13-58`, written by `RouteModel.swift:259-266`, emptied by the home screen's Clear (`HomeView.swift:72-99`) |
 | The length of the last loop you asked for | `ios/Sources/LoopModel.swift:56-57`, `:263` |
 | The chosen guidance voice | `ios/Sources/VoiceCatalogue.swift:118-119` |
 | A cache of how long each voice takes to speak | `ios/Sources/VoiceCatalogue.swift:148-149` |
@@ -301,7 +301,8 @@ Category rules is a §7 item.)*
   but not from where you are, and the app cannot guide you along it. Nothing
   else about the phone is read. *(Until 2026-10-04 this said the app "cannot
   route without it", which typed starts and destinations never needed.)*
-- **Reset the stored destinations and settings** by deleting the app.
+- **Clear the recent destinations** with Clear beside them on the home
+  screen, or **reset them and every setting** by deleting the app.
 
 There is no server-side data about you to request, correct or delete, because
 none is kept.
