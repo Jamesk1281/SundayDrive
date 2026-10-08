@@ -104,7 +104,63 @@ final class RouteModel {
 
     /// True when the figures on screen do not describe the current setting:
     /// either a request is running, or the handle has moved since the last one.
-    var routeIsStale: Bool { isLoading || responsePref != pref }
+    /// On a menu, the setting is the detent rather than `pref`.
+    var routeIsStale: Bool {
+        if options != nil { return isLoading || shownOption != optionIndex }
+        return isLoading || responsePref != pref
+    }
+
+    // MARK: - The menu (docs/route-options.md)
+
+    /// The plan as the server sent it, when it came with a menu of
+    /// in-between routes; nil when it did not, and the dial is then the
+    /// continuous `pref` slider it always was.
+    ///
+    /// Kept apart from `response` because `response.scenic` changes with the
+    /// detent while the plan's own two routes and menu do not.
+    private(set) var plan: RouteResponse?
+
+    /// The menu, when the plan came with one.
+    var options: RouteOptions? { plan?.options }
+
+    /// The detent the handle is on. Moves live while dragging, which is what
+    /// lets the readout print each option's price as the handle crosses it:
+    /// the menu carries every price, so nothing has to be fetched to show one.
+    var optionIndex = 0
+
+    /// The option `response.scenic` is, in full.
+    private(set) var shownOption: Int?
+
+    /// The option whose full route is being fetched, drawn meanwhile from its
+    /// simplified line so the map answers the release at once.
+    private(set) var pendingOption: Int?
+
+    /// Options already fetched in full, by menu index, for this plan. The
+    /// fastest and the default came with it.
+    private var optionDetail: [Int: RouteFeature] = [:]
+
+    /// What the map draws for the scenic arm while an option is on its way.
+    var previewLine: [CLLocationCoordinate2D]? {
+        guard let i = pendingOption, let menu = options?.menu, menu.indices.contains(i)
+        else { return nil }
+        return menu[i].coordinates
+    }
+
+    /// The `pref` a drive leaves with. On a menu the fastest detent is exactly
+    /// 0 — `pref == 0` means "fastest" on the server, in `NavigationModel` and
+    /// in `switchToFastest` — and every other option is the scenic route at
+    /// full strength between its switch points, which the route carries.
+    var drivePref: Double {
+        guard options != nil, let shownOption else { return pref }
+        return shownOption == 0 ? 0 : 1
+    }
+
+    /// How one option of the menu is fetched in full, by its switch points.
+    /// A seam for the same reason `fetchRoute` is one.
+    var fetchOption: OptionFetcher = { from, to, weights, leave, rejoin in
+        try await RouteService.route(from: from, to: to, pref: 1, weights: weights,
+                                     leave: leave, rejoin: rejoin)
+    }
 
     var isLoading = false
     var errorText: String?
@@ -126,7 +182,8 @@ final class RouteModel {
     /// `LoopModel.fetchLoop` already is, so "no request reached the server"
     /// is something a test can count.
     var fetchRoute: RouteFetcher = { from, to, pref, weights, _ in
-        try await RouteService.route(from: from, to: to, pref: pref, weights: weights)
+        try await RouteService.route(from: from, to: to, pref: pref, weights: weights,
+                                     options: true)
     }
 
     init() {
@@ -294,6 +351,7 @@ final class RouteModel {
         start = nil; end = nil
         startQuery = ""; endQuery = ""
         response = nil; responsePref = nil; errorText = nil
+        forgetPlan()
     }
 
     /// Put every beauty type back to where it started, then re-route.
@@ -316,13 +374,17 @@ final class RouteModel {
     /// inaccuracy in the app, and a drive is the only place the real numbers
     /// exist; recording by default is what makes each one count instead of being
     /// a drive you have to take again. It is off for launch, so `trace` is nil.
+    ///
+    /// On a menu the drive leaves with `drivePref`, and the route's own
+    /// switch points, which `NavigationModel` reroutes by.
     func startNavigation(_ feature: RouteFeature) {
         guard let end else { return }
         let trace = DriveTrace.isEnabled
-            ? DriveTrace(origin: start, destination: end, pref: pref, weights: weights)
+            ? DriveTrace(origin: start, destination: end, pref: drivePref, weights: weights,
+                         switchPoints: feature.properties.switch)
             : nil
         let session = NavigationModel(route: feature, destination: end,
-                                      pref: pref, weights: weights, trace: trace,
+                                      pref: drivePref, weights: weights, trace: trace,
                                       voice: VoiceGuide(speaker: SystemSpeaker()))
         // Fixes go straight from CoreLocation into the drive, with no view in
         // between. A SwiftUI `onChange` would stop delivering the moment the
@@ -391,6 +453,7 @@ final class RouteModel {
         start = nil
         startQuery = ""
         response = nil
+        forgetPlan()
         // Same reasoning for the loop tab: `startLoopDrive` leaves from
         // `loops.start` without consulting the current fix, so a finished loop
         // left armed could be tapped again and replay a drive from wherever it
@@ -413,12 +476,69 @@ final class RouteModel {
             guard generation == requestGeneration else { return }   // a newer request superseded us
             response = result
             responsePref = pref
+            forgetPlan()
+            // A menu opens on its default: the most scenic option within 25%
+            // of the fastest time, which is what `scenic` already is.
+            if let options = result.options, options.menu.indices.contains(options.defaultIndex) {
+                plan = result
+                optionIndex = options.defaultIndex
+                shownOption = options.defaultIndex
+                optionDetail = [0: result.fastest, options.defaultIndex: result.scenic]
+            }
         } catch {
             guard generation == requestGeneration else { return }
             response = nil
             responsePref = nil
+            forgetPlan()
             errorText = error.localizedDescription
         }
         isLoading = false
+    }
+
+    /// Show the option the handle was let go on: at once if it is already in
+    /// hand, otherwise drawn from its simplified line while its full route is
+    /// fetched. One request per release, and none for the fastest route, the
+    /// default, or any option fetched before.
+    func chooseOption() async {
+        guard let plan, let options, options.menu.indices.contains(optionIndex),
+              let a = start, let b = end else { return }
+        let index = optionIndex
+        guard index != shownOption else { pendingOption = nil; return }
+        if let feature = optionDetail[index] {
+            show(index, feature, of: plan)
+            return
+        }
+
+        requestGeneration += 1
+        let generation = requestGeneration
+        isLoading = true
+        errorText = nil
+        pendingOption = index
+        let option = options.menu[index]
+        do {
+            let result = try await fetchOption(a, b, weights, option.leave, option.rejoin)
+            guard generation == requestGeneration else { return }
+            optionDetail[index] = result.scenic
+            show(index, result.scenic, of: plan)
+        } catch {
+            guard generation == requestGeneration else { return }
+            pendingOption = nil
+            errorText = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    private func show(_ index: Int, _ feature: RouteFeature, of plan: RouteResponse) {
+        response = RouteResponse(fastest: plan.fastest, scenic: feature,
+                                 options: plan.options)
+        shownOption = index
+        pendingOption = nil
+    }
+
+    private func forgetPlan() {
+        plan = nil
+        shownOption = nil
+        pendingOption = nil
+        optionDetail = [:]
     }
 }

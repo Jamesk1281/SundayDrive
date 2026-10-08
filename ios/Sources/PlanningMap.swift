@@ -36,8 +36,10 @@ struct PlanningMap: View {
                         .stroke(Color.slate.opacity(0.65),
                                 style: StrokeStyle(lineWidth: 3, dash: [6, 6]))
                 }
-                if let scenic = model.response?.scenic {
-                    MapPolyline(coordinates: scenic.coordinates)
+                // A menu option on its way in full is drawn from its
+                // simplified line, so the map answers the release at once.
+                if let scenic = model.previewLine ?? model.response?.scenic.coordinates {
+                    MapPolyline(coordinates: scenic)
                         .stroke(Color.amber, style: StrokeStyle(lineWidth: 6,
                                                                 lineCap: .round,
                                                                 lineJoin: .round))

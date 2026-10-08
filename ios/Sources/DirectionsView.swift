@@ -64,6 +64,9 @@ struct DirectionsView: View {
                 PrimaryButton(title: "Start driving", systemImage: "location.north.fill") {
                     model.startNavigation(response.scenic)
                 }
+                // Not while a menu option is on its way: `response.scenic` is
+                // still the one before it, and that is not what was chosen.
+                .disabled(model.pendingOption != nil)
                 .padding(.horizontal, Metric.margin)
                 .padding(.bottom, 10)
             }
@@ -164,6 +167,14 @@ struct PrefDial: View {
     let response: RouteResponse
 
     var body: some View {
+        if let menu = model.options?.menu, menu.count > 1 {
+            OptionDial(model: model, menu: menu)
+        } else {
+            continuous
+        }
+    }
+
+    private var continuous: some View {
         VStack(alignment: .leading, spacing: 2) {
             Slider(value: position, in: 0...1) { editing in
                 if !editing { Task { await model.computeRoute() } }
@@ -253,5 +264,114 @@ struct PrefDial: View {
         let cost = c.extraMinutes <= 0
             ? "no extra time" : "plus \(CountText.of(c.extraMinutes, "minute"))"
         return "\(cost), \(CountText.of(gain, "more mile")) of beautiful road"
+    }
+}
+
+// MARK: - The menu's dial
+
+/// The dial when the plan came with a menu of in-between routes
+/// (docs/route-options.md): one detent per option, evenly spaced by index so
+/// every one is reachable, the fastest at the left and the full scenic route at
+/// the right.
+///
+/// Unlike the continuous dial this prints a **price while dragging**: every
+/// option's minutes and beautiful miles came with the plan, so the figure under
+/// the handle is true at every moment of the drag rather than the stale price
+/// of a setting just left. The map is redrawn on release, from the option's
+/// simplified line until its full route arrives.
+struct OptionDial: View {
+    @Bindable var model: RouteModel
+    let menu: [RouteOption]
+
+    var body: some View {
+        let option = menu[min(max(model.optionIndex, 0), menu.count - 1)]
+        VStack(alignment: .leading, spacing: 2) {
+            Slider(value: detent, in: 0...Double(menu.count - 1), step: 1) { editing in
+                if !editing { Task { await model.chooseOption() } }
+            }
+            .tint(Color.amber)
+            .accessibilityLabel("Trade travel time for scenery")
+            .accessibilityValue(OptionCaption.spoken(option, fastest: menu[0]))
+
+            HStack {
+                Text("Fastest").sectionLabel(.slate)
+                Spacer()
+                Text("Scenic").sectionLabel(.amberText)
+            }
+
+            price(option)
+                .font(.figure(26))
+                .contentTransition(.numericText())
+                .padding(.top, 9)
+            if let caption = OptionCaption.route(option) {
+                Text(caption)
+                    .font(.system(size: 13.5))
+                    .foregroundStyle(Color.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var detent: Binding<Double> {
+        Binding(get: { Double(model.optionIndex) },
+                set: { model.optionIndex = min(max(Int($0.rounded()), 0), menu.count - 1) })
+    }
+
+    private func price(_ option: RouteOption) -> Text {
+        let minutes = Int(option.extra_minutes.rounded())
+        let gain = OptionCaption.gainMiles(option, fastest: menu[0])
+        if minutes <= 0 && gain <= 0 {
+            return Text("Fastest route").foregroundColor(.slate)
+        }
+        return Text(minutes <= 0 ? "No extra time" : "+\(minutes) min").foregroundColor(.slate)
+            + Text(" · ").foregroundColor(.ink3)
+            + Text("+\(gain) mi of beautiful road").foregroundColor(.amberText)
+    }
+}
+
+/// The words for one menu option. Pure, so the wording has tests.
+enum OptionCaption {
+    /// Beautiful miles over the fastest route, in the whole miles the ledger
+    /// prints, so the dial and the ledger cannot disagree by a rounding.
+    static func gainMiles(_ option: RouteOption, fastest: RouteOption) -> Int {
+        option.beautiful_km.wholeMilesFromKm - fastest.beautiful_km.wholeMilesFromKm
+    }
+
+    /// Where the route leaves and rejoins the scenic road, and the roads it
+    /// takes between; nil for the fastest route, which does neither.
+    static func route(_ option: RouteOption) -> String? {
+        guard option.extra_minutes > 0 else { return nil }
+        let via = option.roads.isEmpty ? "" : " on " + list(option.roads)
+        switch (option.leave, option.rejoin) {
+        case (nil, nil):
+            return "Scenic all the way\(via)."
+        case (nil, let rejoin?):
+            return "Scenic from the start\(via), then fast roads from \(name(rejoin))."
+        case (let leave?, nil):
+            return "Fast roads to \(name(leave)), then scenic\(via) to the end."
+        case (let leave?, let rejoin?):
+            return "Fast roads to \(name(leave)), scenic\(via), "
+                + "back on fast roads after \(name(rejoin))."
+        }
+    }
+
+    static func spoken(_ option: RouteOption, fastest: RouteOption) -> String {
+        let minutes = Int(option.extra_minutes.rounded())
+        let gain = gainMiles(option, fastest: fastest)
+        if minutes <= 0 && gain <= 0 { return "Fastest route" }
+        let cost = minutes <= 0 ? "no extra time" : "plus \(CountText.of(minutes, "minute"))"
+        return "\(cost), \(CountText.of(gain, "more mile")) of beautiful road"
+    }
+
+    private static func name(_ point: SwitchPoint) -> String {
+        point.road.isEmpty ? "the scenic road" : point.road
+    }
+
+    private static func list(_ roads: [String]) -> String {
+        switch roads.count {
+        case 0: return ""
+        case 1: return roads[0]
+        default: return roads.dropLast().joined(separator: ", ") + " and " + roads.last!
+        }
     }
 }

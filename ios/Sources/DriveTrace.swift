@@ -122,8 +122,13 @@ final class DriveTrace {
     /// produced this drive can be replayed against a rebuilt graph months later
     /// — which is the difference between a trace you can re-examine and one you
     /// can only read the way you first thought to read it.
+    ///
+    /// `switchPoints` are a route menu option's (docs/route-options.md): with
+    /// them, `pref` 1 is that option and not the full scenic route, so they
+    /// go in the header beside it, as `[lat, lon, heading]` or null.
     init?(origin: CLLocationCoordinate2D?, destination: CLLocationCoordinate2D,
           pref: Double, weights: [String: Double],
+          switchPoints: SwitchPoints? = nil,
           directory: URL? = nil, clock: TimeInterval = DriveTrace.now()) {
         guard let folder = directory ?? Self.defaultDirectory() else { return nil }
         do {
@@ -147,6 +152,11 @@ final class DriveTrace {
         ]
         if let origin {
             header["from"] = [origin.latitude, origin.longitude]
+        }
+        if let switchPoints {
+            for (key, point) in [("leave", switchPoints.leave), ("rejoin", switchPoints.rejoin)] {
+                header[key] = point.map { [$0.lat, $0.lon, $0.heading] } ?? NSNull()
+            }
         }
         append(header, flush: true)
     }

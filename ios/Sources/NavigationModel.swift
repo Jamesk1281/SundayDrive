@@ -11,6 +11,20 @@ typealias RouteFetcher = (CLLocationCoordinate2D, CLLocationCoordinate2D,
                           Double, [String: Double],
                           CLLocationDirection?) async throws -> RouteResponse
 
+/// How one option of a route menu is fetched in full by its switch points:
+/// `(from, to, weights, leave, rejoin)`. docs/route-options.md.
+typealias OptionFetcher = (CLLocationCoordinate2D, CLLocationCoordinate2D,
+                           [String: Double], SwitchPoint?, SwitchPoint?)
+    async throws -> RouteResponse
+
+/// How a replacement route is fetched for a drive on a *spliced* plan, by
+/// legs: `(from, to, weights, heading, leave, rejoin, declinedUTurn)`. Its own
+/// seam, like `LoopResumeFetcher`, so no existing stub has to grow arguments.
+typealias LegsFetcher = (CLLocationCoordinate2D, CLLocationCoordinate2D,
+                         [String: Double], CLLocationDirection?,
+                         SwitchPoint?, SwitchPoint?, Bool)
+    async throws -> RouteResponse
+
 /// How a replacement route is fetched for a drive that is a *loop* and has not
 /// yet reached its far point: `(from, via, to, pref, weights, heading)`.
 ///
@@ -288,6 +302,13 @@ final class NavigationModel {
                                      declinedUTurn: true)
     }
 
+    /// How a spliced plan's replacement routes are fetched, by legs.
+    var fetchLegs: LegsFetcher = { from, to, weights, heading, leave, rejoin, declined in
+        try await RouteService.route(from: from, to: to, pref: 1, weights: weights,
+                                     heading: heading, declinedUTurn: declined,
+                                     leave: leave, rejoin: rejoin)
+    }
+
     /// How a loop's replacement routes are fetched, pinned through its far point.
     var fetchLoopResume: LoopResumeFetcher = { from, via, to, pref, weights, heading in
         try await RouteService.route(from: from, to: to, via: via, pref: pref,
@@ -341,6 +362,87 @@ final class NavigationModel {
     /// which "fastest" means *home*, so `NavView` words the escape hatch that
     /// way. See `switchToFastest`.
     var isLoopBeforeFarPoint: Bool { loopWaypoint != nil }
+
+    // MARK: - Spliced plans
+
+    /// The switch points of the plan, when it is one of a route menu's
+    /// in-between options: fast roads to `leave`, the scenic road to `rejoin`,
+    /// fast roads home (docs/route-options.md). Nil on every other drive.
+    ///
+    /// Fixed for the drive, like the destination. What changes is which of
+    /// them are still ahead — `passedLeave` and `passedRejoin` — and that is
+    /// what a reroute asks by: the server cannot know where on the plan the
+    /// driver is, and a reroute that asked by `pref` alone threw the plan away
+    /// at the first missed turn.
+    private(set) var plan: SwitchPoints?
+
+    /// Where `plan`'s points sit along the current line, re-measured whenever
+    /// the line is replaced, because `travelled` restarts on a new line. Nil
+    /// for a point already passed, or one the line does not go through.
+    private var leaveAlong: Double?
+    private var rejoinAlong: Double?
+
+    /// Latched once the driver is on the scenic stretch, and once they are
+    /// past it. A plan with no `leave` is scenic from the start, so it opens
+    /// with the first latched.
+    private(set) var passedLeave = false
+    private(set) var passedRejoin = false
+
+    /// How far a switch point may be from a line and still count as on it.
+    /// The server puts it on the road the line is drawn from; this only has to
+    /// absorb the line being a different rounding of the same geometry.
+    private static let switchOnLineMeters: Double = 30
+
+    /// Measure the plan's points that are still ahead along the current line.
+    /// A reply that left a point out was asked without it, or has the driver
+    /// past it already: either way it is behind them.
+    private func measureSwitchPoints(on feature: RouteFeature, adopting: Bool) {
+        guard let plan else { return }
+        let carried = feature.properties.switch
+        func along(_ point: SwitchPoint?) -> Double? {
+            guard let point else { return nil }
+            let p = progress(of: point.coordinate, along: coordinates)
+            return p.offRoute <= Self.switchOnLineMeters ? p.travelled : nil
+        }
+        if !passedLeave {
+            if adopting, carried != nil, carried?.leave == nil { passedLeave = true }
+            leaveAlong = passedLeave ? nil : along(plan.leave)
+        }
+        if plan.rejoin != nil, !passedRejoin {
+            if adopting, carried != nil, carried?.rejoin == nil { passedRejoin = true }
+            rejoinAlong = passedRejoin ? nil : along(plan.rejoin)
+        }
+    }
+
+    /// Notice a switch point going by: having driven the line to it.
+    private func trackSwitchPoints() {
+        guard plan != nil, hasJoinedRoute else { return }
+        if !passedLeave, let at = leaveAlong, travelled >= at {
+            passedLeave = true
+            leaveAlong = nil
+        }
+        if passedLeave, !passedRejoin, let at = rejoinAlong, travelled >= at {
+            passedRejoin = true
+            rejoinAlong = nil
+        }
+    }
+
+    /// What a reroute of a spliced plan asks for, by where the driver is:
+    /// both points before the scenic stretch, the rejoin point alone on it,
+    /// and plain fastest after it (`homeStretch`). Nil when the drive is not
+    /// a spliced plan, or the driver has asked for the fastest route.
+    private var legs: (leave: SwitchPoint?, rejoin: SwitchPoint?)? {
+        guard let plan, pref != 0, !homeStretch else { return nil }
+        let leave = passedLeave ? nil : plan.leave
+        // Scenic from here to the destination is a plain pref-1 route.
+        if leave == nil && plan.rejoin == nil { return nil }
+        return (leave, plan.rejoin)
+    }
+
+    /// Past the rejoin point the plan is fast roads home, and a reroute asks
+    /// for exactly that, without touching `pref` or `followingFastest`: the
+    /// driver did not ask to give anything up.
+    private var homeStretch: Bool { plan?.rejoin != nil && passedRejoin }
 
     /// Notice the far point going by.
     ///
@@ -989,6 +1091,11 @@ final class NavigationModel {
         // `coordinates` back off `self`.
         self.stepRemaining = Self.remainingAtEachStep(of: steps, along: coordinates)
         self.lineLengths = cumulativeLengths(of: coordinates)
+        if let points = route.properties.switch {
+            plan = points
+            passedLeave = points.leave == nil
+            measureSwitchPoints(on: route, adopting: false)
+        }
         trace?.route(route, reason: "start")
         if trace != nil { startWatchdog() }
         // Under the controls, with the recording state and the reply to a tap —
@@ -1337,6 +1444,7 @@ final class NavigationModel {
             // `runningBackwards` measures against it; `adopt` clears it.
             if matchAtAdoption == nil { matchAtAdoption = here.travelled }
         }
+        trackSwitchPoints()
 
         // Arrival is having driven the line, not being near a particular point.
         // The searched pin can sit off-road (a town green, a mall's rooftop)
@@ -1785,7 +1893,9 @@ final class NavigationModel {
                          reason: String = "offroute") async -> RerouteOutcome {
         rerouteGeneration += 1
         let generation = rerouteGeneration
-        let wantFastest = pref == 0
+        // Past a spliced plan's scenic stretch, the rest of it is the fastest
+        // route home, and is asked for as one.
+        let wantFastest = pref == 0 || homeStretch
         isRerouting = true
         lastRerouteAttempt = now()
         lastRerouteOrigin = origin.coordinate
@@ -1801,7 +1911,7 @@ final class NavigationModel {
         // Both held in locals because the trace records them beside the reply:
         // what was asked is what makes the answer checkable afterwards.
         let askedHeading = Self.usableHeading(origin)
-        let askedPref = pref
+        let askedPref = wantFastest ? 0 : pref
         // Leaving a route that turned the driver around, without having taken
         // the turn, is declining it — whatever the reason for leaving.
         if route.properties.turnaround_m != nil, !followedCurrentRoute {
@@ -1814,12 +1924,18 @@ final class NavigationModel {
         // anything else asks for the short way home. See `loopWaypoint`.
         let via = loopWaypoint
         let askedDeclined = via == nil && declinedUTurn
+        // A spliced plan asks by legs (docs/route-options.md, "Rerouting").
+        let askedLegs = via == nil ? legs : nil
         var reply: RouteResponse?
         var thrown: Error?
         do {
             if let via {
                 reply = try await fetchLoopResume(origin.coordinate, via, destination,
                                                   askedPref, weights, askedHeading)
+            } else if let askedLegs {
+                reply = try await fetchLegs(origin.coordinate, destination, weights,
+                                            askedHeading, askedLegs.leave,
+                                            askedLegs.rejoin, askedDeclined)
             } else if askedDeclined {
                 reply = try await fetchRouteKeepingAhead(origin.coordinate, destination,
                                                          askedPref, weights, askedHeading)
@@ -2044,6 +2160,8 @@ final class NavigationModel {
                               progress(of: loop.coordinate,
                                        along: coordinates).travelled)
         }
+        // And so do the plan's switch points still ahead.
+        measureSwitchPoints(on: feature, adopting: true)
         stepRemaining = Self.remainingAtEachStep(of: steps, along: coordinates)
         currentStep = 0
         travelled = 0

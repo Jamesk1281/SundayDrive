@@ -7,9 +7,80 @@ import Foundation
 // the response straight into these structs.
 
 /// The top-level response: a fastest route and a scenic route for the same trip.
+///
+/// `options` is the menu of in-between routes the dial turns into detents
+/// (docs/route-options.md). Optional and nil far more often than not: the app
+/// asks for it only when planning, and the server sends it only when its flag
+/// is on and nothing else is computing. Nil means the dial works as it always
+/// did, which is also all an older backend can say.
 struct RouteResponse: Decodable {
     let fastest: RouteFeature
     let scenic: RouteFeature
+    var options: RouteOptions? = nil
+}
+
+/// The menu: the fastest route first, the full scenic route last, and the
+/// in-between routes the slider could never reach, each adding scenery for
+/// time. `scenic` in the same response is `menu[defaultIndex]` in full.
+struct RouteOptions: Decodable, Equatable {
+    let defaultIndex: Int
+    let menu: [RouteOption]
+
+    enum CodingKeys: String, CodingKey {
+        case defaultIndex = "default"
+        case menu
+    }
+}
+
+/// One detent: its price, what it buys, where it leaves and rejoins the fast
+/// roads, and a simplified line to draw. The full route, steps and all, is
+/// fetched by its switch points when the driver settles on it.
+struct RouteOption: Decodable, Equatable {
+    let extra_minutes: Double
+    let minutes: Double
+    let km: Double
+    let beautiful_km: Double
+    /// Nil when the option is scenic from the start.
+    let leave: SwitchPoint?
+    /// Nil when the option is scenic all the way to the destination.
+    let rejoin: SwitchPoint?
+    /// The few roads carrying most of the scenic stretch, in the order driven.
+    let roads: [String]
+    /// `[lon, lat]` pairs, simplified to about 20 m.
+    let line: [[Double]]
+
+    var coordinates: [CLLocationCoordinate2D] {
+        line.map { CLLocationCoordinate2D(latitude: $0[1], longitude: $0[0]) }
+    }
+}
+
+/// Where a spliced route leaves or rejoins the fast roads: a point on the
+/// scenic road just past the junction, and the way the route drives along it.
+/// Never a node id — the server rebuilds the route from these anywhere.
+struct SwitchPoint: Decodable, Equatable {
+    let lat: Double
+    let lon: Double
+    let heading: Double
+    /// The road's name or number, for the caption; empty when it has neither.
+    let road: String
+
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
+
+    /// The `leave` / `rejoin` request value. Six decimals is ~0.1 m, which is
+    /// what the server wrote and what it needs to find the same road.
+    var parameter: String {
+        String(format: "%.6f,%.6f,%.1f", lat, lon, heading)
+    }
+}
+
+/// A spliced route's two switch points, as its properties carry them. Either
+/// may be nil: no `leave` is scenic from where the route starts, no `rejoin`
+/// is scenic to the destination.
+struct SwitchPoints: Decodable, Equatable {
+    let leave: SwitchPoint?
+    let rejoin: SwitchPoint?
 }
 
 /// One route: its shape on the map plus its summary stats.
@@ -189,6 +260,11 @@ struct RouteProps: Decodable {
     /// same reason as `beautiful_km`: a backend that predates it leaves it
     /// off, and nil is then "not a U-turn", which is today's behaviour.
     let turnaround_m: Double?
+    /// The switch points of a spliced route — one of the menu's in-between
+    /// options, or its reroute — and nil on every other route. What lets
+    /// `NavigationModel` reroute the plan by legs instead of throwing it away
+    /// at the first missed turn. docs/route-options.md.
+    var `switch`: SwitchPoints? = nil
 
     /// The scenery features in display order, dropping any the route barely
     /// touches, so the breakdown only shows what's relevant.

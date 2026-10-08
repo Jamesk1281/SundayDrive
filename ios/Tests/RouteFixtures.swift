@@ -224,6 +224,7 @@ enum Fixture {
                         meanScore: Double = 6.0,
                         beautifulKm: Double? = nil,
                         turnaroundM: Double? = nil,
+                        switchPoints: SwitchPoints? = nil,
                         sceneryKm: [String: Double] = ["water": 3.0, "coast": 0.0,
                                                        "forest/park": 2.0]) -> [String: Any] {
         var properties: [String: Any] = [
@@ -261,11 +262,47 @@ enum Fixture {
             properties["turns_around"] = true
             properties["turnaround_m"] = turnaroundM
         }
+        if let switchPoints {
+            properties["switch"] = ["leave": json(switchPoints.leave),
+                                    "rejoin": json(switchPoints.rejoin)]
+        }
         return [
             "type": "Feature",
             "geometry": ["type": "LineString", "coordinates": coordinates],
             "properties": properties,
         ]
+    }
+
+    /// A switch point as the server writes it, or JSON null.
+    static func json(_ point: SwitchPoint?) -> Any {
+        guard let point else { return NSNull() }
+        return ["lat": point.lat, "lon": point.lon, "heading": point.heading,
+                "road": point.road]
+    }
+
+    /// A switch point `meters` along the straight fixture route, heading
+    /// north along it, as the server places them: on the road, not at a
+    /// junction.
+    static func switchPoint(_ meters: Double, road: String = "VT 100") -> SwitchPoint {
+        let c = north(meters)
+        return SwitchPoint(lat: c.latitude, lon: c.longitude, heading: 0, road: road)
+    }
+
+    /// `straightRoute`, as one of a route menu's spliced options: fast roads
+    /// to `leave` metres, scenic to `rejoin` metres, fast roads after. Nil for
+    /// either leaves that end of the plan scenic.
+    static func splicedRoute(start: Double = 0, leave: Double?, rejoin: Double?,
+                             steps: [(Double, String)] = [(0, "Head north on Test Road"),
+                                                          (5000, "Arrive at your destination")])
+        -> RouteFeature {
+        let coordinates = (0...20).map { i -> [Double] in
+            let c = north(start + Double(i) * 250)
+            return [c.longitude, c.latitude]
+        }
+        return decode(feature(coordinates: coordinates, km: 5, minutes: 10,
+                              steps: steps.map { (north(start + $0.0), $0.1, nil) },
+                              switchPoints: SwitchPoints(leave: leave.map { switchPoint($0) },
+                                                         rejoin: rejoin.map { switchPoint($0) })))
     }
 
     static func decode(_ object: [String: Any]) -> RouteFeature {
@@ -283,7 +320,8 @@ enum Fixture {
                 steps: feature.properties.steps.map {
                     ($0.coordinate, $0.instruction, $0.name)
                 },
-                turnaroundM: feature.properties.turnaround_m)
+                turnaroundM: feature.properties.turnaround_m,
+                switchPoints: feature.properties.switch)
         }
         let data = try! JSONSerialization.data(
             withJSONObject: ["fastest": encode(fastest), "scenic": encode(scenic)])

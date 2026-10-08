@@ -138,6 +138,14 @@ enum RouteService {
     ///     told to turn around at most once per departure. It needs `heading`
     ///     to know which way "ahead" is, and is ignored with `via`.
     ///     docs/reroute-uturn.md.
+    ///   - options: ask for the menu of in-between routes the dial turns into
+    ///     detents. Planning only: never a reroute, which a driver is waiting
+    ///     on. The server may still leave it out (its flag is off, or it is
+    ///     busy), and the reply is then today's. docs/route-options.md.
+    ///   - leave, rejoin: one menu option's switch points, which make the
+    ///     reply's `scenic` that option in full: fastest to `leave`, scenic to
+    ///     `rejoin`, fastest home. How an option is fetched when the driver
+    ///     settles on it, and how a drive on one is rerouted by legs.
     static func route(
         from start: CLLocationCoordinate2D,
         to end: CLLocationCoordinate2D,
@@ -145,11 +153,15 @@ enum RouteService {
         pref: Double,
         weights: [String: Double] = [:],
         heading: CLLocationDirection? = nil,
-        declinedUTurn: Bool = false
+        declinedUTurn: Bool = false,
+        options: Bool = false,
+        leave: SwitchPoint? = nil,
+        rejoin: SwitchPoint? = nil
     ) async throws -> RouteResponse {
         try await send(routeRequest(from: start, to: end, via: via, pref: pref,
                                     weights: weights, heading: heading,
-                                    declinedUTurn: declinedUTurn))
+                                    declinedUTurn: declinedUTurn, options: options,
+                                    leave: leave, rejoin: rejoin))
     }
 
     /// The request `route(...)` sends, built without sending it so the one
@@ -163,21 +175,30 @@ enum RouteService {
         weights: [String: Double] = [:],
         heading: CLLocationDirection? = nil,
         declinedUTurn: Bool = false,
+        options: Bool = false,
+        leave: SwitchPoint? = nil,
+        rejoin: SwitchPoint? = nil,
         base: String = baseURL
     ) -> URLRequest {
         // The body: from=lat,lon&to=lat,lon&pref=0.50&w_coast=...
-        formRequest("\(base)/api/route", [
+        var items = [
             URLQueryItem(name: "from", value: "\(start.latitude),\(start.longitude)"),
             URLQueryItem(name: "to", value: "\(end.latitude),\(end.longitude)"),
             URLQueryItem(name: "pref", value: String(format: "%.2f", pref)),
         ] + weights.map { type, weight in
             URLQueryItem(name: "w_\(type)", value: String(format: "%.2f", weight))
-        } + (heading.map {
-            [URLQueryItem(name: "heading", value: headingParameter($0))]
-        } ?? []) + (via.map {
-            [URLQueryItem(name: "via", value: "\($0.latitude),\($0.longitude)")]
-        } ?? []) + (declinedUTurn
-            ? [URLQueryItem(name: "declined_uturn", value: "1")] : []))
+        }
+        if let heading {
+            items.append(URLQueryItem(name: "heading", value: headingParameter(heading)))
+        }
+        if let via {
+            items.append(URLQueryItem(name: "via", value: "\(via.latitude),\(via.longitude)"))
+        }
+        if declinedUTurn { items.append(URLQueryItem(name: "declined_uturn", value: "1")) }
+        if options { items.append(URLQueryItem(name: "options", value: "1")) }
+        if let leave { items.append(URLQueryItem(name: "leave", value: leave.parameter)) }
+        if let rejoin { items.append(URLQueryItem(name: "rejoin", value: rejoin.parameter)) }
+        return formRequest("\(base)/api/route", items)
     }
 
     /// Request one scenic loop from a start point, of about `km`.
