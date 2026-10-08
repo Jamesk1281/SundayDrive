@@ -278,6 +278,9 @@ struct NavView: View {
         if nav.wrongWay {
             // Until the replacement lands, which then gives its own first
             // instruction. With the failure beside it when the reroute failed.
+            // Not past 30 s or 300 m of it: then the rows below take over,
+            // measured to the route ahead of the turn-back point, while the
+            // reroute keeps trying (docs/mid-drive-recovery.md, the time-out).
             let over: String
             switch nav.lostConnection {
             case nil: over = "Wrong way"

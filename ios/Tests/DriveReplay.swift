@@ -213,15 +213,32 @@ enum DriveReplay {
         /// When each utterance was heard, in seconds from the first fix.
         var saidAt: [Double] = []
         /// When "Turn around when possible." was said — the wrong-way
-        /// detector firing — in seconds from the first fix. Read off the voice
-        /// rather than `wrongWay`, which a reply landing within the same fix
-        /// clears before anything outside the model can see it.
-        var wrongWayAt: [Double] { zip(said, saidAt).filter { $0.0 == wrongWayLine }.map(\.1) }
+        /// detector firing — in seconds from the first fix, in either of its
+        /// two wordings. Read off the voice rather than `wrongWay`, which a
+        /// reply landing within the same fix clears before anything outside
+        /// the model can see it.
+        var wrongWayAt: [Double] {
+            zip(said, saidAt).filter { DriveReplay.isWrongWayLine($0.0) }.map(\.1)
+        }
         /// Requests the tape failed — see `Tape.Mode.asRecorded`.
         var failedRequests = 0
+        /// When the wrong-way banner timed out and gave way to the off-route
+        /// one, in seconds from the first fix (docs/mid-drive-recovery.md,
+        /// the time-out).
+        var wrongWayTimeoutsAt: [Double] = []
+        /// The banner each time it changed: seconds from the first fix, then
+        /// what it said. Rendered by the real `NavView.bannerText`.
+        var banners: [(at: Double, banner: NavView.BannerText)] = []
     }
 
     static let wrongWayLine = "Turn around when possible."
+
+    /// The detector's line, plain or with no network path on the detecting
+    /// fix, when it is "No connection. Turn around when possible."
+    /// (docs/mid-drive-recovery.md, the time-out). Matching the plain line
+    /// exactly would lose a detection in a dead zone and leave every count
+    /// that asserts on it passing by accident.
+    static func isWrongWayLine(_ text: String) -> Bool { text.hasSuffix(wrongWayLine) }
 
     /// How the tape answers a reroute request.
     enum Mode {
@@ -306,6 +323,8 @@ enum DriveReplay {
         var heard = 0
         var deepestStep = 0
         var describable = 0
+        var timedOut = false
+        let location = LocationManager()
 
         for fix in drive.fixes {
             outcome.fixesFed += 1
@@ -334,6 +353,12 @@ enum DriveReplay {
 
             if model.stepsDescribeWhereWeAre { describable += 1 }
 
+            let at = fix.timestamp.timeIntervalSince(drive.fixes[0].timestamp)
+            if model.wrongWayTimedOut, !timedOut { outcome.wrongWayTimeoutsAt.append(at) }
+            timedOut = model.wrongWayTimedOut
+            let banner = NavView.bannerText(nav: model, location: location)
+            if outcome.banners.last?.banner != banner { outcome.banners.append((at, banner)) }
+
             if speaker.said.count != heard {
                 // Anchored to the maneuver being approached, which cannot have
                 // moved since: the utterance was produced inside this same
@@ -348,7 +373,6 @@ enum DriveReplay {
                     }
                     saidSinceRouteChange.insert(key)
                 }
-                let at = fix.timestamp.timeIntervalSince(drive.fixes[0].timestamp)
                 outcome.saidAt += Array(repeating: at, count: speaker.said.count - heard)
                 heard = speaker.said.count
             }

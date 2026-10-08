@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 /// The whole screen. Two modes that cross-fade into each other:
@@ -31,6 +32,10 @@ struct ContentView: View {
     @State private var showingOutsideWarning = false
     /// Whether this launch has checked, so it checks once and warns once.
     @State private var checkedWhereabouts = false
+
+    /// The system's five-star sheet. Asked for only from the planning screen,
+    /// after a drive that arrived; `RatingPrompt` decides whether.
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         ZStack {
@@ -70,6 +75,33 @@ struct ContentView: View {
                 try? await Task.sleep(for: .milliseconds(600))
                 await checkWhereabouts(askingPermission: true)
             }
+        }
+        // Back on the planning screen after a drive: ask for a rating if the
+        // arrival card's Done made one pending. Never on the arrival card or
+        // the driving screen, and not as the direct answer to a tap, so it
+        // waits for the cross-fade and a moment more. `docs/rating-prompt.md`.
+        .onChange(of: model.nav == nil) { _, planning in
+            guard planning, RatingPrompt.shared.isPending else { return }
+            Task { await askForRating() }
+        }
+        #if DEBUG
+        // `-ratingPromptDemo`: two counted drives and a pending ask, so a Debug
+        // build shows the sheet over the planning screen without driving for
+        // twenty minutes. Debug only; the screenshot in docs/rating-prompt.md.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-ratingPromptDemo") else { return }
+            RatingPrompt.shared.noteArrival(elapsedMinutes: RatingPrompt.minimumMinutes)
+            RatingPrompt.shared.noteArrival(elapsedMinutes: RatingPrompt.minimumMinutes)
+            await askForRating()
+        }
+        #endif
+    }
+
+    private func askForRating() async {
+        try? await Task.sleep(for: .seconds(1))
+        guard model.nav == nil else { return }
+        RatingPrompt.shared.planningAppeared(version: RatingPrompt.appVersion) {
+            requestReview()
         }
     }
 

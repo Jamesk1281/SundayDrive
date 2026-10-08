@@ -55,8 +55,14 @@ struct ArrivalView: View {
                 }
             }
 
-            PrimaryButton(title: "Done", action: onDone)
-                .padding(.top, nav.canRecordMarks ? 12 : 18)
+            // Done is the one way out of a drive that arrived, so it is where a
+            // drive counts towards the rating prompt. The ask itself waits for
+            // the planning screen (`ContentView`; `docs/rating-prompt.md`).
+            PrimaryButton(title: "Done") {
+                RatingPrompt.shared.noteArrival(elapsedMinutes: nav.elapsedMinutes)
+                onDone()
+            }
+            .padding(.top, nav.canRecordMarks ? 12 : 18)
         }
         .padding(20)
         .background(Color.card, in: RoundedRectangle(cornerRadius: 22))
