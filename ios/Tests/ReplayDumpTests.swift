@@ -31,6 +31,7 @@ final class ReplayDumpTests: XCTestCase {
                 "stalledAfter": o.stalledAfter ?? -1,
                 "replies": o.repliesGiven, "same": o.sameLineReplies, "failed": o.failedRequests,
                 "requestsAt": o.requestsAt, "wrongWayAt": o.wrongWayAt,
+                "wrongWayTimeoutsAt": o.wrongWayTimeoutsAt,
                 "describable": o.describableFixes,
                 "repeats": o.repeatsWithoutARouteChange.count, "said": o.said, "saidAt": o.saidAt,
             ]

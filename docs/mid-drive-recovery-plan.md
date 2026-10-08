@@ -1,7 +1,7 @@
 # Mid-drive recovery: lost server, lost signal, wrong way, offline rerouting
 
 **Status: a plan, partly decided and not yet built.** D1–D4 were answered on
-2026-10-07 (§8.3); D5 and the new D9 are open. The build is out as a separate
+2026-10-07 (§8.3); D5 is open. D9 was decided (a) on 2026-10-08. The build is out as a separate
 branch, whose record will be `docs/mid-drive-recovery.md` (not on `main` at
 `7ce5ef4`). Written 2026-10-05 against `main` at `191e15c`; **revised
 2026-10-07 at `7ce5ef4` with the drives of 2026-10-06**
@@ -1223,7 +1223,7 @@ and 6, with 3b and 7 added here and item 5 left out.
 | 1 | classify a failed reroute (`.server` against the rest); `connectivity`; the banner rows 2–6 and 10 of §2; one spoken line per episode | `NavigationModel.reroute` (`:1378-1398`), `NavView.bannerText` (`:235-276`), `VoiceGuide` | 1.5 days |
 | 2 | failures get their own counter; retry when the path returns, else 15 s / 30 s / 60 s; a `Connectivity` seam the tests can drive, backed by `NWPathMonitor` | `NavigationModel` (`:381-397`, `:1034-1043`), a new `Connectivity.swift` | 1 day |
 | 3 | the wrong-way detector (§4.2) and its reroute; banner rows 1–2. The reroute goes through the same request path as any other, so `declined_uturn` rides on it when `declinedUTurn` is set (§4.6, point 3) | `NavigationModel`, `Geo.swift` (`passes`) | 1.5–2 days |
-| 3b | the wrong-way state gives way to the off-route state after 30 s or 300 m of continued reversal (§4.6, point 1); and when the wrong-way request fails, its failure line *replaces* "Turn around when possible" rather than following it on the same fix (§4.3) | `NavigationModel`, `VoiceGuide` | 0.5 day |
+| 3b | the wrong-way state gives way to the off-route state after 30 s or 300 m of continued reversal (§4.6, point 1); and when the wrong-way request fails, its failure line *replaces* "Turn around when possible" rather than following it on the same fix (§4.3). **Built 2026-10-08**, recorded in `docs/mid-drive-recovery.md` ("The wrong-way time-out") | `NavigationModel`, `VoiceGuide` | 0.5 day |
 | 4 | the loop far-point cap (§4.4) | `Geo.progress` gains `notAfter`; `update` and `reseatIfPinned` pass it | 0.5 day |
 | 5 | GPS lost: the tick on every drive, and row 8 | `NavigationModel` (`:614`, `:716-724`), `NavView` | 0.5 day |
 | 6 | tests, personas and the replay diff below | `ios/Tests` | 1–1.5 days |
@@ -1324,7 +1324,7 @@ have, so cut each into a fixture rather than trusting the replay alone:
 | **D6** | After launch: T1, and with it ODbL data on phones | build it if §7 shows real dead zones on scenic routes; or not | **Build it, after T3a.** §7 shows the dead zones are real, and §1.5 is one met on a real drive. The first version estimated how often as a product of two rates, taken as independent: departures per 100 km (§7.2) times the share of km with no LTE from any carrier (§7.1). With August's 11.7 per 100 km that was a departure with no signal once every 200 km of scenic driving and once every 60 km of loops, called an upper bound. October's rural rate is 3.2 per 100 km, which gives once every 760 km and every 220 km. But the October drives met one in 757 km, so the product is not an upper bound after all. The likeliest reason is that the two are not independent: the roads where routes go wrong (unmaintained, unpaved, mapped long ago) are plausibly the roads with no signal. Read the rate as unknown, with one event in 1,065 recorded km. §1.5 also adds a requirement: an offline search must close the stretch the driver turned back from (§4.6, point 4). It takes on share-alike (§9), so settle that first, with a lawyer's look at the EULA carve-out |
 | **D7** | After launch: Apple's directions as the fallback when our server is down | yes; no | yes, if D8 is not enough: it is 2–3 days for the outage most likely to happen |
 | **D8** | Not this plan's, but it decides how often §8.1 is seen | renew `jameskouvlis.com`, which expires 2026-10-28 | renew it before submission. An expired domain is a total outage mid-drive for every user, which no tier here fully covers |
-| **D9** | New, 2026-10-07. What the wrong-way state says (§4.6, point 2) | (a) **Wrong way · Turn around when possible**, spoken once; (b) **Wrong way · Your route is behind you**, a fact rather than an instruction, spoken once as "Your route is behind you." | **(a)**, with the 30 s / 300 m time-out of item 3b. Both real reversals were deliberate, but the detector exists for the mistaken ones, and two drives are not enough to give up the words that help them. (b) if the owner's own test drives keep producing deliberate reversals |
+| **D9** | New, 2026-10-07. What the wrong-way state says (§4.6, point 2) | (a) **Wrong way · Turn around when possible**, spoken once; (b) **Wrong way · Your route is behind you**, a fact rather than an instruction, spoken once as "Your route is behind you." | **(a)**, with the 30 s / 300 m time-out of item 3b. Both real reversals were deliberate, but the detector exists for the mistaken ones, and two drives are not enough to give up the words that help them. (b) if the owner's own test drives keep producing deliberate reversals. **Decided 2026-10-08: (a)** |
 
 ---
 

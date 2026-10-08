@@ -132,8 +132,15 @@ final class MidDriveRecoveryTests: XCTestCase {
         speaker.said.filter { $0 == "No connection. Head back to your route." }.count
     }
 
+    /// The plain wrong-way line, exactly.
     private var turnAroundSaid: Int {
         speaker.said.filter { $0 == "Turn around when possible." }.count
+    }
+
+    /// Its failure version, said instead of it when the detecting fix has no
+    /// network path (docs/mid-drive-recovery.md, the time-out).
+    private var noConnectionTurnAroundSaid: Int {
+        speaker.said.filter { $0 == "No connection. Turn around when possible." }.count
     }
 
     // MARK: - A failed reroute, classified (plan, section 2)
@@ -477,6 +484,10 @@ final class MidDriveRecoveryTests: XCTestCase {
     }
 
     func test_the_wrong_way_banner_and_its_failures() async {
+        // Changed with the time-out (docs/mid-drive-recovery.md): this used to
+        // drive 495 m further back and find the wrong-way banner still up, and
+        // with no path only the plain line said. Now the banner holds only to
+        // 300 m, and with no path the one line said is the failure version.
         for (hasPath, over) in [(true, "Wrong way · No connection"), (false, "Wrong way · No signal")] {
             path = hasPath
             let backend = Backend()
@@ -486,12 +497,14 @@ final class MidDriveRecoveryTests: XCTestCase {
             XCTAssertEqual(banner(nav), NavView.BannerText(
                 symbol: "arrow.uturn.down", alert: true, over: over,
                 main: "Turn around when possible"))
-            // Further back, still failing: said once, decision D3, and nothing
-            // added for the failure (row 2).
-            await drive(nav, from: 1395, to: 900)
-            XCTAssertEqual(turnAroundSaid, 1)
+            // Further back, still failing, short of the time-out: one line,
+            // decision D3, and nothing added for the failure (row 2).
+            await drive(nav, from: 1395, to: 1200)
+            XCTAssertEqual(turnAroundSaid + noConnectionTurnAroundSaid, 1)
+            XCTAssertEqual(hasPath ? turnAroundSaid : noConnectionTurnAroundSaid, 1)
             XCTAssertEqual(noConnectionSaid, 0)
             XCTAssertTrue(nav.wrongWay)
+            XCTAssertEqual(banner(nav).main, "Turn around when possible")
         }
     }
 
@@ -586,6 +599,199 @@ final class MidDriveRecoveryTests: XCTestCase {
         XCTAssertTrue(nav.declinedUTurn, "the U-turn was not declined")
     }
 
+    // MARK: - The time-out (plan, sections 4.6 point 1 and 8.1 item 3b)
+
+    /// Up the road to 1500 m and back down it to `to`, one fix a second at
+    /// 15 m/s. The detector fires at 1425 m, and the 300 m from there is at
+    /// 1125 m, 20 s later.
+    private func reverse(_ nav: NavigationModel, to: Double, forwardTo top: Double = 1500) async {
+        await drive(nav, from: 0, to: top)
+        await drive(nav, from: top - 15, to: to)
+    }
+
+    private func overAway(_ lead: String, _ distance: String) -> String {
+        "\(lead) · route\u{00A0}\(distance.replacingOccurrences(of: " ", with: "\u{00A0}"))\u{00A0}away"
+    }
+
+    func test_it_gives_way_at_300_m_further_back_to_the_off_route_row() async {
+        // The off-route row with nothing failed (the server's own "no"), and
+        // each failure row. The distance is to the route ahead of the turn-back
+        // point, 1485 m: 375 m at 1110 m, never the 0 m to the road under the car.
+        let cases: [(Bool, Error, String, String)] = [
+            (true, RouteService.ServiceError.server("no route found"), "arrow.uturn.backward", "Off route"),
+            (true, RouteService.ServiceError.unreachable(530), "exclamationmark.icloud", "No connection"),
+            (false, RouteService.ServiceError.offline, "antenna.radiowaves.left.and.right.slash", "No signal"),
+        ]
+        for (hasPath, error, symbol, lead) in cases {
+            path = hasPath
+            let backend = Backend()
+            backend.fallback = .fail(error)
+            let nav = model(backend)
+            await reverse(nav, to: 1140)                         // 285 m past detection
+            XCTAssertTrue(nav.wrongWay, lead)
+            XCTAssertEqual(banner(nav).main, "Turn around when possible", lead)
+            await drive(nav, from: 1125, to: 1110)               // 300 m, to within a fix
+            XCTAssertFalse(nav.wrongWay, lead)
+            XCTAssertTrue(nav.wrongWayEpisode, "the episode ended with the banner: \(lead)")
+            XCTAssertEqual(banner(nav), NavView.BannerText(
+                symbol: symbol, alert: true, over: overAway(lead, "0.2 mi"),
+                main: "Head back to your route"), lead)
+            XCTAssertEqual(turnAroundSaid + noConnectionTurnAroundSaid, 1, lead)
+        }
+    }
+
+    func test_it_gives_way_at_30_s_when_the_300_m_comes_later() async {
+        // At 5 m/s, the slowest the real turn-back drove: 30 s is 150 m.
+        let backend = Backend()
+        let nav = model(backend)
+        await drive(nav, from: 0, to: 1500)
+        var north = 1500.0
+        var fixes = 0
+        while !nav.wrongWay && fixes < 30 {
+            north -= 5; fixes += 1
+            await feed(nav, at(Fixture.north(north), course: 180, speed: 5))
+        }
+        XCTAssertTrue(nav.wrongWay, "the crawl never fired the detector")
+        let detected = clock
+        let detectedAt = north
+        for _ in 0..<29 {
+            north -= 5
+            await feed(nav, at(Fixture.north(north), course: 180, speed: 5))
+        }
+        XCTAssertTrue(nav.wrongWay, "gave way before 30 s")
+        north -= 5
+        await feed(nav, at(Fixture.north(north), course: 180, speed: 5))
+        XCTAssertEqual(clock.timeIntervalSince(detected), 30)
+        XCTAssertEqual(detectedAt - north, 150, accuracy: 0.1)
+        XCTAssertFalse(nav.wrongWay, "held past 30 s")
+        XCTAssertTrue(nav.isOffTheLine)
+        XCTAssertEqual(banner(nav).main, "Head back to your route")
+    }
+
+    func test_the_real_u_turns_shape_does_not_give_way() async {
+        // drive-2026-10-06-122558: back along the line 85 m in about 7 s,
+        // then off it. Neither threshold is reached; leaving the line ends the
+        // episode, as it always did.
+        let nav = model(Backend())
+        await drive(nav, from: 0, to: 1500)
+        for north in stride(from: 1488.0, through: 1416, by: -12) {
+            await feed(nav, at(Fixture.north(north), course: 180, speed: 12))
+        }
+        XCTAssertTrue(nav.wrongWay)
+        XCTAssertFalse(nav.wrongWayTimedOut)
+        XCTAssertEqual(banner(nav).main, "Turn around when possible")
+        for east in [40.0, 80, 120] {
+            await feed(nav, at(Fixture.offset(east: east, north: 1410), course: 90, speed: 12))
+        }
+        XCTAssertFalse(nav.wrongWayEpisode)
+        XCTAssertFalse(nav.wrongWayTimedOut)
+    }
+
+    func test_after_the_give_way_it_keeps_asking_and_says_turn_around_once() async {
+        // Retries at 15, 30, then 60 s run on through the time-out: the
+        // episode, not the banner, is what makes the reroute due. Turning
+        // round still ends it.
+        let backend = Backend()
+        backend.fallback = .fail(RouteService.ServiceError.unreachable(530))
+        let nav = model(backend)
+        await reverse(nav, to: 450, forwardTo: 3000)
+        XCTAssertTrue(nav.wrongWayTimedOut)
+        let times = backend.asked.map { $0.at.timeIntervalSince(backend.asked[0].at) }
+        XCTAssertEqual(times, [0, 15, 45, 105, 165])
+        XCTAssertEqual(turnAroundSaid, 1, "the detector re-fired")
+        // The 15 s retry failed under the wrong-way banner and was not said;
+        // the 45 s one failed after it, and was (docs/mid-drive-recovery.md).
+        XCTAssertEqual(noConnectionSaid, 1)
+
+        await drive(nav, from: 465, to: 600)
+        XCTAssertFalse(nav.wrongWayEpisode, "turning round did not end it")
+        XCTAssertNil(nav.lostConnection)
+        XCTAssertFalse(banner(nav).alert)
+        XCTAssertEqual(backend.asked.count, 5)
+        XCTAssertEqual(turnAroundSaid, 1)
+    }
+
+    func test_the_distance_after_the_give_way_grows_and_is_not_the_road_underneath() async {
+        let nav = model(Backend())
+        await reverse(nav, to: 1050)
+        XCTAssertTrue(nav.wrongWayTimedOut)
+        let first = nav.distanceToLine
+        XCTAssertEqual(first, 435, accuracy: 5, "to the turn-back point, 1485 m")
+        await drive(nav, from: 1035, to: 645)
+        XCTAssertEqual(nav.distanceToLine - first, 405, accuracy: 5)
+        XCTAssertEqual(banner(nav).over, overAway("No connection", "0.5 mi"))
+    }
+
+    func test_with_no_path_the_one_line_said_is_the_failure_version() async {
+        path = false
+        let backend = Backend()
+        let nav = model(backend)
+        await reverse(nav, to: 1425)
+        XCTAssertEqual(backend.asked.count, 1)
+        XCTAssertEqual(noConnectionTurnAroundSaid, 1)
+        XCTAssertEqual(turnAroundSaid, 0, "said in addition")
+        await drive(nav, from: 1410, to: 600)
+        XCTAssertTrue(nav.wrongWayTimedOut)
+        XCTAssertEqual(noConnectionTurnAroundSaid, 1)
+        XCTAssertEqual(noConnectionSaid, 0, "the failure was said twice")
+    }
+
+    func test_with_no_path_it_says_the_failure_version_even_when_the_request_is_held() async {
+        // The server said no 12 s ago, so the backoff holds the wrong-way
+        // request; the path is what decides the words, not the request.
+        let backend = Backend()
+        backend.fallback = .fail(RouteService.ServiceError.server("no route found"))
+        let nav = model(backend)
+        await leaveTheRoute(nav)
+        XCTAssertEqual(backend.asked.count, 1)
+        await drive(nav, from: 960, to: 1050)
+        path = false
+        await drive(nav, from: 1035, to: 975)
+        XCTAssertTrue(nav.wrongWay)
+        XCTAssertEqual(backend.asked.count, 1, "the backoff did not hold it")
+        XCTAssertEqual(noConnectionTurnAroundSaid, 1)
+        XCTAssertEqual(turnAroundSaid, 0)
+    }
+
+    func test_with_a_path_it_says_turn_around_once_and_nothing_for_the_failure() async {
+        let backend = Backend()
+        let nav = model(backend)
+        await reverse(nav, to: 1140)
+        XCTAssertEqual(backend.asked.count, 2)
+        XCTAssertNotNil(nav.lostConnection)
+        XCTAssertEqual(turnAroundSaid, 1)
+        XCTAssertEqual(noConnectionTurnAroundSaid, 0)
+        XCTAssertEqual(noConnectionSaid, 0)
+    }
+
+    func test_a_replacement_landing_after_the_give_way_ends_the_episode() async throws {
+        let trace = try XCTUnwrap(newTrace())
+        path = false
+        let backend = Backend()
+        let nav = model(trace: trace, backend)
+        await reverse(nav, to: 1095)
+        XCTAssertTrue(nav.wrongWayTimedOut)
+        backend.answers = [.route(Fixture.straightRoute(
+            start: 1000, lengthMeters: 4000,
+            steps: [(0, "Make a U-turn on Test Road"), (4000, "Arrive at your destination")]))]
+        path = true
+        nav.connectivityRestored()
+        await feed(nav, at(Fixture.north(1080), course: 180))
+        XCTAssertEqual(backend.asked.count, 2)
+        XCTAssertFalse(nav.wrongWayEpisode)
+        XCTAssertFalse(nav.wrongWayTimedOut)
+        XCTAssertEqual(banner(nav).main, "Make a U-turn on Test Road")
+        nav.finish()
+        // Still a wrong-way reroute, and no declined U-turn on its account
+        // (plan, section 4.6, point 3).
+        let records = reroutes(in: trace)
+        XCTAssertEqual(records.map { $0["reason"] as? String }, ["wrongway", "wrongway"])
+        XCTAssertEqual(records.map { $0["outcome"] as? String }, ["failed", "adopted"])
+        XCTAssertTrue(records.allSatisfy { $0["req_declined_uturn"] == nil })
+        let text = try String(contentsOf: trace.url, encoding: .utf8)
+        XCTAssertEqual(text.components(separatedBy: "\"phase\":\"wrongway_timeout\"").count - 1, 1)
+    }
+
     // MARK: - Loops (plan, sections 4.2 rule 6 and 4.4; decision D2)
 
     /// An out-and-back loop: 3 km north to its far point and back down the
@@ -621,6 +827,19 @@ final class MidDriveRecoveryTests: XCTestCase {
         XCTAssertEqual(backend.asked.map(\.kind), ["via"], "the reroute must go via the far point")
         XCTAssertEqual(backend.asked.first?.via?.latitude ?? 0, Fixture.north(3000).latitude,
                        accuracy: 1e-9)
+    }
+
+    func test_on_a_loop_it_gives_way_the_same_and_still_asks_via_the_far_point() async {
+        let backend = Backend()
+        let nav = loopModel(backend)
+        await drive(nav, from: 0, to: 1500)
+        await drive(nav, from: 1485, to: 750)
+        XCTAssertTrue(nav.wrongWayTimedOut)
+        XCTAssertTrue(nav.wrongWayEpisode)
+        XCTAssertTrue(nav.isLoopBeforeFarPoint, "the far point was lost")
+        XCTAssertEqual(backend.asked.map(\.kind), ["via", "via", "via"])
+        XCTAssertEqual(banner(nav).over, overAway("No connection", "0.5 mi"))
+        XCTAssertEqual(turnAroundSaid, 1)
     }
 
     func test_on_a_loop_the_return_pass_after_the_far_point_is_silent() async {

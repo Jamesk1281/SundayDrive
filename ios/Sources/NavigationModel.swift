@@ -721,7 +721,7 @@ final class NavigationModel {
     /// the line, which is on it and still needs the failure shown (row 2).
     private func trackLostConnection(_ here: RouteProgress) {
         guard consecutiveFailures > 0 || lostConnection != nil,
-              hasJoinedRoute, !wrongWay,
+              hasJoinedRoute, !wrongWayEpisode,
               here.offRoute <= Self.joinConfirmMeters else { return }
         connectionWorked()
     }
@@ -738,8 +738,14 @@ final class NavigationModel {
     /// the same evidence that makes a reroute due, on a line it has reached,
     /// with more than `noRerouteWithinMeters` to go. Inside that the driver
     /// is parking, and the last instruction stays (plan, section 2, row 6).
+    ///
+    /// Or a wrong-way episode that has timed out: on the line, but driving
+    /// away from the rest of it, and no longer told to turn round. Without
+    /// this the banner would fall through to the abandoned route's next
+    /// maneuver, which was P-05 itself (docs/mid-drive-recovery.md).
     var isOffTheLine: Bool {
         guard offLineBannerApplies, let here = lastProgress else { return false }
+        if wrongWayEpisode && wrongWayTimedOut { return true }
         return here.offRoute > Self.offRouteMeters
             && consecutiveOffRouteFixes >= Self.offRouteFixesToReroute
     }
@@ -769,7 +775,8 @@ final class NavigationModel {
 
     /// True while the car is driving its own line backwards, from the fix the
     /// detector fires on until the replacement lands, the car turns round or
-    /// it leaves the line.
+    /// it leaves the line: the episode. It is what makes the reroute due, and
+    /// it holds through the time-out below, which changes only the banner.
     ///
     /// `travelled` cannot say this (plan, section 4.1). Driving back along the
     /// line keeps the match on it, `reseatIfPinned` walks the match back with
@@ -780,7 +787,52 @@ final class NavigationModel {
     /// U-turn, and any car `reseatIfPinned` re-seats. What tells them apart is
     /// the heading: on a road driven twice the two passes run opposite ways,
     /// and a car going the wrong way agrees with neither.
-    private(set) var wrongWay = false
+    private(set) var wrongWayEpisode = false
+
+    /// Whether the wrong-way banner applies: the episode is open and has not
+    /// yet timed out. Its reader is the banner, and the failure voice, which
+    /// stays quiet only while "Turn around when possible" is still on screen.
+    var wrongWay: Bool { wrongWayEpisode && !wrongWayTimedOut }
+
+    /// Set once the episode has gone on for `wrongWayTimeoutSeconds`, or
+    /// `wrongWayTimeoutMeters` further back along the line, from the fix that
+    /// detected it. From then the banner is the off-route one — "Off route",
+    /// "No signal" or "No connection", with the distance to the route still
+    /// ahead of the turn-back point — while the episode, and with it the
+    /// reroute and its retries, carries on (docs/mid-drive-recovery-plan.md,
+    /// section 4.6, point 1; docs/mid-drive-recovery.md). Silent: decision D3
+    /// is one "Turn around" per episode, and nothing is said on giving way.
+    ///
+    /// Clearing the episode instead would stop the reroute, because a car
+    /// reversing on its own line is on it, and `offRouteDue` never comes true
+    /// there; and the detector would re-arm and say "Turn around" again.
+    private(set) var wrongWayTimedOut = false
+
+    /// The time-out's two thresholds, whichever comes first. A judgement from
+    /// the two real reversals on record, not a measurement: the deliberate
+    /// U-turn of drive-2026-10-06-122558 left the line 85 m and about 7 s
+    /// after turning, so reaches neither; the turn-back of
+    /// drive-2026-10-06-192759 held "Turn around" for 196 s and 1.9 km, and
+    /// gives way after 30 s.
+    private static let wrongWayTimeoutSeconds: TimeInterval = 30
+    private static let wrongWayTimeoutMeters: Double = 300
+    private var wrongWayDetectedAt: Date?
+    /// `wrongWayBackMeters` on the detecting fix, so the 300 m is counted
+    /// from there. Votes are clamped at 60 m a fix, which binds only above
+    /// 216 km/h at 1 Hz, or across a gap in the fixes, where the 30 s still
+    /// stands.
+    private var wrongWayBackAtDetection = 0.0
+    /// Where along the line the reversal began: the match of the run's first
+    /// vote. The distance the timed-out banner shows is to the line at or
+    /// after this — the route still to drive — and not to the line under the
+    /// car, which `reseatIfPinned` walks back with it and so reads about 0.
+    private var wrongWayTurnBackAlong: Double?
+    /// The line from exactly that point on, cut when the banner times out,
+    /// and how far along it the loop cap sits. Cut rather than asked of
+    /// `progress(notBefore:)`, which keeps a segment that straddles its floor
+    /// whole and so measured to the vertex behind the turn-back point: up to
+    /// a segment short, 200 m against 435 m on the test road.
+    private var wrongWayLineAhead: (line: [CLLocationCoordinate2D], cap: Double)?
 
     /// Votes in a row: fixes whose course runs against every pass of the line
     /// where the car is. Five, over 40 m of the line gone backwards, before it
@@ -844,11 +896,17 @@ final class NavigationModel {
             lastAlignedAlong = nil
         }
         guard alignedProgress >= Self.wrongWayArmMeters else { resetWrongWay(); return }
+        // The 30 s counts on every fix, readable or not: a car pulling out of
+        // a turn-round at a crawl is still going the wrong way.
+        if let since = wrongWayDetectedAt,
+           now().timeIntervalSince(since) >= Self.wrongWayTimeoutSeconds {
+            timeOutWrongWay()
+        }
         guard readable else { return }
 
         // The common case costs nothing: a match moving forward at about the
         // car's speed is a car going the right way.
-        if !wrongWay, wrongWayVotes == 0, let previous = previousMatch,
+        if !wrongWayEpisode, wrongWayVotes == 0, let previous = previousMatch,
            here.offRoute <= Self.joinConfirmMeters {
             let dt = now().timeIntervalSince(previous.at)
             if dt > 0, here.travelled - previous.along >= 0.5 * location.speed * dt { return }
@@ -873,22 +931,77 @@ final class NavigationModel {
 
         if let last = wrongWayLastAlong {
             wrongWayBackMeters += max(-60, min(60, last - pass.along))
+        } else {
+            wrongWayTurnBackAlong = pass.along
         }
         wrongWayLastAlong = pass.along
         wrongWayVotes += 1
-        guard !wrongWay, wrongWayVotes >= Self.wrongWayFixes,
+        if wrongWayEpisode {
+            if wrongWayBackMeters - wrongWayBackAtDetection >= Self.wrongWayTimeoutMeters {
+                timeOutWrongWay()
+            }
+            return
+        }
+        guard wrongWayVotes >= Self.wrongWayFixes,
               wrongWayBackMeters >= Self.wrongWayMinBackMeters else { return }
-        wrongWay = true
+        wrongWayEpisode = true
+        wrongWayDetectedAt = now()
+        wrongWayBackAtDetection = wrongWayBackMeters
         trace?.phase("wrongway")
         // Once per episode, decision D3: on the fix that opens it. The banner
-        // holds the words, and the replacement speaks next.
-        voice?.announceRecovery("Turn around when possible.")
+        // holds the words, and the replacement speaks next. The words are
+        // decision D9, (a): an instruction, kept for the driver who really has
+        // gone wrong, with the time-out above for the one who meant it.
+        //
+        // With no network path the request this fix makes will fail in
+        // milliseconds, so the failure is said now, in the same sentence, and
+        // not as a second line after it (plan, section 4.3). Decided here from
+        // the path, not from the reply: a reply that lands usually has its own
+        // opening go unspoken (overnight Finding 3), and waiting for it would
+        // leave the driver hearing nothing. Unless this failure episode has
+        // already said "No connection", which is once per episode too.
+        if !networkReachable(), !announcedLostConnection {
+            announcedLostConnection = true
+            voice?.announceRecovery("No connection. Turn around when possible.")
+        } else {
+            voice?.announceRecovery("Turn around when possible.")
+        }
+    }
+
+    /// The episode has run 30 s or 300 m: the banner gives way to the
+    /// off-route one, and nothing else changes. See `wrongWayTimedOut`.
+    private func timeOutWrongWay() {
+        guard wrongWayEpisode, !wrongWayTimedOut else { return }
+        wrongWayTimedOut = true
+        if let turnBack = wrongWayTurnBackAlong {
+            wrongWayLineAhead = lineAhead(of: turnBack)
+        }
+        trace?.phase("wrongway_timeout")
+    }
+
+    /// The line from `along` on, beginning at the point that far along it.
+    private func lineAhead(of along: Double)
+        -> (line: [CLLocationCoordinate2D], cap: Double)? {
+        guard coordinates.count >= 2, lineLengths.count == coordinates.count else { return nil }
+        var i = 0
+        while i < lineLengths.count - 2, lineLengths[i + 1] <= along { i += 1 }
+        let span = lineLengths[i + 1] - lineLengths[i]
+        let f = span > 0 ? max(0, min(1, (along - lineLengths[i]) / span)) : 0
+        let p = coordinates[i], q = coordinates[i + 1]
+        let start = CLLocationCoordinate2D(latitude: p.latitude + f * (q.latitude - p.latitude),
+                                           longitude: p.longitude + f * (q.longitude - p.longitude))
+        return ([start] + coordinates[(i + 1)...], farPointCap - along)
     }
 
     /// The case is closed: the car turned round, left the line, or is on a
     /// line it has not yet gone the right way along.
     private func resetWrongWay() {
-        wrongWay = false
+        wrongWayEpisode = false
+        wrongWayTimedOut = false
+        wrongWayDetectedAt = nil
+        wrongWayBackAtDetection = 0
+        wrongWayTurnBackAlong = nil
+        wrongWayLineAhead = nil
         wrongWayVotes = 0
         wrongWayBackMeters = 0
         wrongWayLastAlong = nil
@@ -1500,7 +1613,12 @@ final class NavigationModel {
         trackWrongWay(location, here)
         trackLostConnection(here)
         countOffRouteEvidence(location, here)
-        if isOffTheLine || offLineFailure != nil {
+        if wrongWayEpisode && wrongWayTimedOut, let ahead = wrongWayLineAhead {
+            // To the route still ahead of where the reversal began, which grows
+            // as the car keeps going. The line under the car is about 0 m away.
+            distanceToLine = progress(of: location.coordinate, along: ahead.line,
+                                      notAfter: ahead.cap).offRoute
+        } else if isOffTheLine || offLineFailure != nil {
             distanceToLine = progress(of: location.coordinate, along: coordinates,
                                       notBefore: max(0, travelled - Self.distanceToLineBehindMeters),
                                       notAfter: farPointCap, near: travelled).offRoute
@@ -1520,7 +1638,9 @@ final class NavigationModel {
         // Going the wrong way along the line asks at once, with the heading,
         // under the same guards and through the same `reroute` — so it sends
         // `declined_uturn` when that is set, and goes via the far point on a
-        // loop that has not reached it (decision D2).
+        // loop that has not reached it (decision D2). The whole episode asks,
+        // past its banner's time-out too: on the line `offRouteDue` stays
+        // false, so nothing else would.
         let offRouteDue = here.offRoute > Self.offRouteMeters
             && consecutiveOffRouteFixes >= Self.offRouteFixesToReroute
         if armedForReroute,
@@ -1529,8 +1649,8 @@ final class NavigationModel {
            here.remaining > Self.noRerouteWithinMeters,
            rerouteDue,
            hasMovedSinceLastReroute(location),
-           offRouteDue || wrongWay {
-            let reason = wrongWay && !offRouteDue ? "wrongway" : "offroute"
+           offRouteDue || wrongWayEpisode {
+            let reason = wrongWayEpisode && !offRouteDue ? "wrongway" : "offroute"
             Task { await reroute(from: location, reason: reason) }
         }
     }
@@ -2055,8 +2175,11 @@ final class NavigationModel {
     /// and the banner says so: "No signal" with no path, "No connection" with
     /// one. Said once per episode, unless the car is going the wrong way, when
     /// "Turn around when possible" has already been said and is still the
-    /// instruction (row 2). A failed "fastest" leaves every counter as it was:
-    /// `switchToFastest` restores its own state and says why.
+    /// instruction (row 2). Once that banner has timed out it is no longer the
+    /// instruction, and a failure not yet said in this episode is said
+    /// (docs/mid-drive-recovery.md, the time-out). A failed "fastest" leaves
+    /// every counter as it was: `switchToFastest` restores its own state and
+    /// says why.
     private func noteFailure(_ failure: RerouteFailure, reason: String) {
         switch failure {
         case .server(let message):

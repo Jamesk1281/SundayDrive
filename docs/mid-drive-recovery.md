@@ -5,7 +5,9 @@ building the before-submission items of `docs/mid-drive-recovery-plan.md`
 (sections 2, 3, 4 and 8.1–8.3) on one branch off `main` at `7ce5ef4`. The
 plan holds the design and the measurements behind it. This file records what
 was built, what this branch measured where it differs from the plan, and what
-only a drive on the phone can show.
+only a drive on the phone can show. Item 3b of plan section 8.1, the
+wrong-way time-out, was built later on a second branch off `012a5f3`, and has
+its own section below.
 
 The server and `pipeline/` are unchanged. In `tools/`, one comment changed in
 `analyze_trace.py`.
@@ -87,7 +89,9 @@ later:
 - "No connection. Head back to your route." Once per episode, on the first
   failed request. An episode ends when a request lands or the car gets back
   within 30 m of the line. Nothing more is said while the car is going the
-  wrong way (row 2): the turn-around line is still the instruction.
+  wrong way (row 2): the turn-around line is still the instruction. (Since
+  item 3b, only until the wrong-way banner times out, and with no path the
+  two are one sentence: see "The wrong-way time-out" below.)
 
 `routeAdopted` no longer cuts a recovery line short. That line is usually
 what announced the reroute that is now landing. The replacement's own opening
@@ -324,6 +328,157 @@ the route it announced; the real P-05 run.
   pass the guard. At 1 Hz from CoreLocation it does not happen; in a test it
   can.
 
+## The wrong-way time-out (item 3b, 2026-10-08)
+
+Built on a branch off `main` at `012a5f3`, iOS only. It is item 3b of plan
+section 8.1, designed in section 4.6, points 1 and 2. **D9 is decided (a)**
+(2026-10-08): the words stay **Wrong way · Turn around when possible**,
+spoken once (D3).
+
+### What was built
+
+- **The episode and its banner are two things now.** `wrongWayEpisode` is
+  the episode. It opens on the detecting fix, and ends exactly as before:
+  the car turns round, leaves the line, or a replacement is adopted. It
+  makes the reroute due (`offRouteDue || wrongWayEpisode` in `update`),
+  keeps `trackLostConnection` from ending a failure episode, and stops the
+  detector re-firing. `wrongWay` keeps its meaning for the banner and the
+  existing tests ("the wrong-way banner applies"), and is now derived:
+  `wrongWayEpisode && !wrongWayTimedOut`.
+- **The time-out.** `wrongWayTimedOut` is set once the episode has run
+  **30 s, or 300 m further back along the line, whichever comes first**,
+  both counted from the detecting fix. The 30 s is checked on every fix,
+  readable or not. The 300 m is `wrongWayBackMeters` less its value on the
+  detecting fix. Its ±60 m-per-vote clamp binds only above 216 km/h at 1 Hz,
+  or across a gap in the fixes, where the 30 s still applies. Both thresholds
+  are a judgement from two real drives, not a measurement, and the code says
+  so. A trace marks the moment with `{"t":"phase","phase":"wrongway_timeout"}`.
+- **After the time-out the banner is the off-route one.** It shows "Off
+  route · route … away / Head back to your route" (`isOffTheLine` is true
+  for a timed-out episode). Or, with a failure in hand, "No signal ·" or "No
+  connection ·", rows 3 and 4 as before. It never falls through to the
+  abandoned route's next maneuver. The reroute keeps retrying on the
+  failure cadence (15, 30, then 60 s), still with `reason: wrongway`, and
+  never sends `declined_uturn` because of the time-out.
+- **The distance is measured to the route still to drive.** That is the
+  line from the turn-back point on: the match of the run's first vote.
+  The line under the car reads about 0 m, because `reseatIfPinned` walks the
+  match back with it. A first version asked
+  `progress(notBefore: turnBack)`, which failed the new test: `progress`
+  keeps a segment that straddles its floor whole, so it measured to the
+  vertex behind the turn-back point. On the test road that was 200 m where
+  the answer was 435 m. So the line is cut at the turn-back point when the
+  banner times out (`lineAhead(of:)`), and `Geo.progress` is unchanged.
+- **One line, not two.** If `networkReachable()` is false on the detecting
+  fix, the line said is **"No connection. Turn around when possible."**,
+  *instead of* the plain one, and the failure episode counts as said
+  (`announcedLostConnection`). It is decided from the path on that fix, not
+  from the reply, whether or not the request goes out then (the backoff can
+  hold it). With a path, nothing changes: the plain line, and a failure
+  stays silent while the wrong-way banner shows.
+- **A judgement the plan did not make, for the owner to veto.** The
+  give-way itself is silent (D3). But a failure *after* it, in a failure
+  episode that has not yet said anything, is said with the ordinary "No
+  connection. Head back to your route." By then the banner says the same
+  thing, and "Turn around" is no longer on screen. On 192759 this adds
+  one line (below). The other choice is to stay silent for the rest of the
+  episode, which leaves only the banner to report that the requests are
+  failing. That would be a one-line change in `noteFailure`.
+- **A smaller judgement.** If the failure episode has already said "No
+  connection" when the detector fires with no path, the plain line is said,
+  so "No connection" is not said twice in one episode. In practice this
+  barely happens. A car back on its line normally ends the failure episode
+  before the detector can fire.
+- **The test instruments count both wordings.** `DriveReplay.wrongWayAt` and
+  `SimulatedDrive`'s wrong-way count match on `DriveReplay.isWrongWayLine`
+  (a suffix match), so a detection in a dead zone is not lost from them.
+  `DriveReplay.Outcome` also records `wrongWayTimeoutsAt` and every banner
+  change, and `ReplayDumpTests` writes `wrongWayTimeoutsAt`.
+
+### What it measured
+
+**The recorded drives**, `ReplayDumpTests` on `012a5f3` against the branch,
+on the same simulator runtime:
+
+| replay | identical | differs |
+|---|---|---|
+| in order | **18 of 18**, utterance for utterance | none |
+| as recorded | **17 of 18**: the twelve August drives, the four October drives with no reversal, and `122558` | `192759`, below |
+
+- **`122558`, the deliberate U-turn,** is unchanged in both modes. It detects
+  at 9204 s, as before, and never times out (`test_the_recorded_u_turn_never_times_out`).
+- **`192759`, the turn-back,** as recorded. "Turn around when possible." at
+  9288 s, as before. The banner gives way at **9319 s, 31 s later**, on the
+  first fix past 30 s. At 4–5 m/s the 300 m would have come later. After it
+  the banner reads **"No connection · route 900 ft away / Head back to your
+  route"**. Its distance grows with the drive: 0.2 mi at 9324 s, 0.5 mi at
+  9385 s, and 1.2 mi at 9482 s, which is the 1,932 m driven back. It never
+  reads 0. Until 9319 s it is "Wrong way · No connection / Turn around when
+  possible", as before. The requests are the same 15 at the same
+  times as on `main` (9288, 9304, 9335, 9396, 9456, then 9494 on leaving the
+  line). One utterance was added: "No connection. Head back to your
+  route." at 9335 s, when the first retry after the give-way failed (the
+  judgement above). On `main` the wrong-way banner stayed up until the car
+  left the line at 9494 s. That makes 119 utterances against 118. The
+  replay's own repeat counter goes from 1 to 2, because 9335 and 9494 say
+  the same line with the same maneuver ahead. They belong to two failure
+  episodes 159 s apart. That counter is asserted only on the in-order
+  replay, which is identical.
+
+**Noticed on `192759`, not changed.** As on `main`, the episode ends at
+9484 s, when the car's course stops opposing the line, and on that fix
+`trackLostConnection` ends the failure episode too, because the car is
+still within 30 m of the line. For the 10 s until the car is clearly off it,
+and the next request fails (9494 s), the banner shows the abandoned route's
+next maneuver. It is a short P-05-shaped window. It predates this branch
+and is not part of 3b.
+
+**The suites**, the full `xcodebuild test` with no server, on simulators made
+for this: **461 executed, 45 skipped, 1 test failed** (XCTest's own summary) on the
+branch. On `012a5f3` it was 449, 45 and 1. The 12 more are the new tests (10 in
+`MidDriveRecoveryTests`, 2 in `RecordedWrongWayTests`). The 45 skips are the
+same tests on both, all needing a server or asking to be run (the personas,
+`ReplayDumpTests`), and none of them a replay with its trace missing: all 18
+traces were on disk. The one failure is the known one,
+`DriveReplayTests.test_no_recorded_drive_hears_the_same_maneuver_twice` on
+`122558`, with the same two assertions as on `main` (149 utterances).
+
+**New tests** (`MidDriveRecoveryTests`, 36 now):
+- gives way at 300 m, with no failure (the server's "no") and with each
+  failure row;
+- gives way at 30 s at 5 m/s, when the 300 m would come later;
+- the real U-turn's shape (84 m, 7 s, then off the line) does not;
+- after the give-way, retries come at 0, 15, 45, 105 and 165 s, "Turn around"
+  is said once, the failure after the give-way is said once, and turning
+  round ends the episode;
+- the distance after the give-way is 435 m and grows by 405 m over 405 m
+  more of reversal;
+- with no path, the one line is the failure version, and that holds when the
+  backoff holds the request;
+- with a path, the plain line once and nothing for the failure;
+- a replacement landing after the give-way ends the episode, as a `wrongway`
+  reroute with no `declined_uturn`, with one `wrongway_timeout` phase in the
+  trace;
+- on a loop, it gives way the same way and every request still goes via the
+  far point.
+
+`RecordedWrongWayTests` adds `192759`'s give-way and `122558`'s absence of one.
+**One existing test changed on purpose:**
+`test_the_wrong_way_banner_and_its_failures` drove 495 m further back and
+found the wrong-way banner still up. With no path it found the plain line
+said. It now stops short of the time-out, and expects the failure version
+with no path.
+
+**Not run:** the personas against a local server. The machine was running
+seven simulators across sessions at the time. What they would show can be
+read off the rules, but it is not a measurement. The time-out can fire only
+inside an episode, so only on a detected reversal. And with a server, the
+reroute on the detecting fix lands at once and ends the episode (`adopt`), so
+`wrongWayAlong` and `loopWrongWay` should not reach 30 s. The personas where
+it could fire are the ones that fail requests: `serverDown` and `deadZone`.
+In the first build those had one detection between them, on `cross-025`.
+Run `test_12_wrongWayAlong` and the outage personas before relying on this.
+
 ## On the phone: the owner's test-drive checklist
 
 The simulator reaches the network through the Mac and fails open on
@@ -349,11 +504,19 @@ each check leaves `reroute` records in the trace to read afterwards.
    for a few hundred metres, turn round safely and drive back along it.
    Expect "Turn around when possible." within about 5 s and 60 m, said once,
    the banner "Wrong way", and a reroute requested on the same fix
-   (`reason: wrongway`). Then do it in a dead zone, which should give "Wrong
-   way · No signal" with nothing more said.
+   (`reason: wrongway`). **Keep going** along the line: after 30 s (or 300 m
+   further back, whichever comes first) the banner should change, with
+   nothing said, to "Off route · route … away / Head back to your route", or
+   "No connection · …" if the reroute failed. The distance should grow as you
+   go, and the trace should show `{"phase":"wrongway_timeout"}` and more
+   `reason: wrongway` requests after it. Turning round again should end it.
+   Then do it in a dead zone (Airplane Mode before turning round): the one
+   line said should be "No connection. Turn around when possible.", never
+   that and "Turn around when possible." both, the banner "Wrong way · No
+   signal", and after 30 s "No signal · route … away".
 5. **On a loop,** turn back before the far point on a road the loop drives
    twice. Expect the same, with the reroute going via the far point
-   (`req_via: true`) and the loop kept.
+   (`req_via: true`) before and after the banner changes, and the loop kept.
 6. **"Switch to fastest" in a dead zone.** Expect "Can't switch — no
    connection." under the trip card, and nothing else changed.
 7. **Largest text.** Settings › Accessibility › Display & Text Size › Larger

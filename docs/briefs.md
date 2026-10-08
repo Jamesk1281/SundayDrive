@@ -74,6 +74,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/mid-drive-recovery-brief.md` | `git show fe5cab0:docs/mid-drive-recovery-brief.md` | [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
 | `docs/rating-prompt-brief.md` | `git show e5b2be8:docs/rating-prompt-brief.md` | [rating-prompt.md](rating-prompt.md) |
 | `docs/route-options-brief.md` | `git show e26766a:docs/route-options-brief.md` | [route-options.md](route-options.md), with the study in `route-options-study/` |
+| `docs/wrong-way-timeout-brief.md` | `git show 1be0691:docs/wrong-way-timeout-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), "The wrong-way time-out"; D9 in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) §8.3 |
 
 ## Briefs kept out of history
 
