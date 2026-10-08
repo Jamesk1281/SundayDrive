@@ -96,6 +96,7 @@ is a column value in published data.
 | [hosting-options-findings.md](hosting-options-findings.md) | Where the API should live, and whether it can be free. Three figures in the brief were refuted by the findings and are marked there |
 | [hosting-status-2026-09.md](hosting-status-2026-09.md) | The 2026-09-19 re-check of the four dated provider facts and the sizing measurement A\* invalidated. **Verdict unchanged**; the findings' 3.53 GB is superseded by a measured 4.4 GB |
 | [hosting-independent-review.md](hosting-independent-review.md) | The 2026-09-28 review from outside that chain. **Oracle stays, but as a second connector beside a hardened laptop rather than a replacement.** Also finds the API's domain expiring 2026-10-28, and that a US Contabo box costs $6.58–7.90/mo, not €5.50. Lists edits it proposes to the three rows above |
+| [load-test-oracle.md](load-test-oracle.md) | The 2026-10-08 load test of the live box. **About 1.75 plans/s or 1 mixed request/s; memory is not the limit; four simultaneous loop builds stall every driver until K-1 is deployed.** Also measures the live Cloudflare rule: about 10 requests per 10 s per IP |
 | [../server/DEPLOY-oracle.md](../server/DEPLOY-oracle.md) | **How to actually build the Oracle box**, sign-up to cutover to rollback. Not a study — a tutorial, and the only document here you follow rather than read |
 | [legal-and-ip-audit.md](legal-and-ip-audit.md) | What the app owes, and to whom |
 | [licensing-and-attribution.md](licensing-and-attribution.md) | The credit strings and where they came from |
