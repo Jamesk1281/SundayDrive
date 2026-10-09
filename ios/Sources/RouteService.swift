@@ -238,10 +238,13 @@ enum RouteService {
     ///   - weights: per-beauty-type weights, exactly as `route(...)` takes them,
     ///     so the tune screen shapes a loop the same way it shapes a route.
     ///
-    /// Expect roughly 1.2 s for the first loop from a given start and 0.65 s for
-    /// each one after that, because the server caches two full-graph searches per
-    /// start. Changing only the distance keeps that cache; changing `pref` does
-    /// not.
+    /// Expect roughly 0.4 s on the server for a first 40 km loop from a given
+    /// start (up to 0.8 s around Boston), about the same for a new distance, and
+    /// 0.25 s for a shorter distance or another compass direction; longer loops
+    /// cost more, about 2 s at 150 km and 3.5 s at 300 km (docs/loop-speed.md).
+    /// The server caches two searches per start, over the area the distance can
+    /// reach: a shorter distance keeps that cache, a longer one widens it, and
+    /// changing `pref` starts again.
     static func loop(
         from start: CLLocationCoordinate2D,
         km: Double,
