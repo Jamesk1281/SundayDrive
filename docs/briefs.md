@@ -71,6 +71,7 @@ at `a2ddddc`. Read each at the commit named.
 
 | brief | read it with | its answer lives in |
 | --- | --- | --- |
+| `docs/loop-speed-brief.md` | `git show 7a7ea65:docs/loop-speed-brief.md` | [loop-speed.md](loop-speed.md), with the probes in `loop-speed-study/` |
 | `docs/loop-lock-contention-brief.md` | `git show 8dbb728:docs/loop-lock-contention-brief.md` | [loop-lock-contention.md](loop-lock-contention.md), with the probe in `tools/loop_contention/` |
 | `docs/mid-drive-recovery-brief.md` | `git show fe5cab0:docs/mid-drive-recovery-brief.md` | [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) |
 | `docs/rating-prompt-brief.md` | `git show e5b2be8:docs/rating-prompt-brief.md` | [rating-prompt.md](rating-prompt.md) |

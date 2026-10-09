@@ -1,7 +1,7 @@
 # Loop speed: searching the part of New England a loop can reach
 
-**Status: built and measured, 2026-10-08, on a branch off `main` at
-`722132b`. Not merged or deployed.** Loops come out identical, node for node,
+**Status: merged into `main` 2026-10-08 (`_home_bound`, `_disc`, `_refine`
+and `_serves` in `pipeline/looper.py`), built off `722132b`.** Loops come out identical, node for node,
 to `722132b`'s on every request checked (§3).
 
 A loop from a new start used to cost ~9.3 searches of the whole New England
