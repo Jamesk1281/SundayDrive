@@ -1,7 +1,8 @@
 # Loop speed: searching the part of New England a loop can reach
 
 **Status: merged into `main` 2026-10-08 (`_home_bound`, `_disc`, `_refine`
-and `_serves` in `pipeline/looper.py`), built off `722132b`.** Loops come out identical, node for node,
+and `_serves` in `pipeline/looper.py`), built off `722132b`, and deployed the
+same day (box at `1c55ead`; measured there in §4).** Loops come out identical, node for node,
 to `722132b`'s on every request checked (§3).
 
 A loop from a new start used to cost ~9.3 searches of the whole New England
@@ -247,9 +248,17 @@ live, which is 9.3 units: ~0.42 s a unit. On that scale:
 | first 300 km loop | 4.3 s | 3.5 s |
 | rejoin | 0.9 s | 0.9 s |
 
-These are a scale, not a measurement on the box: the box's ratio of loop time
-to one search may differ from the Mac's. Re-time with `loop_time.py` after
-deploying.
+These are a scale, not a measurement on the box. **Measured on the box** after
+deploying `1c55ead` (2026-10-08, `curl` POSTs to the public URL, so each time
+includes ~0.2-0.3 s through Cloudflare; the brief's "before" was measured the
+same way):
+
+| request | before | after |
+|---|---|---|
+| first 40 km loop | 3.8-4.2 s | 0.48 s (Bar Harbor), 0.51 s (Woodstock), 1.0 s (Boston), 1.1 s (Needham; Stowe, the first request after the restart, also 1.1 s) |
+| 40 → 60 km | 2.5-2.6 s | 0.55 s (Stowe), 0.62 s (Woodstock), 1.7 s (Needham) |
+| 60 → 25 km | | 0.61 s (Needham) |
+| first 150 km loop | | 3.3 s (Boston) |
 
 **Fallback rate.** A disc that `_serves` cannot prove even after `_refine`
 falls back to the whole graph: 3 of 90 disc field sets in the exactness run
