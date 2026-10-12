@@ -1,0 +1,817 @@
+[
+ {
+  "id": "mirror_lake",
+  "road": "Mirror Lake Hwy (UT 150)",
+  "state": "utah",
+  "ways_matched": 51,
+  "km_in_graph": 69.3,
+  "km_closures_py_closes": 54.6,
+  "km_with_any_seasonal_or_conditional_tag": 54.6,
+  "km_dropped_or_not_drivable": 9.4,
+  "barriers_on_road": 6,
+  "timed_barriers": [
+   {
+    "node": 6699232932,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   },
+   {
+    "node": 83886981,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   },
+   {
+    "node": 6699232932,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   },
+   {
+    "node": 83886981,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   }
+  ],
+  "ways": [
+   {
+    "way_id": 10088599,
+    "status": "not drivable (highway=service)",
+    "km": 0.13,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 10093863,
+    "status": "not drivable (highway=service)",
+    "km": 0.89,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 10162599,
+    "status": "in graph",
+    "km": 13.69,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 6699232932,
+      "barrier": "gate",
+      "motor_vehicle:conditional": "no @ (Nov-May)",
+      "name": "Winter Closure"
+     }
+    ]
+   },
+   {
+    "way_id": 10162610,
+    "status": "in graph",
+    "km": 9.85,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 83886981,
+      "barrier": "gate",
+      "motor_vehicle:conditional": "no @ (Nov-May)",
+      "name": "Winter Closure"
+     }
+    ]
+   },
+   {
+    "way_id": 67145378,
+    "status": "not drivable (highway=path)",
+    "km": 3.27,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 67145381,
+    "status": "not drivable (highway=service)",
+    "km": 0.04,
+    "tags": {
+     "access": "yes",
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159775512,
+    "status": "not drivable (highway=service)",
+    "km": 0.46,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159775517,
+    "status": "not drivable (highway=service)",
+    "km": 0.2,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159775519,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 12265264183,
+      "barrier": "gate"
+     }
+    ]
+   },
+   {
+    "way_id": 159782601,
+    "status": "not drivable (highway=service)",
+    "km": 0.69,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159782603,
+    "status": "not drivable (highway=service)",
+    "km": 0.14,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159782604,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159782606,
+    "status": "not drivable (highway=service)",
+    "km": 0.07,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 159783156,
+    "status": "in graph",
+    "km": 10.26,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 432594096,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 604169631,
+    "status": "not drivable (highway=path)",
+    "km": 0.28,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 607599991,
+    "status": "not drivable (highway=path)",
+    "km": 0.06,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 807256890,
+    "status": "in graph",
+    "km": 18.08,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 807256891,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 917981144,
+    "status": "not drivable (highway=service)",
+    "km": 0.01,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 917981145,
+    "status": "not drivable (highway=service)",
+    "km": 0.01,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1022696258,
+    "status": "in graph",
+    "km": 4.42,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1024363830,
+    "status": "in graph",
+    "km": 4.88,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 6699232932,
+      "barrier": "gate",
+      "motor_vehicle:conditional": "no @ (Nov-May)",
+      "name": "Winter Closure"
+     }
+    ]
+   },
+   {
+    "way_id": 1024363844,
+    "status": "in graph",
+    "km": 0.4,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 83886981,
+      "barrier": "gate",
+      "motor_vehicle:conditional": "no @ (Nov-May)",
+      "name": "Winter Closure"
+     }
+    ]
+   },
+   {
+    "way_id": 1024363845,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1222068701,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1222068702,
+    "status": "not drivable (highway=service)",
+    "km": 0.11,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1222068703,
+    "status": "not drivable (highway=service)",
+    "km": 0.04,
+    "tags": {
+     "access": "yes",
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1222068704,
+    "status": "not drivable (highway=service)",
+    "km": 0.28,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 1718851886,
+      "barrier": "gate"
+     }
+    ]
+   },
+   {
+    "way_id": 1222068705,
+    "status": "not drivable (highway=service)",
+    "km": 0.21,
+    "tags": {
+     "highway": "service",
+     "surface": "unpaved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474090,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "access": "yes",
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474094,
+    "status": "not drivable (highway=path)",
+    "km": 0.19,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474095,
+    "status": "not drivable (highway=path)",
+    "km": 0.24,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474096,
+    "status": "not drivable (highway=path)",
+    "km": 0.02,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474097,
+    "status": "not drivable (highway=path)",
+    "km": 0.88,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474098,
+    "status": "not drivable (highway=path)",
+    "km": 0.02,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474099,
+    "status": "not drivable (highway=path)",
+    "km": 0.22,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474100,
+    "status": "not drivable (highway=path)",
+    "km": 0.03,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474101,
+    "status": "not drivable (highway=path)",
+    "km": 0.04,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474102,
+    "status": "not drivable (highway=path)",
+    "km": 0.01,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474103,
+    "status": "not drivable (highway=path)",
+    "km": 0.06,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474104,
+    "status": "not drivable (highway=path)",
+    "km": 0.11,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474105,
+    "status": "not drivable (highway=path)",
+    "km": 0.06,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474106,
+    "status": "not drivable (highway=path)",
+    "km": 0.04,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474107,
+    "status": "not drivable (highway=path)",
+    "km": 0.04,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474108,
+    "status": "not drivable (highway=path)",
+    "km": 0.05,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "wood"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325474109,
+    "status": "not drivable (highway=path)",
+    "km": 0.21,
+    "tags": {
+     "access": "yes",
+     "highway": "path",
+     "motor_vehicle": "no",
+     "surface": "compacted"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325556926,
+    "status": "not drivable (highway=service)",
+    "km": 0.02,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325556928,
+    "status": "not drivable (highway=service)",
+    "km": 0.15,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1325556929,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1545445407,
+    "status": "in graph",
+    "km": 7.62,
+    "tags": {
+     "highway": "secondary",
+     "motor_vehicle:conditional": "no @ (Nov-May)",
+     "seasonal": "spring;summer;autumn",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   }
+  ]
+ }
+]

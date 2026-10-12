@@ -1,0 +1,17 @@
+metric,states,pearson_r,measured_mean,proxy_mean,raw_mae,calibrated_loo_mae,worst_raw_error
+maxspeed_pct_motorway -> maxspeed_pct_motorway,16,0.946,93.969,93.022,1.92,1.972,6.86
+maxspeed_pct_trunk -> maxspeed_pct_trunk,16,0.944,68.928,71.561,5.684,6.141,11.67
+maxspeed_pct_primary -> maxspeed_pct_primary,16,0.895,48.813,56.891,9.619,9.075,25.47
+maxspeed_pct_secondary -> maxspeed_pct_secondary,16,0.885,36.614,46.094,10.151,7.439,34.62
+maxspeed_pct_tertiary -> maxspeed_pct_tertiary,16,0.837,19.233,26.058,8.055,6.307,26.74
+maxspeed_pct_unclassified -> maxspeed_pct_unclassified,16,0.317,7.201,7.753,4.805,6.056,26.44
+maxspeed_pct_residential -> maxspeed_pct_residential,16,0.906,7.594,8.585,2.491,2.379,7.4
+surface_tagged_pct -> surface_tagged_pct,16,0.974,49.911,40.33,9.637,4.615,17.257
+unpaved_pct -> unpaved_pct,16,0.84,22.133,10.189,11.943,8.584,29.143
+smoothness_tagged_pct -> smoothness_tagged_pct,16,0.987,1.895,1.579,0.411,1.145,2.285
+tiger_reviewed_no_pct -> tiger_reviewed_no_pct,16,0.983,48.721,43.448,5.642,3.641,11.43
+4wd_only_pct -> 4wd_only_pct,16,0.922,0.083,0.013,0.07,0.071,0.663
+naive_maxspeed_pct -> maxspeed_any_pct,16,0.679,16.278,4.627,11.651,5.04,30.29
+naive_surface_pct -> surface_tagged_pct,16,0.905,49.911,26.691,23.249,8.025,51.13
+signal nodes / FHWA km -> signals_per_100km,16,0.994,5.957,6.974,1.051,0.504,3.81
+restriction relations / drivable ways -> via-node restrictions per 1000 junctions,16,0.913,16.391,23.477,7.086,3.259,21.616

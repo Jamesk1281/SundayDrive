@@ -1,0 +1,851 @@
+[
+ {
+  "id": "mt_washington_auto_road",
+  "road": "Mt Washington Auto Rd",
+  "state": "new-hampshire",
+  "ways_matched": 17,
+  "km_in_graph": 12.4,
+  "km_closures_py_closes": 12.2,
+  "km_with_any_seasonal_or_conditional_tag": 12.2,
+  "km_dropped_or_not_drivable": 0.1,
+  "barriers_on_road": 3,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 18848737,
+    "status": "in graph",
+    "km": 3.22,
+    "tags": {
+     "access": "yes",
+     "highway": "unclassified",
+     "note": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 90113715,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "unclassified",
+     "surface": "metal"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 2940685874,
+      "barrier": "gate"
+     }
+    ]
+   },
+   {
+    "way_id": 290550829,
+    "status": "in graph",
+    "km": 0.19,
+    "tags": {
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 290550832,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 194813834,
+      "barrier": "toll_booth"
+     }
+    ]
+   },
+   {
+    "way_id": 290550835,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "access": "yes",
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 290550838,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "unclassified",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 2940685874,
+      "barrier": "gate"
+     }
+    ]
+   },
+   {
+    "way_id": 828959299,
+    "status": "in graph",
+    "km": 0.37,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 828959300,
+    "status": "in graph",
+    "km": 0.63,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 828959301,
+    "status": "in graph",
+    "km": 1.19,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 962675647,
+    "status": "in graph",
+    "km": 1.53,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 962675648,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1063340734,
+    "status": "not drivable (highway=service)",
+    "km": 0.09,
+    "tags": {
+     "highway": "service",
+     "motor_vehicle": "private",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1211919719,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1211919720,
+    "status": "in graph",
+    "km": 3.76,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1211919721,
+    "status": "in graph",
+    "km": 0.0,
+    "tags": {
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1211919723,
+    "status": "in graph",
+    "km": 0.67,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1322664023,
+    "status": "in graph",
+    "km": 0.4,
+    "tags": {
+     "description": "Entrance fee required for all users of the road, bike only allowed 2 days per year and runners 1 day per year",
+     "highway": "unclassified",
+     "seasonal": "no_snow",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "kancamagus",
+  "road": "Kancamagus Hwy (NH 112), year-round control",
+  "state": "new-hampshire",
+  "ways_matched": 45,
+  "km_in_graph": 59.9,
+  "km_closures_py_closes": 0,
+  "km_with_any_seasonal_or_conditional_tag": 0,
+  "km_dropped_or_not_drivable": 0.0,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 18817323,
+    "status": "in graph",
+    "km": 2.52,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 18845320,
+    "status": "in graph",
+    "km": 0.47,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 18847167,
+    "status": "in graph",
+    "km": 1.16,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 18847172,
+    "status": "in graph",
+    "km": 0.39,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 18847175,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 18848535,
+    "status": "in graph",
+    "km": 1.11,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 35918494,
+    "status": "in graph",
+    "km": 3.5,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 35918495,
+    "status": "in graph",
+    "km": 0.09,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 175345339,
+    "status": "in graph",
+    "km": 0.25,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 195033705,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 195033706,
+    "status": "in graph",
+    "km": 0.13,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 203520691,
+    "status": "in graph",
+    "km": 0.34,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 203520692,
+    "status": "in graph",
+    "km": 0.75,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237415579,
+    "status": "in graph",
+    "km": 1.38,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237415580,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875718,
+    "status": "in graph",
+    "km": 0.35,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875719,
+    "status": "in graph",
+    "km": 0.22,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875721,
+    "status": "in graph",
+    "km": 0.18,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875722,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875723,
+    "status": "in graph",
+    "km": 0.19,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 404875724,
+    "status": "in graph",
+    "km": 0.53,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 718221941,
+    "status": "in graph",
+    "km": 13.2,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 753080306,
+    "status": "in graph",
+    "km": 13.32,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 753080307,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 904850437,
+    "status": "in graph",
+    "km": 1.13,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 904850438,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 907839758,
+    "status": "in graph",
+    "km": 0.92,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 907839759,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 907891175,
+    "status": "in graph",
+    "km": 4.75,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 907891176,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 949219369,
+    "status": "in graph",
+    "km": 1.1,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 949219370,
+    "status": "in graph",
+    "km": 1.29,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1094978145,
+    "status": "in graph",
+    "km": 0.48,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823558,
+    "status": "in graph",
+    "km": 4.29,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823561,
+    "status": "in graph",
+    "km": 1.11,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823563,
+    "status": "in graph",
+    "km": 0.4,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823583,
+    "status": "in graph",
+    "km": 0.29,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823585,
+    "status": "in graph",
+    "km": 0.96,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823586,
+    "status": "in graph",
+    "km": 0.3,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823588,
+    "status": "in graph",
+    "km": 0.28,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823590,
+    "status": "in graph",
+    "km": 1.04,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823593,
+    "status": "in graph",
+    "km": 0.59,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1096823603,
+    "status": "in graph",
+    "km": 0.09,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1240482905,
+    "status": "in graph",
+    "km": 0.22,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1332524308,
+    "status": "in graph",
+    "km": 0.14,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]

@@ -1,0 +1,355 @@
+{
+ "label": "connecticut",
+ "graph_nodes": 148215,
+ "graph_edges": 188585,
+ "graph_km": 39571.1,
+ "accepted_ways": 106717,
+ "accepted_km": 39688.5,
+ "skipped_private_ways": 2107,
+ "km_by_class": {
+  "living_street": 0.0,
+  "motorway": 2006.5,
+  "motorway_link": 802.6,
+  "primary": 1414.8,
+  "primary_link": 9.7,
+  "residential": 26105.4,
+  "secondary": 4547.8,
+  "secondary_link": 12.6,
+  "tertiary": 3862.7,
+  "tertiary_link": 3.6,
+  "trunk": 647.4,
+  "trunk_link": 13.4,
+  "unclassified": 144.6
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 0.0,
+   "tagged_pct": null,
+   "tagged_hm_kmh": null,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 2006.5,
+   "tagged_pct": 86.16,
+   "tagged_hm_kmh": 95.7,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 802.6,
+   "tagged_pct": 12.48,
+   "tagged_hm_kmh": 66.6,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 1414.8,
+   "tagged_pct": 32.45,
+   "tagged_hm_kmh": 59.7,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 9.7,
+   "tagged_pct": 1.27,
+   "tagged_hm_kmh": 49.7,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 26105.4,
+   "tagged_pct": 9.66,
+   "tagged_hm_kmh": 40.9,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 4547.8,
+   "tagged_pct": 27.49,
+   "tagged_hm_kmh": 58.3,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 12.6,
+   "tagged_pct": 28.98,
+   "tagged_hm_kmh": 61.7,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 3862.7,
+   "tagged_pct": 20.18,
+   "tagged_hm_kmh": 47.3,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 3.6,
+   "tagged_pct": 1.57,
+   "tagged_hm_kmh": 47.5,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 647.4,
+   "tagged_pct": 56.23,
+   "tagged_hm_kmh": 65.9,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 13.4,
+   "tagged_pct": 2.34,
+   "tagged_hm_kmh": 49.7,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 144.6,
+   "tagged_pct": 26.44,
+   "tagged_hm_kmh": 30.5,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 18.31,
+ "surface": {
+  "tagged_pct": 37.99,
+  "unpaved_pct": 2.12,
+  "untagged_pct": 62.01,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.11,
+   "unclassified": 33.33,
+   "residential": 3.01
+  },
+  "untagged_pct_by_class": {
+   "motorway": 53.54,
+   "trunk": 57.19,
+   "primary": 47.92,
+   "secondary": 53.61,
+   "tertiary": 54.63,
+   "unclassified": 26.87,
+   "residential": 66.43
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 1.52,
+  "smoothness_bad_or_worse_km": 8.1,
+  "smoothness_very_bad_or_worse_km": 1.3,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 1.3,
+  "tracktype_tagged_km": 48.2,
+  "tracktype_grade3plus_km": 15.8,
+  "tiger_cfcc_a5_km": 39.0,
+  "tiger_cfcc_a5_untagged_rough_km": 37.6,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 0.0,
+   "residential": 1.3
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 70.57,
+  "tiger_origin_pct": 84.12,
+  "reviewed_no_pct_by_class": {
+   "motorway": 61.1,
+   "trunk": 67.73,
+   "primary": 69.36,
+   "secondary": 70.69,
+   "tertiary": 72.72,
+   "unclassified": 55.25,
+   "residential": 71.87
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 2.3,
+  "closures_py_closes_ways": 6,
+  "seasonal_any_km": 0.0,
+  "car_conditional_km": 2.5,
+  "winter_service_no_km": 2.3,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 14.0,
+  "closed_km_by_tag": {
+   "motor_vehicle=private": 8.6,
+   "motor_vehicle=no": 4.8,
+   "access=permit": 0.4,
+   "access=delivery": 0.0,
+   "access=emergency": 0.0
+  },
+  "permit_km": 0.4,
+  "car_conditional_km_by_verdict": {
+   "no closing rule": 0.1,
+   "part-time": 2.4
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=no @ (Dec-Mar Mo-Fr; Dec-Mar Sa-Su dusk-dawn; PH dusk-dawn; Apr-Nov Mo-Su dusk-dawn)": 2.4,
+   "access:conditional=|yes@(mo-fr 07:00-9:00)": 0.1
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 87,
+ "controls": {
+  "on_graph": {
+   "signal": 7497,
+   "stop": 15731,
+   "giveway": 275
+  },
+  "in_file": {
+   "signal": 7858,
+   "stop": 18871,
+   "giveway": 293
+  },
+  "per_100km": {
+   "signal": 18.95,
+   "stop": 39.75,
+   "giveway": 0.69
+  },
+  "all_per_100km": 59.39
+ },
+ "timed_barriers_on_graph": {
+  "count": 4,
+  "by_key": {
+   "motor_vehicle:conditional": 2,
+   "opening_hours": 2
+  },
+  "list": [
+   {
+    "id": 244473215,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "yes @ (May-Oct: Mo-Su,PH 10:00-17:30)"
+   },
+   {
+    "id": 2190324530,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 7412912215,
+    "barrier": "swing_gate",
+    "motor_vehicle:conditional": "no @ (Dec-Mar Mo-Fr; Dec-Mar Sa-Su dusk-dawn; PH dusk-dawn; Apr-Nov Mo-Su dusk-dawn)"
+   },
+   {
+    "id": 10936160605,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "yes"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 3262,
+  "by_where": {
+   "via node, at a junction": 1729,
+   "from/to not both in graph": 1109,
+   "via way": 143,
+   "via node, elsewhere": 276,
+   "no via": 5
+  },
+  "junctions": 95277,
+  "via_node_per_1000_junctions": 18.15,
+  "via_way_per_1000_junctions": 1.5
+ },
+ "byways": {
+  "road_route_relations": 543,
+  "networks": {
+   "(none)": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 53.7,
+    "admitted_km": 53.7
+   },
+   "US:CT:Parkway": {
+    "relations": 3,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 212.5,
+    "admitted_km": 0.0
+   },
+   "US:NY:Parkway": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.1,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 15256869,
+    "network": "",
+    "name": "Connecticut State Route 169 Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 53.7
+   },
+   {
+    "id": 15425309,
+    "network": "US:CT:Parkway",
+    "name": "Merritt Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 120.9
+   },
+   {
+    "id": 15427824,
+    "network": "US:CT:Parkway",
+    "name": "Milford Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "Daniel S. Wasson Connector",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 6.5
+   },
+   {
+    "id": 15427870,
+    "network": "US:CT:Parkway",
+    "name": "Wilbur Cross Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 85.1
+   },
+   {
+    "id": 406146,
+    "network": "US:NY:Parkway",
+    "name": "Hutchinson River Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.1
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 39688.5,
+  "unpaved_pct": 2.12,
+  "untagged_surface_pct": 61.95,
+  "smoothness_bad_or_worse_km": 8.1,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 1.3,
+  "maxspeed_tagged_pct": {
+   "motorway": 86.25,
+   "trunk": 56.2,
+   "primary": 32.58,
+   "secondary": 27.48,
+   "tertiary": 20.17,
+   "unclassified": 25.79,
+   "residential": 9.65
+  }
+ },
+ "timing_s": {
+  "relations": 0.4,
+  "parse": 13.0,
+  "total": 14.7
+ },
+ "peak_rss_gb": 1.42
+}

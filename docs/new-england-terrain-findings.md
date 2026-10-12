@@ -1,5 +1,14 @@
 # New England terrain: built, and the relief fix verified
 
+> **Corrected 2026-10-11 by [`us-map-data-findings.md`](us-map-data-findings.md) §6.1 and
+> §9.** The "relief max 1,453 m (White Mountains, plausible)" below is a corrupt Terrarium
+> pixel on the Maine coast near Boothbay. It sits *inside* the −11,000..9,000 m band this
+> document added, so the band keeps it. The deployed raster's four largest relief values
+> are all such spikes, and New England's real maximum is about 680 m, at Katahdin. Corrupt
+> in-band pixels raise the relief component on 31 New England tiles. In the deployed scores
+> they lift 25.5 km of road by up to 1.7 points, around Portland's Eastern Promenade,
+> Harpswell, Provincetown and Nantucket.
+
 Run 2026-08-29 against `docs/archive/new-england-terrain-brief.md`. Command, verbatim,
 from the main checkout:
 

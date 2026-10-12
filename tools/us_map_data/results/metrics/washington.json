@@ -1,0 +1,980 @@
+{
+ "label": "washington",
+ "graph_nodes": 449861,
+ "graph_edges": 552228,
+ "graph_km": 149061.9,
+ "accepted_ways": 324972,
+ "accepted_km": 152942.9,
+ "skipped_private_ways": 11988,
+ "km_by_class": {
+  "living_street": 97.8,
+  "motorway": 3341.3,
+  "motorway_link": 1272.1,
+  "primary": 5142.4,
+  "primary_link": 87.4,
+  "residential": 60133.1,
+  "secondary": 10346.8,
+  "secondary_link": 48.3,
+  "tertiary": 23773.9,
+  "tertiary_link": 31.0,
+  "trunk": 3123.5,
+  "trunk_link": 115.6,
+  "unclassified": 41548.5
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 97.8,
+   "tagged_pct": 7.53,
+   "tagged_hm_kmh": 22.7,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3341.3,
+   "tagged_pct": 99.37,
+   "tagged_hm_kmh": 103.9,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 1272.1,
+   "tagged_pct": 13.79,
+   "tagged_hm_kmh": 72.0,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 5142.4,
+   "tagged_pct": 90.59,
+   "tagged_hm_kmh": 72.2,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 87.4,
+   "tagged_pct": 22.8,
+   "tagged_hm_kmh": 44.2,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 60133.1,
+   "tagged_pct": 21.66,
+   "tagged_hm_kmh": 37.4,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 10346.8,
+   "tagged_pct": 67.3,
+   "tagged_hm_kmh": 64.5,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 48.3,
+   "tagged_pct": 22.9,
+   "tagged_hm_kmh": 48.5,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 23773.9,
+   "tagged_pct": 38.38,
+   "tagged_hm_kmh": 56.9,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 31.0,
+   "tagged_pct": 18.97,
+   "tagged_hm_kmh": 44.7,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 3123.5,
+   "tagged_pct": 97.83,
+   "tagged_hm_kmh": 87.0,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 115.6,
+   "tagged_pct": 17.02,
+   "tagged_hm_kmh": 64.4,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 41548.5,
+   "tagged_pct": 6.04,
+   "tagged_hm_kmh": 52.6,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 28.78,
+ "surface": {
+  "tagged_pct": 46.15,
+  "unpaved_pct": 19.33,
+  "untagged_pct": 53.85,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.28,
+   "tertiary": 4.01,
+   "unclassified": 57.94,
+   "residential": 6.25
+  },
+  "untagged_pct_by_class": {
+   "motorway": 35.41,
+   "trunk": 37.6,
+   "primary": 29.59,
+   "secondary": 38.66,
+   "tertiary": 49.99,
+   "unclassified": 32.68,
+   "residential": 76.77
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 1.06,
+  "smoothness_bad_or_worse_km": 572.6,
+  "smoothness_very_bad_or_worse_km": 159.9,
+  "4wd_only_km": 5.5,
+  "4wd_or_very_bad_km": 165.4,
+  "tracktype_tagged_km": 1135.2,
+  "tracktype_grade3plus_km": 214.0,
+  "tiger_cfcc_a5_km": 568.6,
+  "tiger_cfcc_a5_untagged_rough_km": 555.2,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.3,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 161.6,
+   "residential": 3.5
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 39.67,
+  "tiger_origin_pct": 54.76,
+  "reviewed_no_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 13.85,
+   "primary": 5.44,
+   "secondary": 16.82,
+   "tertiary": 42.09,
+   "unclassified": 32.26,
+   "residential": 55.14
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 249.5,
+  "closures_py_closes_ways": 464,
+  "seasonal_any_km": 108.7,
+  "car_conditional_km": 97.2,
+  "winter_service_no_km": 113.7,
+  "seasonal_values_not_read": {
+   "winter": 14
+  },
+  "closed_to_cars_or_ford_km": 3794.8,
+  "closed_km_by_tag": {
+   "access=forestry": 3344.8,
+   "access=permit": 247.0,
+   "motor_vehicle=no": 103.8,
+   "motor_vehicle=private": 69.6,
+   "motor_vehicle=permit": 25.2,
+   "motor_vehicle=forestry": 3.1,
+   "access=agricultural": 1.1,
+   "vehicle=no": 0.1,
+   "motorcar=no": 0.0,
+   "access=delivery": 0.0,
+   "access=emergency": 0.0
+  },
+  "permit_km": 272.2,
+  "car_conditional_km_by_verdict": {
+   "closes": 40.6,
+   "dated": 1.2,
+   "no closing rule": 17.4,
+   "time of day": 30.5,
+   "unrecognized": 7.5
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "access:conditional=no @ (Mo 06:00-24:00; Tu-Th 00:00-24:00; Fr 00:00-20:30)": 25.6,
+   "motor_vehicle:conditional=no @ (8 Dec - 1 May)": 7.5,
+   "access:conditional=private @ (00:00-06:00,18:00-24:00)": 5.6,
+   "motor_vehicle:conditional=destination @ (May 23-Sep 07: Sa-Su; Aug 01-02 off; May 25; Jul 03; Sep 07)": 5.1,
+   "access:conditional=no @ (sunset-sunrise)": 3.3,
+   "motor_vehicle:conditional=yes @ (10:00 - sunset))": 3.2,
+   "motor_vehicle:conditional=yes @ (Mo-Fr 05:00-20:00)": 1.9,
+   "motor_vehicle:conditional=no @ (06:00-19:00)": 1.1,
+   "motor_vehicle:conditional=yes @ sunrise-sunset": 0.4,
+   "motor_vehicle:conditional=private @ (Mo-Fr 07:00-21:00)": 0.4,
+   "access:conditional=yes @ (Mo-Fr 05:00-11:00; Sa-Su 08:00-13:30)": 0.3,
+   "motor_vehicle:conditional=no @ (2018 Aug 20 - 2028 Aug 29 06:00-19:00)": 0.2,
+   "motor_vehicle:conditional=yes @ (00:00-10:00,16:00-24:00)": 0.2,
+   "motor_vehicle:conditional=no @ Su 07:00-15:00": 0.2,
+   "motor_vehicle:conditional=no @ (2018 Aug 17-2018 Nov 22)": 0.2
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 1041,
+ "controls": {
+  "on_graph": {
+   "signal": 8571,
+   "stop": 19326,
+   "giveway": 1116
+  },
+  "in_file": {
+   "signal": 8791,
+   "stop": 24470,
+   "giveway": 1343
+  },
+  "per_100km": {
+   "signal": 5.75,
+   "stop": 12.97,
+   "giveway": 0.75
+  },
+  "all_per_100km": 19.46
+ },
+ "timed_barriers_on_graph": {
+  "count": 88,
+  "by_key": {
+   "access:conditional": 10,
+   "opening_hours": 74,
+   "seasonal": 2,
+   "motor_vehicle:conditional": 2,
+   "motorcar:conditional": 1
+  },
+  "list": [
+   {
+    "id": 37133886,
+    "barrier": "lift_gate",
+    "access:conditional": "no @ winter",
+    "access": "yes",
+    "name": "Ross Dam Trail Gate"
+   },
+   {
+    "id": 47183319,
+    "barrier": "gate",
+    "opening_hours": "06:00-22:00",
+    "access": "permissive"
+   },
+   {
+    "id": 47537888,
+    "barrier": "yes",
+    "opening_hours": "\"Spring-Fall\""
+   },
+   {
+    "id": 48412889,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 06:00-22:00",
+    "access": "permissive"
+   },
+   {
+    "id": 48624022,
+    "barrier": "gate",
+    "opening_hours": "06:30-dusk",
+    "access": "yes"
+   },
+   {
+    "id": 50043724,
+    "barrier": "swing_gate",
+    "opening_hours": "Mo-Fr 07:30-16:00"
+   },
+   {
+    "id": 50310706,
+    "barrier": "lift_gate",
+    "access:conditional": "no @ winter",
+    "access": "yes",
+    "name": "Silver Star Gate"
+   },
+   {
+    "id": 50653415,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 50653544,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 50780994,
+    "barrier": "swing_gate",
+    "opening_hours": "Apr-Nov 24/7",
+    "name": "Bedal Gate"
+   },
+   {
+    "id": 50998844,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 06:00-21:00"
+   },
+   {
+    "id": 51338033,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 53156712,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 110932408,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 07:00-19:00",
+    "name": "American Lake Boat Launch"
+   },
+   {
+    "id": 267764196,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Blaine"
+   },
+   {
+    "id": 340143711,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Pacific Highway"
+   },
+   {
+    "id": 419425829,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-20:00",
+    "name": "Port of Entry - Carson"
+   },
+   {
+    "id": 419439118,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-20:00",
+    "name": "Port of Entry - Danville"
+   },
+   {
+    "id": 648973200,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 666195918,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Osoyoos"
+   },
+   {
+    "id": 1806209988,
+    "barrier": "border_control",
+    "access:conditional": "no @ (00:00-08:00)",
+    "name": "Port of Entry - Aldergrove"
+   },
+   {
+    "id": 1806210003,
+    "barrier": "border_control",
+    "access:conditional": "no @ (00:00-08:00)"
+   },
+   {
+    "id": 2282603702,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 2371415382,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Oroville"
+   },
+   {
+    "id": 2503491568,
+    "barrier": "gate",
+    "opening_hours": "Apr-Sep",
+    "access": "private"
+   },
+   {
+    "id": 2626540555,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-24:00"
+   },
+   {
+    "id": 2681351832,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 2812412429,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 3778853223,
+    "barrier": "gate",
+    "opening_hours": "10:00-dusk",
+    "access": "permissive"
+   },
+   {
+    "id": 3792209711,
+    "barrier": "gate",
+    "access:conditional": "yes @ (7:00-20:00)"
+   },
+   {
+    "id": 3808876996,
+    "barrier": "gate",
+    "seasonal": "yes"
+   },
+   {
+    "id": 3997862042,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ Nov-May"
+   },
+   {
+    "id": 4214850524,
+    "barrier": "gate",
+    "access:conditional": "no @ (dusk-07:00)",
+    "access": "yes"
+   },
+   {
+    "id": 4261876343,
+    "barrier": "gate",
+    "opening_hours": "06:00-22:00"
+   },
+   {
+    "id": 4395458162,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "permissive"
+   },
+   {
+    "id": 4426775232,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Pacific Highway"
+   },
+   {
+    "id": 4426775233,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Blaine"
+   },
+   {
+    "id": 4450954348,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Pacific Highway"
+   },
+   {
+    "id": 4638925146,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (8 Dec - 1 May)"
+   },
+   {
+    "id": 4820615547,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 4886283554,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 4977594206,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Sumas"
+   },
+   {
+    "id": 5264835018,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 5434842426,
+    "barrier": "swing_gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 5435780296,
+    "barrier": "gate",
+    "seasonal": "yes",
+    "opening_hours": "Apr 15-Oct 31",
+    "access": "yes"
+   },
+   {
+    "id": 5565156802,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 5669949406,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Nighthawk"
+   },
+   {
+    "id": 5669998960,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Midway"
+   },
+   {
+    "id": 5670012932,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Ferry"
+   },
+   {
+    "id": 5670041640,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-20:00",
+    "name": "Port of Entry - Cascade"
+   },
+   {
+    "id": 5737162483,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Paterson"
+   },
+   {
+    "id": 5737175916,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-16:00",
+    "name": "Port of Entry - Nelway"
+   },
+   {
+    "id": 5813504085,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Waneta"
+   },
+   {
+    "id": 6194283623,
+    "barrier": "gate",
+    "access:conditional": "destination @ (Mo-Su 07:00-18:00)"
+   },
+   {
+    "id": 6331125518,
+    "barrier": "fence",
+    "access:conditional": "no@winter",
+    "access": "yes"
+   },
+   {
+    "id": 6393505591,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 6407203163,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Abbotsford-Huntington (817)"
+   },
+   {
+    "id": 6892519481,
+    "barrier": "lift_gate",
+    "opening_hours": "closed"
+   },
+   {
+    "id": 7057561142,
+    "barrier": "gate",
+    "access:conditional": "no @ (December 15 -April 30); yes @ (May 1-December 14)"
+   },
+   {
+    "id": 7424654397,
+    "barrier": "gate",
+    "opening_hours": "Apr-Oct"
+   },
+   {
+    "id": 7714453101,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 7797895394,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 7797895399,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 8441955750,
+    "barrier": "swing_gate",
+    "opening_hours": "06:00-22:00"
+   },
+   {
+    "id": 9134105364,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 07:30-dusk",
+    "access": "yes"
+   },
+   {
+    "id": 9252029419,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Chopaka"
+   },
+   {
+    "id": 9252085049,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 09:00-17:00",
+    "name": "Port of Entry - Boundary"
+   },
+   {
+    "id": 9252126061,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Frontier"
+   },
+   {
+    "id": 9252137819,
+    "barrier": "border_control",
+    "opening_hours": "Su-Sa 08:00-20:00",
+    "name": "Port of Entry - Metaline Falls"
+   },
+   {
+    "id": 9543443092,
+    "barrier": "swing_gate",
+    "motorcar:conditional": "no @ snow",
+    "access": "yes",
+    "name": "Deer Creek Gate"
+   },
+   {
+    "id": 9558853933,
+    "barrier": "gate",
+    "opening_hours": "06:00-18:00",
+    "access": "permissive"
+   },
+   {
+    "id": 9611231191,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 9800360335,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 9800405126,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 10208375483,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 10915238007,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 10915238066,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-19:30"
+   },
+   {
+    "id": 10915238067,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-19:30"
+   },
+   {
+    "id": 10915238069,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-19:30"
+   },
+   {
+    "id": 11788838070,
+    "barrier": "swing_gate",
+    "access:conditional": "no @ (00:00-08:00)"
+   },
+   {
+    "id": 11806063518,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "yes"
+   },
+   {
+    "id": 11869979395,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "yes"
+   },
+   {
+    "id": 11870082546,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 11872143265,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 12310569588,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 08:00-16:00"
+   },
+   {
+    "id": 12411558711,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "yes"
+   },
+   {
+    "id": 12780246421,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su (sunrise-00:30)-(sunset+00:30)"
+   },
+   {
+    "id": 13924160914,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 21:00-05:00",
+    "access": "private"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 16516,
+  "by_where": {
+   "via node, at a junction": 9309,
+   "from/to not both in graph": 4525,
+   "via way": 451,
+   "via node, elsewhere": 2179,
+   "no via": 52
+  },
+  "junctions": 258230,
+  "via_node_per_1000_junctions": 36.05,
+  "via_way_per_1000_junctions": 1.75
+ },
+ "byways": {
+  "road_route_relations": 456,
+  "networks": {
+   "(none)": {
+    "relations": 11,
+    "scenic_yes": 8,
+    "admitted": 8,
+    "km": 926.4,
+    "admitted_km": 888.8
+   },
+   "US:OR:Scenic": {
+    "relations": 4,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 8.0,
+    "admitted_km": 0.0
+   },
+   "US:WA": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 93.6,
+    "admitted_km": 93.6
+   }
+  },
+  "relations": [
+   {
+    "id": 2328314,
+    "network": "",
+    "name": "Cape Flattery Tribal Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 19.5
+   },
+   {
+    "id": 16073698,
+    "network": "",
+    "name": "Cascade Loop Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 41.4
+   },
+   {
+    "id": 15608045,
+    "network": "",
+    "name": "Chinook Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 146.6
+   },
+   {
+    "id": 5897530,
+    "network": "",
+    "name": "Chuckanut Drive Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 11.6
+   },
+   {
+    "id": 5897534,
+    "network": "",
+    "name": "Chuckanut Drive Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 6.4
+   },
+   {
+    "id": 15608293,
+    "network": "",
+    "name": "Coulee Corridor Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 252.0
+   },
+   {
+    "id": 12796456,
+    "network": "",
+    "name": "Panhandle Historic Rivers Passage",
+    "ref": "US 2",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.6
+   },
+   {
+    "id": 18997131,
+    "network": "",
+    "name": "Queen Anne Boulevard",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 6.3
+   },
+   {
+    "id": 15611810,
+    "network": "",
+    "name": "Stevens Pass Greenway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 147.7
+   },
+   {
+    "id": 15611833,
+    "network": "",
+    "name": "Strait of Juan de Fuca Highway - SR 112",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 104.4
+   },
+   {
+    "id": 15611887,
+    "network": "",
+    "name": "White Pass Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 189.8
+   },
+   {
+    "id": 19609813,
+    "network": "US:OR:Scenic",
+    "name": "Blue Mountain Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 19609957,
+    "network": "US:OR:Scenic",
+    "name": "Historic Columbia River Highway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 19609816,
+    "network": "US:OR:Scenic",
+    "name": "Journey Through Time Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 3.6
+   },
+   {
+    "id": 19609972,
+    "network": "US:OR:Scenic",
+    "name": "Pacific Coast Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 4.5
+   },
+   {
+    "id": 16645377,
+    "network": "US:WA",
+    "name": "Mount Baker Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 93.6
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 152942.9,
+  "unpaved_pct": 19.27,
+  "untagged_surface_pct": 54.26,
+  "smoothness_bad_or_worse_km": 578.4,
+  "4wd_only_km": 5.5,
+  "4wd_or_very_bad_km": 170.7,
+  "maxspeed_tagged_pct": {
+   "motorway": 99.39,
+   "trunk": 97.83,
+   "primary": 90.59,
+   "secondary": 67.0,
+   "tertiary": 38.12,
+   "unclassified": 6.0,
+   "residential": 21.28
+  }
+ },
+ "timing_s": {
+  "relations": 1.0,
+  "parse": 34.6,
+  "total": 39.5
+ },
+ "peak_rss_gb": 2.42
+}

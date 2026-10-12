@@ -1,0 +1,62 @@
+{
+ "forest": "Grand Mesa, Uncompahgre and Gunnison National Forests",
+ "mvum_lines": 1706,
+ "mvum_km_sampled": 4428.4,
+ "sample_m": 25.0,
+ "tolerance_m": 15.0,
+ "tables": {
+  "coverage": {
+   "dropped by the access rule": 0.3,
+   "highway=service (not in graph)": 64.6,
+   "highway=track (not in graph)": 2563.1,
+   "in graph (living_street)": 0.1,
+   "in graph (primary)": 0.1,
+   "in graph (residential)": 130.9,
+   "in graph (secondary)": 2.0,
+   "in graph (tertiary)": 341.5,
+   "in graph (tertiary_link)": 0.1,
+   "in graph (trunk)": 0.1,
+   "in graph (unclassified)": 1028.2,
+   "in graph, closed all year by closures.py": 0.7,
+   "no OSM way within 15 m": 283.2,
+   "other highway=footway (not in graph)": 0.2,
+   "other highway=path (not in graph)": 13.4
+  },
+  "graph roughness": {
+   "ML2 (high clearance) | 4wd_only": 109.5,
+   "ML2 (high clearance) | no roughness or surface signal": 35.5,
+   "ML2 (high clearance) | smoothness bad or worse": 128.9,
+   "ML2 (high clearance) | tracktype grade3-5": 0.1,
+   "ML2 (high clearance) | unpaved surface only": 32.7,
+   "ML3 (passenger car) | 4wd_only": 58.2,
+   "ML3 (passenger car) | no roughness or surface signal": 53.5,
+   "ML3 (passenger car) | smoothness bad or worse": 112.9,
+   "ML3 (passenger car) | tracktype grade3-5": 6.1,
+   "ML3 (passenger car) | unpaved surface only": 548.5,
+   "ML4 (passenger car) | no roughness or surface signal": 52.1,
+   "ML4 (passenger car) | smoothness bad or worse": 213.7,
+   "ML4 (passenger car) | unpaved surface only": 144.8,
+   "ML5 (passenger car) | no roughness or surface signal": 5.3,
+   "ML5 (passenger car) | unpaved surface only": 1.1
+  },
+  "graph seasonal": {
+   "closures.py closes it": 1.6,
+   "no seasonal tag": 819.0
+  },
+  "seasonal coverage": {
+   "dropped by the access rule": 0.1,
+   "highway=service (not in graph)": 20.4,
+   "highway=track (not in graph)": 516.4,
+   "in graph (living_street)": 0.1,
+   "in graph (residential)": 30.6,
+   "in graph (secondary)": 0.1,
+   "in graph (tertiary)": 299.5,
+   "in graph (tertiary_link)": 0.1,
+   "in graph (trunk)": 0.0,
+   "in graph (unclassified)": 490.2,
+   "no OSM way within 15 m": 59.4,
+   "other highway=footway (not in graph)": 0.1,
+   "other highway=path (not in graph)": 2.3
+  }
+ }
+}

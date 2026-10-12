@@ -1,0 +1,165 @@
+{
+ "counties": [
+  "08091",
+  "08111",
+  "08053",
+  "08113",
+  "08123",
+  "08081"
+ ],
+ "sample_m": 25.0,
+ "tolerance_m": 15.0,
+ "tables": {
+  "S1400 local road (control)": {
+   "by county": {
+    "08053": 724.1,
+    "08081": 5925.5,
+    "08091": 1056.0,
+    "08111": 520.3,
+    "08113": 3157.2,
+    "08123": 9520.9
+   },
+   "coverage": {
+    "dropped by the access rule": 84.6,
+    "highway=service (not in graph)": 808.8,
+    "highway=track (not in graph)": 3253.5,
+    "in graph (living_street)": 1.1,
+    "in graph (motorway)": 6.6,
+    "in graph (motorway_link)": 1.1,
+    "in graph (primary)": 188.4,
+    "in graph (primary_link)": 1.7,
+    "in graph (residential)": 4137.6,
+    "in graph (secondary)": 873.5,
+    "in graph (secondary_link)": 1.2,
+    "in graph (tertiary)": 2378.5,
+    "in graph (tertiary_link)": 0.7,
+    "in graph (trunk)": 5.4,
+    "in graph (trunk_link)": 2.0,
+    "in graph (unclassified)": 6212.9,
+    "no OSM way within 15 m": 2812.3,
+    "other highway=construction (not in graph)": 4.5,
+    "other highway=cycleway (not in graph)": 4.4,
+    "other highway=escape (not in graph)": 1.0,
+    "other highway=footway (not in graph)": 42.1,
+    "other highway=path (not in graph)": 72.8,
+    "other highway=pedestrian (not in graph)": 0.1,
+    "other highway=proposed (not in graph)": 0.7,
+    "other highway=road (not in graph)": 8.3,
+    "other highway=services (not in graph)": 0.1
+   },
+   "graph access": {
+    "access=destination": 1.5,
+    "access=permissive": 1.9,
+    "access=yes": 179.6,
+    "motor_vehicle=destination": 2.4,
+    "motor_vehicle=yes": 90.2,
+    "no access tag": 13535.2
+   },
+   "graph roughness": {
+    "4wd_only": 126.8,
+    "no roughness or surface signal": 6031.5,
+    "smoothness bad or worse": 337.0,
+    "tracktype grade3-5": 121.1,
+    "unpaved surface only": 7194.3
+   },
+   "graph tiger:cfcc": {
+    "A1x": 6.4,
+    "A2x": 4.0,
+    "A3x": 7.1,
+    "A4x": 4866.1,
+    "A5x": 3.4,
+    "A6x": 3.5,
+    "A7x": 21.7
+   },
+   "total": 20903.9
+  },
+  "S1500 4WD trail": {
+   "by county": {
+    "08053": 16.9,
+    "08081": 1470.7,
+    "08091": 30.5,
+    "08113": 610.8,
+    "08123": 783.0
+   },
+   "coverage": {
+    "highway=service (not in graph)": 43.7,
+    "highway=track (not in graph)": 1645.6,
+    "in graph (primary)": 0.3,
+    "in graph (residential)": 97.7,
+    "in graph (secondary)": 0.8,
+    "in graph (tertiary)": 3.5,
+    "in graph (trunk)": 0.5,
+    "in graph (unclassified)": 267.6,
+    "no OSM way within 15 m": 829.2,
+    "other highway=cycleway (not in graph)": 1.0,
+    "other highway=footway (not in graph)": 11.1,
+    "other highway=path (not in graph)": 9.7,
+    "other highway=road (not in graph)": 1.1
+   },
+   "graph access": {
+    "access=yes": 7.0,
+    "motor_vehicle=yes": 3.7,
+    "no access tag": 359.8
+   },
+   "graph roughness": {
+    "4wd_only": 9.8,
+    "no roughness or surface signal": 76.5,
+    "smoothness bad or worse": 6.6,
+    "tracktype grade3-5": 9.1,
+    "unpaved surface only": 268.6
+   },
+   "graph tiger:cfcc": {
+    "A2x": 0.3,
+    "A4x": 86.0,
+    "A5x": 45.8
+   },
+   "total": 2912.0
+  },
+  "S1740 private service road": {
+   "by county": {
+    "08053": 59.0,
+    "08081": 250.1,
+    "08091": 56.2,
+    "08111": 13.0,
+    "08113": 158.8,
+    "08123": 282.2
+   },
+   "coverage": {
+    "dropped by the access rule": 15.6,
+    "highway=service (not in graph)": 302.0,
+    "highway=track (not in graph)": 143.3,
+    "in graph (motorway)": 0.1,
+    "in graph (primary)": 0.5,
+    "in graph (residential)": 40.4,
+    "in graph (secondary)": 0.8,
+    "in graph (tertiary)": 2.1,
+    "in graph (trunk)": 0.3,
+    "in graph (unclassified)": 24.7,
+    "no OSM way within 15 m": 284.4,
+    "other highway=cycleway (not in graph)": 0.4,
+    "other highway=footway (not in graph)": 1.6,
+    "other highway=path (not in graph)": 2.9
+   },
+   "graph access": {
+    "access=permissive": 2.7,
+    "access=yes": 0.3,
+    "no access tag": 66.0
+   },
+   "graph roughness": {
+    "4wd_only": 0.2,
+    "no roughness or surface signal": 32.7,
+    "smoothness bad or worse": 0.2,
+    "tracktype grade3-5": 0.4,
+    "unpaved surface only": 35.5
+   },
+   "graph tiger:cfcc": {
+    "A1x": 0.1,
+    "A3x": 0.2,
+    "A4x": 36.0,
+    "A5x": 3.1,
+    "A7x": 1.8
+   },
+   "total": 819.2
+  }
+ }
+}

@@ -1,0 +1,608 @@
+[
+ {
+  "id": "needles_hwy",
+  "road": "Needles Hwy (SD 87, Custer SP), bonus",
+  "state": "south-dakota",
+  "ways_matched": 35,
+  "km_in_graph": 58.4,
+  "km_closures_py_closes": 31.5,
+  "km_with_any_seasonal_or_conditional_tag": 31.5,
+  "km_dropped_or_not_drivable": 0.0,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 9856267,
+    "status": "in graph",
+    "km": 0.55,
+    "tags": {
+     "highway": "residential"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 9857610,
+    "status": "in graph",
+    "km": 0.29,
+    "tags": {
+     "highway": "residential"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 9858779,
+    "status": "in graph",
+    "km": 1.43,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 9861439,
+    "status": "in graph",
+    "km": 15.8,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 9908583,
+    "status": "in graph",
+    "km": 2.7,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 41042627,
+    "status": "in graph",
+    "km": 0.37,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 41042629,
+    "status": "in graph",
+    "km": 6.15,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 41042633,
+    "status": "in graph",
+    "km": 5.6,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 49417511,
+    "status": "in graph",
+    "km": 0.07,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 101460081,
+    "status": "in graph",
+    "km": 1.94,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 148476483,
+    "status": "in graph",
+    "km": 1.69,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 224161379,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 224161380,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 224161381,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 224161382,
+    "status": "in graph",
+    "km": 1.29,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 360390095,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 360390096,
+    "status": "in graph",
+    "km": 2.06,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 491490658,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 491490659,
+    "status": "in graph",
+    "km": 7.77,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 509458315,
+    "status": "in graph",
+    "km": 1.79,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 530425278,
+    "status": "in graph",
+    "km": 0.08,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 807407736,
+    "status": "in graph",
+    "km": 3.64,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1146138950,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1146138951,
+    "status": "in graph",
+    "km": 0.45,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1151384367,
+    "status": "in graph",
+    "km": 1.01,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1151384368,
+    "status": "in graph",
+    "km": 0.07,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1151384373,
+    "status": "in graph",
+    "km": 0.05,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1151384376,
+    "status": "in graph",
+    "km": 0.05,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1151384377,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1174463954,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1174486917,
+    "status": "in graph",
+    "km": 2.55,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "paved",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1223133176,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1223133177,
+    "status": "in graph",
+    "km": 0.12,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1374493403,
+    "status": "in graph",
+    "km": 0.6,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1374493404,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]

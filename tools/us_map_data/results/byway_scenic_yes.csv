@@ -1,0 +1,265 @@
+relation,network,state,ref,name,numbered_highway
+55450,US:NPS:Blue_Ridge,,,Blue Ridge Parkway,False
+335069,US:CA,CA,160,,True
+335437,US:NY,NY,30,,True
+456651,US:GRR,,,Great River Road,False
+530401,US:GRR,,,Great River Road (Illinois - other routes),False
+1239925,US:FL:Scenic,FL,,Green Mountain Scenic Byway,False
+1323707,US:MD,MD,25,,True
+1492181,US:NM,NM,503,,True
+1504905,US:UT,UT,128,,True
+1505202,US:UT,UT,211,Indian Creek Scenic Byway,True
+1505287,US:UT,UT,279,Potash Road,True
+1505320,US:UT,UT,313,State Route 313,True
+1523549,US:NPS:Natchez_Trace,,,Natchez Trace Parkway (Mississippi),False
+1535719,US:AL,AL,281,,True
+1536813,US:NV,NV,158,Deer Creek Road,True
+1783089,US:GRR,,,Great River Road (Arkansas),False
+1783090,US:GRR,,,Great River Road (Illinois - National Route),False
+1783091,US:GRR,,,Great River Road (Iowa - all routes),False
+1783092,US:GRR,,,Great River Road (Kentucky),False
+1783093,US:GRR,,,Great River Road (Louisiana - west bank),False
+1783094,US:GRR,,,Great River Road (Minnesota - National Route),False
+1783095,US:GRR,,,Great River Road (Wisconsin),False
+1784686,US:GRR,,,Great River Road (Minnesota - other routes),False
+1784814,US:GRR,,,Great River Road (Iowa),False
+1784815,US:GRR,,,Great River Road (Missouri - National Route),False
+1784816,US:GRR,,,,False
+1784926,US:GRR,,,Great River Road (Mississippi),False
+1784927,US:GRR,,,Great River Road (Tennessee),False
+1785009,US:GRR,,,Great River Road (Louisiana - east bank),False
+1854943,US:FL:Scenic,FL,,Bradenton Beach,False
+1854944,US:FL:Scenic,FL,,Courtney Campbell Causeway,False
+1854945,US:FL:Scenic,FL,,Florida Black Bear Scenic Byway,False
+1854946,US:FL:Scenic,FL,,Ormond Scenic Loop & Trail,False
+1854947,US:FL:Scenic,FL,,Palma Sola,False
+1854948,US:FL:Scenic,FL,,The Ridge,False
+1855406,US:FL:Scenic,FL,,A1A Scenic & Historic Coastal Byway,False
+1855407,US:FL:Scenic,FL,,Big Bend Scenic Byway,False
+1855408,US:FL:Scenic,FL,,Broward County A1A Scenic Highway,False
+1855409,US:FL:Scenic,FL,,Florida Keys Scenic Highway,False
+1855410,US:FL:Scenic,FL,,Indian River Lagoon - Treasure Coast Scenic Highway,False
+1855411,US:FL:Scenic,FL,,Lemon Bay Myakka Trail,False
+1855412,US:FL:Scenic,FL,,Pensacola Scenic Bluffs,False
+1855413,,FL,,Scenic Drive,False
+1855414,US:FL:Scenic,FL,,Scenic Highway 30A,False
+1855415,US:FL:Scenic,FL,,Tamiami Trail,False
+1855416,US:FL:Scenic,FL,,Bartram Scenic & Historic Highway,False
+2308744,US:US,US,34,,True
+2611314,US:FL:Scenic,FL,,River of Lakes Heritage Corridor,False
+2765289,US:FL:Scenic,FL,,Heritage Crossroads,False
+2765290,US:FL:Scenic,FL,,Indian River Lagoon,False
+2765774,US:FL:Scenic,FL,,J.C. Penney Memorial Scenic Highway,False
+2765775,US:FL:Scenic,FL,,Old Florida Heritage Highway,False
+2765776,US:FL:Scenic,FL,,Suncoast Scenic Parkway,False
+2962897,US:AB:NSB,AB,,Copper Country Trail National Byway,False
+3300030,US:NPS:Natchez_Trace,,,Natchez Trace Parkway (Alabama),False
+3300031,US:NPS:Natchez_Trace,,,Natchez Trace Parkway (Tennessee),False
+3300032,US:NPS:Natchez_Trace,,,Natchez Trace Parkway (super),False
+3821814,,VA,,Skyline Drive,False
+4057431,US:WI:Rustic,WI,R19,Rustic Road 19,False
+4059111,US:WI:Rustic,WI,R89,Rustic Road 89,False
+4581970,US:CO:Scenic,CO,,Peak to Peak Scenic Byway,False
+4594374,US:CO:Scenic,CO,,Trail Ridge Road Scenic Byway,False
+5208533,US:NY:Scenic,NY,,Shawangunk Mountains Scenic Byway,False
+5768385,,MT,,Going-to-the-Sun Road,False
+6774226,US:WI:Scenic,WI,,Great Divide National Scenic Highway,False
+8280039,US:GA:Scenic,GA,,Ridge and Valley Scenic Byway,False
+9354667,US:WI:Scenic,WI,,Lower Wisconsin River Road,False
+9356370,US:WI:Scenic,WI,,Wisconsin Lake Superior Scenic Byway,False
+9356409,US:WI:Scenic,WI,,Door County Coastal Byway,False
+9356493,US:WI:Scenic,WI,,Nicolet-Wolf River Scenic Byway,False
+9735809,US:SC,SC,,Cherokee Foothills National Scenic Byway,True
+9903605,US:NC:Scenic_Byway,NC,,New River Valley Byway,False
+10349320,US:NC:Scenic_Byway,NC,,US 421 Scenic Byway,False
+10967456,US:NHT,,,Overmountain Victory National Historic Trail Commemorative Motor Route,False
+10967458,US:NHT,,,Overmountain Victory National Historic Trail Commemorative Motor Route,False
+10967459,US:NHT,,,Overmountain Victory National Historic Trail Commemorative Motor Route (super),False
+12238016,US:ORSB,,ORB,Ohio River Scenic Byway (OH),False
+12339984,,TN,ETC,East Tennessee Crossing Byway,False
+12453331,,ME,,Rangeley Lakes Scenic Byway,False
+12453596,,ME,,Old Canada Road Scenic Byway,False
+12455343,,NH,,Kancamagus Scenic Byway,False
+12457334,,NH,,White Mountain Trail,False
+12792434,,ID,ID 97,Lake Coeur d'Alene Scenic Byway,False
+12796213,,ID,,White Pine Scenic Byway,False
+12796394,,ID,,St. Joe River Scenic Byway,False
+12796435,,ID,ID 200,Pend Oreille Scenic Byway,False
+12796456,,ID,US 2,Panhandle Historic Rivers Passage,False
+12840863,US:WI:Rustic,WI,R117,Rustic Road 117,False
+13058969,US:AB:NSB:Connecticut River,AB,,Connecticut River Byway (NH),False
+13080150,,HI,,Hana Highway,False
+13285852,US:MN:GRT,MN,,Glacial Ridge Trail,False
+13483234,,MN,,Saint Croix Scenic Byway,False
+14179499,,NH,,Mount Washington Auto Road,False
+14240390,US:AB:NSB,AB,,State of Jefferson Scenic Byway,False
+14249251,US:AB:NSB,AB,,Volcanic Legacy Scenic Byway,False
+14428669,,AZ,FR 300,Rim Road,False
+15037415,,AL,,Talladega Scenic Drive,False
+15038030,,AK,,Haines Highway - Valley of the Eagles,False
+15080845,,OK,,Talimena Scenic Drive,False
+15081056,,CA,,Death Valley Scenic Byway,False
+15081204,,CA,,Ebbetts Pass Scenic Byway,False
+15081437,,CA,,Tioga Road/Big Oak Flat Road,False
+15088378,US:CO:Scenic,CO,,Colorado River Headwaters Scenic Byway,False
+15256563,US:CO:Scenic,CO,,Grand Mesa Scenic and Historic Byway,False
+15256869,,CT,,Connecticut State Route 169 Scenic Byway,False
+15257360,,GA,,Russell-Brasstown National Scenic Byway,False
+15268474,,IL,,Meeting of the Great Rivers Scenic Route,False
+15284432,,KY,,Woodlands Trace,False
+15284540,,KY,,Red River Gorge Scenic Byway,False
+15284827,,ME,,Acadia All-American Road,False
+15327065,,MI,,River Road Scenic Byway,False
+15327940,,MN,,Edge of the Wilderness,False
+15337103,,MN,,Gunflint Trail Scenic Byway,False
+15340335,,MN,,Paul Bunyan Scenic Byway,False
+15340464,,MT,,Beartooth Highway,False
+15340890,,NV,,Lake Tahoe - Eastshore Drive,False
+15340975,,NV,,Pyramid Lake Scenic Byway,False
+15355272,US:NJ:Scenic,NJ,,Delaware River Scenic Byway,False
+15355357,US:NJ:Scenic,NJ,,Millstone Valley Scenic Byway,False
+15397052,US:AB:NSB,AB,,Longhouse National Forest Scenic Byway,False
+15413516,US:NJ:Scenic,NJ,,Pine Barrens Scenic Byway,False
+15413626,US:NJ:Scenic,NJ,,Western Highlands Scenic Byway,False
+15413709,,NM,,Billy the Kid Trail,False
+15413753,,NM,,Geronimo Trail Scenic Byway,False
+15418060,,NM,,Jemez Mountain Trail,False
+15418164,,NM,,Trail of the Mountain Spirits Scenic Byway,False
+15418225,,NM,,Turquoise Trail,False
+15418318,US:NY:Scenic,NY,,Mohawk Towpath Scenic Byway,False
+15418405,,TN,,Cherohala Skyway,False
+15418508,,NC,,Forest Heritage National Scenic Byway,False
+15418660,,NC,,Newfound Gap Road Byway,False
+15421486,,ND,,Sheyenne River Valley Scenic Byway,False
+15421507,US:OH:Byway,OH,HHB,Hocking Hills Scenic Byway,False
+15421598,US:Byway,,,Cherokee Hills Byway,False
+15427611,US:OR:Scenic,OR,,Cascade Lakes Scenic Byway,False
+15427730,US:OR:Scenic,OR,,Hells Canyon Scenic Byway,False
+15427867,US:OR:Scenic,OR,,McKenzie Pass-Santiam Pass Scenic Byway,False
+15443909,US:OR:Scenic,OR,,Mount Hood Scenic Byway,False
+15444006,US:OR:Scenic,OR,,Oregon Outback Scenic Byway,False
+15444134,US:OR:Scenic,OR,,Rogue-Umpqua Scenic Byway,False
+15444238,,PA,,Brandywine Valley Scenic Byway,False
+15444433,US:SD:Scenic,SD,,Peter Norbeck Scenic Byway,False
+15444530,,SC,,Ashley River Road,False
+15447286,,SC,,Edisto Island National Scenic Byway,False
+15447326,,SC,,Savannah River Scenic Byway,False
+15602257,,TN,,Norris Freeway,False
+15602268,,UT,,Flaming Gorge-Uintas National Scenic Byway,False
+15602306,,UT,,Logan Canyon Scenic Byway,False
+15602323,,UT,,Nebo Loop Scenic Byway,False
+15602448,,UT,,Scenic Byway 12,False
+15602520,,UT,,Scenic Byway 143 - Utah's Patchwork Parkway,False
+15602620,,UT,,Huntington/Eccles Canyons Scenic Byway,False
+15607950,,UT,,Zion Scenic Byway,False
+15607989,,VA,,Colonial Parkway,False
+15608045,,WA,,Chinook Scenic Byway,False
+15608293,,WA,,Coulee Corridor Scenic Byway,False
+15611810,,WA,,Stevens Pass Greenway,False
+15611887,,WA,,White Pass Scenic Byway,False
+15611972,,WV,,Coal Heritage Trail,False
+15612072,,WV,,Highland Scenic Highway,False
+15612180,,WY,,Flaming Gorge - Green River Basin Scenic Byway,False
+15624981,,AK,,Seward Highway,False
+15625092,,AZ,,Coronado Trail Scenic Byway,False
+15625130,,AZ,,Kaibab Plateau-North Rim Parkway,False
+15625275,,AZ,,Red Rock Scenic Byway,False
+15625288,,AZ,,Sky Island Scenic Byway,False
+15625349,US:CO:Scenic,CO,,Frontier Pathways Scenic and Historic Byway,False
+15625444,US:CO:Scenic,CO,,Gold Belt Tour Scenic and Historic Byway,False
+15632813,,CA,,Route 1 - Big Sur Coast Highway,False
+15632951,,CA,,Route 1 - San Luis Obispo North Coast Byway,False
+15633173,,ID,,Payette River Scenic Byway,False
+15637269,,TN,,Sequatchie Valley Scenic Byway,False
+15637564,,TN,,Tail of the Dragon,False
+15637958,,TN,,Cumberland Historic Byway,False
+15652664,US:VT:byway,VT,,Northeast Kingdom Byway,False
+15659948,US:VT:byway,VT,,Green Mountain Byway,False
+15663572,US:VT:byway,VT,,Molly Stark Byway,False
+15677431,US:VT:byway,VT,,Shires of Vermont Byway,False
+15909882,US:CO:Scenic,CO,,Flat Tops Trail Scenic Byway,False
+16058238,US:ORSB,,,Ohio River Scenic Byway (Super),False
+16067452,US:ORSB,,,Ohio River Scenic Byway (IN),False
+16073698,,WA,,Cascade Loop Scenic Byway,False
+16109819,US:VT:byway,VT,,Crossroad of Vermont Byway,False
+16113000,US:VT:byway,VT,,Lake Champlain Byway,False
+16173739,US:CA:NFSB,CA,,Sierra Vista Scenic Byway,False
+16247503,US:AZ:Scenic,AZ,,Joshua Forest Scenic Byway,False
+16247519,US:AZ:Scenic,AZ,Apache Trail Historic Road,Apache Trail Historic Road,False
+16249074,US:AZ:Scenic,AZ,Gila Pinal Scenic Road,Gila Pinal Scenic Road,False
+16249261,US:AZ:Scenic,AZ,Copper Corridor Scenic Road,Copper Corridor Scenic Road (SR 177),False
+16249343,US:AZ:Scenic,AZ,Sky Island Parkway,Sky Island Parkway,False
+16249422,US:AZ:Scenic,AZ,,Patagonia – Sonoita Scenic Road,False
+16249481,US:AZ:Scenic,AZ,Organ Pipe Cactus Parkway,Organ Pipe Cactus Parkway,False
+16249540,US:AZ:Scenic,AZ,Swift Trail Parkway,Swift Trail Parkway,False
+16249579,US:AZ:Scenic,AZ,Coronado Trail Scenic Road,Coronado Trail Scenic Road,False
+16251491,US:AZ:Scenic,AZ,,San Francisco Peaks Scenic Road,False
+16251505,US:AZ:Scenic,AZ,White Mountain Scenic Road,White Mountain Scenic Road,False
+16251536,US:AZ:Scenic,AZ,White River Scenic Road,White River Scenic Road,False
+16251569,US:AZ:Scenic,AZ,,"Diné Tah ""Among The People"" Scenic Road",False
+16251660,US:AZ:Scenic,AZ,Kayenta – Monument Valley Scenic Road,Kayenta – Monument Valley Scenic Road,False
+16251673,US:AZ:Scenic,AZ,Tse'nikani – Flat Mesa Scenic Road,Tse'nikani – Flat Mesa Scenic Road,False
+16251685,US:AZ:Scenic,AZ,Naat’tis’aan “Navajo Mountain” Scenic Road,Naat’tis’aan “Navajo Mountain” Scenic Road,False
+16252838,US:AZ:Scenic,AZ,Sedona – Oak Creek Canyon Scenic Road,Sedona – Oak Creek Canyon Scenic Road,False
+16252866,US:AZ:Scenic,AZ,Red Rock Scenic Road,Red Rock Scenic Road,False
+16252872,US:AZ:Scenic,AZ,Mingus Mountain Scenic Road,Mingus Mountain Scenic Road,False
+16252912,US:AZ:Scenic,AZ,Fredonia – Vermillion Cliffs Scenic Road,Fredonia – Vermillion Cliffs Scenic Road,False
+16252962,US:AZ:Scenic,AZ,Kaibab Plateau – North Rim Parkway,Kaibab Plateau – North Rim Parkway (AZ Scenic),False
+16252976,US:AZ:Scenic,AZ,Dry Creek Scenic Road,Dry Creek Scenic Road,False
+16364954,US:VT:byway,VT,,Mad River Byway,False
+16476987,,CA,,Audubon Scenic Drive,False
+16505093,US:NPS:Foothills,,,Foothills Parkway,False
+16645377,US:WA,WA,,Mount Baker Scenic Byway,True
+16822310,US:NFSR:Inyo:NF,,,Lee Vining Canyon National Forest Scenic Byway,False
+17016121,US:WI:Scenic,WI,,Heritage Drive Scenic Byway,False
+17131169,US:VT:byway,VT,,Scenic Route 100 Byway,False
+17131249,US:VT:byway,VT,,Stone Valley Byway,False
+17852624,US:KS:Scenic Byway,KS,,Smoky Valley Scenic Byway,False
+17910868,,MD,,Chesapeake Country Scenic Byway (Spine),False
+17910889,,MD,,Chesapeake Country Scenic Byway (Branches),False
+18997131,,WA,,Queen Anne Boulevard,False
+19342416,US:NY:Scenic:Alternate,NY,,Mohawk Towpath Scenic Byway,False
+19366036,US:NY:Scenic:Alternate,NY,,Shawangunk Mountains Scenic Byway,False
+19444754,US:AAR,,,Las Vegas Strip,False
+19481718,US:WI:Rustic,WI,R118,Rustic Road 118,False
+19481737,US:WI:Rustic,WI,R119,Rustic Road 119,False
+19528468,US:WI:Rustic,WI,R120,Rustic Road 120,False
+19528474,US:WI:Rustic,WI,R121,Rustic Road 121,False
+19528480,US:WI:Rustic,WI,R122,Rustic Road 122,False
+19550852,,LA,,Bayou Teche National Scenic Byway,False
+19655389,,NH,,Mount Willard Carriage Road,False
+19655390,,NH,,Crawford House Carriage Road,False
+19737398,US:NJ:Scenic:Spur,NJ,,Pine Barrens Scenic Byway,False
+19737399,US:NJ:Scenic:Connector,NJ,,Pine Barrens Scenic Byway,False
+19737400,US:NJ:Scenic:Alt,NJ,,Pine Barrens Scenic Byway,False
+19737401,US:NJ:Scenic:Loop,NJ,,Pine Barrens Scenic Byway,False
+19738819,US:NJ:Scenic:Connector,NJ,,Millstone Valley Scenic Byway,False
+19738820,US:NJ:Scenic,NJ,,Millstone Valley Scenic Byway (super),False
+19738821,US:NJ:Scenic:Loop,NJ,,Western Highlands Scenic Byway,False
+19738822,US:NJ:Scenic,NJ,,Western Highlands Scenic Byway (super),False
+19755307,US:CO:Scenic,CO,,Lariat Loop Scenic Byway,False
+19755519,US:CO:Scenic,CO,,Guanella Pass Scenic Byway,False
+19755520,US:CO:Scenic,CO,,Mount Blue Sky Scenic Byway,False
+19755521,US:CO:Scenic,CO,,Silver Thread Scenic Byway,False
+20151235,US:CA:Scenic,CA,2,,False
+20444984,,UT,,Dinosaur Diamond Prehistoric Highway,False
+20995768,US:FL:Scenic,FL,,A1A Ocean Islands Trail,False
+20996420,US:FL:Scenic,FL,,Halifax Heritage Byway,False
+20997309,US:FL:Scenic,FL,,Scenic Sumter Heritage Byway,False
+20997447,US:FL:Scenic,FL,,Martin Grade Scenic Highway,False
+21087637,,KY,,Bill Monroe Bluegrass Trail,False
+21130795,US:CA:Scenic,CA,7,,False
+21229726,US:USFS:byway,,,Bigfoot Scenic Byway,False
+21570030,US:BLM:BCB,,,Smithsonian Butte National Back Country Byway,False
+21570031,US:BLM:BCB,,,Parker Dam Road Back Country Byway,False
+21570032,US:BLM:BCB,,,South Fork Alsea River Back Country Byway,False
+21570033,US:BLM:BCB,,,Red Rock Canyon Back Country Byway,False
+21570034,US:BLM:BCB,,,Wild Rivers Back Country Scenic Byway,False
+21585579,US:BLM:BCB,,,Black Hills Back Country Byway,False
+21585580,US:BLM:BCB,,,Lunar Crater Back Country Byway,False
+21585581,US:BLM:BCB,,,Quebradas Back Country Byway,False
+21607617,US:BLM:BCB,,,Buckhorn Back Country Byway,False
+21607618,US:BLM:BCB,,,Bitter Springs Back Country Byway,False
+21607619,US:BLM:BCB,,,Guadalupe Back Country Byway,False
+21607644,US:BLM:BCB,,,Lower Deschutes River Back Country Byway,False
+21607645,US:BLM:BCB,,,Red Gulch/Alkali National Back Country Byway,False

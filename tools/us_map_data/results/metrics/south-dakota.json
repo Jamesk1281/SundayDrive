@@ -1,0 +1,338 @@
+{
+ "label": "south-dakota",
+ "graph_nodes": 122678,
+ "graph_edges": 166845,
+ "graph_km": 130062.8,
+ "accepted_ways": 75545,
+ "accepted_km": 130763.4,
+ "skipped_private_ways": 545,
+ "km_by_class": {
+  "living_street": 8.1,
+  "motorway": 2158.7,
+  "motorway_link": 340.2,
+  "primary": 5298.4,
+  "primary_link": 23.9,
+  "residential": 40834.6,
+  "secondary": 6109.3,
+  "secondary_link": 7.0,
+  "tertiary": 22534.9,
+  "tertiary_link": 18.8,
+  "trunk": 3072.5,
+  "trunk_link": 28.3,
+  "unclassified": 49628.1
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 8.1,
+   "tagged_pct": 14.08,
+   "tagged_hm_kmh": 24.1,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 2158.7,
+   "tagged_pct": 100.0,
+   "tagged_hm_kmh": 125.9,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 340.2,
+   "tagged_pct": 3.16,
+   "tagged_hm_kmh": 57.0,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 5298.4,
+   "tagged_pct": 28.46,
+   "tagged_hm_kmh": 87.3,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 23.9,
+   "tagged_pct": 9.16,
+   "tagged_hm_kmh": 62.3,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 40834.6,
+   "tagged_pct": 1.49,
+   "tagged_hm_kmh": 51.1,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 6109.3,
+   "tagged_pct": 20.94,
+   "tagged_hm_kmh": 79.1,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 7.0,
+   "tagged_pct": 4.21,
+   "tagged_hm_kmh": 53.1,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 22534.9,
+   "tagged_pct": 5.71,
+   "tagged_hm_kmh": 70.2,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 18.8,
+   "tagged_pct": 1.72,
+   "tagged_hm_kmh": 42.4,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 3072.5,
+   "tagged_pct": 44.49,
+   "tagged_hm_kmh": 100.3,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 28.3,
+   "tagged_pct": 10.26,
+   "tagged_hm_kmh": 58.5,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 49628.1,
+   "tagged_pct": 1.11,
+   "tagged_hm_kmh": 71.2,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 6.74,
+ "surface": {
+  "tagged_pct": 61.96,
+  "unpaved_pct": 47.75,
+  "untagged_pct": 38.04,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 1.32,
+   "tertiary": 46.69,
+   "unclassified": 74.67,
+   "residential": 35.34
+  },
+  "untagged_pct_by_class": {
+   "motorway": 30.88,
+   "trunk": 44.76,
+   "primary": 50.35,
+   "secondary": 48.62,
+   "tertiary": 20.82,
+   "unclassified": 24.48,
+   "residential": 60.55
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.01,
+  "smoothness_bad_or_worse_km": 1.7,
+  "smoothness_very_bad_or_worse_km": 1.0,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 1.0,
+  "tracktype_tagged_km": 35.0,
+  "tracktype_grade3plus_km": 0.0,
+  "tiger_cfcc_a5_km": 3296.4,
+  "tiger_cfcc_a5_untagged_rough_km": 3296.4,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.2,
+   "unclassified": 0.0,
+   "residential": 0.8
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 58.01,
+  "tiger_origin_pct": 70.27,
+  "reviewed_no_pct_by_class": {
+   "motorway": 7.73,
+   "trunk": 24.91,
+   "primary": 10.57,
+   "secondary": 17.78,
+   "tertiary": 58.92,
+   "unclassified": 64.6,
+   "residential": 67.29
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 31.9,
+  "closures_py_closes_ways": 27,
+  "seasonal_any_km": 31.5,
+  "car_conditional_km": 0.4,
+  "winter_service_no_km": 31.5,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 6.7,
+  "closed_km_by_tag": {
+   "ford=yes": 2.8,
+   "motor_vehicle=private": 1.7,
+   "motor_vehicle=no": 1.2,
+   "motor_vehicle=permit": 1.0
+  },
+  "permit_km": 1.0,
+  "car_conditional_km_by_verdict": {
+   "closes": 0.4
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {}
+ },
+ "terrarium_z11_tiles_with_graph": 1170,
+ "controls": {
+  "on_graph": {
+   "signal": 1180,
+   "stop": 1368,
+   "giveway": 136
+  },
+  "in_file": {
+   "signal": 1191,
+   "stop": 1545,
+   "giveway": 142
+  },
+  "per_100km": {
+   "signal": 0.91,
+   "stop": 1.05,
+   "giveway": 0.1
+  },
+  "all_per_100km": 2.06
+ },
+ "timed_barriers_on_graph": {
+  "count": 2,
+  "by_key": {
+   "motor_vehicle:conditional": 2
+  },
+  "list": [
+   {
+    "id": 80096665,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (May 01 - Oct 01)"
+   },
+   {
+    "id": 2454701615,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (May 01 - Oct 01)"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 863,
+  "by_where": {
+   "from/to not both in graph": 101,
+   "via node, at a junction": 711,
+   "via node, elsewhere": 28,
+   "via way": 22,
+   "no via": 1
+  },
+  "junctions": 80075,
+  "via_node_per_1000_junctions": 8.88,
+  "via_way_per_1000_junctions": 0.27
+ },
+ "byways": {
+  "road_route_relations": 1529,
+  "networks": {
+   "US:IA:Scenic": {
+    "relations": 2,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 12.2,
+    "admitted_km": 0.0
+   },
+   "US:NE:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 19.9,
+    "admitted_km": 0.0
+   },
+   "US:SD:Scenic": {
+    "relations": 2,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 1031.1,
+    "admitted_km": 111.9
+   }
+  },
+  "relations": [
+   {
+    "id": 3301387,
+    "network": "US:IA:Scenic",
+    "name": "Loess Hills National Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 12.2
+   },
+   {
+    "id": 3302896,
+    "network": "US:IA:Scenic",
+    "name": "Loess Hills National Scenic Byway, loops & connections",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0
+   },
+   {
+    "id": 15082403,
+    "network": "US:NE:Scenic",
+    "name": "Gold Rush Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 19.9
+   },
+   {
+    "id": 19247942,
+    "network": "US:SD:Scenic",
+    "name": "Native American National and State Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 919.2
+   },
+   {
+    "id": 15444433,
+    "network": "US:SD:Scenic",
+    "name": "Peter Norbeck Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 111.9
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 130763.4,
+  "unpaved_pct": 47.56,
+  "untagged_surface_pct": 38.29,
+  "smoothness_bad_or_worse_km": 1.7,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 1.0,
+  "maxspeed_tagged_pct": {
+   "motorway": 100.0,
+   "trunk": 44.47,
+   "primary": 28.67,
+   "secondary": 20.94,
+   "tertiary": 5.7,
+   "unclassified": 1.15,
+   "residential": 1.47
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 5.9,
+  "total": 7.0
+ },
+ "peak_rss_gb": 0.86
+}

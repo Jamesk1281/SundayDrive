@@ -1,0 +1,645 @@
+{
+ "label": "oregon",
+ "graph_nodes": 268778,
+ "graph_edges": 334048,
+ "graph_km": 117989.8,
+ "accepted_ways": 197233,
+ "accepted_km": 120234.4,
+ "skipped_private_ways": 5287,
+ "km_by_class": {
+  "living_street": 234.4,
+  "motorway": 2479.5,
+  "motorway_link": 559.0,
+  "primary": 5522.5,
+  "primary_link": 54.8,
+  "residential": 38787.8,
+  "secondary": 9457.0,
+  "secondary_link": 31.3,
+  "tertiary": 26983.9,
+  "tertiary_link": 21.2,
+  "trunk": 3852.3,
+  "trunk_link": 120.6,
+  "unclassified": 29885.6
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 234.4,
+   "tagged_pct": 2.36,
+   "tagged_hm_kmh": 28.6,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 2479.5,
+   "tagged_pct": 89.32,
+   "tagged_hm_kmh": 103.1,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 559.0,
+   "tagged_pct": 26.02,
+   "tagged_hm_kmh": 69.0,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 5522.5,
+   "tagged_pct": 55.36,
+   "tagged_hm_kmh": 74.2,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 54.8,
+   "tagged_pct": 20.42,
+   "tagged_hm_kmh": 48.5,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 38787.8,
+   "tagged_pct": 11.88,
+   "tagged_hm_kmh": 34.7,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 9457.0,
+   "tagged_pct": 34.93,
+   "tagged_hm_kmh": 66.8,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 31.3,
+   "tagged_pct": 16.0,
+   "tagged_hm_kmh": 42.2,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 26983.9,
+   "tagged_pct": 10.51,
+   "tagged_hm_kmh": 53.0,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 21.2,
+   "tagged_pct": 12.42,
+   "tagged_hm_kmh": 44.1,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 3852.3,
+   "tagged_pct": 86.6,
+   "tagged_hm_kmh": 84.4,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 120.6,
+   "tagged_pct": 21.79,
+   "tagged_hm_kmh": 65.4,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 29885.6,
+   "tagged_pct": 1.21,
+   "tagged_hm_kmh": 37.9,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 16.88,
+ "surface": {
+  "tagged_pct": 54.88,
+  "unpaved_pct": 26.09,
+  "untagged_pct": 45.12,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 25.65,
+   "unclassified": 69.28,
+   "residential": 8.11
+  },
+  "untagged_pct_by_class": {
+   "motorway": 35.06,
+   "trunk": 31.7,
+   "primary": 32.41,
+   "secondary": 39.64,
+   "tertiary": 34.74,
+   "unclassified": 22.01,
+   "residential": 74.76
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 1.3,
+  "smoothness_bad_or_worse_km": 644.2,
+  "smoothness_very_bad_or_worse_km": 245.9,
+  "4wd_only_km": 2.0,
+  "4wd_or_very_bad_km": 247.9,
+  "tracktype_tagged_km": 1702.5,
+  "tracktype_grade3plus_km": 233.9,
+  "tiger_cfcc_a5_km": 144.8,
+  "tiger_cfcc_a5_untagged_rough_km": 144.8,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 33.0,
+   "unclassified": 213.7,
+   "residential": 1.2
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 30.33,
+  "tiger_origin_pct": 42.02,
+  "reviewed_no_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 15.15,
+   "primary": 17.4,
+   "secondary": 21.42,
+   "tertiary": 26.27,
+   "unclassified": 22.61,
+   "residential": 46.98
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 165.4,
+  "closures_py_closes_ways": 29,
+  "seasonal_any_km": 1.9,
+  "car_conditional_km": 105.1,
+  "winter_service_no_km": 71.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 175.3,
+  "closed_km_by_tag": {
+   "motor_vehicle=private": 94.8,
+   "motor_vehicle=permit": 35.7,
+   "motor_vehicle=no": 30.5,
+   "access=forestry": 9.7,
+   "access=permit": 4.4,
+   "motor_vehicle=forestry": 0.1,
+   "motor_vehicle=emergency": 0.1,
+   "access=emergency": 0.0,
+   "ford=yes": 0.0
+  },
+  "permit_km": 40.1,
+  "car_conditional_km_by_verdict": {
+   "closes": 92.5,
+   "dated": 3.8,
+   "no closing rule": 6.1,
+   "time of day": 2.8
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=permit @ (May Mo[-1] -6 days-Sep Mo[1] 09:00-18:00)": 5.5,
+   "access:conditional=no @ (2026 Apr 01-2026 Apr 30)": 3.6,
+   "motor_vehicle:conditional=no @ (Mo-Fr 08:00-16:00)": 2.5,
+   "access:conditional=destination @ 2025 Apr 14-2025 Dec 31": 0.6,
+   "motor_vehicle:conditional=no @ (Fr 20:00-24:00; Sa 00:00-02:00, 20:00-24:00; Su 00:00-02:00": 0.4,
+   "access:conditional=no @ (2020 Mar 1 20:00-24:00; 2020 Mar 2-2020 Mar 21)": 0.2,
+   "motor_vehicle:conditional=no @ (2023 Mar 15-2024 Mar 30)": 0.0
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 1294,
+ "controls": {
+  "on_graph": {
+   "signal": 5097,
+   "stop": 11980,
+   "giveway": 492
+  },
+  "in_file": {
+   "signal": 5202,
+   "stop": 13831,
+   "giveway": 803
+  },
+  "per_100km": {
+   "signal": 4.32,
+   "stop": 10.15,
+   "giveway": 0.42
+  },
+  "all_per_100km": 14.89
+ },
+ "timed_barriers_on_graph": {
+  "count": 15,
+  "by_key": {
+   "opening_hours": 9,
+   "motor_vehicle:conditional": 4,
+   "seasonal": 2
+  },
+  "list": [
+   {
+    "id": 35848181,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 36940354,
+    "barrier": "gate",
+    "opening_hours": "sunrise-(sunset+01:00)",
+    "access": "yes"
+   },
+   {
+    "id": 36950493,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "yes"
+   },
+   {
+    "id": 38544818,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Dec 01-Mar 31)"
+   },
+   {
+    "id": 607221470,
+    "barrier": "gate",
+    "opening_hours": "10:00-21:00"
+   },
+   {
+    "id": 2504185752,
+    "barrier": "gate",
+    "opening_hours": "07:00-20:00",
+    "access": "permissive"
+   },
+   {
+    "id": 2596298230,
+    "barrier": "gate",
+    "opening_hours": "10:00-16:00, Apr 16-Sep 30"
+   },
+   {
+    "id": 2955377919,
+    "barrier": "swing_gate",
+    "motor_vehicle:conditional": "no @ (Nov-Jun)",
+    "access": "yes"
+   },
+   {
+    "id": 2963862250,
+    "barrier": "swing_gate",
+    "motor_vehicle:conditional": "no @ (Nov-Jun)",
+    "access": "yes"
+   },
+   {
+    "id": 3657922186,
+    "barrier": "gate",
+    "opening_hours": "06:00-22:00",
+    "access": "yes"
+   },
+   {
+    "id": 6893555852,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 9975395801,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "yes @ (Jul-Oct)"
+   },
+   {
+    "id": 11379288912,
+    "barrier": "gate",
+    "seasonal": "winter"
+   },
+   {
+    "id": 11379288913,
+    "barrier": "gate",
+    "seasonal": "winter"
+   },
+   {
+    "id": 14080508600,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 8291,
+  "by_where": {
+   "via node, at a junction": 6008,
+   "from/to not both in graph": 1534,
+   "via node, elsewhere": 477,
+   "via way": 238,
+   "no via": 34
+  },
+  "junctions": 154085,
+  "via_node_per_1000_junctions": 38.99,
+  "via_way_per_1000_junctions": 1.54
+ },
+ "byways": {
+  "road_route_relations": 559,
+  "networks": {
+   "(none)": {
+    "relations": 2,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 103.1,
+    "admitted_km": 0.0
+   },
+   "US:AB:NSB": {
+    "relations": 2,
+    "scenic_yes": 2,
+    "admitted": 2,
+    "km": 67.5,
+    "admitted_km": 67.5
+   },
+   "US:BLM:BCB": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 31.4,
+    "admitted_km": 31.4
+   },
+   "US:OR:Scenic": {
+    "relations": 19,
+    "scenic_yes": 6,
+    "admitted": 6,
+    "km": 4058.1,
+    "admitted_km": 1260.6
+   }
+  },
+  "relations": [
+   {
+    "id": 12445623,
+    "network": "",
+    "name": "Owyhee Uplands Backcountry Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 43.2
+   },
+   {
+    "id": 19602727,
+    "network": "",
+    "name": "Three Capes Scenic Route",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 59.9
+   },
+   {
+    "id": 14240390,
+    "network": "US:AB:NSB",
+    "name": "State of Jefferson Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 28.7
+   },
+   {
+    "id": 14249251,
+    "network": "US:AB:NSB",
+    "name": "Volcanic Legacy Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 38.8
+   },
+   {
+    "id": 21570032,
+    "network": "US:BLM:BCB",
+    "name": "South Fork Alsea River Back Country Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "United States Bureau of Land Management",
+    "admitted": true,
+    "drivable_km": 31.4
+   },
+   {
+    "id": 19609813,
+    "network": "US:OR:Scenic",
+    "name": "Blue Mountain Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 213.1
+   },
+   {
+    "id": 15427611,
+    "network": "US:OR:Scenic",
+    "name": "Cascade Lakes Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Cascade Lakes National Scenic Byway",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 110.4
+   },
+   {
+    "id": 19609814,
+    "network": "US:OR:Scenic",
+    "name": "Elkhorn Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 162.6
+   },
+   {
+    "id": 15427730,
+    "network": "US:OR:Scenic",
+    "name": "Hells Canyon Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 324.3
+   },
+   {
+    "id": 19607354,
+    "network": "US:OR:Scenic",
+    "name": "High Desert Discovery Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 176.7
+   },
+   {
+    "id": 19609957,
+    "network": "US:OR:Scenic",
+    "name": "Historic Columbia River Highway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 59.2
+   },
+   {
+    "id": 19609816,
+    "network": "US:OR:Scenic",
+    "name": "Journey Through Time Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 548.1
+   },
+   {
+    "id": 19609815,
+    "network": "US:OR:Scenic",
+    "name": "Marys Peak to Pacific Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 163.9
+   },
+   {
+    "id": 15427867,
+    "network": "US:OR:Scenic",
+    "name": "McKenzie Pass-Santiam Pass Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "McKenzie Pass-Santiam Pass National Scenic Byway",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 137.6
+   },
+   {
+    "id": 19601562,
+    "network": "US:OR:Scenic",
+    "name": "McKenzie River Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 54.4
+   },
+   {
+    "id": 15443909,
+    "network": "US:OR:Scenic",
+    "name": "Mount Hood Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Mount Hood National Scenic Byway",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 162.2
+   },
+   {
+    "id": 15444006,
+    "network": "US:OR:Scenic",
+    "name": "Oregon Outback Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Oregon Outback National Scenic Byway",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 263.9
+   },
+   {
+    "id": 19609594,
+    "network": "US:OR:Scenic",
+    "name": "Over The Rivers And Through The Woods Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 101.6
+   },
+   {
+    "id": 19609972,
+    "network": "US:OR:Scenic",
+    "name": "Pacific Coast Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 570.5
+   },
+   {
+    "id": 15444134,
+    "network": "US:OR:Scenic",
+    "name": "Rogue-Umpqua Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Rogue-Umpqua National Scenic Byway",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 262.2
+   },
+   {
+    "id": 19599634,
+    "network": "US:OR:Scenic",
+    "name": "Trees to Sea Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "Oregon Department of Transportation",
+    "admitted": false,
+    "drivable_km": 111.2
+   },
+   {
+    "id": 19609535,
+    "network": "US:OR:Scenic",
+    "name": "Umpqua River Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 104.1
+   },
+   {
+    "id": 19609531,
+    "network": "US:OR:Scenic",
+    "name": "Volcanic Legacy Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 223.8
+   },
+   {
+    "id": 19609595,
+    "network": "US:OR:Scenic",
+    "name": "West Cascades Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "West Cascades National Scenic Byway",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 308.4
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 120234.4,
+  "unpaved_pct": 25.91,
+  "untagged_surface_pct": 45.7,
+  "smoothness_bad_or_worse_km": 693.0,
+  "4wd_only_km": 2.0,
+  "4wd_or_very_bad_km": 254.1,
+  "maxspeed_tagged_pct": {
+   "motorway": 89.55,
+   "trunk": 86.61,
+   "primary": 55.36,
+   "secondary": 34.92,
+   "tertiary": 10.53,
+   "unclassified": 1.21,
+   "residential": 11.43
+  }
+ },
+ "timing_s": {
+  "relations": 0.7,
+  "parse": 22.9,
+  "total": 26.5
+ },
+ "peak_rss_gb": 1.89
+}

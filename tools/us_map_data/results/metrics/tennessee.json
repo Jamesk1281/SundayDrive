@@ -1,0 +1,614 @@
+{
+ "label": "tennessee",
+ "graph_nodes": 469411,
+ "graph_edges": 583731,
+ "graph_km": 180988.5,
+ "accepted_ways": 306947,
+ "accepted_km": 182289.9,
+ "skipped_private_ways": 4554,
+ "km_by_class": {
+  "living_street": 72.6,
+  "motorway": 4546.2,
+  "motorway_link": 1281.4,
+  "primary": 8677.7,
+  "primary_link": 139.1,
+  "residential": 110173.6,
+  "secondary": 11783.6,
+  "secondary_link": 51.3,
+  "tertiary": 15490.7,
+  "tertiary_link": 33.7,
+  "trunk": 6023.7,
+  "trunk_link": 285.2,
+  "unclassified": 22429.8
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 72.6,
+   "tagged_pct": 6.54,
+   "tagged_hm_kmh": 14.7,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 4546.2,
+   "tagged_pct": 95.37,
+   "tagged_hm_kmh": 106.9,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 1281.4,
+   "tagged_pct": 5.22,
+   "tagged_hm_kmh": 81.7,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 8677.7,
+   "tagged_pct": 28.03,
+   "tagged_hm_kmh": 75.3,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 139.1,
+   "tagged_pct": 1.93,
+   "tagged_hm_kmh": 37.9,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 110173.6,
+   "tagged_pct": 1.77,
+   "tagged_hm_kmh": 38.7,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 11783.6,
+   "tagged_pct": 14.21,
+   "tagged_hm_kmh": 66.0,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 51.3,
+   "tagged_pct": 1.97,
+   "tagged_hm_kmh": 61.0,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 15490.7,
+   "tagged_pct": 7.82,
+   "tagged_hm_kmh": 59.1,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 33.7,
+   "tagged_pct": 1.1,
+   "tagged_hm_kmh": 36.2,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 6023.7,
+   "tagged_pct": 41.7,
+   "tagged_hm_kmh": 83.3,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 285.2,
+   "tagged_pct": 3.87,
+   "tagged_hm_kmh": 64.9,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 22429.8,
+   "tagged_pct": 2.15,
+   "tagged_hm_kmh": 44.0,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 8.12,
+ "surface": {
+  "tagged_pct": 14.03,
+  "unpaved_pct": 1.49,
+  "untagged_pct": 85.97,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.35,
+   "unclassified": 5.1,
+   "residential": 1.35
+  },
+  "untagged_pct_by_class": {
+   "motorway": 75.54,
+   "trunk": 77.04,
+   "primary": 68.36,
+   "secondary": 76.66,
+   "tertiary": 78.5,
+   "unclassified": 78.71,
+   "residential": 91.84
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.5,
+  "smoothness_bad_or_worse_km": 82.2,
+  "smoothness_very_bad_or_worse_km": 31.3,
+  "4wd_only_km": 12.8,
+  "4wd_or_very_bad_km": 44.1,
+  "tracktype_tagged_km": 83.3,
+  "tracktype_grade3plus_km": 25.0,
+  "tiger_cfcc_a5_km": 152.4,
+  "tiger_cfcc_a5_untagged_rough_km": 138.7,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.2,
+   "tertiary": 0.0,
+   "unclassified": 30.6,
+   "residential": 13.2
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 62.04,
+  "tiger_origin_pct": 84.4,
+  "reviewed_no_pct_by_class": {
+   "motorway": 1.07,
+   "trunk": 8.47,
+   "primary": 11.47,
+   "secondary": 16.75,
+   "tertiary": 36.82,
+   "unclassified": 64.26,
+   "residential": 80.31
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 0.0,
+  "closures_py_closes_ways": 0,
+  "seasonal_any_km": 0.0,
+  "car_conditional_km": 74.6,
+  "winter_service_no_km": 0.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 10.7,
+  "closed_km_by_tag": {
+   "motor_vehicle=private": 3.2,
+   "ford=yes": 2.8,
+   "motor_vehicle=no": 2.7,
+   "access=permit": 2.0,
+   "access=delivery": 0.1,
+   "motorcar=no": 0.0,
+   "access=emergency": 0.0
+  },
+  "permit_km": 2.0,
+  "car_conditional_km_by_verdict": {
+   "dated": 54.0,
+   "no closing rule": 0.0,
+   "time of day": 20.6
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=no @ (2023 May 03 - 2023 Sep 27 We)": 16.4,
+   "motor_vehicle:conditional=no @ (Mo-Fr 06:30-08:00)": 14.9,
+   "motor_vehicle:conditional=no @ (2023 Nov 12 - 2024 Apr 01)": 12.8,
+   "motor_vehicle:conditional=no @ (2023 Nov 12 - 2023 Apr 01)": 10.8,
+   "motor_vehicle:conditional=no @ (2023 Nov 26 - 2024 Apr 01)": 8.6,
+   "motor_vehicle:conditional=no @ (Wd 00:01-1000, Sa 00:01-1000)": 4.7,
+   "motor_vehicle:conditional=no @ (Mo-Fr 06:30-08:00;PH off)": 3.3,
+   "motor_vehicle:conditional=no @ (Mo-Th)": 2.4,
+   "motor_vehicle:conditional=no @ (2023 Nov 26 - 2024 Apr 1)": 0.7,
+   "motor_vehicle:conditional=permit @ (width>8'6\")": 0.0
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 531,
+ "controls": {
+  "on_graph": {
+   "signal": 7671,
+   "stop": 4163,
+   "giveway": 305
+  },
+  "in_file": {
+   "signal": 7816,
+   "stop": 5174,
+   "giveway": 362
+  },
+  "per_100km": {
+   "signal": 4.24,
+   "stop": 2.3,
+   "giveway": 0.17
+  },
+  "all_per_100km": 6.71
+ },
+ "timed_barriers_on_graph": {
+  "count": 8,
+  "by_key": {
+   "opening_hours": 6,
+   "seasonal": 1,
+   "motor_vehicle:conditional": 1
+  },
+  "list": [
+   {
+    "id": 308549752,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-21:00"
+   },
+   {
+    "id": 1533083626,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 2469332021,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 7260617266,
+    "barrier": "swing_gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 9887917899,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 12986010021,
+    "barrier": "swing_gate",
+    "seasonal": "yes"
+   },
+   {
+    "id": 13073359341,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ Mo-Fr 09:00-14:00; Sa-Su 00:00-24:00",
+    "access": "yes"
+   },
+   {
+    "id": 13959685378,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "permissive"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 5139,
+  "by_where": {
+   "via node, at a junction": 2256,
+   "from/to not both in graph": 1645,
+   "via way": 201,
+   "via node, elsewhere": 1026,
+   "no via": 11
+  },
+  "junctions": 297911,
+  "via_node_per_1000_junctions": 7.57,
+  "via_way_per_1000_junctions": 0.67
+ },
+ "byways": {
+  "road_route_relations": 1078,
+  "networks": {
+   "(none)": {
+    "relations": 9,
+    "scenic_yes": 8,
+    "admitted": 8,
+    "km": 783.3,
+    "admitted_km": 782.3
+   },
+   "US:GRR": {
+    "relations": 4,
+    "scenic_yes": 4,
+    "admitted": 4,
+    "km": 86.2,
+    "admitted_km": 86.2
+   },
+   "US:KY:Parkway": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.0,
+    "admitted_km": 0.0
+   },
+   "US:KY:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.0,
+    "admitted_km": 0.0
+   },
+   "US:NHT": {
+    "relations": 2,
+    "scenic_yes": 2,
+    "admitted": 2,
+    "km": 142.0,
+    "admitted_km": 142.0
+   },
+   "US:NPS:Foothills": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 59.7,
+    "admitted_km": 59.7
+   },
+   "US:NPS:Natchez_Trace": {
+    "relations": 3,
+    "scenic_yes": 3,
+    "admitted": 3,
+    "km": 165.3,
+    "admitted_km": 165.3
+   },
+   "US:TN:secondary:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 2.4,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 15418405,
+    "network": "",
+    "name": "Cherohala Skyway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 76.7
+   },
+   {
+    "id": 15637958,
+    "network": "",
+    "name": "Cumberland Historic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 272.6
+   },
+   {
+    "id": 12339984,
+    "network": "",
+    "name": "East Tennessee Crossing Byway",
+    "ref": "ETC",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 186.7
+   },
+   {
+    "id": 4524305,
+    "network": "",
+    "name": "Lookout Mountain Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 1.0
+   },
+   {
+    "id": 15418660,
+    "network": "",
+    "name": "Newfound Gap Road Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 32.6
+   },
+   {
+    "id": 15602257,
+    "network": "",
+    "name": "Norris Freeway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 36.2
+   },
+   {
+    "id": 15637269,
+    "network": "",
+    "name": "Sequatchie Valley Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 113.3
+   },
+   {
+    "id": 15637564,
+    "network": "",
+    "name": "Tail of the Dragon",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 22.6
+   },
+   {
+    "id": 15284432,
+    "network": "",
+    "name": "Woodlands Trace",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 41.5
+   },
+   {
+    "id": 456651,
+    "network": "US:GRR",
+    "name": "Great River Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Great River Road National Scenic Byway",
+    "operator": "Mississippi River Parkway Commission",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 1783092,
+    "network": "US:GRR",
+    "name": "Great River Road (Kentucky)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 6.6
+   },
+   {
+    "id": 1784926,
+    "network": "US:GRR",
+    "name": "Great River Road (Mississippi)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 1784927,
+    "network": "US:GRR",
+    "name": "Great River Road (Tennessee)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 79.6
+   },
+   {
+    "id": 20743882,
+    "network": "US:KY:Parkway",
+    "name": "Purchase Parkway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "Julian M. Carroll Purchase Parkway",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 19881586,
+    "network": "US:KY:Scenic",
+    "name": "Tuskegee Airmen Memorial Trail",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0
+   },
+   {
+    "id": 10967456,
+    "network": "US:NHT",
+    "name": "Overmountain Victory National Historic Trail Commemorative Motor Route",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "National Park Service",
+    "admitted": true,
+    "drivable_km": 142.0
+   },
+   {
+    "id": 10967459,
+    "network": "US:NHT",
+    "name": "Overmountain Victory National Historic Trail Commemorative Motor Route (super)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "National Park Service",
+    "admitted": true,
+    "drivable_km": 0
+   },
+   {
+    "id": 16505093,
+    "network": "US:NPS:Foothills",
+    "name": "Foothills Parkway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "United States National Park Service",
+    "admitted": true,
+    "drivable_km": 59.7
+   },
+   {
+    "id": 3300030,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (Alabama)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 2.5
+   },
+   {
+    "id": 3300031,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (Tennessee)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 162.8
+   },
+   {
+    "id": 3300032,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (super)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 0
+   },
+   {
+    "id": 1570627,
+    "network": "US:TN:secondary:Scenic",
+    "name": "",
+    "ref": "73",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 2.4
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 182289.9,
+  "unpaved_pct": 1.55,
+  "untagged_surface_pct": 85.88,
+  "smoothness_bad_or_worse_km": 82.2,
+  "4wd_only_km": 15.5,
+  "4wd_or_very_bad_km": 46.8,
+  "maxspeed_tagged_pct": {
+   "motorway": 95.52,
+   "trunk": 42.16,
+   "primary": 28.02,
+   "secondary": 14.2,
+   "tertiary": 7.83,
+   "unclassified": 2.23,
+   "residential": 1.78
+  }
+ },
+ "timing_s": {
+  "relations": 0.5,
+  "parse": 24.3,
+  "total": 28.5
+ },
+ "peak_rss_gb": 2.62
+}

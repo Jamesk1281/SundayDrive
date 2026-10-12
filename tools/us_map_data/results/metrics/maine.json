@@ -1,0 +1,442 @@
+{
+ "label": "maine",
+ "graph_nodes": 129083,
+ "graph_edges": 151314,
+ "graph_km": 58209.4,
+ "accepted_ways": 86863,
+ "accepted_km": 59952.3,
+ "skipped_private_ways": 3508,
+ "km_by_class": {
+  "living_street": 8.1,
+  "motorway": 1212.1,
+  "motorway_link": 216.0,
+  "primary": 2873.1,
+  "primary_link": 14.6,
+  "residential": 34498.0,
+  "secondary": 4766.8,
+  "secondary_link": 6.8,
+  "tertiary": 5287.2,
+  "tertiary_link": 1.6,
+  "trunk": 1510.0,
+  "trunk_link": 19.8,
+  "unclassified": 7795.3
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 8.1,
+   "tagged_pct": 4.74,
+   "tagged_hm_kmh": 8.0,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 1212.1,
+   "tagged_pct": 91.02,
+   "tagged_hm_kmh": 110.6,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 216.0,
+   "tagged_pct": 11.55,
+   "tagged_hm_kmh": 54.9,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 2873.1,
+   "tagged_pct": 31.44,
+   "tagged_hm_kmh": 66.4,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 14.6,
+   "tagged_pct": 12.5,
+   "tagged_hm_kmh": 42.8,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 34498.0,
+   "tagged_pct": 4.29,
+   "tagged_hm_kmh": 45.9,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 4766.8,
+   "tagged_pct": 25.63,
+   "tagged_hm_kmh": 66.0,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 6.8,
+   "tagged_pct": 4.94,
+   "tagged_hm_kmh": 34.4,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 5287.2,
+   "tagged_pct": 18.45,
+   "tagged_hm_kmh": 59.3,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 1.6,
+   "tagged_pct": 2.15,
+   "tagged_hm_kmh": 48.3,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 1510.0,
+   "tagged_pct": 59.56,
+   "tagged_hm_kmh": 73.0,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 19.8,
+   "tagged_pct": 18.61,
+   "tagged_hm_kmh": 54.7,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 7795.3,
+   "tagged_pct": 7.22,
+   "tagged_hm_kmh": 43.4,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 12.34,
+ "surface": {
+  "tagged_pct": 36.02,
+  "unpaved_pct": 14.27,
+  "untagged_pct": 63.98,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.61,
+   "tertiary": 15.18,
+   "unclassified": 56.68,
+   "residential": 8.86
+  },
+  "untagged_pct_by_class": {
+   "motorway": 14.71,
+   "trunk": 39.63,
+   "primary": 57.58,
+   "secondary": 56.91,
+   "tertiary": 47.33,
+   "unclassified": 26.41,
+   "residential": 79.66
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.98,
+  "smoothness_bad_or_worse_km": 173.5,
+  "smoothness_very_bad_or_worse_km": 10.1,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 10.1,
+  "tracktype_tagged_km": 2034.5,
+  "tracktype_grade3plus_km": 361.6,
+  "tiger_cfcc_a5_km": 238.4,
+  "tiger_cfcc_a5_untagged_rough_km": 224.0,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 8.1,
+   "residential": 2.1
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 51.41,
+  "tiger_origin_pct": 68.98,
+  "reviewed_no_pct_by_class": {
+   "motorway": 39.41,
+   "trunk": 38.04,
+   "primary": 26.43,
+   "secondary": 12.96,
+   "tertiary": 43.6,
+   "unclassified": 40.1,
+   "residential": 63.7
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 43.7,
+  "closures_py_closes_ways": 34,
+  "seasonal_any_km": 23.5,
+  "car_conditional_km": 9.6,
+  "winter_service_no_km": 16.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 48.1,
+  "closed_km_by_tag": {
+   "motor_vehicle=permit": 24.1,
+   "motor_vehicle=no": 10.6,
+   "motor_vehicle=private": 8.3,
+   "vehicle=no": 4.0,
+   "ford=yes": 0.9,
+   "access=permit": 0.2,
+   "motor_vehicle=emergency": 0.0
+  },
+  "permit_km": 24.2,
+  "car_conditional_km_by_verdict": {
+   "closes": 5.7,
+   "no closing rule": 2.0,
+   "part-time": 2.0
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=no @ May-Sep Su 09:00-16:00": 2.0,
+   "motor_vehicle:conditional=destination @ (Apr 15 - Nov 30)": 1.3,
+   "access:conditional=yes @ snow": 0.7
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 513,
+ "controls": {
+  "on_graph": {
+   "signal": 1606,
+   "stop": 2122,
+   "giveway": 237
+  },
+  "in_file": {
+   "giveway": 257,
+   "signal": 1679,
+   "stop": 2359
+  },
+  "per_100km": {
+   "signal": 2.76,
+   "stop": 3.65,
+   "giveway": 0.41
+  },
+  "all_per_100km": 6.81
+ },
+ "timed_barriers_on_graph": {
+  "count": 14,
+  "by_key": {
+   "motor_vehicle:conditional": 6,
+   "seasonal": 1,
+   "opening_hours": 5,
+   "access:conditional": 2
+  },
+  "list": [
+   {
+    "id": 102017895,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "name": "Seboeis Road Gate"
+   },
+   {
+    "id": 102202233,
+    "barrier": "gate",
+    "seasonal": "yes"
+   },
+   {
+    "id": 330136250,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 2975174442,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "name": "Kahtahdin Loop Road Gate"
+   },
+   {
+    "id": 3068007735,
+    "barrier": "toll_booth",
+    "opening_hours": "Mo-Su 06:00-21:00",
+    "name": "Katahdin Iron Works Checkpoint"
+   },
+   {
+    "id": 4288986516,
+    "barrier": "toll_booth",
+    "motor_vehicle:conditional": "no @ (Dec-Apr)",
+    "name": "Oxbow Checkpoint (Electronic Gate)"
+   },
+   {
+    "id": 5812493020,
+    "barrier": "toll_booth",
+    "opening_hours": "Mo-Su 05:00-21:00",
+    "name": "Telos Checkpoint"
+   },
+   {
+    "id": 8065886052,
+    "barrier": "lift_gate",
+    "access:conditional": "yes @ \"bridge\""
+   },
+   {
+    "id": 8065886053,
+    "barrier": "lift_gate",
+    "access:conditional": "yes @ \"bridge\""
+   },
+   {
+    "id": 9645841853,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "name": "Sandbank Gate"
+   },
+   {
+    "id": 9787130752,
+    "barrier": "toll_booth",
+    "motor_vehicle:conditional": "no @ (Dec-Apr)",
+    "name": "Winterville Checkpoint (Electronic Gate)"
+   },
+   {
+    "id": 9955245254,
+    "barrier": "toll_booth",
+    "opening_hours": "Mo-Su 06:00-21:00",
+    "name": "Hedgehog Checkpoint"
+   },
+   {
+    "id": 10297054235,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "name": "North Gate"
+   },
+   {
+    "id": 11200721562,
+    "barrier": "toll_booth",
+    "opening_hours": "Mo-Su 05:30-21:40",
+    "name": "Six Mile Checkpoint"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 997,
+  "by_where": {
+   "via node, at a junction": 669,
+   "from/to not both in graph": 242,
+   "no via": 5,
+   "via way": 59,
+   "via node, elsewhere": 22
+  },
+  "junctions": 74628,
+  "via_node_per_1000_junctions": 8.96,
+  "via_way_per_1000_junctions": 0.79
+ },
+ "byways": {
+  "road_route_relations": 299,
+  "networks": {
+   "(none)": {
+    "relations": 4,
+    "scenic_yes": 4,
+    "admitted": 4,
+    "km": 282.7,
+    "admitted_km": 282.7
+   },
+   "CA:NB:scenic": {
+    "relations": 2,
+    "scenic_yes": 2,
+    "admitted": 2,
+    "km": 19.0,
+    "admitted_km": 19.0
+   },
+   "US:ME": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 655.5,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 15284827,
+    "network": "",
+    "name": "Acadia All-American Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 66.8
+   },
+   {
+    "id": 12453596,
+    "network": "",
+    "name": "Old Canada Road Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 117.0
+   },
+   {
+    "id": 12453331,
+    "network": "",
+    "name": "Rangeley Lakes Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 56.8
+   },
+   {
+    "id": 12446038,
+    "network": "",
+    "name": "Schoodic Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 42.1
+   },
+   {
+    "id": 20509082,
+    "network": "CA:NB:scenic",
+    "name": "River Valley Scenic Drive / Route panoramique de la Vall\u00e9e",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 18.1
+   },
+   {
+    "id": 20512513,
+    "network": "CA:NB:scenic",
+    "name": "Route du littoral de Fundy Coastal Drive",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.9
+   },
+   {
+    "id": 2404267,
+    "network": "US:ME",
+    "name": "Aroostock Scenic Highway",
+    "ref": "11",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 655.5
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 59952.3,
+  "unpaved_pct": 14.71,
+  "untagged_surface_pct": 63.75,
+  "smoothness_bad_or_worse_km": 173.6,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 10.1,
+  "maxspeed_tagged_pct": {
+   "motorway": 91.13,
+   "trunk": 59.46,
+   "primary": 30.92,
+   "secondary": 25.74,
+   "tertiary": 18.36,
+   "unclassified": 7.28,
+   "residential": 4.25
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 7.7,
+  "total": 9.0
+ },
+ "peak_rss_gb": 1.17
+}

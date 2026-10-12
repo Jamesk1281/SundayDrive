@@ -1,0 +1,53 @@
+state,networks,relations,admitted_by_network,admitted_by_tag,missed,numbered_flagged
+AL,,0,0,2,0,US:AL 281
+AK,,0,0,2,0,
+AZ,US:AZ:Scenic (24),24,0,27,2,
+AR,,0,0,0,0,
+CA,US:CA:CR:Scenic (2); US:CA:San_Francisco:49_Mile_Scenic_Drive (1); US:CA:Scenic (21),24,0,10,22,US:CA 160
+CO,US:CO:Scenic (26),26,0,11,15,
+CT,,0,0,1,0,
+DE,,0,0,0,0,
+DC,,0,0,0,0,
+FL,US:FL:Scenic (27),27,0,28,0,
+GA,US:GA:Scenic (2),2,0,2,1,
+HI,,0,0,1,0,
+ID,,0,0,6,0,
+IL,,0,0,1,0,
+IN,,0,0,0,0,
+IA,US:IA:Scenic (21),21,0,0,21,
+KS,US:KS:Scenic (1); US:KS:Scenic Byway (1),2,0,1,1,
+KY,US:KY:Scenic (15),15,0,3,15,
+LA,,0,0,1,0,
+ME,,0,0,3,0,
+MD,US:MD:Scenic (1),1,0,3,1,US:MD 25
+MA,US:MA:Scenic (14),14,14,0,0,
+MI,,0,0,1,0,
+MN,,0,0,5,0,
+MS,US:MS:Scenic (4),4,0,0,4,
+MO,,0,0,0,0,
+MT,,0,0,2,0,
+NE,US:NE:Scenic (9),9,0,0,9,
+NV,US:NV:NSB (1); US:NV:Scenic (7),8,0,3,8,US:NV 158
+NH,,0,0,5,0,
+NJ,US:NJ:Scenic (12); US:NJ:Scenic:Alt (1); US:NJ:Scenic:Connector (2); US:NJ:Scenic:Loop (2); US:NJ:Scenic:Spur (2),19,0,12,7,
+NM,US:NM:Scenic (1),1,0,6,1,US:NM 503
+NY,US:NY:Scenic (25); US:NY:Scenic:Alternate (5),30,25,5,3,US:NY 30
+NC,US:NC:Scenic_Byway (2),2,0,4,0,
+ND,,0,0,1,0,
+OH,US:OH:Byway (26); US:OH:Scenic (1),27,0,1,26,
+OK,,0,0,1,0,
+OR,US:OR:Scenic (19); US:OR:Tour (10),29,0,6,23,
+PA,US:PA:Scenic (6),6,0,1,6,
+RI,,0,0,0,0,
+SC,US:SC:Scenic (1),1,0,4,1,US:SC Cherokee Foothills National Scenic Byway
+SD,US:SD:Scenic (2),2,0,1,1,
+TN,US:TN:secondary:Scenic (1),1,0,6,1,
+TX,,0,0,0,0,
+UT,,0,0,12,0,US:UT 128; US:UT 211; US:UT 279; US:UT 313
+VT,US:VT:byway (9),9,9,9,0,
+VA,,0,0,2,0,
+WA,,0,0,7,0,US:WA Mount Baker Scenic Byway
+WV,,0,0,2,0,
+WI,US:WI:Scenic (6),6,0,14,0,
+WY,,0,0,1,0,
+(no state),US:AAR (1); US:AAR;US:OH:Byway (1); US:AB:NSB (2); US:AB:NSB:Connecticut River (3); US:Byway (1); US:US:Scenic (1); US:USFS:byway (1),,,,,

@@ -1,0 +1,783 @@
+{
+ "label": "colorado",
+ "graph_nodes": 398656,
+ "graph_edges": 515191,
+ "graph_km": 169976.6,
+ "accepted_ways": 295631,
+ "accepted_km": 172294.7,
+ "skipped_private_ways": 6332,
+ "km_by_class": {
+  "living_street": 152.7,
+  "motorway": 3632.5,
+  "motorway_link": 974.3,
+  "primary": 7675.4,
+  "primary_link": 158.6,
+  "residential": 70825.4,
+  "secondary": 9389.4,
+  "secondary_link": 70.0,
+  "tertiary": 24367.7,
+  "tertiary_link": 41.7,
+  "trunk": 5439.6,
+  "trunk_link": 237.1,
+  "unclassified": 47012.4
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 152.7,
+   "tagged_pct": 5.48,
+   "tagged_hm_kmh": 25.2,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3632.5,
+   "tagged_pct": 97.19,
+   "tagged_hm_kmh": 112.3,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 974.3,
+   "tagged_pct": 10.64,
+   "tagged_hm_kmh": 77.3,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 7675.4,
+   "tagged_pct": 65.93,
+   "tagged_hm_kmh": 77.0,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 158.6,
+   "tagged_pct": 4.73,
+   "tagged_hm_kmh": 52.1,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 70825.4,
+   "tagged_pct": 6.5,
+   "tagged_hm_kmh": 38.3,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 9389.4,
+   "tagged_pct": 52.83,
+   "tagged_hm_kmh": 66.8,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 70.0,
+   "tagged_pct": 7.66,
+   "tagged_hm_kmh": 56.4,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 24367.7,
+   "tagged_pct": 20.32,
+   "tagged_hm_kmh": 58.0,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 41.7,
+   "tagged_pct": 8.56,
+   "tagged_hm_kmh": 48.6,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 5439.6,
+   "tagged_pct": 82.01,
+   "tagged_hm_kmh": 89.3,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 237.1,
+   "tagged_pct": 8.03,
+   "tagged_hm_kmh": 68.7,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 47012.4,
+   "tagged_pct": 3.57,
+   "tagged_hm_kmh": 50.1,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 17.3,
+ "surface": {
+  "tagged_pct": 73.09,
+  "unpaved_pct": 40.78,
+  "untagged_pct": 26.91,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 4.2,
+   "tertiary": 41.0,
+   "unclassified": 85.7,
+   "residential": 26.32
+  },
+  "untagged_pct_by_class": {
+   "motorway": 13.48,
+   "trunk": 7.75,
+   "primary": 9.09,
+   "secondary": 7.87,
+   "tertiary": 11.97,
+   "unclassified": 8.53,
+   "residential": 50.8
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 4.25,
+  "smoothness_bad_or_worse_km": 3438.3,
+  "smoothness_very_bad_or_worse_km": 1672.8,
+  "4wd_only_km": 900.9,
+  "4wd_or_very_bad_km": 1851.6,
+  "tracktype_tagged_km": 16933.7,
+  "tracktype_grade3plus_km": 975.2,
+  "tiger_cfcc_a5_km": 937.1,
+  "tiger_cfcc_a5_untagged_rough_km": 926.7,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 49.8,
+   "unclassified": 1405.0,
+   "residential": 396.9
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 32.79,
+  "tiger_origin_pct": 50.11,
+  "reviewed_no_pct_by_class": {
+   "motorway": 12.4,
+   "trunk": 9.93,
+   "primary": 4.54,
+   "secondary": 6.33,
+   "tertiary": 19.72,
+   "unclassified": 25.88,
+   "residential": 51.69
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 188.8,
+  "closures_py_closes_ways": 77,
+  "seasonal_any_km": 94.3,
+  "car_conditional_km": 190.7,
+  "winter_service_no_km": 65.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 279.5,
+  "closed_km_by_tag": {
+   "access=permit": 80.6,
+   "motor_vehicle=no": 78.0,
+   "vehicle=permit": 71.7,
+   "motor_vehicle=private": 18.9,
+   "ford=yes": 12.6,
+   "vehicle=no": 9.3,
+   "motor_vehicle=forestry": 7.3,
+   "motor_vehicle=permit": 1.1,
+   "motorcar=no": 0.0,
+   "access=military": 0.0
+  },
+  "permit_km": 153.4,
+  "car_conditional_km_by_verdict": {
+   "closes": 67.3,
+   "dated": 1.7,
+   "no closing rule": 17.7,
+   "part-time": 5.1,
+   "time of day": 1.0,
+   "unrecognized": 97.8
+  },
+  "car_conditional_ordinal_fixable_km": 84.7,
+  "car_conditional_unread_top": {
+   "access:conditional=no @ Oct 14th - May 31st": 59.8,
+   "access:conditional=no @ Nov 19th - May 30th": 18.1,
+   "motor_vehicle:conditional=no@(Dec 1 - Mai 1)": 13.1,
+   "motor_vehicle:conditional=yes @ (Mo-Fr 05:00-11:00,12:00-03:00; Sa,Su 12:00-03:00)": 11.8,
+   "access:conditional=no @ Oct 14 - May 31st": 6.6,
+   "motor_vehicle:conditional=no@(Nov 01-Apr 30 21:00-5:00; May 01-Oct 31 22:00-5:00)": 5.1,
+   "motor_vehicle:conditional=yes @ (Mo-Su 12:00-03:00)": 4.0,
+   "motor_vehicle:conditional=yes @ (Mo-Fr 05:00-11:00)": 1.9,
+   "access:conditional=no @ (2023 Aug 30 - 2023 Sep 10)": 1.5,
+   "access:conditional=no @ (Mo-Su 17:00-09:00)": 0.8,
+   "motor_vehicle:conditional=no @ 2025 Jun 27-2025 Jul 31": 0.2,
+   "access:conditional=no @ (Mo-Fr 03:00-11:59)": 0.1,
+   "access:conditional=no @ Oct 1 - May 31st": 0.1,
+   "vehicle:conditional=no": 0.0
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 1294,
+ "controls": {
+  "on_graph": {
+   "signal": 12586,
+   "stop": 24465,
+   "giveway": 1302
+  },
+  "in_file": {
+   "signal": 12876,
+   "stop": 30937,
+   "giveway": 1578
+  },
+  "per_100km": {
+   "signal": 7.4,
+   "stop": 14.39,
+   "giveway": 0.77
+  },
+  "all_per_100km": 22.56
+ },
+ "timed_barriers_on_graph": {
+  "count": 18,
+  "by_key": {
+   "opening_hours": 13,
+   "access:conditional": 3,
+   "vehicle:conditional": 1,
+   "seasonal": 1
+  },
+  "list": [
+   {
+    "id": 55784738,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 06:00-19:00",
+    "name": "Irwin Gate"
+   },
+   {
+    "id": 55820238,
+    "barrier": "swing_gate",
+    "access:conditional": "no@(Nov 01-Apr 30 Mo-Su 21:00-5:00; May 01-Oct 31 Mo-Su 22:00-5:00)",
+    "access": "yes"
+   },
+   {
+    "id": 176245658,
+    "barrier": "gate",
+    "access:conditional": "no @ (ice;wind)",
+    "access": "yes"
+   },
+   {
+    "id": 176400279,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private"
+   },
+   {
+    "id": 439978876,
+    "barrier": "swing_gate",
+    "opening_hours": "Mar Su[2]-Oct 30 (sunrise-01:00)-(sunset+01:00); Nov 01-Mar Sa[2] 05:00-19:00"
+   },
+   {
+    "id": 439982305,
+    "barrier": "swing_gate",
+    "opening_hours": "Mar Su[2]-Oct 30 (sunrise-01:00)-(sunset+01:00); Nov 01-Mar Sa[2] 05:00-19:00"
+   },
+   {
+    "id": 467816896,
+    "barrier": "gate",
+    "access:conditional": "no @ (ice;wind)",
+    "access": "yes"
+   },
+   {
+    "id": 556043681,
+    "barrier": "gate",
+    "opening_hours": "closed",
+    "access": "no"
+   },
+   {
+    "id": 1870704206,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "name": "Enoch Gate"
+   },
+   {
+    "id": 1895595547,
+    "barrier": "gate",
+    "vehicle:conditional": "no @ snow"
+   },
+   {
+    "id": 2040648842,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 3098189703,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 05:00-21:00",
+    "name": "Paseo Road Gate"
+   },
+   {
+    "id": 5877974880,
+    "barrier": "gate",
+    "seasonal": "winter",
+    "access": "yes"
+   },
+   {
+    "id": 6292045692,
+    "barrier": "gate",
+    "opening_hours": "Mo-Sa 06:00-17:00; Su off"
+   },
+   {
+    "id": 6292045693,
+    "barrier": "gate",
+    "opening_hours": "Mo-Sa 06:00-14:00; Su off"
+   },
+   {
+    "id": 7168380537,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset",
+    "access": "designated"
+   },
+   {
+    "id": 8489615872,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 09:00-21:00"
+   },
+   {
+    "id": 9033549856,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 05:00-21:00",
+    "name": "Paseo Road Gate"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 9504,
+  "by_where": {
+   "via node, at a junction": 5443,
+   "from/to not both in graph": 2111,
+   "via node, elsewhere": 813,
+   "via way": 1115,
+   "no via": 22
+  },
+  "junctions": 243630,
+  "via_node_per_1000_junctions": 22.34,
+  "via_way_per_1000_junctions": 4.58
+ },
+ "byways": {
+  "road_route_relations": 2908,
+  "networks": {
+   "(none)": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 27.0,
+    "admitted_km": 27.0
+   },
+   "US:CO:NW": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 29.1,
+    "admitted_km": 0.0
+   },
+   "US:CO:Scenic": {
+    "relations": 26,
+    "scenic_yes": 11,
+    "admitted": 11,
+    "km": 4274.5,
+    "admitted_km": 1270.9
+   },
+   "US:NE:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 12.6,
+    "admitted_km": 0.0
+   },
+   "US:NM:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.0,
+    "admitted_km": 0.0
+   },
+   "US:US": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 451.0,
+    "admitted_km": 451.0
+   },
+   "byway:historic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 6.7,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 20444984,
+    "network": "",
+    "name": "Dinosaur Diamond Prehistoric Highway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 27.0
+   },
+   {
+    "id": 2504701,
+    "network": "US:CO:NW",
+    "name": "Northwest Parkway",
+    "ref": "NW",
+    "scenic": "",
+    "official_name": "",
+    "operator": "Northwest Parkway Public Highway Authority",
+    "admitted": false,
+    "drivable_km": 29.1
+   },
+   {
+    "id": 19968047,
+    "network": "US:CO:Scenic",
+    "name": "Alpine Loop Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 83.2
+   },
+   {
+    "id": 19968049,
+    "network": "US:CO:Scenic",
+    "name": "Cache la Poudre \u2013 North Park Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 175.4
+   },
+   {
+    "id": 19964013,
+    "network": "US:CO:Scenic",
+    "name": "Collegiate Peaks Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 92.4
+   },
+   {
+    "id": 15088378,
+    "network": "US:CO:Scenic",
+    "name": "Colorado River Headwaters Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 110.0
+   },
+   {
+    "id": 19619060,
+    "network": "US:CO:Scenic",
+    "name": "Dinosaur Diamond Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 202.0
+   },
+   {
+    "id": 15909882,
+    "network": "US:CO:Scenic",
+    "name": "Flat Tops Trail Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 129.7
+   },
+   {
+    "id": 15625349,
+    "network": "US:CO:Scenic",
+    "name": "Frontier Pathways Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 153.9
+   },
+   {
+    "id": 15625444,
+    "network": "US:CO:Scenic",
+    "name": "Gold Belt Tour Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 217.7
+   },
+   {
+    "id": 15256563,
+    "network": "US:CO:Scenic",
+    "name": "Grand Mesa Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 97.3
+   },
+   {
+    "id": 19755519,
+    "network": "US:CO:Scenic",
+    "name": "Guanella Pass Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 37.9
+   },
+   {
+    "id": 19965343,
+    "network": "US:CO:Scenic",
+    "name": "Highway Of Legends Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 188.8
+   },
+   {
+    "id": 19755307,
+    "network": "US:CO:Scenic",
+    "name": "Lariat Loop Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 72.5
+   },
+   {
+    "id": 19965297,
+    "network": "US:CO:Scenic",
+    "name": "Los Caminos Antiguos Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 239.2
+   },
+   {
+    "id": 19755520,
+    "network": "US:CO:Scenic",
+    "name": "Mount Blue Sky Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 73.2
+   },
+   {
+    "id": 19963922,
+    "network": "US:CO:Scenic",
+    "name": "Pawnee Pioneer Trails Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 228.9
+   },
+   {
+    "id": 4581970,
+    "network": "US:CO:Scenic",
+    "name": "Peak to Peak Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 98.8
+   },
+   {
+    "id": 19968116,
+    "network": "US:CO:Scenic",
+    "name": "San Juan Skyway Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 379.5
+   },
+   {
+    "id": 19684036,
+    "network": "US:CO:Scenic",
+    "name": "Santa Fe Trail Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 345.3
+   },
+   {
+    "id": 19755521,
+    "network": "US:CO:Scenic",
+    "name": "Silver Thread Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 188.0
+   },
+   {
+    "id": 19963827,
+    "network": "US:CO:Scenic",
+    "name": "South Platte River Trail Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 46.8
+   },
+   {
+    "id": 19969479,
+    "network": "US:CO:Scenic",
+    "name": "Top of the Rockies Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 185.6
+   },
+   {
+    "id": 19969486,
+    "network": "US:CO:Scenic",
+    "name": "Tracks Across Borders Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 136.1
+   },
+   {
+    "id": 4594374,
+    "network": "US:CO:Scenic",
+    "name": "Trail Ridge Road Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 91.8
+   },
+   {
+    "id": 19968117,
+    "network": "US:CO:Scenic",
+    "name": "Trail of the Ancients Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 160.7
+   },
+   {
+    "id": 19968048,
+    "network": "US:CO:Scenic",
+    "name": "Unaweep/Tabeguache Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 209.3
+   },
+   {
+    "id": 19965572,
+    "network": "US:CO:Scenic",
+    "name": "West Elk Loop Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 330.5
+   },
+   {
+    "id": 15082403,
+    "network": "US:NE:Scenic",
+    "name": "Gold Rush Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 12.6
+   },
+   {
+    "id": 19682924,
+    "network": "US:NM:Scenic",
+    "name": "Santa Fe Trail National Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 2308744,
+    "network": "US:US",
+    "name": "",
+    "ref": "34",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 451.0
+   },
+   {
+    "id": 2270263,
+    "network": "byway:historic",
+    "name": "Western Vistas Historic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 6.7
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 172294.7,
+  "unpaved_pct": 40.7,
+  "untagged_surface_pct": 27.3,
+  "smoothness_bad_or_worse_km": 3593.3,
+  "4wd_only_km": 937.7,
+  "4wd_or_very_bad_km": 1970.5,
+  "maxspeed_tagged_pct": {
+   "motorway": 97.28,
+   "trunk": 82.1,
+   "primary": 65.93,
+   "secondary": 52.84,
+   "tertiary": 20.35,
+   "unclassified": 3.54,
+   "residential": 6.4
+  }
+ },
+ "timing_s": {
+  "relations": 1.0,
+  "parse": 30.9,
+  "total": 34.9
+ },
+ "peak_rss_gb": 2.54
+}

@@ -1,0 +1,697 @@
+{
+ "label": "utah",
+ "graph_nodes": 191246,
+ "graph_edges": 242496,
+ "graph_km": 75981.4,
+ "accepted_ways": 139707,
+ "accepted_km": 77531.8,
+ "skipped_private_ways": 4124,
+ "km_by_class": {
+  "living_street": 5.9,
+  "motorway": 3202.1,
+  "motorway_link": 790.1,
+  "primary": 4061.5,
+  "primary_link": 41.5,
+  "residential": 22332.5,
+  "secondary": 5164.8,
+  "secondary_link": 15.7,
+  "tertiary": 11163.8,
+  "tertiary_link": 11.4,
+  "trunk": 1603.6,
+  "trunk_link": 62.4,
+  "unclassified": 27525.9
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 5.9,
+   "tagged_pct": 26.1,
+   "tagged_hm_kmh": 12.8,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3202.1,
+   "tagged_pct": 98.93,
+   "tagged_hm_kmh": 121.0,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 790.1,
+   "tagged_pct": 10.88,
+   "tagged_hm_kmh": 91.6,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 4061.5,
+   "tagged_pct": 78.32,
+   "tagged_hm_kmh": 83.5,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 41.5,
+   "tagged_pct": 11.29,
+   "tagged_hm_kmh": 73.4,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 22332.5,
+   "tagged_pct": 19.22,
+   "tagged_hm_kmh": 38.1,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 5164.8,
+   "tagged_pct": 57.06,
+   "tagged_hm_kmh": 69.6,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 15.7,
+   "tagged_pct": 10.34,
+   "tagged_hm_kmh": 49.2,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 11163.8,
+   "tagged_pct": 23.01,
+   "tagged_hm_kmh": 50.6,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 11.4,
+   "tagged_pct": 12.88,
+   "tagged_hm_kmh": 37.7,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 1603.6,
+   "tagged_pct": 81.55,
+   "tagged_hm_kmh": 95.7,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 62.4,
+   "tagged_pct": 10.74,
+   "tagged_hm_kmh": 81.0,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 27525.9,
+   "tagged_pct": 2.4,
+   "tagged_hm_kmh": 41.0,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 23.99,
+ "surface": {
+  "tagged_pct": 76.38,
+  "unpaved_pct": 35.83,
+  "untagged_pct": 23.62,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.85,
+   "tertiary": 29.91,
+   "unclassified": 79.77,
+   "residential": 8.42
+  },
+  "untagged_pct_by_class": {
+   "motorway": 15.44,
+   "trunk": 4.85,
+   "primary": 5.97,
+   "secondary": 8.54,
+   "tertiary": 15.45,
+   "unclassified": 11.67,
+   "residential": 51.33
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 16.06,
+  "smoothness_bad_or_worse_km": 2392.9,
+  "smoothness_very_bad_or_worse_km": 1367.7,
+  "4wd_only_km": 566.5,
+  "4wd_or_very_bad_km": 1457.8,
+  "tracktype_tagged_km": 2661.0,
+  "tracktype_grade3plus_km": 933.9,
+  "tiger_cfcc_a5_km": 330.1,
+  "tiger_cfcc_a5_untagged_rough_km": 303.1,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 32.5,
+   "tertiary": 62.7,
+   "unclassified": 1305.7,
+   "residential": 57.0
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 9.57,
+  "tiger_origin_pct": 15.95,
+  "reviewed_no_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 1.82,
+   "primary": 0.76,
+   "secondary": 1.18,
+   "tertiary": 5.6,
+   "unclassified": 11.11,
+   "residential": 15.52
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 326.9,
+  "closures_py_closes_ways": 105,
+  "seasonal_any_km": 250.8,
+  "car_conditional_km": 266.3,
+  "winter_service_no_km": 54.2,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 237.9,
+  "closed_km_by_tag": {
+   "access=permit": 108.5,
+   "motor_vehicle=private": 67.4,
+   "motor_vehicle=permit": 29.9,
+   "motor_vehicle=no": 26.6,
+   "ford=yes": 5.3,
+   "access=military": 0.3,
+   "motorcar=no": 0.0
+  },
+  "permit_km": 138.4,
+  "car_conditional_km_by_verdict": {
+   "closes": 265.3,
+   "no closing rule": 0.5,
+   "unrecognized": 0.5
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=designated @ (<50\" wide)": 0.5,
+   "motor_vehicle:conditional=no @ (full-sized)": 0.4,
+   "motor_vehicle:conditional=no @ Dec 1 - spring": 0.1
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 979,
+ "controls": {
+  "on_graph": {
+   "stop": 14527,
+   "signal": 4656,
+   "giveway": 1390
+  },
+  "in_file": {
+   "stop": 16326,
+   "signal": 4824,
+   "giveway": 1552
+  },
+  "per_100km": {
+   "stop": 19.12,
+   "signal": 6.13,
+   "giveway": 1.83
+  },
+  "all_per_100km": 27.08
+ },
+ "timed_barriers_on_graph": {
+  "count": 29,
+  "by_key": {
+   "motor_vehicle:conditional": 6,
+   "access:conditional": 5,
+   "opening_hours": 17,
+   "seasonal": 2,
+   "motorcar:conditional": 1
+  },
+  "list": [
+   {
+    "id": 82920150,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ Nov 15 - Mar 15",
+    "access": "yes"
+   },
+   {
+    "id": 83327010,
+    "barrier": "gate",
+    "access:conditional": "no @ winter"
+   },
+   {
+    "id": 83886981,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   },
+   {
+    "id": 84436627,
+    "barrier": "gate",
+    "opening_hours": "sunrise-sunset"
+   },
+   {
+    "id": 84771391,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ snow",
+    "name": "winter closure gate"
+   },
+   {
+    "id": 84891526,
+    "barrier": "gate",
+    "opening_hours": "May-Oct",
+    "access": "yes",
+    "name": "Pine Hollow Gate"
+   },
+   {
+    "id": 84919470,
+    "barrier": "gate",
+    "opening_hours": "\"spring-autumn; winter off\""
+   },
+   {
+    "id": 429426035,
+    "barrier": "swing_gate",
+    "seasonal": "summer"
+   },
+   {
+    "id": 1037986699,
+    "barrier": "swing_gate",
+    "seasonal": "summer"
+   },
+   {
+    "id": 2094032875,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "private",
+    "name": "Camp Williams Truck Gate"
+   },
+   {
+    "id": 2819455326,
+    "barrier": "gate",
+    "motorcar:conditional": "no @ Nov-Jun",
+    "name": "Millcreek Canyon Winter Gate"
+   },
+   {
+    "id": 3101227605,
+    "barrier": "gate",
+    "opening_hours": "Jun 01-Oct 31"
+   },
+   {
+    "id": 4244239695,
+    "barrier": "gate",
+    "access:conditional": "no@snow"
+   },
+   {
+    "id": 4526588491,
+    "barrier": "swing_gate",
+    "access:conditional": "no @ (2025 Oct 1 - 2026 Apr 30)",
+    "opening_hours": "Oct-Apr off"
+   },
+   {
+    "id": 6468490028,
+    "barrier": "gate",
+    "opening_hours": "Jun 01-Nov 15 open; Nov 16-May 31 off"
+   },
+   {
+    "id": 6699232932,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-May)",
+    "name": "Winter Closure"
+   },
+   {
+    "id": 7704014049,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ snow"
+   },
+   {
+    "id": 9179119849,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 08:00-20:00"
+   },
+   {
+    "id": 9821030182,
+    "barrier": "gate",
+    "opening_hours": "Apr 15-Dec 01 open; Dec 02-Apr 14 closed"
+   },
+   {
+    "id": 9890800419,
+    "barrier": "block",
+    "access:conditional": "permissive @ (Mo-Sa 17:00-24:00; Su 00:00-24:00)",
+    "access": "private"
+   },
+   {
+    "id": 9918003168,
+    "barrier": "swing_gate",
+    "opening_hours": "Mar-Oct \"Variable, no winter maintenance\"",
+    "name": "Winter Gate Lower"
+   },
+   {
+    "id": 10012311588,
+    "barrier": "swing_gate",
+    "opening_hours": "\"spring-autumn; winter off\""
+   },
+   {
+    "id": 10700269864,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 08:00-22:00"
+   },
+   {
+    "id": 11362649736,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "yes @ (Apr 15-Dec 1)"
+   },
+   {
+    "id": 11961421240,
+    "barrier": "gate",
+    "access:conditional": "yes @ (08:00-17:00)",
+    "opening_hours": "08:00-17:00"
+   },
+   {
+    "id": 12059619100,
+    "barrier": "lift_gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 12244459066,
+    "barrier": "gate",
+    "opening_hours": "06:00-22:00"
+   },
+   {
+    "id": 12881568766,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 13069731166,
+    "barrier": "swing_gate",
+    "opening_hours": "\"spring-fall; winter off\""
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 3417,
+  "by_where": {
+   "via node, at a junction": 1909,
+   "from/to not both in graph": 903,
+   "via way": 262,
+   "via node, elsewhere": 334,
+   "no via": 9
+  },
+  "junctions": 113882,
+  "via_node_per_1000_junctions": 16.76,
+  "via_way_per_1000_junctions": 2.3
+ },
+ "byways": {
+  "road_route_relations": 479,
+  "networks": {
+   "(none)": {
+    "relations": 10,
+    "scenic_yes": 9,
+    "admitted": 9,
+    "km": 1476.3,
+    "admitted_km": 1334.0
+   },
+   "US:AZ:Scenic": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 33.0,
+    "admitted_km": 33.0
+   },
+   "US:BLM:BCB": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 15.1,
+    "admitted_km": 15.1
+   },
+   "US:CO:Scenic": {
+    "relations": 2,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 46.2,
+    "admitted_km": 0.0
+   },
+   "US:NV:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 7.3,
+    "admitted_km": 0.0
+   },
+   "US:UT": {
+    "relations": 6,
+    "scenic_yes": 4,
+    "admitted": 4,
+    "km": 483.1,
+    "admitted_km": 187.3
+   }
+  },
+  "relations": [
+   {
+    "id": 20444984,
+    "network": "",
+    "name": "Dinosaur Diamond Prehistoric Highway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 582.7
+   },
+   {
+    "id": 15612180,
+    "network": "",
+    "name": "Flaming Gorge - Green River Basin Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 83.6
+   },
+   {
+    "id": 15602268,
+    "network": "",
+    "name": "Flaming Gorge-Uintas National Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 127.7
+   },
+   {
+    "id": 15602620,
+    "network": "",
+    "name": "Huntington/Eccles Canyons Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 133.0
+   },
+   {
+    "id": 15602306,
+    "network": "",
+    "name": "Logan Canyon Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 59.7
+   },
+   {
+    "id": 15602323,
+    "network": "",
+    "name": "Nebo Loop Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 58.7
+   },
+   {
+    "id": 15602448,
+    "network": "",
+    "name": "Scenic Byway 12",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 198.8
+   },
+   {
+    "id": 15602520,
+    "network": "",
+    "name": "Scenic Byway 143 - Utah's Patchwork Parkway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 77.2
+   },
+   {
+    "id": 15569788,
+    "network": "",
+    "name": "Transcontinental Railroad Backcountry Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 142.3
+   },
+   {
+    "id": 15607950,
+    "network": "",
+    "name": "Zion Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 12.5
+   },
+   {
+    "id": 16251660,
+    "network": "US:AZ:Scenic",
+    "name": "Kayenta \u2013 Monument Valley Scenic Road",
+    "ref": "Kayenta \u2013 Monument Valley Scenic Road",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 33.0
+   },
+   {
+    "id": 21570030,
+    "network": "US:BLM:BCB",
+    "name": "Smithsonian Butte National Back Country Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "United States Bureau of Land Management",
+    "admitted": true,
+    "drivable_km": 15.1
+   },
+   {
+    "id": 19619060,
+    "network": "US:CO:Scenic",
+    "name": "Dinosaur Diamond Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 4.3
+   },
+   {
+    "id": 19968117,
+    "network": "US:CO:Scenic",
+    "name": "Trail of the Ancients Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 41.8
+   },
+   {
+    "id": 19418383,
+    "network": "US:NV:Scenic",
+    "name": "Baker Road",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 7.3
+   },
+   {
+    "id": 1504905,
+    "network": "US:UT",
+    "name": "",
+    "ref": "128",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 71.7
+   },
+   {
+    "id": 1504534,
+    "network": "US:UT",
+    "name": "A Journey Through Time Scenic Byway",
+    "ref": "12",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 198.8
+   },
+   {
+    "id": 1505202,
+    "network": "US:UT",
+    "name": "Indian Creek Scenic Byway",
+    "ref": "211",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 54.7
+   },
+   {
+    "id": 1505287,
+    "network": "US:UT",
+    "name": "Potash Road",
+    "ref": "279",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 24.6
+   },
+   {
+    "id": 1505320,
+    "network": "US:UT",
+    "name": "State Route 313",
+    "ref": "313",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 36.3
+   },
+   {
+    "id": 1504531,
+    "network": "US:UT",
+    "name": "Zion Park Scenic Byway",
+    "ref": "9",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 97.1
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 77531.8,
+  "unpaved_pct": 36.3,
+  "untagged_surface_pct": 23.71,
+  "smoothness_bad_or_worse_km": 2486.6,
+  "4wd_only_km": 592.9,
+  "4wd_or_very_bad_km": 1538.3,
+  "maxspeed_tagged_pct": {
+   "motorway": 98.98,
+   "trunk": 81.55,
+   "primary": 78.32,
+   "secondary": 57.02,
+   "tertiary": 22.99,
+   "unclassified": 2.32,
+   "residential": 19.07
+  }
+ },
+ "timing_s": {
+  "relations": 0.4,
+  "parse": 19.3,
+  "total": 21.8
+ },
+ "peak_rss_gb": 1.44
+}

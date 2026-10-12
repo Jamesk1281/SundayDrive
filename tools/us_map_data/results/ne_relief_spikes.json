@@ -1,0 +1,502 @@
+{
+ "tiles": [
+  {
+   "tile": [
+    604,
+    757
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 0,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    607,
+    768
+   ],
+   "window_px": 13,
+   "residue_px": 3,
+   "chunks_in_tile": 0,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    608,
+    768
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 0,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    610,
+    765
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 2436,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    612,
+    767
+   ],
+   "window_px": 13,
+   "residue_px": 4,
+   "chunks_in_tile": 0,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    615,
+    741
+   ],
+   "window_px": 13,
+   "residue_px": 4,
+   "chunks_in_tile": 574,
+   "chunks_inflated": 1,
+   "km_inflated": 0.4,
+   "score_gain_max": 1.03,
+   "score_gain_mean_inflated": 1.03,
+   "roads": [
+    "Baptist Hill Road"
+   ]
+  },
+  {
+   "tile": [
+    621,
+    755
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 2127,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    621,
+    764
+   ],
+   "window_px": 13,
+   "residue_px": 6,
+   "chunks_in_tile": 320,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    621,
+    765
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 687,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    622,
+    751
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 507,
+   "chunks_inflated": 9,
+   "km_inflated": 1.75,
+   "score_gain_max": 0.23,
+   "score_gain_mean_inflated": 0.23,
+   "roads": [
+    "Lindsay Road",
+    "Old Seabury Road",
+    "Organug Road",
+    "Seabury Road",
+    "Southside Road"
+   ]
+  },
+  {
+   "tile": [
+    624,
+    746
+   ],
+   "window_px": 13,
+   "residue_px": 4,
+   "chunks_in_tile": 2528,
+   "chunks_inflated": 8,
+   "km_inflated": 2.29,
+   "score_gain_max": 0.92,
+   "score_gain_mean_inflated": 0.85,
+   "roads": [
+    "Blue Heron Lane",
+    "Foreside Road",
+    "Ledge Road",
+    "Schooner Ridge Road",
+    "Teal Drive"
+   ]
+  },
+  {
+   "tile": [
+    624,
+    747
+   ],
+   "window_px": 13,
+   "residue_px": 20,
+   "chunks_in_tile": 3872,
+   "chunks_inflated": 46,
+   "km_inflated": 9.44,
+   "score_gain_max": 1.63,
+   "score_gain_mean_inflated": 1.14,
+   "roads": [
+    "Avon Road",
+    "Berwick Street",
+    "Chester Street",
+    "Cutter Street",
+    "Eastern Promenade",
+    "Fairfield Street",
+    "Fayette Street",
+    "Garden Place",
+    "Greenwood Street",
+    "Hammond Road"
+   ]
+  },
+  {
+   "tile": [
+    624,
+    748
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 241,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    624,
+    759
+   ],
+   "window_px": 13,
+   "residue_px": 4,
+   "chunks_in_tile": 400,
+   "chunks_inflated": 5,
+   "km_inflated": 0.8,
+   "score_gain_max": 1.46,
+   "score_gain_mean_inflated": 1.21,
+   "roads": [
+    "Commercial Street",
+    "Province Lands Road",
+    "Provincetown Rotary"
+   ]
+  },
+  {
+   "tile": [
+    625,
+    746
+   ],
+   "window_px": 13,
+   "residue_px": 6,
+   "chunks_in_tile": 819,
+   "chunks_inflated": 11,
+   "km_inflated": 2.89,
+   "score_gain_max": 1.3,
+   "score_gain_mean_inflated": 1.07,
+   "roads": [
+    "Aldrich Road",
+    "Bayview Road",
+    "Harpswell Islands Road",
+    "Reed Cove Road",
+    "Sea Meadows Lane",
+    "Suzhannah Road",
+    "Wildberry Hollow"
+   ]
+  },
+  {
+   "tile": [
+    625,
+    765
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 1509,
+   "chunks_inflated": 1,
+   "km_inflated": 0.39,
+   "score_gain_max": 1.72,
+   "score_gain_mean_inflated": 1.72,
+   "roads": [
+    "Madequecham Valley Road"
+   ]
+  },
+  {
+   "tile": [
+    625,
+    766
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 32,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    626,
+    744
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 793,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    626,
+    745
+   ],
+   "window_px": 13,
+   "residue_px": 7,
+   "chunks_in_tile": 2326,
+   "chunks_inflated": 5,
+   "km_inflated": 1.24,
+   "score_gain_max": 1.27,
+   "score_gain_mean_inflated": 1.17,
+   "roads": [
+    "Main Road",
+    "North River Road",
+    "South River Road"
+   ]
+  },
+  {
+   "tile": [
+    626,
+    746
+   ],
+   "window_px": 13,
+   "residue_px": 11,
+   "chunks_in_tile": 729,
+   "chunks_inflated": 6,
+   "km_inflated": 1.78,
+   "score_gain_max": 1.45,
+   "score_gain_mean_inflated": 1.28,
+   "roads": [
+    "Dromore View",
+    "Harpswell Islands Road",
+    "Ledgemere Road",
+    "Main Road",
+    "Old Town Road"
+   ]
+  },
+  {
+   "tile": [
+    627,
+    743
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 734,
+   "chunks_inflated": 3,
+   "km_inflated": 1.05,
+   "score_gain_max": 1.48,
+   "score_gain_mean_inflated": 1.37,
+   "roads": [
+    "Ballard Road",
+    "Cedar Grove Road"
+   ]
+  },
+  {
+   "tile": [
+    627,
+    745
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 1184,
+   "chunks_inflated": 6,
+   "km_inflated": 1.67,
+   "score_gain_max": 1.16,
+   "score_gain_mean_inflated": 0.83,
+   "roads": [
+    "Castle Lane",
+    "Cross Point Road",
+    "Lester Road",
+    "River Wind Lane"
+   ]
+  },
+  {
+   "tile": [
+    627,
+    746
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 359,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    629,
+    745
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 73,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    631,
+    742
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 642,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    631,
+    744
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 91,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    632,
+    741
+   ],
+   "window_px": 13,
+   "residue_px": 2,
+   "chunks_in_tile": 680,
+   "chunks_inflated": 1,
+   "km_inflated": 0.33,
+   "score_gain_max": 1.46,
+   "score_gain_mean_inflated": 1.46,
+   "roads": [
+    "Back Shore Road"
+   ]
+  },
+  {
+   "tile": [
+    632,
+    742
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 198,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    637,
+    740
+   ],
+   "window_px": 13,
+   "residue_px": 6,
+   "chunks_in_tile": 593,
+   "chunks_inflated": 6,
+   "km_inflated": 1.51,
+   "score_gain_max": 1.34,
+   "score_gain_mean_inflated": 0.99,
+   "roads": [
+    "Goods Point Road",
+    "Harbor Heights",
+    "Quiet Shore"
+   ]
+  },
+  {
+   "tile": [
+    637,
+    741
+   ],
+   "window_px": 13,
+   "residue_px": 1,
+   "chunks_in_tile": 290,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  },
+  {
+   "tile": [
+    641,
+    739
+   ],
+   "window_px": 13,
+   "residue_px": 4,
+   "chunks_in_tile": 146,
+   "chunks_inflated": 0,
+   "km_inflated": 0.0,
+   "score_gain_max": 0.0,
+   "score_gain_mean_inflated": 0.0,
+   "roads": []
+  }
+ ],
+ "km_inflated_total": 25.54
+}

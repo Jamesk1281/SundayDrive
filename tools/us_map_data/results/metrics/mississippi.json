@@ -1,0 +1,473 @@
+{
+ "label": "mississippi",
+ "graph_nodes": 299351,
+ "graph_edges": 376155,
+ "graph_km": 150156.6,
+ "accepted_ways": 186186,
+ "accepted_km": 151501.8,
+ "skipped_private_ways": 854,
+ "km_by_class": {
+  "living_street": 8.7,
+  "motorway": 3034.4,
+  "motorway_link": 679.8,
+  "primary": 6881.3,
+  "primary_link": 138.6,
+  "residential": 96675.7,
+  "secondary": 9148.5,
+  "secondary_link": 70.8,
+  "tertiary": 14535.0,
+  "tertiary_link": 29.5,
+  "trunk": 5624.4,
+  "trunk_link": 378.0,
+  "unclassified": 12951.9
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 8.7,
+   "tagged_pct": 30.88,
+   "tagged_hm_kmh": 9.4,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3034.4,
+   "tagged_pct": 99.56,
+   "tagged_hm_kmh": 110.4,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 679.8,
+   "tagged_pct": 2.18,
+   "tagged_hm_kmh": 89.8,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 6881.3,
+   "tagged_pct": 23.74,
+   "tagged_hm_kmh": 81.0,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 138.6,
+   "tagged_pct": 0.65,
+   "tagged_hm_kmh": 65.0,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 96675.7,
+   "tagged_pct": 0.87,
+   "tagged_hm_kmh": 37.8,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 9148.5,
+   "tagged_pct": 12.65,
+   "tagged_hm_kmh": 72.0,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 70.8,
+   "tagged_pct": 0.29,
+   "tagged_hm_kmh": 44.8,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 14535.0,
+   "tagged_pct": 6.49,
+   "tagged_hm_kmh": 60.1,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 29.5,
+   "tagged_pct": 3.67,
+   "tagged_hm_kmh": 40.6,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 5624.4,
+   "tagged_pct": 72.04,
+   "tagged_hm_kmh": 100.5,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 378.0,
+   "tagged_pct": 0.67,
+   "tagged_hm_kmh": 77.7,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 12951.9,
+   "tagged_pct": 0.71,
+   "tagged_hm_kmh": 39.3,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 7.83,
+ "surface": {
+  "tagged_pct": 16.39,
+  "unpaved_pct": 3.52,
+  "untagged_pct": 83.61,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.51,
+   "unclassified": 16.67,
+   "residential": 3.16
+  },
+  "untagged_pct_by_class": {
+   "motorway": 64.09,
+   "trunk": 63.0,
+   "primary": 67.34,
+   "secondary": 70.06,
+   "tertiary": 72.2,
+   "unclassified": 62.1,
+   "residential": 92.66
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.66,
+  "smoothness_bad_or_worse_km": 36.0,
+  "smoothness_very_bad_or_worse_km": 0.6,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 0.6,
+  "tracktype_tagged_km": 55.6,
+  "tracktype_grade3plus_km": 4.2,
+  "tiger_cfcc_a5_km": 32.8,
+  "tiger_cfcc_a5_untagged_rough_km": 32.8,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.5,
+   "unclassified": 0.0,
+   "residential": 0.1
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 76.49,
+  "tiger_origin_pct": 83.93,
+  "reviewed_no_pct_by_class": {
+   "motorway": 2.05,
+   "trunk": 31.64,
+   "primary": 52.05,
+   "secondary": 62.11,
+   "tertiary": 71.3,
+   "unclassified": 78.3,
+   "residential": 85.93
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 0.0,
+  "closures_py_closes_ways": 0,
+  "seasonal_any_km": 0.0,
+  "car_conditional_km": 0.0,
+  "winter_service_no_km": 0.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 7.7,
+  "closed_km_by_tag": {
+   "access=permit": 4.7,
+   "motor_vehicle=private": 1.8,
+   "vehicle=no": 0.5,
+   "motor_vehicle=permit": 0.4,
+   "motor_vehicle=no": 0.3,
+   "ford=yes": 0.0
+  },
+  "permit_km": 5.1,
+  "car_conditional_km_by_verdict": {},
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {}
+ },
+ "terrarium_z11_tiles_with_graph": 525,
+ "controls": {
+  "on_graph": {
+   "signal": 2937,
+   "stop": 4887,
+   "giveway": 1169
+  },
+  "in_file": {
+   "signal": 2986,
+   "stop": 5152,
+   "giveway": 1250
+  },
+  "per_100km": {
+   "signal": 1.96,
+   "stop": 3.25,
+   "giveway": 0.78
+  },
+  "all_per_100km": 5.99
+ },
+ "timed_barriers_on_graph": {
+  "count": 14,
+  "by_key": {
+   "access:conditional": 3,
+   "opening_hours": 12
+  },
+  "list": [
+   {
+    "id": 125457434,
+    "barrier": "gate",
+    "access:conditional": "private @ sunset-08:00",
+    "access": "yes"
+   },
+   {
+    "id": 2573507336,
+    "barrier": "gate",
+    "access:conditional": "designated @ opening_hours",
+    "opening_hours": "Mo-Fr 06:00-15:00",
+    "access": "military"
+   },
+   {
+    "id": 4758379154,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   },
+   {
+    "id": 5303537685,
+    "barrier": "yes",
+    "opening_hours": "24/7",
+    "access": "military"
+   },
+   {
+    "id": 8573133341,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 8920287017,
+    "barrier": "yes",
+    "opening_hours": "24/7",
+    "access": "military"
+   },
+   {
+    "id": 9026463622,
+    "barrier": "gate",
+    "access:conditional": "private @ sunset-08:00",
+    "access": "yes"
+   },
+   {
+    "id": 9850477983,
+    "barrier": "yes",
+    "opening_hours": "24/7",
+    "access": "military"
+   },
+   {
+    "id": 9850477984,
+    "barrier": "yes",
+    "opening_hours": "24/7",
+    "access": "military"
+   },
+   {
+    "id": 13527267103,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   },
+   {
+    "id": 13662850648,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   },
+   {
+    "id": 13662850649,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   },
+   {
+    "id": 13662850650,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   },
+   {
+    "id": 13662850651,
+    "barrier": "lift_gate",
+    "opening_hours": "Mo-Fr 07:00-19:00"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 1381,
+  "by_where": {
+   "via node, at a junction": 896,
+   "from/to not both in graph": 292,
+   "no via": 3,
+   "via node, elsewhere": 166,
+   "via way": 24
+  },
+  "junctions": 193543,
+  "via_node_per_1000_junctions": 4.63,
+  "via_way_per_1000_junctions": 0.12
+ },
+ "byways": {
+  "road_route_relations": 801,
+  "networks": {
+   "US:GRR": {
+    "relations": 4,
+    "scenic_yes": 4,
+    "admitted": 4,
+    "km": 838.8,
+    "admitted_km": 838.8
+   },
+   "US:MS:Scenic": {
+    "relations": 4,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 124.3,
+    "admitted_km": 0.0
+   },
+   "US:NPS:Natchez_Trace": {
+    "relations": 3,
+    "scenic_yes": 3,
+    "admitted": 3,
+    "km": 502.4,
+    "admitted_km": 502.4
+   }
+  },
+  "relations": [
+   {
+    "id": 456651,
+    "network": "US:GRR",
+    "name": "Great River Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "Great River Road National Scenic Byway",
+    "operator": "Mississippi River Parkway Commission",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 1785009,
+    "network": "US:GRR",
+    "name": "Great River Road (Louisiana - east bank)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 19.8
+   },
+   {
+    "id": 1783093,
+    "network": "US:GRR",
+    "name": "Great River Road (Louisiana - west bank)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 1784926,
+    "network": "US:GRR",
+    "name": "Great River Road (Mississippi)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 819.0
+   },
+   {
+    "id": 1527269,
+    "network": "US:MS:Scenic",
+    "name": "",
+    "ref": "333",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 29.9
+   },
+   {
+    "id": 1529164,
+    "network": "US:MS:Scenic",
+    "name": "",
+    "ref": "304",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 51.8
+   },
+   {
+    "id": 1529168,
+    "network": "US:MS:Scenic",
+    "name": "",
+    "ref": "315",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 28.2
+   },
+   {
+    "id": 1529170,
+    "network": "US:MS:Scenic",
+    "name": "",
+    "ref": "32",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 14.3
+   },
+   {
+    "id": 3300030,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (Alabama)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 1.3
+   },
+   {
+    "id": 1523549,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (Mississippi)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 501.2
+   },
+   {
+    "id": 3300032,
+    "network": "US:NPS:Natchez_Trace",
+    "name": "Natchez Trace Parkway (super)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "US National Park Service",
+    "admitted": true,
+    "drivable_km": 0
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 151501.8,
+  "unpaved_pct": 3.51,
+  "untagged_surface_pct": 83.67,
+  "smoothness_bad_or_worse_km": 39.5,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 0.6,
+  "maxspeed_tagged_pct": {
+   "motorway": 99.54,
+   "trunk": 72.07,
+   "primary": 23.72,
+   "secondary": 12.61,
+   "tertiary": 6.49,
+   "unclassified": 0.71,
+   "residential": 0.86
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 13.1,
+  "total": 15.7
+ },
+ "peak_rss_gb": 1.56
+}

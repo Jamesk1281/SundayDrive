@@ -1,0 +1,438 @@
+{
+ "label": "new-hampshire",
+ "graph_nodes": 93542,
+ "graph_edges": 116469,
+ "graph_km": 31622.3,
+ "accepted_ways": 66556,
+ "accepted_km": 32124.0,
+ "skipped_private_ways": 3274,
+ "km_by_class": {
+  "living_street": 9.2,
+  "motorway": 968.3,
+  "motorway_link": 317.6,
+  "primary": 1716.9,
+  "primary_link": 15.3,
+  "residential": 17131.6,
+  "secondary": 2938.3,
+  "secondary_link": 7.7,
+  "tertiary": 3002.3,
+  "tertiary_link": 3.2,
+  "trunk": 770.8,
+  "trunk_link": 47.3,
+  "unclassified": 4693.7
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 9.2,
+   "tagged_pct": 4.19,
+   "tagged_hm_kmh": 24.1,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 968.3,
+   "tagged_pct": 99.91,
+   "tagged_hm_kmh": 100.6,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 317.6,
+   "tagged_pct": 16.17,
+   "tagged_hm_kmh": 62.2,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 1716.9,
+   "tagged_pct": 77.25,
+   "tagged_hm_kmh": 65.4,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 15.3,
+   "tagged_pct": 16.18,
+   "tagged_hm_kmh": 49.3,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 17131.6,
+   "tagged_pct": 17.6,
+   "tagged_hm_kmh": 43.2,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 2938.3,
+   "tagged_pct": 75.03,
+   "tagged_hm_kmh": 59.1,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 7.7,
+   "tagged_pct": 17.72,
+   "tagged_hm_kmh": 52.5,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 3002.3,
+   "tagged_pct": 62.51,
+   "tagged_hm_kmh": 51.6,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 3.2,
+   "tagged_pct": 17.88,
+   "tagged_hm_kmh": 50.0,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 770.8,
+   "tagged_pct": 88.76,
+   "tagged_hm_kmh": 72.6,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 47.3,
+   "tagged_pct": 31.92,
+   "tagged_hm_kmh": 63.1,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 4693.7,
+   "tagged_pct": 25.78,
+   "tagged_hm_kmh": 47.9,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 35.91,
+ "surface": {
+  "tagged_pct": 73.59,
+  "unpaved_pct": 16.85,
+  "untagged_pct": 26.41,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 1.8,
+   "unclassified": 41.73,
+   "residential": 19.36
+  },
+  "untagged_pct_by_class": {
+   "motorway": 0.37,
+   "trunk": 0.36,
+   "primary": 2.67,
+   "secondary": 5.66,
+   "tertiary": 10.51,
+   "unclassified": 9.16,
+   "residential": 42.94
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.33,
+  "smoothness_bad_or_worse_km": 24.9,
+  "smoothness_very_bad_or_worse_km": 1.1,
+  "4wd_only_km": 1.2,
+  "4wd_or_very_bad_km": 2.3,
+  "tracktype_tagged_km": 19.8,
+  "tracktype_grade3plus_km": 0.8,
+  "tiger_cfcc_a5_km": 284.3,
+  "tiger_cfcc_a5_untagged_rough_km": 282.1,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 1.8,
+   "residential": 0.4
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 63.79,
+  "tiger_origin_pct": 85.85,
+  "reviewed_no_pct_by_class": {
+   "motorway": 32.8,
+   "trunk": 21.55,
+   "primary": 22.34,
+   "secondary": 8.88,
+   "tertiary": 70.72,
+   "unclassified": 75.81,
+   "residential": 77.36
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 60.0,
+  "closures_py_closes_ways": 67,
+  "seasonal_any_km": 22.4,
+  "car_conditional_km": 17.2,
+  "winter_service_no_km": 32.2,
+  "seasonal_values_not_read": {
+   "winter": 1
+  },
+  "closed_to_cars_or_ford_km": 31.6,
+  "closed_km_by_tag": {
+   "motor_vehicle=private": 13.0,
+   "motor_vehicle=no": 9.2,
+   "access=forestry": 4.5,
+   "ford=yes": 3.3,
+   "access=permit": 0.8,
+   "access=delivery": 0.5,
+   "vehicle=no": 0.3,
+   "vehicle=private": 0.2
+  },
+  "permit_km": 0.8,
+  "car_conditional_km_by_verdict": {
+   "closes": 14.8,
+   "dated": 1.2,
+   "no closing rule": 0.9,
+   "time of day": 0.3
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=no @ (2022 Apr 04-2022 Oct 28)": 1.0,
+   "access:conditional=destination @ (Mo-Fr 07:30-08:30; Mo-Fr 13:30-14:30)": 0.9,
+   "access:conditional=no @ (dusk-dawn)": 0.3,
+   "motor_vehicle:conditional=no @ (2025 Jun 18-2026 Oct 03)": 0.2
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 154,
+ "controls": {
+  "on_graph": {
+   "signal": 2023,
+   "stop": 5180,
+   "giveway": 356
+  },
+  "in_file": {
+   "signal": 2195,
+   "stop": 6239,
+   "giveway": 391
+  },
+  "per_100km": {
+   "signal": 6.4,
+   "stop": 16.38,
+   "giveway": 1.13
+  },
+  "all_per_100km": 23.9
+ },
+ "timed_barriers_on_graph": {
+  "count": 5,
+  "by_key": {
+   "motor_vehicle:conditional": 2,
+   "opening_hours": 1,
+   "access:conditional": 2
+  },
+  "list": [
+   {
+    "id": 194429974,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ winter"
+   },
+   {
+    "id": 194994630,
+    "barrier": "gate",
+    "opening_hours": "05:30-07:45,14:00-21:00"
+   },
+   {
+    "id": 4586272784,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Mar)"
+   },
+   {
+    "id": 8065886052,
+    "barrier": "lift_gate",
+    "access:conditional": "yes @ \"bridge\""
+   },
+   {
+    "id": 8065886053,
+    "barrier": "lift_gate",
+    "access:conditional": "yes @ \"bridge\""
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 2071,
+  "by_where": {
+   "via node, at a junction": 1085,
+   "from/to not both in graph": 616,
+   "via way": 99,
+   "no via": 2,
+   "via node, elsewhere": 269
+  },
+  "junctions": 57736,
+  "via_node_per_1000_junctions": 18.79,
+  "via_way_per_1000_junctions": 1.71
+ },
+ "byways": {
+  "road_route_relations": 242,
+  "networks": {
+   "(none)": {
+    "relations": 5,
+    "scenic_yes": 5,
+    "admitted": 5,
+    "km": 205.2,
+    "admitted_km": 205.2
+   },
+   "US:AB:NSB:Connecticut River": {
+    "relations": 2,
+    "scenic_yes": 1,
+    "admitted": 2,
+    "km": 550.9,
+    "admitted_km": 550.9
+   },
+   "US:MA:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 1,
+    "km": 0.9,
+    "admitted_km": 0.9
+   },
+   "US:ME": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.5,
+    "admitted_km": 0.0
+   },
+   "US:VT:byway": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 0.0,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 19655390,
+    "network": "",
+    "name": "Crawford House Carriage Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 12455343,
+    "network": "",
+    "name": "Kancamagus Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 58.5
+   },
+   {
+    "id": 14179499,
+    "network": "",
+    "name": "Mount Washington Auto Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 12.4
+   },
+   {
+    "id": 19655389,
+    "network": "",
+    "name": "Mount Willard Carriage Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.0
+   },
+   {
+    "id": 12457334,
+    "network": "",
+    "name": "White Mountain Trail",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 134.3
+   },
+   {
+    "id": 13058969,
+    "network": "US:AB:NSB:Connecticut River",
+    "name": "Connecticut River Byway (NH)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 425.5
+   },
+   {
+    "id": 13074920,
+    "network": "US:AB:NSB:Connecticut River",
+    "name": "Connecticut River Byway (VT)",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 125.4
+   },
+   {
+    "id": 13074922,
+    "network": "US:MA:Scenic",
+    "name": "Connecticut River Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.9
+   },
+   {
+    "id": 2404267,
+    "network": "US:ME",
+    "name": "Aroostock Scenic Highway",
+    "ref": "11",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.5
+   },
+   {
+    "id": 15663572,
+    "network": "US:VT:byway",
+    "name": "Molly Stark Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.0
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 32124.0,
+  "unpaved_pct": 16.85,
+  "untagged_surface_pct": 26.55,
+  "smoothness_bad_or_worse_km": 24.9,
+  "4wd_only_km": 1.2,
+  "4wd_or_very_bad_km": 2.3,
+  "maxspeed_tagged_pct": {
+   "motorway": 99.92,
+   "trunk": 88.76,
+   "primary": 75.08,
+   "secondary": 74.65,
+   "tertiary": 62.53,
+   "unclassified": 25.59,
+   "residential": 17.45
+  }
+ },
+ "timing_s": {
+  "relations": 0.3,
+  "parse": 10.8,
+  "total": 12.6
+ },
+ "peak_rss_gb": 1.05
+}

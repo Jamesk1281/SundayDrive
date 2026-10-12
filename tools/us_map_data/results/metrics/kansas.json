@@ -1,0 +1,369 @@
+{
+ "label": "kansas",
+ "graph_nodes": 338569,
+ "graph_edges": 468846,
+ "graph_km": 241553.7,
+ "accepted_ways": 206011,
+ "accepted_km": 242434.0,
+ "skipped_private_ways": 1643,
+ "km_by_class": {
+  "living_street": 6.0,
+  "motorway": 3864.8,
+  "motorway_link": 838.9,
+  "primary": 5647.4,
+  "primary_link": 39.2,
+  "residential": 141552.3,
+  "secondary": 9149.3,
+  "secondary_link": 31.8,
+  "tertiary": 23086.2,
+  "tertiary_link": 21.7,
+  "trunk": 4658.8,
+  "trunk_link": 143.0,
+  "unclassified": 52514.1
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 6.0,
+   "tagged_pct": 0.0,
+   "tagged_hm_kmh": null,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3864.8,
+   "tagged_pct": 98.8,
+   "tagged_hm_kmh": 115.6,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 838.9,
+   "tagged_pct": 6.2,
+   "tagged_hm_kmh": 71.6,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 5647.4,
+   "tagged_pct": 58.17,
+   "tagged_hm_kmh": 92.4,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 39.2,
+   "tagged_pct": 5.18,
+   "tagged_hm_kmh": 55.0,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 141552.3,
+   "tagged_pct": 2.1,
+   "tagged_hm_kmh": 44.6,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 9149.3,
+   "tagged_pct": 42.88,
+   "tagged_hm_kmh": 80.1,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 31.8,
+   "tagged_pct": 4.14,
+   "tagged_hm_kmh": 43.8,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 23086.2,
+   "tagged_pct": 15.8,
+   "tagged_hm_kmh": 70.5,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 21.7,
+   "tagged_pct": 4.55,
+   "tagged_hm_kmh": 63.8,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 4658.8,
+   "tagged_pct": 68.69,
+   "tagged_hm_kmh": 98.8,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 143.0,
+   "tagged_pct": 5.55,
+   "tagged_hm_kmh": 65.3,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 52514.1,
+   "tagged_pct": 5.37,
+   "tagged_hm_kmh": 73.7,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 9.83,
+ "surface": {
+  "tagged_pct": 37.81,
+  "unpaved_pct": 26.66,
+  "untagged_pct": 62.19,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.05,
+   "tertiary": 19.34,
+   "unclassified": 78.37,
+   "residential": 13.26
+  },
+  "untagged_pct_by_class": {
+   "motorway": 43.44,
+   "trunk": 54.47,
+   "primary": 50.66,
+   "secondary": 50.15,
+   "tertiary": 43.65,
+   "unclassified": 18.28,
+   "residential": 83.39
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.1,
+  "smoothness_bad_or_worse_km": 63.9,
+  "smoothness_very_bad_or_worse_km": 38.5,
+  "4wd_only_km": 12.2,
+  "4wd_or_very_bad_km": 38.5,
+  "tracktype_tagged_km": 2717.5,
+  "tracktype_grade3plus_km": 29.8,
+  "tiger_cfcc_a5_km": 916.1,
+  "tiger_cfcc_a5_untagged_rough_km": 914.5,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 31.8,
+   "residential": 6.8
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 67.74,
+  "tiger_origin_pct": 86.99,
+  "reviewed_no_pct_by_class": {
+   "motorway": 0.5,
+   "trunk": 5.54,
+   "primary": 8.67,
+   "secondary": 9.59,
+   "tertiary": 44.89,
+   "unclassified": 64.78,
+   "residential": 83.05
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 0.8,
+  "closures_py_closes_ways": 1,
+  "seasonal_any_km": 0.8,
+  "car_conditional_km": 10.8,
+  "winter_service_no_km": 0.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 6.4,
+  "closed_km_by_tag": {
+   "access=permit": 3.3,
+   "ford=yes": 2.1,
+   "motor_vehicle=no": 1.0
+  },
+  "permit_km": 3.3,
+  "car_conditional_km_by_verdict": {
+   "dated": 0.8,
+   "time of day": 10.1
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "motor_vehicle:conditional=no @ (Mo-Fr 06:30-07:30)": 8.8,
+   "motor_vehicle:conditional=no @ (Mo-Fr 07:45-17:00)": 1.3,
+   "motor_vehicle:conditional=no @ 2024 Feb 28-2024 Jun 07": 0.8
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 1054,
+ "controls": {
+  "on_graph": {
+   "signal": 4034,
+   "stop": 7967,
+   "giveway": 770
+  },
+  "in_file": {
+   "signal": 4067,
+   "stop": 8743,
+   "giveway": 810
+  },
+  "per_100km": {
+   "signal": 1.67,
+   "stop": 3.3,
+   "giveway": 0.32
+  },
+  "all_per_100km": 5.29
+ },
+ "timed_barriers_on_graph": {
+  "count": 6,
+  "by_key": {
+   "opening_hours": 6
+  },
+  "list": [
+   {
+    "id": 120227378,
+    "barrier": "gate",
+    "opening_hours": "closed",
+    "access": "private",
+    "name": "Fort Riley -- Merli Road Gate -- RESTRICTED ACCESS"
+   },
+   {
+    "id": 2953640041,
+    "barrier": "gate",
+    "opening_hours": "05:00-19:00",
+    "access": "private",
+    "name": "Fort Riley -- Parker Road Gate -- RESTRICTED ACCESS"
+   },
+   {
+    "id": 3749392836,
+    "barrier": "gate",
+    "opening_hours": "05:00-19:00",
+    "access": "private",
+    "name": "Fort Riley: Four Corners Access Control Point (ACP)"
+   },
+   {
+    "id": 4943147411,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-19:00; PH off",
+    "access": "private",
+    "name": "Fort Riley -- 12th Street Gate -- RESTRICTED ACCESS -- commercial traffic only"
+   },
+   {
+    "id": 6090799039,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 05:00-20:00; PH off",
+    "access": "private",
+    "name": "Fort Riley -- Grant Gate -- RESTRICTED ACCESS"
+   },
+   {
+    "id": 6518113342,
+    "barrier": "gate",
+    "opening_hours": "05:00-22:00",
+    "name": "Fort Riley -- Ogden Gate -- RESTRICTED ACCESS"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 3164,
+  "by_where": {
+   "via node, at a junction": 1776,
+   "from/to not both in graph": 549,
+   "via node, elsewhere": 240,
+   "via way": 593,
+   "no via": 6
+  },
+  "junctions": 234119,
+  "via_node_per_1000_junctions": 7.59,
+  "via_way_per_1000_junctions": 2.53
+ },
+ "byways": {
+  "road_route_relations": 730,
+  "networks": {
+   "US:CO:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 0.5,
+    "admitted_km": 0.0
+   },
+   "US:KS:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 2.6,
+    "admitted_km": 0.0
+   },
+   "US:KS:Scenic Byway": {
+    "relations": 1,
+    "scenic_yes": 1,
+    "admitted": 1,
+    "km": 96.5,
+    "admitted_km": 96.5
+   },
+   "byway:historic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 0,
+    "km": 146.2,
+    "admitted_km": 0.0
+   }
+  },
+  "relations": [
+   {
+    "id": 19684036,
+    "network": "US:CO:Scenic",
+    "name": "Santa Fe Trail Scenic and Historic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 0.5
+   },
+   {
+    "id": 17083769,
+    "network": "US:KS:Scenic",
+    "name": "Glacial Hills Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 2.6
+   },
+   {
+    "id": 17852624,
+    "network": "US:KS:Scenic Byway",
+    "name": "Smoky Valley Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 96.5
+   },
+   {
+    "id": 2270263,
+    "network": "byway:historic",
+    "name": "Western Vistas Historic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": false,
+    "drivable_km": 146.2
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 242434.0,
+  "unpaved_pct": 26.64,
+  "untagged_surface_pct": 62.23,
+  "smoothness_bad_or_worse_km": 64.6,
+  "4wd_only_km": 12.2,
+  "4wd_or_very_bad_km": 38.9,
+  "maxspeed_tagged_pct": {
+   "motorway": 98.81,
+   "trunk": 68.71,
+   "primary": 58.18,
+   "secondary": 42.89,
+   "tertiary": 15.8,
+   "unclassified": 5.43,
+   "residential": 2.12
+  }
+ },
+ "timing_s": {
+  "relations": 0.4,
+  "parse": 18.0,
+  "total": 21.6
+ },
+ "peak_rss_gb": 1.47
+}

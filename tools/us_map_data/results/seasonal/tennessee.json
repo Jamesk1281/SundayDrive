@@ -1,0 +1,82 @@
+[
+ {
+  "id": "clingmans_dome",
+  "road": "Clingmans Dome Rd (Great Smoky Mountains NP), bonus",
+  "state": "tennessee",
+  "ways_matched": 6,
+  "km_in_graph": 0,
+  "km_closures_py_closes": 0,
+  "km_with_any_seasonal_or_conditional_tag": 0,
+  "km_dropped_or_not_drivable": 1.1,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 167431848,
+    "status": "not drivable (highway=path)",
+    "km": 0.82,
+    "tags": {
+     "highway": "path",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 167431851,
+    "status": "not drivable (highway=path)",
+    "km": 0.04,
+    "tags": {
+     "highway": "path",
+     "surface": "gravel"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237614277,
+    "status": "not drivable (highway=service)",
+    "km": 0.06,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237614278,
+    "status": "not drivable (highway=service)",
+    "km": 0.08,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237614279,
+    "status": "not drivable (highway=service)",
+    "km": 0.04,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 237614280,
+    "status": "not drivable (highway=service)",
+    "km": 0.06,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]

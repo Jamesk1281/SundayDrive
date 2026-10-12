@@ -1,0 +1,443 @@
+{
+ "label": "vermont",
+ "graph_nodes": 62508,
+ "graph_edges": 72746,
+ "graph_km": 28101.8,
+ "accepted_ways": 44293,
+ "accepted_km": 28525.1,
+ "skipped_private_ways": 1409,
+ "km_by_class": {
+  "living_street": 0.1,
+  "motorway": 1050.9,
+  "motorway_link": 101.0,
+  "primary": 1895.4,
+  "primary_link": 12.9,
+  "residential": 13270.9,
+  "secondary": 2100.0,
+  "secondary_link": 2.3,
+  "tertiary": 3195.3,
+  "tertiary_link": 1.9,
+  "trunk": 596.0,
+  "trunk_link": 20.0,
+  "unclassified": 5855.1
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 0.1,
+   "tagged_pct": 0.0,
+   "tagged_hm_kmh": null,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 1050.9,
+   "tagged_pct": 98.49,
+   "tagged_hm_kmh": 104.1,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 101.0,
+   "tagged_pct": 17.45,
+   "tagged_hm_kmh": 58.0,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 1895.4,
+   "tagged_pct": 42.81,
+   "tagged_hm_kmh": 67.3,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 12.9,
+   "tagged_pct": 36.03,
+   "tagged_hm_kmh": 63.6,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 13270.9,
+   "tagged_pct": 5.9,
+   "tagged_hm_kmh": 46.2,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 2100.0,
+   "tagged_pct": 38.94,
+   "tagged_hm_kmh": 64.8,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 2.3,
+   "tagged_pct": 4.95,
+   "tagged_hm_kmh": 65.0,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 3195.3,
+   "tagged_pct": 22.28,
+   "tagged_hm_kmh": 55.8,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 1.9,
+   "tagged_pct": 8.94,
+   "tagged_hm_kmh": 44.2,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 596.0,
+   "tagged_pct": 81.59,
+   "tagged_hm_kmh": 73.6,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 20.0,
+   "tagged_pct": 3.29,
+   "tagged_hm_kmh": 24.1,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 5855.1,
+   "tagged_pct": 6.48,
+   "tagged_hm_kmh": 49.1,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 17.97,
+ "surface": {
+  "tagged_pct": 90.39,
+  "unpaved_pct": 46.55,
+  "untagged_pct": 9.61,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.42,
+   "tertiary": 19.02,
+   "unclassified": 74.89,
+   "residential": 60.87
+  },
+  "untagged_pct_by_class": {
+   "motorway": 5.09,
+   "trunk": 0.28,
+   "primary": 1.0,
+   "secondary": 0.28,
+   "tertiary": 1.27,
+   "unclassified": 3.32,
+   "residential": 17.93
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.56,
+  "smoothness_bad_or_worse_km": 62.1,
+  "smoothness_very_bad_or_worse_km": 13.3,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 13.3,
+  "tracktype_tagged_km": 39.0,
+  "tracktype_grade3plus_km": 15.5,
+  "tiger_cfcc_a5_km": 168.3,
+  "tiger_cfcc_a5_untagged_rough_km": 163.7,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 1.7,
+   "residential": 11.5
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 52.07,
+  "tiger_origin_pct": 59.2,
+  "reviewed_no_pct_by_class": {
+   "motorway": 2.32,
+   "trunk": 1.58,
+   "primary": 3.82,
+   "secondary": 1.41,
+   "tertiary": 42.75,
+   "unclassified": 71.22,
+   "residential": 67.35
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 45.9,
+  "closures_py_closes_ways": 54,
+  "seasonal_any_km": 12.3,
+  "car_conditional_km": 17.4,
+  "winter_service_no_km": 36.6,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 21.7,
+  "closed_km_by_tag": {
+   "motor_vehicle=no": 9.0,
+   "motor_vehicle=private": 4.6,
+   "motor_vehicle=permit": 3.9,
+   "access=permit": 3.5,
+   "ford=yes": 0.6,
+   "vehicle=no": 0.0
+  },
+  "permit_km": 7.4,
+  "car_conditional_km_by_verdict": {
+   "closes": 17.4
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {}
+ },
+ "terrarium_z11_tiles_with_graph": 166,
+ "controls": {
+  "on_graph": {
+   "stop": 2167,
+   "signal": 466,
+   "giveway": 93
+  },
+  "in_file": {
+   "stop": 2490,
+   "signal": 495,
+   "giveway": 102
+  },
+  "per_100km": {
+   "stop": 7.71,
+   "signal": 1.66,
+   "giveway": 0.33
+  },
+  "all_per_100km": 9.7
+ },
+ "timed_barriers_on_graph": {
+  "count": 3,
+  "by_key": {
+   "motor_vehicle:conditional": 3
+  },
+  "list": [
+   {
+    "id": 204656317,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "access": "yes"
+   },
+   {
+    "id": 592642546,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ (Nov-Apr)",
+    "access": "yes"
+   },
+   {
+    "id": 7660919426,
+    "barrier": "swing_gate",
+    "motor_vehicle:conditional": "no @ (15 Dec-30 Apr)",
+    "access": "yes"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 1099,
+  "by_where": {
+   "via node, at a junction": 787,
+   "from/to not both in graph": 250,
+   "via way": 16,
+   "via node, elsewhere": 44,
+   "no via": 2
+  },
+  "junctions": 33623,
+  "via_node_per_1000_junctions": 23.41,
+  "via_way_per_1000_junctions": 0.48
+ },
+ "byways": {
+  "road_route_relations": 303,
+  "networks": {
+   "US:AB:NSB:Connecticut River": {
+    "relations": 2,
+    "scenic_yes": 1,
+    "admitted": 2,
+    "km": 573.6,
+    "admitted_km": 573.6
+   },
+   "US:MA:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 1,
+    "km": 1.0,
+    "admitted_km": 1.0
+   },
+   "US:NY:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 1,
+    "km": 8.6,
+    "admitted_km": 8.6
+   },
+   "US:VT:byway": {
+    "relations": 9,
+    "scenic_yes": 9,
+    "admitted": 9,
+    "km": 1048.0,
+    "admitted_km": 1048.0
+   }
+  },
+  "relations": [
+   {
+    "id": 13058969,
+    "network": "US:AB:NSB:Connecticut River",
+    "name": "Connecticut River Byway (NH)",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 179.8
+   },
+   {
+    "id": 13074920,
+    "network": "US:AB:NSB:Connecticut River",
+    "name": "Connecticut River Byway (VT)",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 393.8
+   },
+   {
+    "id": 20018690,
+    "network": "US:MA:Scenic",
+    "name": "Route 112 Scenic Byway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 1.0
+   },
+   {
+    "id": 19257400,
+    "network": "US:NY:Scenic",
+    "name": "Lakes to Locks Passage",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 8.6
+   },
+   {
+    "id": 16109819,
+    "network": "US:VT:byway",
+    "name": "Crossroad of Vermont Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 80.1
+   },
+   {
+    "id": 15659948,
+    "network": "US:VT:byway",
+    "name": "Green Mountain Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 114.7
+   },
+   {
+    "id": 16113000,
+    "network": "US:VT:byway",
+    "name": "Lake Champlain Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 281.7
+   },
+   {
+    "id": 16364954,
+    "network": "US:VT:byway",
+    "name": "Mad River Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 47.8
+   },
+   {
+    "id": 15663572,
+    "network": "US:VT:byway",
+    "name": "Molly Stark Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 71.5
+   },
+   {
+    "id": 15652664,
+    "network": "US:VT:byway",
+    "name": "Northeast Kingdom Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 88.0
+   },
+   {
+    "id": 17131169,
+    "network": "US:VT:byway",
+    "name": "Scenic Route 100 Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 234.3
+   },
+   {
+    "id": 15677431,
+    "network": "US:VT:byway",
+    "name": "Shires of Vermont Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 59.6
+   },
+   {
+    "id": 17131249,
+    "network": "US:VT:byway",
+    "name": "Stone Valley Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 70.3
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 28525.1,
+  "unpaved_pct": 46.23,
+  "untagged_surface_pct": 9.89,
+  "smoothness_bad_or_worse_km": 64.0,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 13.3,
+  "maxspeed_tagged_pct": {
+   "motorway": 98.54,
+   "trunk": 80.45,
+   "primary": 42.58,
+   "secondary": 38.98,
+   "tertiary": 22.06,
+   "unclassified": 6.43,
+   "residential": 5.85
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 6.7,
+  "total": 8.0
+ },
+ "peak_rss_gb": 0.8
+}

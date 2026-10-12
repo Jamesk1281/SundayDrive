@@ -1,0 +1,2111 @@
+[
+ {
+  "id": "tioga",
+  "road": "Tioga Rd (CA 120, Yosemite)",
+  "state": "california",
+  "ways_matched": 47,
+  "km_in_graph": 88.2,
+  "km_closures_py_closes": 88.1,
+  "km_with_any_seasonal_or_conditional_tag": 88.1,
+  "km_dropped_or_not_drivable": 30.2,
+  "barriers_on_road": 8,
+  "timed_barriers": [
+   {
+    "node": 2727957232,
+    "access": "yes",
+    "access:conditional": "no @ (Nov-May)",
+    "barrier": "gate",
+    "motor_vehicle": "yes",
+    "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+    "website": "https://www.dot.ca.gov/cgi-bin/roads.cgi"
+   }
+  ],
+  "ways": [
+   {
+    "way_id": 10428298,
+    "status": "not drivable (highway=service)",
+    "km": 7.73,
+    "tags": {
+     "highway": "service"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 5491344998,
+      "barrier": "gate",
+      "source": "GPS;local knowledge"
+     }
+    ]
+   },
+   {
+    "way_id": 10428908,
+    "status": "in graph",
+    "km": 0.86,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 89198082,
+      "access": "yes",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+      "website": "https://www.dot.ca.gov/cgi-bin/roads.cgi"
+     }
+    ]
+   },
+   {
+    "way_id": 10462565,
+    "status": "in graph",
+    "km": 2.91,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 83473200,
+    "status": "in graph",
+    "km": 0.18,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 83473216,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 162322332,
+    "status": "not drivable (highway=path)",
+    "km": 5.22,
+    "tags": {
+     "highway": "path"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 162322334,
+    "status": "not drivable (highway=path)",
+    "km": 3.78,
+    "tags": {
+     "highway": "path",
+     "motor_vehicle": "no",
+     "smoothness": "impassable"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 162652151,
+    "status": "not drivable (highway=track)",
+    "km": 0.64,
+    "tags": {
+     "highway": "track",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 162652154,
+    "status": "not drivable (highway=track)",
+    "km": 4.56,
+    "tags": {
+     "highway": "track",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 185218303,
+    "status": "in graph",
+    "km": 0.56,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 186029172,
+    "status": "not drivable (highway=path)",
+    "km": 0.14,
+    "tags": {
+     "highway": "path",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 186029173,
+    "status": "not drivable (highway=path)",
+    "km": 0.63,
+    "tags": {
+     "highway": "path",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 269283759,
+    "status": "in graph",
+    "km": 0.08,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 334971157,
+    "status": "in graph",
+    "km": 2.61,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 356145461,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 356145462,
+    "status": "in graph",
+    "km": 0.0,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 399542199,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 399542203,
+    "status": "in graph",
+    "km": 10.8,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187891,
+    "status": "in graph",
+    "km": 5.05,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187902,
+    "status": "in graph",
+    "km": 11.31,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187927,
+    "status": "in graph",
+    "km": 2.09,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187941,
+    "status": "in graph",
+    "km": 4.61,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187946,
+    "status": "in graph",
+    "km": 7.71,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 441187952,
+    "status": "in graph",
+    "km": 1.11,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 520725576,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 5074813186,
+      "access": "yes",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "name": "Tioga Pass Yosemite Entrance"
+     }
+    ]
+   },
+   {
+    "way_id": 520725577,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 5074813186,
+      "access": "yes",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "name": "Tioga Pass Yosemite Entrance"
+     }
+    ]
+   },
+   {
+    "way_id": 520725578,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 5074813186,
+      "access": "yes",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "name": "Tioga Pass Yosemite Entrance"
+     },
+     {
+      "node": 94835488,
+      "access": "yes",
+      "barrier": "toll_booth",
+      "motor_vehicle": "yes"
+     }
+    ]
+   },
+   {
+    "way_id": 571401312,
+    "status": "in graph",
+    "km": 0.41,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 571401313,
+    "status": "in graph",
+    "km": 0.39,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 641976560,
+    "status": "in graph",
+    "km": 9.66,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "description": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "highway": "secondary",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 641976571,
+    "status": "in graph",
+    "km": 1.03,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 641976575,
+    "status": "in graph",
+    "km": 0.98,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 642011870,
+    "status": "in graph",
+    "km": 0.55,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 642011871,
+    "status": "in graph",
+    "km": 7.73,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 2727957232,
+      "access": "yes",
+      "access:conditional": "no @ (Nov-May)",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+      "website": "https://www.dot.ca.gov/cgi-bin/roads.cgi"
+     }
+    ]
+   },
+   {
+    "way_id": 730041788,
+    "status": "in graph",
+    "km": 1.43,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 854270853,
+    "status": "not drivable (highway=service)",
+    "km": 0.86,
+    "tags": {
+     "highway": "service"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 854270854,
+    "status": "not drivable (highway=service)",
+    "km": 0.03,
+    "tags": {
+     "highway": "service"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1031329252,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1031329253,
+    "status": "in graph",
+    "km": 5.58,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1075201746,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1187774286,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 89198082,
+      "access": "yes",
+      "barrier": "gate",
+      "motor_vehicle": "yes",
+      "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+      "website": "https://www.dot.ca.gov/cgi-bin/roads.cgi"
+     }
+    ]
+   },
+   {
+    "way_id": 1248154813,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1248154814,
+    "status": "in graph",
+    "km": 1.9,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "paved"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1315226047,
+    "status": "in graph",
+    "km": 8.42,
+    "tags": {
+     "access:conditional": "no @ (Nov-May)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1384458050,
+    "status": "not drivable (highway=track)",
+    "km": 5.01,
+    "tags": {
+     "highway": "track",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1384458051,
+    "status": "not drivable (highway=track)",
+    "km": 0.02,
+    "tags": {
+     "highway": "track",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1517272334,
+    "status": "not drivable (highway=track)",
+    "km": 1.54,
+    "tags": {
+     "highway": "track",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "sonora_pass",
+  "road": "Sonora Pass (CA 108)",
+  "state": "california",
+  "ways_matched": 19,
+  "km_in_graph": 64.6,
+  "km_closures_py_closes": 37.5,
+  "km_with_any_seasonal_or_conditional_tag": 37.5,
+  "km_dropped_or_not_drivable": 0.4,
+  "barriers_on_road": 2,
+  "timed_barriers": [
+   {
+    "node": 12282032341,
+    "access": "yes",
+    "barrier": "gate",
+    "seasonal": "summer"
+   }
+  ],
+  "ways": [
+   {
+    "way_id": 10281773,
+    "status": "in graph",
+    "km": 1.59,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 10459531,
+    "status": "in graph",
+    "km": 4.75,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 89796467,
+      "barrier": "cattle_grid"
+     }
+    ]
+   },
+   {
+    "way_id": 31084786,
+    "status": "in graph",
+    "km": 15.49,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 174801329,
+    "status": "not drivable (highway=service)",
+    "km": 0.36,
+    "tags": {
+     "highway": "service",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 185218245,
+    "status": "in graph",
+    "km": 2.98,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 188452612,
+    "status": "in graph",
+    "km": 0.34,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 188452628,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "secondary",
+     "surface": "concrete"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 267330835,
+    "status": "in graph",
+    "km": 1.58,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 269283767,
+    "status": "in graph",
+    "km": 0.32,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 12282032341,
+      "access": "yes",
+      "barrier": "gate",
+      "seasonal": "summer"
+     }
+    ]
+   },
+   {
+    "way_id": 339393215,
+    "status": "in graph",
+    "km": 0.05,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "concrete"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 339393216,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "concrete"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 339393217,
+    "status": "in graph",
+    "km": 0.51,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 339393218,
+    "status": "in graph",
+    "km": 7.64,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 339393219,
+    "status": "in graph",
+    "km": 4.98,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 339393220,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 339393221,
+    "status": "in graph",
+    "km": 16.76,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 508302282,
+    "status": "in graph",
+    "km": 5.03,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1216157055,
+    "status": "in graph",
+    "km": 2.29,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1216157056,
+    "status": "in graph",
+    "km": 0.17,
+    "tags": {
+     "access:conditional": "no @ (Dec-Apr)",
+     "highway": "secondary",
+     "note": "Seasonal closure from first snow until spring, see CalTrans website for status",
+     "seasonal": "summer",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      12,
+      1,
+      4,
+      30
+     ],
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "ebbetts_pass",
+  "road": "Ebbetts Pass (CA 4)",
+  "state": "california",
+  "ways_matched": 10,
+  "km_in_graph": 32.3,
+  "km_closures_py_closes": 32.3,
+  "km_with_any_seasonal_or_conditional_tag": 32.3,
+  "km_dropped_or_not_drivable": 0.3,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 10282615,
+    "status": "in graph",
+    "km": 8.18,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 767306470,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 767306471,
+    "status": "in graph",
+    "km": 12.44,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 834351817,
+    "status": "not drivable (highway=path)",
+    "km": 0.06,
+    "tags": {
+     "highway": "path"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 834351818,
+    "status": "not drivable (highway=path)",
+    "km": 0.26,
+    "tags": {
+     "highway": "path"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1413292728,
+    "status": "in graph",
+    "km": 2.02,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1413292729,
+    "status": "in graph",
+    "km": 6.7,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1441737206,
+    "status": "in graph",
+    "km": 2.2,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1441737210,
+    "status": "in graph",
+    "km": 0.71,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1441737211,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "secondary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "glacier_point",
+  "road": "Glacier Point Rd (Yosemite)",
+  "state": "california",
+  "ways_matched": 11,
+  "km_in_graph": 25.0,
+  "km_closures_py_closes": 0,
+  "km_with_any_seasonal_or_conditional_tag": 0,
+  "km_dropped_or_not_drivable": 5.2,
+  "barriers_on_road": 1,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 10428161,
+    "status": "in graph",
+    "km": 7.71,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 780003053,
+    "status": "in graph",
+    "km": 5.02,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 780003054,
+    "status": "in graph",
+    "km": 6.55,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 851124594,
+    "status": "not drivable (highway=path)",
+    "km": 5.22,
+    "tags": {
+     "highway": "path",
+     "motor_vehicle": "no"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 1755693982,
+      "barrier": "gate"
+     }
+    ]
+   },
+   {
+    "way_id": 963775461,
+    "status": "in graph",
+    "km": 1.07,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1015980902,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1015980903,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1033963522,
+    "status": "in graph",
+    "km": 1.42,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1033963523,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1552185262,
+    "status": "in graph",
+    "km": 2.45,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1552185263,
+    "status": "in graph",
+    "km": 0.46,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "lassen",
+  "road": "Lassen Park Hwy (CA 89, Lassen Volcanic NP)",
+  "state": "california",
+  "ways_matched": 17,
+  "km_in_graph": 51.8,
+  "km_closures_py_closes": 41.1,
+  "km_with_any_seasonal_or_conditional_tag": 41.1,
+  "km_dropped_or_not_drivable": 3.9,
+  "barriers_on_road": 4,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 10592939,
+    "status": "in graph",
+    "km": 0.62,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 10594137,
+    "status": "in graph",
+    "km": 25.67,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 10594141,
+    "status": "in graph",
+    "km": 0.72,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 10638344,
+    "status": "in graph",
+    "km": 1.56,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 10638356,
+    "status": "in graph",
+    "km": 7.03,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 27030041,
+    "status": "not drivable (highway=path)",
+    "km": 3.88,
+    "tags": {
+     "highway": "path",
+     "surface": "fine_gravel"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 27945912,
+    "status": "in graph",
+    "km": 4.04,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 184877578,
+    "status": "in graph",
+    "km": 1.38,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 285377047,
+    "status": "in graph",
+    "km": 1.14,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 285377052,
+    "status": "in graph",
+    "km": 0.09,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 348713546,
+    "status": "in graph",
+    "km": 0.13,
+    "tags": {
+     "highway": "secondary"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 538251125,
+      "barrier": "toll_booth",
+      "name": "Entrance Station Lassen Volcanic National Park"
+     }
+    ]
+   },
+   {
+    "way_id": 348713548,
+    "status": "in graph",
+    "km": 0.4,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 2585471878,
+      "access": "yes",
+      "barrier": "toll_booth",
+      "name": "Entrance Station Lassen Volcanic National Park"
+     }
+    ]
+   },
+   {
+    "way_id": 523989035,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "highway": "secondary",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 523989042,
+    "status": "in graph",
+    "km": 7.81,
+    "tags": {
+     "highway": "secondary",
+     "winter_service": "no"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 918365356,
+    "status": "in graph",
+    "km": 0.93,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 2585471878,
+      "access": "yes",
+      "barrier": "toll_booth",
+      "name": "Entrance Station Lassen Volcanic National Park"
+     }
+    ]
+   },
+   {
+    "way_id": 918365377,
+    "status": "in graph",
+    "km": 0.27,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 538251125,
+      "barrier": "toll_booth",
+      "name": "Entrance Station Lassen Volcanic National Park"
+     }
+    ]
+   },
+   {
+    "way_id": 1090587090,
+    "status": "not drivable (highway=path)",
+    "km": 0.01,
+    "tags": {
+     "highway": "path"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]

@@ -1,0 +1,153 @@
+[
+ {
+  "id": "crater_lake_rim",
+  "road": "Rim Drive (Crater Lake NP)",
+  "state": "oregon",
+  "ways_matched": 13,
+  "km_in_graph": 51.2,
+  "km_closures_py_closes": 0,
+  "km_with_any_seasonal_or_conditional_tag": 0,
+  "km_dropped_or_not_drivable": 0.0,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 5472011,
+    "status": "in graph",
+    "km": 0.13,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 5491564,
+    "status": "in graph",
+    "km": 4.52,
+    "tags": {
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 5491597,
+    "status": "in graph",
+    "km": 0.14,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 5491601,
+    "status": "in graph",
+    "km": 10.25,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 89685900,
+    "status": "in graph",
+    "km": 3.73,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 89685909,
+    "status": "in graph",
+    "km": 9.47,
+    "tags": {
+     "description": "Closed in Winter",
+     "highway": "secondary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 222609400,
+    "status": "in graph",
+    "km": 14.47,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 222609401,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 638072039,
+    "status": "in graph",
+    "km": 0.18,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 704235699,
+    "status": "in graph",
+    "km": 7.16,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 704235700,
+    "status": "in graph",
+    "km": 0.24,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1202569771,
+    "status": "in graph",
+    "km": 0.83,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1202569772,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]

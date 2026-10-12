@@ -1,0 +1,1291 @@
+{
+ "layer": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_01/MapServer/1",
+ "fields": [
+  "objectid",
+  "rte_cn",
+  "id",
+  "name",
+  "bmp",
+  "emp",
+  "seg_length",
+  "gis_miles",
+  "symbol",
+  "mvum_symbol_name",
+  "jurisdiction",
+  "operationalmaintlevel",
+  "surfacetype",
+  "system",
+  "seasonal",
+  "passengervehicle",
+  "passengervehicle_datesopen",
+  "highclearancevehicle",
+  "highclearancevehicle_datesopen",
+  "truck",
+  "truck_datesopen",
+  "bus",
+  "bus_datesopen",
+  "motorhome",
+  "motorhome_datesopen",
+  "fourwd_gt50inches",
+  "fourwd_gt50_datesopen",
+  "twowd_gt50inches",
+  "twowd_gt50_datesopen",
+  "tracked_ohv_gt50inches",
+  "tracked_ohv_gt50_datesopen",
+  "other_ohv_gt50inches",
+  "other_ohv_gt50_datesopen",
+  "atv",
+  "atv_datesopen",
+  "motorcycle",
+  "motorcycle_datesopen",
+  "otherwheeled_ohv",
+  "otherwheeled_ohv_datesopen",
+  "tracked_ohv_lt50inches",
+  "tracked_ohv_lt50_datesopen",
+  "other_ohv_lt50inches",
+  "other_ohv_lt50_datesopen",
+  "adminorg",
+  "securityid",
+  "districtname",
+  "forestname",
+  "field_id",
+  "sbs_symbol_name",
+  "routestatus",
+  "globalid",
+  "ta_symbol",
+  "e_bike_class1",
+  "e_bike_class1_dur",
+  "e_bike_class2",
+  "e_bike_class2_dur",
+  "e_bike_class3",
+  "e_bike_class3_dur",
+  "shape",
+  "st_length(shape)"
+ ],
+ "description": "The feature class indicates the specific types of motorized vehicles allowed on the designated routes and their seasons of use. The feature class is designed to be consistent with the Motor Vehicle Use Map (MVUM). Only roads with a SYMBOL attribute value of 1, 2, 3, 4, 11, and 12 are Forest Service System roads and contain data concerning their availability for OHV (Off Highway Vehicle) use. This data is published and refreshed on a unit by unit basis as needed. Information for each individual unit must be verified as to be consistent with the published MVUMs prior to inclusion in this data. Not every National Forest has data included in this feature class.",
+ "count": 150789,
+ "by_symbol": [
+  {
+   "symbol": "1",
+   "mvum_symbol_name": "Roads open to all Vehicles, Yearlong",
+   "n": 71969,
+   "mi": 98181.247
+  },
+  {
+   "symbol": "3",
+   "mvum_symbol_name": "Roads open to highway legal vehicles only, Yearlong",
+   "n": 40024,
+   "mi": 50677.604
+  },
+  {
+   "symbol": "2",
+   "mvum_symbol_name": "Roads open to all Vehicles, Seasonal",
+   "n": 23154,
+   "mi": 29472.432
+  },
+  {
+   "symbol": "4",
+   "mvum_symbol_name": "Roads open to highway legal vehicles only, Seasonal",
+   "n": 11941,
+   "mi": 15354.051
+  },
+  {
+   "symbol": "12",
+   "mvum_symbol_name": "Special Designation, Seasonal",
+   "n": 2200,
+   "mi": 2278.53
+  },
+  {
+   "symbol": "11",
+   "mvum_symbol_name": "Special Designation, Yearlong",
+   "n": 1501,
+   "mi": 1661.32
+  }
+ ],
+ "by_seasonal": [
+  {
+   "seasonal": "yearlong",
+   "n": 113464,
+   "mi": 150564.621
+  },
+  {
+   "seasonal": "seasonal",
+   "n": 36325,
+   "mi": 46216.519
+  },
+  {
+   "seasonal": null,
+   "n": 331,
+   "mi": 313.661
+  },
+  {
+   "seasonal": "Seasonal",
+   "n": 398,
+   "mi": 246.146
+  },
+  {
+   "seasonal": "seasonal ",
+   "n": 140,
+   "mi": 151.376
+  },
+  {
+   "seasonal": " ",
+   "n": 130,
+   "mi": 132.584
+  },
+  {
+   "seasonal": "4/1 - 12/25",
+   "n": 1,
+   "mi": 0.277
+  }
+ ],
+ "by_passengervehicle": [
+  {
+   "passengervehicle": "open",
+   "n": 145716,
+   "mi": 191555.349
+  },
+  {
+   "passengervehicle": null,
+   "n": 5006,
+   "mi": 5996.449
+  },
+  {
+   "passengervehicle": " ",
+   "n": 67,
+   "mi": 73.386
+  }
+ ],
+ "by_highclearancevehicle": [
+  {
+   "highclearancevehicle": "open",
+   "n": 146701,
+   "mi": 192657.057
+  },
+  {
+   "highclearancevehicle": null,
+   "n": 4031,
+   "mi": 4915.646
+  },
+  {
+   "highclearancevehicle": " ",
+   "n": 51,
+   "mi": 48.283
+  },
+  {
+   "highclearancevehicle": "05/0",
+   "n": 4,
+   "mi": 3.018
+  },
+  {
+   "highclearancevehicle": "01/0",
+   "n": 2,
+   "mi": 1.18
+  }
+ ],
+ "by_operationalmaintlevel": [
+  {
+   "operationalmaintlevel": "2 - HIGH CLEARANCE VEHICLES",
+   "n": 123407,
+   "mi": 144083.527
+  },
+  {
+   "operationalmaintlevel": "3 - SUITABLE FOR PASSENGER CARS",
+   "n": 18723,
+   "mi": 40983.841
+  },
+  {
+   "operationalmaintlevel": "4 - MODERATE DEGREE OF USER COMFORT",
+   "n": 5326,
+   "mi": 9152.741
+  },
+  {
+   "operationalmaintlevel": "5 - HIGH DEGREE OF USER COMFORT",
+   "n": 2468,
+   "mi": 2459.875
+  },
+  {
+   "operationalmaintlevel": null,
+   "n": 727,
+   "mi": 778.333
+  },
+  {
+   "operationalmaintlevel": "1 - BASIC CUSTODIAL CARE (CLOSED)",
+   "n": 97,
+   "mi": 107.575
+  },
+  {
+   "operationalmaintlevel": " ",
+   "n": 33,
+   "mi": 56.633
+  },
+  {
+   "operationalmaintlevel": "2",
+   "n": 4,
+   "mi": 1.314
+  },
+  {
+   "operationalmaintlevel": "0 - NOT MAINTAINED",
+   "n": 3,
+   "mi": 1.002
+  },
+  {
+   "operationalmaintlevel": "2 - ",
+   "n": 1,
+   "mi": 0.343
+  }
+ ],
+ "by_surfacetype": [
+  {
+   "surfacetype": "NAT - NATIVE MATERIAL",
+   "n": 100028,
+   "mi": 115537.66
+  },
+  {
+   "surfacetype": "AGG - CRUSHED AGGREGATE OR GRAVEL",
+   "n": 30250,
+   "mi": 55950.008
+  },
+  {
+   "surfacetype": "IMP - IMPROVED NATIVE MATERIAL",
+   "n": 9495,
+   "mi": 14504.388
+  },
+  {
+   "surfacetype": "AC - ASPHALT",
+   "n": 4765,
+   "mi": 4718.189
+  },
+  {
+   "surfacetype": "BST - BITUMINOUS SURFACE TREATMENT",
+   "n": 2608,
+   "mi": 3267.291
+  },
+  {
+   "surfacetype": null,
+   "n": 2060,
+   "mi": 1596.178
+  },
+  {
+   "surfacetype": "PIT - PIT RUN SHOT ROCK",
+   "n": 461,
+   "mi": 1060.361
+  },
+  {
+   "surfacetype": "AGG - SCORIA",
+   "n": 177,
+   "mi": 370.67
+  },
+  {
+   "surfacetype": "P - PAVED",
+   "n": 521,
+   "mi": 262.537
+  },
+  {
+   "surfacetype": " ",
+   "n": 101,
+   "mi": 97.051
+  },
+  {
+   "surfacetype": "AGG - LIMESTONE",
+   "n": 174,
+   "mi": 96.023
+  },
+  {
+   "surfacetype": "CSOIL - COMPACTED SOIL",
+   "n": 26,
+   "mi": 85.694
+  },
+  {
+   "surfacetype": "SOD - GRASS",
+   "n": 43,
+   "mi": 49.024
+  },
+  {
+   "surfacetype": "PCC - PORTLAND CEMENT CONCRETE",
+   "n": 73,
+   "mi": 25.883
+  },
+  {
+   "surfacetype": "OTHER - OTHER",
+   "n": 6,
+   "mi": 3.904
+  },
+  {
+   "surfacetype": "FSOIL - FROZEN SOIL",
+   "n": 1,
+   "mi": 0.323
+  }
+ ],
+ "by_jurisdiction": [
+  {
+   "jurisdiction": "FS - FOREST SERVICE",
+   "n": 149804,
+   "mi": 196627.057
+  },
+  {
+   "jurisdiction": null,
+   "n": 628,
+   "mi": 669.047
+  },
+  {
+   "jurisdiction": "P - PRIVATE",
+   "n": 224,
+   "mi": 151.295
+  },
+  {
+   "jurisdiction": "C - COUNTY, PARISH, BOROUGH",
+   "n": 70,
+   "mi": 98.673
+  },
+  {
+   "jurisdiction": " ",
+   "n": 25,
+   "mi": 42.193
+  },
+  {
+   "jurisdiction": "OFS - OTHER FOREST SERVICE",
+   "n": 16,
+   "mi": 13.842
+  },
+  {
+   "jurisdiction": "OF - OTHER FEDERAL AGENCY",
+   "n": 2,
+   "mi": 9.632
+  },
+  {
+   "jurisdiction": "S - STATE",
+   "n": 7,
+   "mi": 8.286
+  },
+  {
+   "jurisdiction": "FS",
+   "n": 5,
+   "mi": 2.394
+  },
+  {
+   "jurisdiction": "L - LOCAL",
+   "n": 1,
+   "mi": 1.323
+  },
+  {
+   "jurisdiction": "FS - Forest Service",
+   "n": 2,
+   "mi": 0.472
+  },
+  {
+   "jurisdiction": "S - State",
+   "n": 1,
+   "mi": 0.452
+  },
+  {
+   "jurisdiction": "FOREST SERVICE",
+   "n": 1,
+   "mi": 0.274
+  },
+  {
+   "jurisdiction": "BLM - BUREAU OF LAND MANAGEMENT",
+   "n": 1,
+   "mi": 0.166
+  },
+  {
+   "jurisdiction": "OFS - GALLATIN NF",
+   "n": 2,
+   "mi": 0.078
+  }
+ ],
+ "by_forestname": [
+  {
+   "forestname": "Fremont-Winema National Forest",
+   "n": 4359,
+   "mi": 6431.808
+  },
+  {
+   "forestname": "Rogue River-Siskiyou National Forests",
+   "n": 5542,
+   "mi": 6301.998
+  },
+  {
+   "forestname": "Deschutes National Forest",
+   "n": 4990,
+   "mi": 5421.243
+  },
+  {
+   "forestname": "Humboldt-Toiyabe National Forest",
+   "n": 2867,
+   "mi": 5194.181
+  },
+  {
+   "forestname": "Shasta-Trinity National Forest",
+   "n": 3244,
+   "mi": 4919.469
+  },
+  {
+   "forestname": "Willamette National Forest",
+   "n": 3695,
+   "mi": 4381.851
+  },
+  {
+   "forestname": "Idaho Panhandle National Forests",
+   "n": 1553,
+   "mi": 4132.689
+  },
+  {
+   "forestname": "Medicine Bow-Routt National Forest",
+   "n": 2733,
+   "mi": 3834.445
+  },
+  {
+   "forestname": "Umpqua National Forest",
+   "n": 3111,
+   "mi": 3772.101
+  },
+  {
+   "forestname": "Klamath National Forest",
+   "n": 2318,
+   "mi": 3620.216
+  },
+  {
+   "forestname": "Plumas National Forest",
+   "n": 2081,
+   "mi": 3617.277
+  },
+  {
+   "forestname": "National Forests in Florida",
+   "n": 2631,
+   "mi": 3501.203
+  },
+  {
+   "forestname": "Kootenai National Forest",
+   "n": 1868,
+   "mi": 3467.483
+  },
+  {
+   "forestname": "Lolo National Forest",
+   "n": 1605,
+   "mi": 3334.675
+  },
+  {
+   "forestname": "Gila National Forest",
+   "n": 2574,
+   "mi": 3325.947
+  },
+  {
+   "forestname": "Kaibab National Forest",
+   "n": 2593,
+   "mi": 3284.865
+  },
+  {
+   "forestname": "Gifford Pinchot National Forest",
+   "n": 1980,
+   "mi": 3182.694
+  },
+  {
+   "forestname": "Coconino National Forest",
+   "n": 1862,
+   "mi": 3149.118
+  },
+  {
+   "forestname": "Black Hills National Forest",
+   "n": 2405,
+   "mi": 3080.235
+  },
+  {
+   "forestname": "Lassen National Forest",
+   "n": 2444,
+   "mi": 3017.459
+  },
+  {
+   "forestname": "Pike and San Isabel National Forests",
+   "n": 2569,
+   "mi": 3014.61
+  },
+  {
+   "forestname": "Ouachita National Forest",
+   "n": 2050,
+   "mi": 2813.378
+  },
+  {
+   "forestname": "Boise National Forest",
+   "n": 1536,
+   "mi": 2812.981
+  },
+  {
+   "forestname": "Grand Mesa, Uncompahgre and Gunnison National Forests",
+   "n": 1619,
+   "mi": 2766.466
+  },
+  {
+   "forestname": "Salmon-Challis National Forest",
+   "n": 1170,
+   "mi": 2732.116
+  },
+  {
+   "forestname": "Arapaho and Roosevelt National Forests",
+   "n": 2310,
+   "mi": 2612.644
+  },
+  {
+   "forestname": "Caribou-Targhee National Forest",
+   "n": 1632,
+   "mi": 2302.847
+  },
+  {
+   "forestname": "Ozark-St. Francis National Forest",
+   "n": 2317,
+   "mi": 2236.519
+  },
+  {
+   "forestname": "Huron-Manistee National Forest",
+   "n": 2862,
+   "mi": 2205.68
+  },
+  {
+   "forestname": "Nez Perce-Clearwater National Forest",
+   "n": 1031,
+   "mi": 2188.793
+  },
+  {
+   "forestname": "Mt. Hood National Forest",
+   "n": 1721,
+   "mi": 2179.712
+  },
+  {
+   "forestname": "Umatilla National Forest",
+   "n": 1278,
+   "mi": 2179.473
+  },
+  {
+   "forestname": "Fishlake National Forest",
+   "n": 2306,
+   "mi": 2164.452
+  },
+  {
+   "forestname": "Colville National Forest",
+   "n": 1537,
+   "mi": 2160.088
+  },
+  {
+   "forestname": "Hiawatha National Forest",
+   "n": 2869,
+   "mi": 2158.092
+  },
+  {
+   "forestname": "Dixie National Forest",
+   "n": 1374,
+   "mi": 2157.138
+  },
+  {
+   "forestname": "Santa Fe National Forest",
+   "n": 1451,
+   "mi": 2138.558
+  },
+  {
+   "forestname": "Stanislaus National Forest",
+   "n": 1561,
+   "mi": 2099.517
+  },
+  {
+   "forestname": "Uinta-Wasatch-Cache National Forest",
+   "n": 2219,
+   "mi": 2076.572
+  },
+  {
+   "forestname": "Sierra National Forest",
+   "n": 2527,
+   "mi": 2075.077
+  },
+  {
+   "forestname": "Carson National Forest",
+   "n": 1036,
+   "mi": 2073.879
+  },
+  {
+   "forestname": "Helena-Lewis and Clark National Forest",
+   "n": 1546,
+   "mi": 2018.965
+  },
+  {
+   "forestname": "Mark Twain National Forest",
+   "n": 2000,
+   "mi": 1998.613
+  },
+  {
+   "forestname": "Kisatchie National Forest",
+   "n": 3264,
+   "mi": 1996.147
+  },
+  {
+   "forestname": "Inyo National Forest",
+   "n": 3635,
+   "mi": 1955.572
+  },
+  {
+   "forestname": "Cibola National Forest",
+   "n": 1077,
+   "mi": 1912.215
+  },
+  {
+   "forestname": "Tahoe National Forest",
+   "n": 2108,
+   "mi": 1903.125
+  },
+  {
+   "forestname": "Manti-La Sal National Forest",
+   "n": 1287,
+   "mi": 1881.497
+  },
+  {
+   "forestname": "Coronado National Forest",
+   "n": 1408,
+   "mi": 1873.019
+  },
+  {
+   "forestname": "Chequamegon-Nicolet National Forest",
+   "n": 3446,
+   "mi": 1846.32
+  },
+  {
+   "forestname": "Ochoco National Forest",
+   "n": 1697,
+   "mi": 1822.446
+  },
+  {
+   "forestname": "Bitterroot National Forest",
+   "n": 1073,
+   "mi": 1759.147
+  },
+  {
+   "forestname": "Mendocino National Forest",
+   "n": 987,
+   "mi": 1717.563
+  },
+  {
+   "forestname": "Eldorado National Forest",
+   "n": 1151,
+   "mi": 1714.669
+  },
+  {
+   "forestname": "Chippewa National Forest",
+   "n": 2138,
+   "mi": 1707.726
+  },
+  {
+   "forestname": "Payette National Forest",
+   "n": 1029,
+   "mi": 1699.659
+  },
+  {
+   "forestname": "George Washington and Jefferson National Forest",
+   "n": 1067,
+   "mi": 1673.494
+  },
+  {
+   "forestname": "Sawtooth National Forest",
+   "n": 1046,
+   "mi": 1639.022
+  },
+  {
+   "forestname": "Rio Grande National Forest",
+   "n": 702,
+   "mi": 1605.788
+  },
+  {
+   "forestname": "Tongass National Forest",
+   "n": 647,
+   "mi": 1589.831
+  },
+  {
+   "forestname": "National Forests in Mississippi",
+   "n": 1157,
+   "mi": 1589.813
+  },
+  {
+   "forestname": "Prescott National Forest",
+   "n": 1175,
+   "mi": 1573.337
+  },
+  {
+   "forestname": "Mt. Baker-Snoqualmie National Forest",
+   "n": 925,
+   "mi": 1561.765
+  },
+  {
+   "forestname": "Bridger-Teton National Forest",
+   "n": 1020,
+   "mi": 1528.059
+  },
+  {
+   "forestname": "Superior National Forest",
+   "n": 1340,
+   "mi": 1527.822
+  },
+  {
+   "forestname": "San Juan National Forest",
+   "n": 807,
+   "mi": 1497.269
+  },
+  {
+   "forestname": "Flathead National Forest",
+   "n": 959,
+   "mi": 1447.201
+  },
+  {
+   "forestname": "Sequoia National Forest",
+   "n": 1253,
+   "mi": 1432.379
+  },
+  {
+   "forestname": "Siuslaw National Forest",
+   "n": 1008,
+   "mi": 1428.499
+  },
+  {
+   "forestname": "White River National Forest",
+   "n": 756,
+   "mi": 1426.467
+  },
+  {
+   "forestname": "Olympic National Forest",
+   "n": 610,
+   "mi": 1379.859
+  },
+  {
+   "forestname": "Ashley National Forest",
+   "n": 1073,
+   "mi": 1351.543
+  },
+  {
+   "forestname": "Lincoln National Forest",
+   "n": 615,
+   "mi": 1291.096
+  },
+  {
+   "forestname": "Ottawa National Forest",
+   "n": 1061,
+   "mi": 1051.531
+  },
+  {
+   "forestname": "Chattahoochee-Oconee National Forests",
+   "n": 558,
+   "mi": 1020.883
+  },
+  {
+   "forestname": "Francis Marion and Sumter National Forests",
+   "n": 816,
+   "mi": 1020.38
+  },
+  {
+   "forestname": "Bighorn National Forest",
+   "n": 684,
+   "mi": 939.195
+  },
+  {
+   "forestname": "National Forests in North Carolina",
+   "n": 586,
+   "mi": 935.869
+  },
+  {
+   "forestname": "Shoshone National Forest",
+   "n": 719,
+   "mi": 885.731
+  },
+  {
+   "forestname": "National Forests in Texas",
+   "n": 650,
+   "mi": 846.568
+  },
+  {
+   "forestname": "San Bernardino National Forest",
+   "n": 471,
+   "mi": 806.86
+  },
+  {
+   "forestname": "Nebraska National Forest",
+   "n": 369,
+   "mi": 761.282
+  },
+  {
+   "forestname": "Monongahela National Forest",
+   "n": 337,
+   "mi": 710.588
+  },
+  {
+   "forestname": "Cherokee National Forest",
+   "n": 503,
+   "mi": 699.261
+  },
+  {
+   "forestname": "Allegheny National Forest",
+   "n": 675,
+   "mi": 648.762
+  },
+  {
+   "forestname": "Daniel Boone National Forest",
+   "n": 584,
+   "mi": 583.839
+  },
+  {
+   "forestname": "Custer National Forest",
+   "n": 470,
+   "mi": 553.989
+  },
+  {
+   "forestname": "Los Padres National Forest",
+   "n": 209,
+   "mi": 528.954
+  },
+  {
+   "forestname": "Dakota Prairie Grasslands",
+   "n": 426,
+   "mi": 484.348
+  },
+  {
+   "forestname": "Land Between the Lakes National Recreation Area",
+   "n": 474,
+   "mi": 428.525
+  },
+  {
+   "forestname": "Shawnee National Forest",
+   "n": 499,
+   "mi": 352.96
+  },
+  {
+   "forestname": "Cleveland National Forest",
+   "n": 188,
+   "mi": 256.593
+  },
+  {
+   "forestname": "White Mountain National Forest",
+   "n": 206,
+   "mi": 152.512
+  },
+  {
+   "forestname": "Lake Tahoe Basin Management Unit",
+   "n": 219,
+   "mi": 146.615
+  },
+  {
+   "forestname": "Green Mountain and Finger Lakes National Forests",
+   "n": 177,
+   "mi": 144.564
+  },
+  {
+   "forestname": "Chugach National Forest",
+   "n": 119,
+   "mi": 65.097
+  },
+  {
+   "forestname": "Hoosier National Forest",
+   "n": 214,
+   "mi": 42.869
+  },
+  {
+   "forestname": "Wayne National Forest",
+   "n": 76,
+   "mi": 35.419
+  },
+  {
+   "forestname": "Columbia River Gorge National Scenic Area",
+   "n": 39,
+   "mi": 21.45
+  },
+  {
+   "forestname": null,
+   "n": 1,
+   "mi": 7.377
+  },
+  {
+   "forestname": "Okanogan-Wenatchee National Forest",
+   "n": 6,
+   "mi": 6.906
+  },
+  {
+   "forestname": "Custer Gallatin National Forest",
+   "n": 3,
+   "mi": 6.081
+  },
+  {
+   "forestname": "Tonto National Forest",
+   "n": 2,
+   "mi": 4.352
+  },
+  {
+   "forestname": "Six Rivers National Forest",
+   "n": 2,
+   "mi": 3.735
+  },
+  {
+   "forestname": "Modoc National Forest",
+   "n": 7,
+   "mi": 2.53
+  },
+  {
+   "forestname": "Gallatin National Forest",
+   "n": 3,
+   "mi": 0.083
+  }
+ ],
+ "passengervehicle_datesopen": {
+  "distinct": 728,
+  "top": [
+   {
+    "passengervehicle_datesopen": "01/01-12/31",
+    "mi": 150434.369
+   },
+   {
+    "passengervehicle_datesopen": "04/01-11/30",
+    "mi": 3901.563
+   },
+   {
+    "passengervehicle_datesopen": "05/01-11/30",
+    "mi": 2771.078
+   },
+   {
+    "passengervehicle_datesopen": "04/15-12/15",
+    "mi": 2563.261
+   },
+   {
+    "passengervehicle_datesopen": "05/01-12/31",
+    "mi": 1310.348
+   },
+   {
+    "passengervehicle_datesopen": "04/01-12/31",
+    "mi": 1132.097
+   },
+   {
+    "passengervehicle_datesopen": "05/15-12/15",
+    "mi": 1001.199
+   },
+   {
+    "passengervehicle_datesopen": "05/16-03/14",
+    "mi": 952.573
+   },
+   {
+    "passengervehicle_datesopen": "04/02-11/30",
+    "mi": 841.481
+   },
+   {
+    "passengervehicle_datesopen": "05/21-11/22",
+    "mi": 838.511
+   },
+   {
+    "passengervehicle_datesopen": "04/01-12/25",
+    "mi": 829.341
+   },
+   {
+    "passengervehicle_datesopen": "01/01-10/11    10/22-12/31",
+    "mi": 756.582
+   },
+   {
+    "passengervehicle_datesopen": "04/01-11/15",
+    "mi": 738.064
+   },
+   {
+    "passengervehicle_datesopen": "06/15-11/15",
+    "mi": 674.354
+   },
+   {
+    "passengervehicle_datesopen": "04/24-12/31",
+    "mi": 648.234
+   },
+   {
+    "passengervehicle_datesopen": "05/01-11/14",
+    "mi": 574.485
+   },
+   {
+    "passengervehicle_datesopen": "04/01-12/14",
+    "mi": 567.718
+   },
+   {
+    "passengervehicle_datesopen": "09/01-02/29",
+    "mi": 533.986
+   },
+   {
+    "passengervehicle_datesopen": "05/16-10/14",
+    "mi": 530.466
+   },
+   {
+    "passengervehicle_datesopen": "05/16-11/30",
+    "mi": 528.803
+   },
+   {
+    "passengervehicle_datesopen": "06/15-09/30",
+    "mi": 491.084
+   },
+   {
+    "passengervehicle_datesopen": "06/16-10/14",
+    "mi": 484.334
+   },
+   {
+    "passengervehicle_datesopen": "04/16-11/30",
+    "mi": 462.339
+   },
+   {
+    "passengervehicle_datesopen": "03/01-01/15",
+    "mi": 406.177
+   },
+   {
+    "passengervehicle_datesopen": "07/01-10/14",
+    "mi": 389.496
+   },
+   {
+    "passengervehicle_datesopen": "05/02-11/30",
+    "mi": 370.557
+   },
+   {
+    "passengervehicle_datesopen": "10/16-09/24",
+    "mi": 366.465
+   },
+   {
+    "passengervehicle_datesopen": "07/01-11/30",
+    "mi": 364.63
+   },
+   {
+    "passengervehicle_datesopen": "05/01-10/11   10/22-11/30",
+    "mi": 325.943
+   },
+   {
+    "passengervehicle_datesopen": "05/01-09/30",
+    "mi": 324.206
+   },
+   {
+    "passengervehicle_datesopen": "12/02-10/14",
+    "mi": 320.963
+   },
+   {
+    "passengervehicle_datesopen": "05/16-12/01",
+    "mi": 312.239
+   },
+   {
+    "passengervehicle_datesopen": "05/15-12/14",
+    "mi": 289.208
+   },
+   {
+    "passengervehicle_datesopen": "05/01-11/01",
+    "mi": 289.187
+   },
+   {
+    "passengervehicle_datesopen": "04/16-12/31",
+    "mi": 282.73
+   },
+   {
+    "passengervehicle_datesopen": "06/15-11/30",
+    "mi": 280.474
+   },
+   {
+    "passengervehicle_datesopen": "07/01-09/30",
+    "mi": 276.966
+   },
+   {
+    "passengervehicle_datesopen": "11/26-09/26",
+    "mi": 274.049
+   },
+   {
+    "passengervehicle_datesopen": "06/16-09/14",
+    "mi": 273.876
+   },
+   {
+    "passengervehicle_datesopen": "05/15-11/15",
+    "mi": 273.65
+   }
+  ]
+ },
+ "highclearancevehicle_datesopen": {
+  "distinct": 735,
+  "top": [
+   {
+    "highclearancevehicle_datesopen": "01/01-12/31",
+    "mi": 149857.896
+   },
+   {
+    "highclearancevehicle_datesopen": "04/01-11/30",
+    "mi": 3950.711
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-11/30",
+    "mi": 2771.348
+   },
+   {
+    "highclearancevehicle_datesopen": "04/15-12/15",
+    "mi": 2565.748
+   },
+   {
+    "highclearancevehicle_datesopen": "04/01-12/31",
+    "mi": 1886.69
+   },
+   {
+    "highclearancevehicle_datesopen": "05/16-03/14",
+    "mi": 1593.176
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-12/31",
+    "mi": 1310.751
+   },
+   {
+    "highclearancevehicle_datesopen": "05/15-12/15",
+    "mi": 1001.199
+   },
+   {
+    "highclearancevehicle_datesopen": "04/02-11/30",
+    "mi": 841.925
+   },
+   {
+    "highclearancevehicle_datesopen": "05/21-11/22",
+    "mi": 838.511
+   },
+   {
+    "highclearancevehicle_datesopen": "04/01-12/25",
+    "mi": 829.341
+   },
+   {
+    "highclearancevehicle_datesopen": "01/01-10/11    10/22-12/31",
+    "mi": 756.582
+   },
+   {
+    "highclearancevehicle_datesopen": "04/01-11/15",
+    "mi": 738.064
+   },
+   {
+    "highclearancevehicle_datesopen": "06/15-11/15",
+    "mi": 674.354
+   },
+   {
+    "highclearancevehicle_datesopen": "04/24-12/31",
+    "mi": 648.234
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-11/14",
+    "mi": 573.83
+   },
+   {
+    "highclearancevehicle_datesopen": "04/01-12/14",
+    "mi": 567.718
+   },
+   {
+    "highclearancevehicle_datesopen": "05/16-11/30",
+    "mi": 549.329
+   },
+   {
+    "highclearancevehicle_datesopen": "09/01-02/29",
+    "mi": 539.339
+   },
+   {
+    "highclearancevehicle_datesopen": "05/16-10/14",
+    "mi": 530.466
+   },
+   {
+    "highclearancevehicle_datesopen": "06/15-09/30",
+    "mi": 491.084
+   },
+   {
+    "highclearancevehicle_datesopen": "06/16-10/14",
+    "mi": 484.334
+   },
+   {
+    "highclearancevehicle_datesopen": "04/16-11/30",
+    "mi": 462.339
+   },
+   {
+    "highclearancevehicle_datesopen": "03/01-01/15",
+    "mi": 406.177
+   },
+   {
+    "highclearancevehicle_datesopen": "07/01-10/14",
+    "mi": 389.496
+   },
+   {
+    "highclearancevehicle_datesopen": "05/02-11/30",
+    "mi": 370.557
+   },
+   {
+    "highclearancevehicle_datesopen": "10/16-09/24",
+    "mi": 366.465
+   },
+   {
+    "highclearancevehicle_datesopen": "07/01-11/30",
+    "mi": 364.63
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-09/30",
+    "mi": 328.667
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-10/11   10/22-11/30",
+    "mi": 325.943
+   },
+   {
+    "highclearancevehicle_datesopen": "12/02-10/14",
+    "mi": 320.963
+   },
+   {
+    "highclearancevehicle_datesopen": "05/16-12/01",
+    "mi": 312.239
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-11/01",
+    "mi": 300.875
+   },
+   {
+    "highclearancevehicle_datesopen": "05/15-12/14",
+    "mi": 289.208
+   },
+   {
+    "highclearancevehicle_datesopen": "05/01-12/15",
+    "mi": 288.035
+   },
+   {
+    "highclearancevehicle_datesopen": "06/15-11/30",
+    "mi": 284.157
+   },
+   {
+    "highclearancevehicle_datesopen": "04/16-12/31",
+    "mi": 282.73
+   },
+   {
+    "highclearancevehicle_datesopen": "07/01-09/30",
+    "mi": 278.209
+   },
+   {
+    "highclearancevehicle_datesopen": "11/26-09/26",
+    "mi": 274.049
+   },
+   {
+    "highclearancevehicle_datesopen": "06/16-09/14",
+    "mi": 273.876
+   }
+  ]
+ },
+ "downloads": [
+  {
+   "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.Road_MVUM.zip",
+   "status": 200,
+   "bytes": 235781149,
+   "last_modified": "Sun, 11 May 2025 17:12:01 GMT"
+  },
+  {
+   "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/fc/S_USA.Road_MVUM.gdb.zip",
+   "status": 200,
+   "bytes": 128767555,
+   "last_modified": "Sun, 11 May 2025 17:25:13 GMT"
+  },
+  {
+   "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.RoadCore_FS.zip",
+   "status": 200,
+   "bytes": 432024035,
+   "last_modified": "Sun, 11 May 2025 17:11:42 GMT"
+  },
+  {
+   "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/fc/S_USA.RoadCore_FS.gdb.zip",
+   "status": 200,
+   "bytes": 246804660,
+   "last_modified": "Sun, 11 May 2025 17:25:01 GMT"
+  },
+  {
+   "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.Road_MVUM_bogus.zip",
+   "status": 404,
+   "bytes": null,
+   "last_modified": ""
+  }
+ ]
+}

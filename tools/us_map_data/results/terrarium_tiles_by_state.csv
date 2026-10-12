@@ -1,0 +1,52 @@
+state,name,outline_tiles,bbox_tiles,bbox_mosaic_gb
+AL,Alabama,557,726,1.8
+AK,Alaska,23056,,
+AZ,Arizona,1200,1360,3.3
+AR,Arkansas,600,750,1.8
+CA,California,1862,4071,9.9
+CO,Colorado,1271,1271,3.1
+CT,Connecticut,84,108,0.3
+DE,Delaware,39,66,0.2
+DC,District of Columbia,4,6,0.0
+FL,Florida,626,1892,4.6
+GA,Georgia,629,896,2.2
+HI,Hawaii,113,8100,19.6
+ID,Idaho,1210,2088,5.1
+IL,Illinois,738,1008,2.4
+IN,Indiana,459,600,1.5
+IA,Iowa,762,950,2.3
+KS,Kansas,980,989,2.4
+KY,Kentucky,509,880,2.1
+LA,Louisiana,538,868,2.1
+ME,Maine,534,925,2.2
+MD,Maryland,179,378,0.9
+MA,Massachusetts,158,308,0.7
+MI,Michigan,966,2538,6.2
+MN,Minnesota,1301,2250,5.5
+MS,Mississippi,521,693,1.7
+MO,Missouri,850,1365,3.3
+MT,Montana,2254,2730,6.6
+NE,Nebraska,1005,1200,2.9
+NV,Nevada,1345,1820,4.4
+NH,New Hampshire,152,252,0.6
+NJ,New Jersey,124,190,0.5
+NM,New Mexico,1277,1440,3.5
+NY,New York,721,1656,4.0
+NC,North Carolina,601,1020,2.5
+ND,North Dakota,1117,1161,2.8
+OH,Ohio,537,700,1.7
+OK,Oklahoma,771,1176,2.9
+OR,Oregon,1372,1645,4.0
+PA,Pennsylvania,598,700,1.7
+RI,Rhode Island,26,35,0.1
+SC,South Carolina,360,667,1.6
+SD,South Dakota,1074,1232,3.0
+TN,Tennessee,514,650,1.6
+TX,Texas,2691,5472,13.3
+UT,Utah,1025,1102,2.7
+VT,Vermont,160,228,0.6
+VA,Virginia,547,1078,2.6
+WA,Washington,1109,1350,3.3
+WV,West Virginia,332,754,1.8
+WI,Wisconsin,852,1368,3.3
+WY,Wyoming,1312,1312,3.2

@@ -1,0 +1,309 @@
+{
+ "label": "rhode-island",
+ "graph_nodes": 53823,
+ "graph_edges": 70813,
+ "graph_km": 10679.7,
+ "accepted_ways": 36180,
+ "accepted_km": 10878.8,
+ "skipped_private_ways": 592,
+ "km_by_class": {
+  "living_street": 1.0,
+  "motorway": 409.9,
+  "motorway_link": 216.6,
+  "primary": 764.4,
+  "primary_link": 21.3,
+  "residential": 6461.3,
+  "secondary": 833.3,
+  "secondary_link": 5.9,
+  "tertiary": 1538.1,
+  "tertiary_link": 1.4,
+  "trunk": 141.7,
+  "trunk_link": 23.6,
+  "unclassified": 261.1
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 1.0,
+   "tagged_pct": 54.78,
+   "tagged_hm_kmh": 24.1,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 409.9,
+   "tagged_pct": 72.15,
+   "tagged_hm_kmh": 89.6,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 216.6,
+   "tagged_pct": 12.05,
+   "tagged_hm_kmh": 61.5,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 764.4,
+   "tagged_pct": 26.73,
+   "tagged_hm_kmh": 52.6,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 21.3,
+   "tagged_pct": 2.86,
+   "tagged_hm_kmh": 47.7,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 6461.3,
+   "tagged_pct": 5.47,
+   "tagged_hm_kmh": 38.5,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 833.3,
+   "tagged_pct": 20.94,
+   "tagged_hm_kmh": 48.7,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 5.9,
+   "tagged_pct": 12.33,
+   "tagged_hm_kmh": 56.2,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 1538.1,
+   "tagged_pct": 10.7,
+   "tagged_hm_kmh": 40.7,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 1.4,
+   "tagged_pct": 17.94,
+   "tagged_hm_kmh": 41.7,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 141.7,
+   "tagged_pct": 27.87,
+   "tagged_hm_kmh": 69.6,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 23.6,
+   "tagged_pct": 0.25,
+   "tagged_hm_kmh": 32.2,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 261.1,
+   "tagged_pct": 9.52,
+   "tagged_hm_kmh": 30.8,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 12.03,
+ "surface": {
+  "tagged_pct": 44.89,
+  "unpaved_pct": 1.42,
+  "untagged_pct": 55.11,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 1.16,
+   "unclassified": 8.5,
+   "residential": 1.73
+  },
+  "untagged_pct_by_class": {
+   "motorway": 0.06,
+   "trunk": 0.42,
+   "primary": 1.62,
+   "secondary": 15.2,
+   "tertiary": 55.63,
+   "unclassified": 37.79,
+   "residential": 73.88
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.19,
+  "smoothness_bad_or_worse_km": 1.8,
+  "smoothness_very_bad_or_worse_km": 0.0,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 0.0,
+  "tracktype_tagged_km": 4.9,
+  "tracktype_grade3plus_km": 2.4,
+  "tiger_cfcc_a5_km": 6.0,
+  "tiger_cfcc_a5_untagged_rough_km": 3.6,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 0.0,
+   "residential": 0.0
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 65.73,
+  "tiger_origin_pct": 74.27,
+  "reviewed_no_pct_by_class": {
+   "motorway": 64.64,
+   "trunk": 64.76,
+   "primary": 59.89,
+   "secondary": 66.05,
+   "tertiary": 69.35,
+   "unclassified": 48.46,
+   "residential": 66.78
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 0.0,
+  "closures_py_closes_ways": 0,
+  "seasonal_any_km": 0.0,
+  "car_conditional_km": 0.2,
+  "winter_service_no_km": 0.0,
+  "seasonal_values_not_read": {},
+  "closed_to_cars_or_ford_km": 3.4,
+  "closed_km_by_tag": {
+   "motor_vehicle=no": 2.5,
+   "motor_vehicle=private": 0.6,
+   "access=permit": 0.3,
+   "vehicle=no": 0.1
+  },
+  "permit_km": 0.3,
+  "car_conditional_km_by_verdict": {
+   "time of day": 0.2
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "access:conditional=no @ (Mo-Su 08:00-16:00)": 0.1,
+   "access:conditional=no @ (Mo-Fr 08:30-09:30,14:30-15:30)": 0.1
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 29,
+ "controls": {
+  "on_graph": {
+   "signal": 1644,
+   "stop": 780,
+   "giveway": 187
+  },
+  "in_file": {
+   "signal": 1696,
+   "stop": 1167,
+   "giveway": 214
+  },
+  "per_100km": {
+   "signal": 15.39,
+   "stop": 7.3,
+   "giveway": 1.75
+  },
+  "all_per_100km": 24.45
+ },
+ "timed_barriers_on_graph": {
+  "count": 6,
+  "by_key": {
+   "opening_hours": 6
+  },
+  "list": [
+   {
+    "id": 201056793,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "permit"
+   },
+   {
+    "id": 201132897,
+    "barrier": "gate",
+    "opening_hours": "Mo 10:00-18:00; Tu 08:00-16:00; We off; Th-Sa 08:00-16:00; PH off",
+    "access": "permit"
+   },
+   {
+    "id": 201729660,
+    "barrier": "gate",
+    "opening_hours": "Mo-Fr 07:00-15:00",
+    "access": "customers"
+   },
+   {
+    "id": 7003311743,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "permit"
+   },
+   {
+    "id": 7003311744,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "permit"
+   },
+   {
+    "id": 12034055714,
+    "barrier": "gate",
+    "opening_hours": "Mo-Su 08:00-23:00",
+    "access": "yes"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 1352,
+  "by_where": {
+   "via node, at a junction": 576,
+   "from/to not both in graph": 498,
+   "no via": 3,
+   "via way": 63,
+   "via node, elsewhere": 212
+  },
+  "junctions": 37385,
+  "via_node_per_1000_junctions": 15.41,
+  "via_way_per_1000_junctions": 1.69
+ },
+ "byways": {
+  "road_route_relations": 114,
+  "networks": {
+   "US:MA:Scenic": {
+    "relations": 1,
+    "scenic_yes": 0,
+    "admitted": 1,
+    "km": 0.3,
+    "admitted_km": 0.3
+   }
+  },
+  "relations": [
+   {
+    "id": 20020332,
+    "network": "US:MA:Scenic",
+    "name": "Blackstone Canal Heritage Highway",
+    "ref": "",
+    "scenic": "",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 0.3
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 10878.8,
+  "unpaved_pct": 1.69,
+  "untagged_surface_pct": 54.78,
+  "smoothness_bad_or_worse_km": 3.4,
+  "4wd_only_km": 0.0,
+  "4wd_or_very_bad_km": 0.0,
+  "maxspeed_tagged_pct": {
+   "motorway": 72.71,
+   "trunk": 27.12,
+   "primary": 26.73,
+   "secondary": 20.85,
+   "tertiary": 10.57,
+   "unclassified": 8.83,
+   "residential": 5.41
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 5.2,
+  "total": 6.0
+ },
+ "peak_rss_gb": 0.59
+}

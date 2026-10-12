@@ -1,0 +1,257 @@
+state,metric,proxy,measured
+colorado,maxspeed_pct_motorway -> maxspeed_pct_motorway,95.88,97.19
+colorado,maxspeed_pct_trunk -> maxspeed_pct_trunk,85.54,82.01
+colorado,maxspeed_pct_primary -> maxspeed_pct_primary,72.26,65.93
+colorado,maxspeed_pct_secondary -> maxspeed_pct_secondary,60.83,52.83
+colorado,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,33.71,20.32
+colorado,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,9.08,3.57
+colorado,maxspeed_pct_residential -> maxspeed_pct_residential,10.1,6.5
+colorado,surface_tagged_pct -> surface_tagged_pct,63.259,73.09
+colorado,unpaved_pct -> unpaved_pct,11.637,40.78
+colorado,smoothness_tagged_pct -> smoothness_tagged_pct,1.965,4.25
+colorado,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,28.006,32.79
+colorado,4wd_only_pct -> 4wd_only_pct,0.126,0.53
+colorado,naive_maxspeed_pct -> maxspeed_any_pct,6.47,17.3
+colorado,naive_surface_pct -> surface_tagged_pct,39.37,73.09
+colorado,signal nodes / FHWA km -> signals_per_100km,8.911,7.4
+colorado,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,31.474,22.34
+connecticut,maxspeed_pct_motorway -> maxspeed_pct_motorway,81.57,86.16
+connecticut,maxspeed_pct_trunk -> maxspeed_pct_trunk,53.61,56.23
+connecticut,maxspeed_pct_primary -> maxspeed_pct_primary,27.99,32.45
+connecticut,maxspeed_pct_secondary -> maxspeed_pct_secondary,22.12,27.49
+connecticut,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,19.07,20.18
+connecticut,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,0.0,26.44
+connecticut,maxspeed_pct_residential -> maxspeed_pct_residential,7.67,9.66
+connecticut,surface_tagged_pct -> surface_tagged_pct,30.695,37.99
+connecticut,unpaved_pct -> unpaved_pct,1.358,2.12
+connecticut,smoothness_tagged_pct -> smoothness_tagged_pct,0.817,1.52
+connecticut,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,65.829,70.57
+connecticut,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+connecticut,naive_maxspeed_pct -> maxspeed_any_pct,3.08,18.31
+connecticut,naive_surface_pct -> surface_tagged_pct,16.35,37.99
+connecticut,signal nodes / FHWA km -> signals_per_100km,22.76,18.95
+connecticut,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,30.028,18.15
+kansas,maxspeed_pct_motorway -> maxspeed_pct_motorway,97.05,98.8
+kansas,maxspeed_pct_trunk -> maxspeed_pct_trunk,79.25,68.69
+kansas,maxspeed_pct_primary -> maxspeed_pct_primary,72.38,58.17
+kansas,maxspeed_pct_secondary -> maxspeed_pct_secondary,53.05,42.88
+kansas,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,23.9,15.8
+kansas,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,6.83,5.37
+kansas,maxspeed_pct_residential -> maxspeed_pct_residential,6.47,2.1
+kansas,surface_tagged_pct -> surface_tagged_pct,25.107,37.81
+kansas,unpaved_pct -> unpaved_pct,8.902,26.66
+kansas,smoothness_tagged_pct -> smoothness_tagged_pct,0.072,0.1
+kansas,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,56.31,67.74
+kansas,4wd_only_pct -> 4wd_only_pct,0.0,0.005
+kansas,naive_maxspeed_pct -> maxspeed_any_pct,4.5,9.83
+kansas,naive_surface_pct -> surface_tagged_pct,16.05,37.81
+kansas,signal nodes / FHWA km -> signals_per_100km,1.818,1.67
+kansas,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,15.237,7.59
+maine,maxspeed_pct_motorway -> maxspeed_pct_motorway,93.46,91.02
+maine,maxspeed_pct_trunk -> maxspeed_pct_trunk,67.45,59.56
+maine,maxspeed_pct_primary -> maxspeed_pct_primary,48.12,31.44
+maine,maxspeed_pct_secondary -> maxspeed_pct_secondary,36.04,25.63
+maine,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,27.6,18.45
+maine,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,17.45,7.22
+maine,maxspeed_pct_residential -> maxspeed_pct_residential,2.98,4.29
+maine,surface_tagged_pct -> surface_tagged_pct,25.304,36.02
+maine,unpaved_pct -> unpaved_pct,6.158,14.27
+maine,smoothness_tagged_pct -> smoothness_tagged_pct,1.21,0.98
+maine,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,54.301,51.41
+maine,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+maine,naive_maxspeed_pct -> maxspeed_any_pct,3.65,12.34
+maine,naive_surface_pct -> surface_tagged_pct,16.41,36.02
+maine,signal nodes / FHWA km -> signals_per_100km,4.583,2.76
+maine,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,11.198,8.96
+massachusetts,maxspeed_pct_motorway -> maxspeed_pct_motorway,96.72,97.6
+massachusetts,maxspeed_pct_trunk -> maxspeed_pct_trunk,73.56,78.4
+massachusetts,maxspeed_pct_primary -> maxspeed_pct_primary,54.87,56.01
+massachusetts,maxspeed_pct_secondary -> maxspeed_pct_secondary,41.53,39.1
+massachusetts,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,27.41,25.12
+massachusetts,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,12.7,11.76
+massachusetts,maxspeed_pct_residential -> maxspeed_pct_residential,12.12,10.87
+massachusetts,surface_tagged_pct -> surface_tagged_pct,44.099,47.09
+massachusetts,unpaved_pct -> unpaved_pct,5.328,5.9
+massachusetts,smoothness_tagged_pct -> smoothness_tagged_pct,0.288,0.31
+massachusetts,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,0.0,0.68
+massachusetts,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+massachusetts,naive_maxspeed_pct -> maxspeed_any_pct,5.3,22.88
+massachusetts,naive_surface_pct -> surface_tagged_pct,25.24,47.09
+massachusetts,signal nodes / FHWA km -> signals_per_100km,19.365,16.38
+massachusetts,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,38.257,26.72
+mississippi,maxspeed_pct_motorway -> maxspeed_pct_motorway,98.72,99.56
+mississippi,maxspeed_pct_trunk -> maxspeed_pct_trunk,83.71,72.04
+mississippi,maxspeed_pct_primary -> maxspeed_pct_primary,43.82,23.74
+mississippi,maxspeed_pct_secondary -> maxspeed_pct_secondary,28.04,12.65
+mississippi,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,12.56,6.49
+mississippi,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,2.33,0.71
+mississippi,maxspeed_pct_residential -> maxspeed_pct_residential,1.51,0.87
+mississippi,surface_tagged_pct -> surface_tagged_pct,15.455,16.39
+mississippi,unpaved_pct -> unpaved_pct,1.711,3.52
+mississippi,smoothness_tagged_pct -> smoothness_tagged_pct,0.978,0.66
+mississippi,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,68.381,76.49
+mississippi,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+mississippi,naive_maxspeed_pct -> maxspeed_any_pct,3.54,7.83
+mississippi,naive_surface_pct -> surface_tagged_pct,16.63,16.39
+mississippi,signal nodes / FHWA km -> signals_per_100km,2.367,1.96
+mississippi,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,7.383,4.63
+montana,maxspeed_pct_motorway -> maxspeed_pct_motorway,91.26,90.66
+montana,maxspeed_pct_trunk -> maxspeed_pct_trunk,71.42,65.64
+montana,maxspeed_pct_primary -> maxspeed_pct_primary,43.45,33.56
+montana,maxspeed_pct_secondary -> maxspeed_pct_secondary,37.05,23.58
+montana,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,7.86,5.38
+montana,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,1.07,0.68
+montana,maxspeed_pct_residential -> maxspeed_pct_residential,1.55,0.55
+montana,surface_tagged_pct -> surface_tagged_pct,23.592,33.0
+montana,unpaved_pct -> unpaved_pct,14.677,26.61
+montana,smoothness_tagged_pct -> smoothness_tagged_pct,0.095,0.11
+montana,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,46.476,56.63
+montana,4wd_only_pct -> 4wd_only_pct,0.0,0.011
+montana,naive_maxspeed_pct -> maxspeed_any_pct,2.36,7.02
+montana,naive_surface_pct -> surface_tagged_pct,20.36,33.0
+montana,signal nodes / FHWA km -> signals_per_100km,0.782,0.66
+montana,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,4.963,4.14
+new-hampshire,maxspeed_pct_motorway -> maxspeed_pct_motorway,98.93,99.91
+new-hampshire,maxspeed_pct_trunk -> maxspeed_pct_trunk,87.93,88.76
+new-hampshire,maxspeed_pct_primary -> maxspeed_pct_primary,78.37,77.25
+new-hampshire,maxspeed_pct_secondary -> maxspeed_pct_secondary,75.43,75.03
+new-hampshire,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,55.55,62.51
+new-hampshire,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,19.49,25.78
+new-hampshire,maxspeed_pct_residential -> maxspeed_pct_residential,10.9,17.6
+new-hampshire,surface_tagged_pct -> surface_tagged_pct,61.89,73.59
+new-hampshire,unpaved_pct -> unpaved_pct,11.439,16.85
+new-hampshire,smoothness_tagged_pct -> smoothness_tagged_pct,0.255,0.33
+new-hampshire,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,59.232,63.79
+new-hampshire,4wd_only_pct -> 4wd_only_pct,0.0,0.004
+new-hampshire,naive_maxspeed_pct -> maxspeed_any_pct,5.62,35.91
+new-hampshire,naive_surface_pct -> surface_tagged_pct,42.32,73.59
+new-hampshire,signal nodes / FHWA km -> signals_per_100km,8.402,6.4
+new-hampshire,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,29.532,18.79
+oregon,maxspeed_pct_motorway -> maxspeed_pct_motorway,91.02,89.32
+oregon,maxspeed_pct_trunk -> maxspeed_pct_trunk,89.45,86.6
+oregon,maxspeed_pct_primary -> maxspeed_pct_primary,80.83,55.36
+oregon,maxspeed_pct_secondary -> maxspeed_pct_secondary,69.55,34.93
+oregon,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,37.25,10.51
+oregon,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,10.58,1.21
+oregon,maxspeed_pct_residential -> maxspeed_pct_residential,19.28,11.88
+oregon,surface_tagged_pct -> surface_tagged_pct,40.256,54.88
+oregon,unpaved_pct -> unpaved_pct,6.081,26.09
+oregon,smoothness_tagged_pct -> smoothness_tagged_pct,0.683,1.3
+oregon,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,22.343,30.33
+oregon,4wd_only_pct -> 4wd_only_pct,0.0,0.002
+oregon,naive_maxspeed_pct -> maxspeed_any_pct,7.72,16.88
+oregon,naive_surface_pct -> surface_tagged_pct,28.94,54.88
+oregon,signal nodes / FHWA km -> signals_per_100km,4.083,4.32
+oregon,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,40.929,38.99
+rhode-island,maxspeed_pct_motorway -> maxspeed_pct_motorway,75.19,72.15
+rhode-island,maxspeed_pct_trunk -> maxspeed_pct_trunk,25.34,27.87
+rhode-island,maxspeed_pct_primary -> maxspeed_pct_primary,30.97,26.73
+rhode-island,maxspeed_pct_secondary -> maxspeed_pct_secondary,23.23,20.94
+rhode-island,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,16.42,10.7
+rhode-island,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,10.32,9.52
+rhode-island,maxspeed_pct_residential -> maxspeed_pct_residential,4.67,5.47
+rhode-island,surface_tagged_pct -> surface_tagged_pct,43.198,44.89
+rhode-island,unpaved_pct -> unpaved_pct,0.727,1.42
+rhode-island,smoothness_tagged_pct -> smoothness_tagged_pct,0.136,0.19
+rhode-island,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,56.897,65.73
+rhode-island,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+rhode-island,naive_maxspeed_pct -> maxspeed_any_pct,3.28,12.03
+rhode-island,naive_surface_pct -> surface_tagged_pct,23.58,44.89
+rhode-island,signal nodes / FHWA km -> signals_per_100km,16.378,15.39
+rhode-island,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,37.026,15.41
+south-dakota,maxspeed_pct_motorway -> maxspeed_pct_motorway,99.75,100.0
+south-dakota,maxspeed_pct_trunk -> maxspeed_pct_trunk,52.56,44.49
+south-dakota,maxspeed_pct_primary -> maxspeed_pct_primary,49.78,28.46
+south-dakota,maxspeed_pct_secondary -> maxspeed_pct_secondary,38.23,20.94
+south-dakota,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,10.84,5.71
+south-dakota,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,1.6,1.11
+south-dakota,maxspeed_pct_residential -> maxspeed_pct_residential,2.3,1.49
+south-dakota,surface_tagged_pct -> surface_tagged_pct,45.404,61.96
+south-dakota,unpaved_pct -> unpaved_pct,24.463,47.75
+south-dakota,smoothness_tagged_pct -> smoothness_tagged_pct,0.0,0.01
+south-dakota,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,50.124,58.01
+south-dakota,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+south-dakota,naive_maxspeed_pct -> maxspeed_any_pct,3.38,6.74
+south-dakota,naive_surface_pct -> surface_tagged_pct,25.75,61.96
+south-dakota,signal nodes / FHWA km -> signals_per_100km,0.905,0.91
+south-dakota,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,11.343,8.88
+tennessee,maxspeed_pct_motorway -> maxspeed_pct_motorway,88.51,95.37
+tennessee,maxspeed_pct_trunk -> maxspeed_pct_trunk,51.23,41.7
+tennessee,maxspeed_pct_primary -> maxspeed_pct_primary,32.94,28.03
+tennessee,maxspeed_pct_secondary -> maxspeed_pct_secondary,24.39,14.21
+tennessee,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,10.39,7.82
+tennessee,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,2.94,2.15
+tennessee,maxspeed_pct_residential -> maxspeed_pct_residential,1.79,1.77
+tennessee,surface_tagged_pct -> surface_tagged_pct,14.477,14.03
+tennessee,unpaved_pct -> unpaved_pct,0.663,1.49
+tennessee,smoothness_tagged_pct -> smoothness_tagged_pct,0.718,0.5
+tennessee,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,59.498,62.04
+tennessee,4wd_only_pct -> 4wd_only_pct,0.0,0.007
+tennessee,naive_maxspeed_pct -> maxspeed_any_pct,2.43,8.12
+tennessee,naive_surface_pct -> surface_tagged_pct,10.15,14.03
+tennessee,signal nodes / FHWA km -> signals_per_100km,5.043,4.24
+tennessee,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,16.498,7.57
+utah,maxspeed_pct_motorway -> maxspeed_pct_motorway,97.78,98.93
+utah,maxspeed_pct_trunk -> maxspeed_pct_trunk,87.36,81.55
+utah,maxspeed_pct_primary -> maxspeed_pct_primary,83.76,78.32
+utah,maxspeed_pct_secondary -> maxspeed_pct_secondary,68.04,57.06
+utah,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,42.91,23.01
+utah,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,9.58,2.4
+utah,maxspeed_pct_residential -> maxspeed_pct_residential,20.88,19.22
+utah,surface_tagged_pct -> surface_tagged_pct,59.123,76.38
+utah,unpaved_pct -> unpaved_pct,7.068,35.83
+utah,smoothness_tagged_pct -> smoothness_tagged_pct,15.625,16.06
+utah,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,8.053,9.57
+utah,4wd_only_pct -> 4wd_only_pct,0.083,0.746
+utah,naive_maxspeed_pct -> maxspeed_any_pct,6.52,23.99
+utah,naive_surface_pct -> surface_tagged_pct,39.25,76.38
+utah,signal nodes / FHWA km -> signals_per_100km,6.091,6.13
+utah,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,23.764,16.76
+vermont,maxspeed_pct_motorway -> maxspeed_pct_motorway,97.59,98.49
+vermont,maxspeed_pct_trunk -> maxspeed_pct_trunk,77.4,81.59
+vermont,maxspeed_pct_primary -> maxspeed_pct_primary,54.69,42.81
+vermont,maxspeed_pct_secondary -> maxspeed_pct_secondary,49.53,38.94
+vermont,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,26.58,22.28
+vermont,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,8.29,6.48
+vermont,maxspeed_pct_residential -> maxspeed_pct_residential,4.7,5.9
+vermont,surface_tagged_pct -> surface_tagged_pct,76.019,90.39
+vermont,unpaved_pct -> unpaved_pct,33.923,46.55
+vermont,smoothness_tagged_pct -> smoothness_tagged_pct,0.291,0.56
+vermont,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,52.136,52.07
+vermont,4wd_only_pct -> 4wd_only_pct,0.0,0.0
+vermont,naive_maxspeed_pct -> maxspeed_any_pct,4.4,17.97
+vermont,naive_surface_pct -> surface_tagged_pct,39.26,90.39
+vermont,signal nodes / FHWA km -> signals_per_100km,2.155,1.66
+vermont,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,23.955,23.41
+washington,maxspeed_pct_motorway -> maxspeed_pct_motorway,98.11,99.37
+washington,maxspeed_pct_trunk -> maxspeed_pct_trunk,88.43,97.83
+washington,maxspeed_pct_primary -> maxspeed_pct_primary,87.84,90.59
+washington,maxspeed_pct_secondary -> maxspeed_pct_secondary,74.49,67.3
+washington,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,51.58,38.38
+washington,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,8.31,6.04
+washington,maxspeed_pct_residential -> maxspeed_pct_residential,27.27,21.66
+washington,surface_tagged_pct -> surface_tagged_pct,36.595,46.15
+washington,unpaved_pct -> unpaved_pct,6.492,19.33
+washington,smoothness_tagged_pct -> smoothness_tagged_pct,0.684,1.06
+washington,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,31.325,39.67
+washington,4wd_only_pct -> 4wd_only_pct,0.0,0.004
+washington,naive_maxspeed_pct -> maxspeed_any_pct,8.76,28.78
+washington,naive_surface_pct -> surface_tagged_pct,31.34,46.15
+washington,signal nodes / FHWA km -> signals_per_100km,6.868,5.75
+washington,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,49.008,36.05
+wyoming,maxspeed_pct_motorway -> maxspeed_pct_motorway,86.81,88.98
+wyoming,maxspeed_pct_trunk -> maxspeed_pct_trunk,70.73,69.88
+wyoming,maxspeed_pct_primary -> maxspeed_pct_primary,48.18,52.16
+wyoming,maxspeed_pct_secondary -> maxspeed_pct_secondary,35.96,32.32
+wyoming,maxspeed_pct_tertiary -> maxspeed_pct_tertiary,13.29,15.06
+wyoming,maxspeed_pct_unclassified -> maxspeed_pct_unclassified,3.48,4.77
+wyoming,maxspeed_pct_residential -> maxspeed_pct_residential,3.17,1.68
+wyoming,surface_tagged_pct -> surface_tagged_pct,40.8,54.91
+wyoming,unpaved_pct -> unpaved_pct,22.404,38.95
+wyoming,smoothness_tagged_pct -> smoothness_tagged_pct,1.452,2.38
+wyoming,tiger_reviewed_no_pct -> tiger_reviewed_no_pct,36.256,42.01
+wyoming,4wd_only_pct -> 4wd_only_pct,0.0,0.026
+wyoming,naive_maxspeed_pct -> maxspeed_any_pct,3.02,14.52
+wyoming,naive_surface_pct -> surface_tagged_pct,36.06,54.91
+wyoming,signal nodes / FHWA km -> signals_per_100km,1.067,0.74
+wyoming,restriction relations / drivable ways -> via-node restrictions per 1000 junctions,5.036,3.86

@@ -1,0 +1,367 @@
+{
+ "label": "montana",
+ "graph_nodes": 151399,
+ "graph_edges": 188986,
+ "graph_km": 141702.5,
+ "accepted_ways": 97954,
+ "accepted_km": 144548.9,
+ "skipped_private_ways": 1387,
+ "km_by_class": {
+  "living_street": 21.2,
+  "motorway": 3804.8,
+  "motorway_link": 408.9,
+  "primary": 5326.6,
+  "primary_link": 14.9,
+  "residential": 74558.5,
+  "secondary": 5064.2,
+  "secondary_link": 6.4,
+  "tertiary": 11119.7,
+  "tertiary_link": 3.7,
+  "trunk": 3401.8,
+  "trunk_link": 20.4,
+  "unclassified": 37951.2
+ },
+ "maxspeed": {
+  "living_street": {
+   "km": 21.2,
+   "tagged_pct": 35.57,
+   "tagged_hm_kmh": 12.9,
+   "default_kmh": 12
+  },
+  "motorway": {
+   "km": 3804.8,
+   "tagged_pct": 90.66,
+   "tagged_hm_kmh": 125.7,
+   "default_kmh": 97
+  },
+  "motorway_link": {
+   "km": 408.9,
+   "tagged_pct": 0.65,
+   "tagged_hm_kmh": 68.3,
+   "default_kmh": 58
+  },
+  "primary": {
+   "km": 5326.6,
+   "tagged_pct": 33.56,
+   "tagged_hm_kmh": 98.0,
+   "default_kmh": 59
+  },
+  "primary_link": {
+   "km": 14.9,
+   "tagged_pct": 11.6,
+   "tagged_hm_kmh": 51.3,
+   "default_kmh": 45
+  },
+  "residential": {
+   "km": 74558.5,
+   "tagged_pct": 0.55,
+   "tagged_hm_kmh": 40.2,
+   "default_kmh": 40
+  },
+  "secondary": {
+   "km": 5064.2,
+   "tagged_pct": 23.58,
+   "tagged_hm_kmh": 84.3,
+   "default_kmh": 53
+  },
+  "secondary_link": {
+   "km": 6.4,
+   "tagged_pct": 17.97,
+   "tagged_hm_kmh": 46.3,
+   "default_kmh": 40
+  },
+  "tertiary": {
+   "km": 11119.7,
+   "tagged_pct": 5.38,
+   "tagged_hm_kmh": 70.1,
+   "default_kmh": 47
+  },
+  "tertiary_link": {
+   "km": 3.7,
+   "tagged_pct": 0.0,
+   "tagged_hm_kmh": null,
+   "default_kmh": 38
+  },
+  "trunk": {
+   "km": 3401.8,
+   "tagged_pct": 65.64,
+   "tagged_hm_kmh": 101.2,
+   "default_kmh": 64
+  },
+  "trunk_link": {
+   "km": 20.4,
+   "tagged_pct": 2.82,
+   "tagged_hm_kmh": 83.0,
+   "default_kmh": 50
+  },
+  "unclassified": {
+   "km": 37951.2,
+   "tagged_pct": 0.68,
+   "tagged_hm_kmh": 52.6,
+   "default_kmh": 37
+  }
+ },
+ "maxspeed_any_tag_pct": 7.02,
+ "surface": {
+  "tagged_pct": 33.0,
+  "unpaved_pct": 26.61,
+  "untagged_pct": 67.0,
+  "unpaved_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.1,
+   "tertiary": 35.76,
+   "unclassified": 72.79,
+   "residential": 8.18
+  },
+  "untagged_pct_by_class": {
+   "motorway": 53.32,
+   "trunk": 80.31,
+   "primary": 73.1,
+   "secondary": 73.36,
+   "tertiary": 47.35,
+   "unclassified": 25.86,
+   "residential": 89.98
+  }
+ },
+ "roughness": {
+  "smoothness_tagged_pct": 0.11,
+  "smoothness_bad_or_worse_km": 63.0,
+  "smoothness_very_bad_or_worse_km": 44.7,
+  "4wd_only_km": 16.0,
+  "4wd_or_very_bad_km": 60.7,
+  "tracktype_tagged_km": 1050.1,
+  "tracktype_grade3plus_km": 558.0,
+  "tiger_cfcc_a5_km": 1499.8,
+  "tiger_cfcc_a5_untagged_rough_km": 1499.4,
+  "4wd_or_very_bad_km_by_class": {
+   "motorway": 0.0,
+   "trunk": 0.0,
+   "primary": 0.0,
+   "secondary": 0.0,
+   "tertiary": 0.0,
+   "unclassified": 58.3,
+   "residential": 2.4
+  }
+ },
+ "tiger": {
+  "reviewed_no_pct": 56.63,
+  "tiger_origin_pct": 82.41,
+  "reviewed_no_pct_by_class": {
+   "motorway": 0.0,
+   "trunk": 7.49,
+   "primary": 4.86,
+   "secondary": 16.44,
+   "tertiary": 29.64,
+   "unclassified": 36.71,
+   "residential": 82.71
+  }
+ },
+ "seasonal": {
+  "closures_py_closes_km": 85.9,
+  "closures_py_closes_ways": 66,
+  "seasonal_any_km": 56.2,
+  "car_conditional_km": 70.4,
+  "winter_service_no_km": 63.0,
+  "seasonal_values_not_read": {
+   "spring/summer/autumn": 9
+  },
+  "closed_to_cars_or_ford_km": 90.2,
+  "closed_km_by_tag": {
+   "motor_vehicle=no": 63.1,
+   "motor_vehicle=private": 12.0,
+   "vehicle=no": 10.4,
+   "motor_vehicle=permit": 2.4,
+   "access=permit": 1.2,
+   "motorcar=no": 0.6,
+   "ford=yes": 0.4
+  },
+  "permit_km": 3.7,
+  "car_conditional_km_by_verdict": {
+   "closes": 67.4,
+   "no closing rule": 3.0
+  },
+  "car_conditional_ordinal_fixable_km": 0.0,
+  "car_conditional_unread_top": {
+   "access:conditional=destination @ (2023 Jul 01 - 2024 July 01)": 3.0
+  }
+ },
+ "terrarium_z11_tiles_with_graph": 2172,
+ "controls": {
+  "on_graph": {
+   "signal": 936,
+   "stop": 781,
+   "giveway": 201
+  },
+  "in_file": {
+   "signal": 939,
+   "stop": 921,
+   "giveway": 211
+  },
+  "per_100km": {
+   "signal": 0.66,
+   "stop": 0.55,
+   "giveway": 0.14
+  },
+  "all_per_100km": 1.35
+ },
+ "timed_barriers_on_graph": {
+  "count": 9,
+  "by_key": {
+   "opening_hours": 6,
+   "access:conditional": 3,
+   "motor_vehicle:conditional": 1
+  },
+  "list": [
+   {
+    "id": 313865351,
+    "barrier": "gate",
+    "opening_hours": "24/7"
+   },
+   {
+    "id": 2631824519,
+    "barrier": "border_control",
+    "access:conditional": "no @ 23:00-07:00",
+    "access": "yes",
+    "name": "Carway Border Crossing"
+   },
+   {
+    "id": 4316733896,
+    "barrier": "gate",
+    "motor_vehicle:conditional": "no @ Oct-Jun",
+    "access": "yes"
+   },
+   {
+    "id": 5674462786,
+    "barrier": "border_control",
+    "opening_hours": "24/7",
+    "name": "Port of Entry - Roosville"
+   },
+   {
+    "id": 5674814948,
+    "barrier": "border_control",
+    "access:conditional": "no @ 23:00-07:00",
+    "access": "yes",
+    "name": "Piegan Border Station"
+   },
+   {
+    "id": 7686159464,
+    "barrier": "gate",
+    "opening_hours": "Apr-Nov"
+   },
+   {
+    "id": 10138378258,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 10138378259,
+    "barrier": "gate",
+    "opening_hours": "24/7",
+    "access": "no"
+   },
+   {
+    "id": 12988998461,
+    "barrier": "gate",
+    "access:conditional": "yes @ opening_hours",
+    "opening_hours": "sunrise-sunset"
+   }
+  ]
+ },
+ "turn_restrictions": {
+  "relations_in_file": 493,
+  "by_where": {
+   "via node, at a junction": 375,
+   "via way": 12,
+   "from/to not both in graph": 81,
+   "via node, elsewhere": 24,
+   "no via": 1
+  },
+  "junctions": 90686,
+  "via_node_per_1000_junctions": 4.14,
+  "via_way_per_1000_junctions": 0.13
+ },
+ "byways": {
+  "road_route_relations": 440,
+  "networks": {
+   "(none)": {
+    "relations": 4,
+    "scenic_yes": 4,
+    "admitted": 4,
+    "km": 158.5,
+    "admitted_km": 158.5
+   }
+  },
+  "relations": [
+   {
+    "id": 15340464,
+    "network": "",
+    "name": "Beartooth Highway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 45.5
+   },
+   {
+    "id": 5768385,
+    "network": "",
+    "name": "Going-to-the-Sun Road",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 81.0
+   },
+   {
+    "id": 12796435,
+    "network": "",
+    "name": "Pend Oreille Scenic Byway",
+    "ref": "ID 200",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 12.0
+   },
+   {
+    "id": 12796394,
+    "network": "",
+    "name": "St. Joe River Scenic Byway",
+    "ref": "",
+    "scenic": "yes",
+    "official_name": "",
+    "operator": "",
+    "admitted": true,
+    "drivable_km": 20.0
+   }
+  ]
+ },
+ "accepted_way_basis": {
+  "km": 144548.9,
+  "unpaved_pct": 26.44,
+  "untagged_surface_pct": 67.25,
+  "smoothness_bad_or_worse_km": 63.0,
+  "4wd_only_km": 16.0,
+  "4wd_or_very_bad_km": 60.7,
+  "maxspeed_tagged_pct": {
+   "motorway": 90.71,
+   "trunk": 65.77,
+   "primary": 33.57,
+   "secondary": 23.89,
+   "tertiary": 5.54,
+   "unclassified": 0.71,
+   "residential": 0.54
+  }
+ },
+ "timing_s": {
+  "relations": 0.2,
+  "parse": 10.9,
+  "total": 13.1
+ },
+ "peak_rss_gb": 1.36
+}

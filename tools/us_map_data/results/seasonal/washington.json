@@ -1,0 +1,994 @@
+[
+ {
+  "id": "north_cascades",
+  "road": "North Cascades Hwy (WA 20)",
+  "state": "washington",
+  "ways_matched": 36,
+  "km_in_graph": 81.0,
+  "km_closures_py_closes": 54.7,
+  "km_with_any_seasonal_or_conditional_tag": 54.7,
+  "km_dropped_or_not_drivable": 0.2,
+  "barriers_on_road": 3,
+  "timed_barriers": [
+   {
+    "node": 37133886,
+    "access": "yes",
+    "access:conditional": "no @ winter",
+    "barrier": "lift_gate",
+    "name": "Ross Dam Trail Gate"
+   },
+   {
+    "node": 50310706,
+    "access": "yes",
+    "access:conditional": "no @ winter",
+    "barrier": "lift_gate",
+    "name": "Silver Star Gate"
+   },
+   {
+    "node": 50310706,
+    "access": "yes",
+    "access:conditional": "no @ winter",
+    "barrier": "lift_gate",
+    "name": "Silver Star Gate"
+   }
+  ],
+  "ways": [
+   {
+    "way_id": 5262024,
+    "status": "in graph",
+    "km": 9.5,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 5847791,
+    "status": "in graph",
+    "km": 1.18,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 5850185,
+    "status": "in graph",
+    "km": 0.31,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 6092741,
+    "status": "in graph",
+    "km": 0.73,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 6095754,
+    "status": "in graph",
+    "km": 7.34,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 6095785,
+    "status": "in graph",
+    "km": 4.1,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 22711293,
+    "status": "in graph",
+    "km": 14.13,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 89761463,
+    "status": "in graph",
+    "km": 6.53,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 89761464,
+    "status": "in graph",
+    "km": 0.77,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 184253852,
+    "status": "in graph",
+    "km": 3.3,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 37133886,
+      "access": "yes",
+      "access:conditional": "no @ winter",
+      "barrier": "lift_gate",
+      "name": "Ross Dam Trail Gate"
+     }
+    ]
+   },
+   {
+    "way_id": 184253853,
+    "status": "in graph",
+    "km": 0.1,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes",
+     "surface": "concrete"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 286337942,
+    "status": "in graph",
+    "km": 0.65,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 301866355,
+    "status": "in graph",
+    "km": 8.63,
+    "tags": {
+     "highway": "primary",
+     "note": "SR 20 is closed in the winter. Check with https://wsdot.com/travel/real-time/mountainpasses/North-Cascade-Hwy for latest status"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 301866356,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 362341345,
+    "status": "in graph",
+    "km": 2.06,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 362341356,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 427749422,
+    "status": "in graph",
+    "km": 0.03,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 50310706,
+      "access": "yes",
+      "access:conditional": "no @ winter",
+      "barrier": "lift_gate",
+      "name": "Silver Star Gate"
+     }
+    ]
+   },
+   {
+    "way_id": 427749423,
+    "status": "in graph",
+    "km": 2.8,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 427749424,
+    "status": "in graph",
+    "km": 0.08,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 427749425,
+    "status": "in graph",
+    "km": 5.61,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": [
+     {
+      "node": 50310706,
+      "access": "yes",
+      "access:conditional": "no @ winter",
+      "barrier": "lift_gate",
+      "name": "Silver Star Gate"
+     }
+    ]
+   },
+   {
+    "way_id": 445820990,
+    "status": "dropped by the access rule (access=private)",
+    "km": 0.06,
+    "tags": {
+     "access": "private",
+     "highway": "unclassified",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 445820991,
+    "status": "dropped by the access rule (access=private)",
+    "km": 0.16,
+    "tags": {
+     "access": "private",
+     "highway": "unclassified",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 456455504,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 456455511,
+    "status": "in graph",
+    "km": 3.82,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 456455520,
+    "status": "in graph",
+    "km": 0.01,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 456455524,
+    "status": "in graph",
+    "km": 1.94,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 456455525,
+    "status": "in graph",
+    "km": 0.13,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 456455526,
+    "status": "in graph",
+    "km": 3.33,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 479821110,
+    "status": "in graph",
+    "km": 2.69,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 887371562,
+    "status": "in graph",
+    "km": 0.6,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1117962880,
+    "status": "in graph",
+    "km": 0.05,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1117962881,
+    "status": "in graph",
+    "km": 0.22,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "yes"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1214455390,
+    "status": "in graph",
+    "km": 0.12,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1214455391,
+    "status": "in graph",
+    "km": 0.05,
+    "tags": {
+     "highway": "primary",
+     "seasonal": "summer"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      4,
+      30
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1234521467,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 1234521468,
+    "status": "in graph",
+    "km": 0.04,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "chinook_pass",
+  "road": "Chinook Pass (WA 410)",
+  "state": "washington",
+  "ways_matched": 15,
+  "km_in_graph": 30.4,
+  "km_closures_py_closes": 18.6,
+  "km_with_any_seasonal_or_conditional_tag": 18.6,
+  "km_dropped_or_not_drivable": 0.0,
+  "barriers_on_road": 0,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 6208065,
+    "status": "in graph",
+    "km": 0.59,
+    "tags": {
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 12222877,
+    "status": "in graph",
+    "km": 7.23,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "smoothness": "good",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 12239239,
+    "status": "in graph",
+    "km": 5.6,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 179215856,
+    "status": "in graph",
+    "km": 0.07,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 179215857,
+    "status": "in graph",
+    "km": 2.98,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 287675708,
+    "status": "in graph",
+    "km": 1.56,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "smoothness": "good",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 287675709,
+    "status": "in graph",
+    "km": 7.81,
+    "tags": {
+     "highway": "primary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 964535680,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "smoothness": "good",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1084634471,
+    "status": "in graph",
+    "km": 0.08,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "surface": "concrete"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1084634472,
+    "status": "in graph",
+    "km": 1.2,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "smoothness": "good",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1317158627,
+    "status": "in graph",
+    "km": 0.09,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1317158629,
+    "status": "in graph",
+    "km": 0.02,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1317158630,
+    "status": "in graph",
+    "km": 2.38,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1465710063,
+    "status": "in graph",
+    "km": 0.37,
+    "tags": {
+     "access:conditional": "no @ (nov-may)",
+     "highway": "primary",
+     "smoothness": "good",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [
+     [
+      11,
+      1,
+      5,
+      31
+     ]
+    ],
+    "barriers": []
+   },
+   {
+    "way_id": 1465710064,
+    "status": "in graph",
+    "km": 0.41,
+    "tags": {
+     "highway": "primary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ },
+ {
+  "id": "hurricane_ridge",
+  "road": "Hurricane Ridge Rd (Olympic NP)",
+  "state": "washington",
+  "ways_matched": 12,
+  "km_in_graph": 21.4,
+  "km_closures_py_closes": 0,
+  "km_with_any_seasonal_or_conditional_tag": 0,
+  "km_dropped_or_not_drivable": 3.7,
+  "barriers_on_road": 2,
+  "timed_barriers": [],
+  "ways": [
+   {
+    "way_id": 36660073,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 36743347,
+    "status": "not drivable (highway=path)",
+    "km": 3.66,
+    "tags": {
+     "highway": "path",
+     "surface": "ground"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 37662177,
+    "status": "in graph",
+    "km": 12.76,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 70654306,
+    "status": "in graph",
+    "km": 1.94,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 109967872,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 47207658,
+      "barrier": "toll_booth"
+     }
+    ]
+   },
+   {
+    "way_id": 109967873,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 109967874,
+    "status": "in graph",
+    "km": 0.06,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 303288260,
+    "status": "in graph",
+    "km": 0.34,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": [
+     {
+      "node": 47207650,
+      "barrier": "gate",
+      "name": "Seasonal gate"
+     }
+    ]
+   },
+   {
+    "way_id": 303288261,
+    "status": "in graph",
+    "km": 0.21,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 303288262,
+    "status": "in graph",
+    "km": 4.92,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "asphalt"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 708388728,
+    "status": "in graph",
+    "km": 0.47,
+    "tags": {
+     "highway": "tertiary",
+     "surface": "paved"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   },
+   {
+    "way_id": 708388729,
+    "status": "in graph",
+    "km": 0.2,
+    "tags": {
+     "highway": "tertiary"
+    },
+    "closures_py_windows": [],
+    "barriers": []
+   }
+  ]
+ }
+]
