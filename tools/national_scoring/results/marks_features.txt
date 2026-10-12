@@ -1,0 +1,20 @@
+reproduction: {'all': np.float64(0.719), 'oct': np.float64(0.766), 'aug': np.float64(0.739), 'prec7': np.float64(0.962), 'n7': 52, 'band37': np.float64(0.541), 'nband': 79}
+nulls: all 0.589  Oct 0.628  Aug 0.626
+  c_relief             all 0.629  Aug 0.662  Oct 0.681   share of marks > 0: 1.00
+  relief750            all 0.629  Aug 0.662  Oct 0.678   share of marks > 0: 1.00
+  relief3k             all 0.601  Aug 0.662  Oct 0.723   share of marks > 0: 1.00
+  above3k              all 0.493  Aug 0.658  Oct 0.370   share of marks > 0: 1.00
+  below3k              all 0.594  Aug 0.543  Oct 0.759   share of marks > 0: 1.00
+  relief6k             all 0.532  Aug 0.567  Oct 0.669   share of marks > 0: 1.00
+  z                    all 0.493  Aug 0.532  Oct 0.513   share of marks > 0: 1.00
+  tree_1k              all 0.577  Aug 0.698  Oct 0.485   share of marks > 0: 1.00
+  grass_1k             all 0.394  Aug 0.461  Oct 0.330   share of marks > 0: 1.00
+  grassland            all 0.433  Aug 0.540  Oct 0.333   share of marks > 0: 1.00
+  crop_1k              all 0.389  Aug 0.324  Oct 0.448   share of marks > 0: 0.83
+  built_1k             all 0.303  Aug 0.189  Oct 0.394   share of marks > 0: 1.00
+  desert               all 0.271  Aug 0.171  Oct 0.366   share of marks > 0: 0.79
+  grand                all 0.571  Aug 0.500  Oct 0.651   share of marks > 0: 0.11
+  prot_landmark        all 0.500  Aug 0.500  Oct 0.500   share of marks > 0: 0.00
+  prot_landmark_near   all 0.473  Aug 0.421  Oct 0.523   share of marks > 0: 0.11
+  prot_gap12           all 0.504  Aug 0.500  Oct 0.509   share of marks > 0: 0.01
+  prot_public          all 0.504  Aug 0.500  Oct 0.509   share of marks > 0: 0.01

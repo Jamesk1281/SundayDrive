@@ -1,0 +1,38 @@
+seasonal closures: 145 edges (327.3 km, 105 ways) in 10 windows
+closed to cars: 863 edges (2502.3 km, 262 ways, 831 barriers and fords, 0 by state road class), and no driving through 30 more barriers; 1,017 junctions cut off behind them
+state road classes: none, state_road_class.parquet is missing, so no road is private and OSM alone says what is unpaved
+router loaded 8s
+Torrey - Escalante 9s
+Panguitch - Escalante 10s
+Springdale - Kanab 11s
+Moab - Green River 13s
+Moab - Monticello 14s
+Logan - Garden City 15s
+Price - Green River 16s
+Cedar City - Panguitch 17s
+Blanding - Bluff 19s
+Vernal - Price 20s
+Kamas - Heber 21s
+Nephi - Delta 22s
+Hanksville - Torrey 24s
+Hanksville - Green River 25s
+                                          trips  extra_min  extra_min_mean  beaut_own  beaut_shipped       km  shared
+cand                                pref                                                                             
+S0 shipped                          0.5      14       0.00            1.29     122.64         122.64  1208.90    1.00
+                                    1.0      14       0.23            4.50     125.21         125.21  1208.43    1.00
+A1 recal per state                  0.5      14       0.00            1.29     269.97         122.64  1208.90    1.00
+                                    1.0      14       0.37            6.60     283.30         125.21  1207.83    0.98
+A2 relief cap + recal per state     0.5      14       0.00            1.29     254.68         122.64  1208.90    1.00
+                                    1.0      14       0.23            6.16     260.53         125.07  1207.59    0.97
+E1 terrain+desert+protected         0.5      14       0.00            1.26     206.58         122.64  1208.69    1.00
+                                    1.0      14       0.37            6.65     218.66         126.31  1210.38    0.97
+E1g E1 with grass                   0.5      14       0.00            1.26     211.58         122.64  1208.69    1.00
+                                    1.0      14       0.37            6.65     223.87         126.31  1210.38    0.97
+C1 percentile per state             0.5      14       0.00            1.30     257.36         122.64  1208.98    1.00
+                                    1.0      14       0.37            6.63     271.03         125.21  1207.84    0.98
+E2 E1 + percentile per state        0.5      14       0.00            1.26     251.77         122.64  1208.76    1.00
+                                    1.0      14       0.37            6.65     269.27         126.31  1210.38    0.97
+C2 percentile per ecoregion         0.5      14       0.00            1.30     201.56         122.64  1208.98    1.00
+                                    1.0      14       2.10            7.30     216.30         126.31  1209.46    0.97
+D3 learned blend, shipped class adj 0.5      14       0.00            1.96     640.55         121.66  1209.40    0.98
+                                    1.0      14       0.31            6.80     680.21         124.89  1213.78    0.95

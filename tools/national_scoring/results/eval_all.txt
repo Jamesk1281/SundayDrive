@@ -1,0 +1,182 @@
+loaded 4s
+built 27s
+  calibration ('A1 recal per state', 'co', 'RAW_BASE,STRETCH') (0.3961, 0.9459)
+  calibration ('A1 recal per state', 'ut', 'RAW_BASE,STRETCH') (0.2739, 1.1422)
+  calibration ('A2 relief cap + recal per state', 'ne', 'RELIEF_FULL') 100.0
+  calibration ('A2 relief cap + recal per state', 'co', 'RELIEF_FULL') 173.59765625
+  calibration ('A2 relief cap + recal per state', 'co', 'RAW_BASE,STRETCH') (0.4117, 0.9524)
+  calibration ('A2 relief cap + recal per state', 'ut', 'RELIEF_FULL') 181.9609375
+  calibration ('A2 relief cap + recal per state', 'ut', 'RAW_BASE,STRETCH') (0.3013, 1.1414)
+  calibration ('E3 A2 + desert + protected', 'ne', 'RELIEF_FULL') 100.0
+  calibration ('E3 A2 + desert + protected', 'co', 'RELIEF_FULL') 173.59765625
+  calibration ('E3 A2 + desert + protected', 'co', 'RAW_BASE,STRETCH') (0.4007, 0.9543)
+  calibration ('E3 A2 + desert + protected', 'ut', 'RELIEF_FULL') 181.9609375
+  calibration ('E3 A2 + desert + protected', 'ut', 'RAW_BASE,STRETCH') (0.235, 1.1683)
+D1 learned from OSM byways coefficients: {'intercept': np.float64(-1.083), 'c_curves': np.float64(-0.124), 'c_water': np.float64(0.192), 'c_coast': np.float64(0.068), 'c_forest': np.float64(-0.045), 'c_farm': np.float64(-0.139), 'c_views': np.float64(0.067), 'c_relief': np.float64(0.401), 'c_urban': np.float64(0.259), 'score_adj': np.float64(-0.781), 'relief3k': np.float64(0.125), 'above3k': np.float64(0.044), 'below3k': np.float64(0.129), 'z': np.float64(0.047), 'tree_1k': np.float64(-0.678), 'grass_1k': np.float64(-0.598), 'shrub_1k': np.float64(-0.263), 'bare_1k': np.float64(-0.255), 'crop_1k': np.float64(-0.297), 'built_1k': np.float64(-1.623), 'prot_landmark': np.float64(0.046), 'prot_public': np.float64(0.11)}
+D2 learned from FHWA scenic/natural coefficients: {'intercept': np.float64(-1.626), 'c_curves': np.float64(-0.22), 'c_water': np.float64(0.18), 'c_coast': np.float64(0.224), 'c_forest': np.float64(0.017), 'c_farm': np.float64(-0.035), 'c_views': np.float64(0.108), 'c_relief': np.float64(0.323), 'c_urban': np.float64(0.187), 'score_adj': np.float64(-0.942), 'relief3k': np.float64(0.163), 'above3k': np.float64(-0.017), 'below3k': np.float64(0.195), 'z': np.float64(0.21), 'tree_1k': np.float64(0.429), 'grass_1k': np.float64(0.12), 'shrub_1k': np.float64(0.111), 'bare_1k': np.float64(0.12), 'crop_1k': np.float64(-0.158), 'built_1k': np.float64(-0.89), 'prot_landmark': np.float64(0.116), 'prot_public': np.float64(0.256)}
+D3 coefficients: {'intercept': np.float64(-0.764), 'c_curves': np.float64(-0.281), 'c_water': np.float64(0.23), 'c_coast': np.float64(0.054), 'c_forest': np.float64(-0.066), 'c_farm': np.float64(-0.166), 'c_views': np.float64(0.067), 'c_relief': np.float64(0.421), 'c_urban': np.float64(0.263), 'relief3k': np.float64(0.111), 'above3k': np.float64(0.029), 'below3k': np.float64(0.118), 'z': np.float64(0.069), 'tree_1k': np.float64(-0.559), 'grass_1k': np.float64(-0.512), 'shrub_1k': np.float64(-0.217), 'bare_1k': np.float64(-0.174), 'crop_1k': np.float64(-0.24), 'built_1k': np.float64(-1.371), 'prot_landmark': np.float64(0.036), 'prot_public': np.float64(0.097)}
+learned 44s
+
+1. NEW ENGLAND MARKS (nulls: all 0.589, Oct 0.628)
+                                       all    oct    aug  prec7  n7  band37  nband  ne_km_changed_025  ne_km_changed_1  ne_share7
+name                                                                                                                             
+S0 shipped                           0.719  0.766  0.739  0.962  52   0.541     79              0.000            0.000     13.070
+A1 recal per state                   0.719  0.766  0.739  0.962  52   0.541     79              0.000            0.000     13.070
+A2 relief cap + recal per state      0.719  0.767  0.739  0.962  52   0.540     79              0.000            0.000     13.070
+B1 +terrain                          0.721  0.773  0.739  0.962  53   0.534     78              0.968            0.006     13.295
+B2 +desert                           0.719  0.766  0.739  0.962  52   0.541     79              0.019            0.000     13.072
+B3 +desert+grass                     0.720  0.769  0.739  0.962  52   0.558     80              5.029            0.204     13.185
+B4 +protected                        0.719  0.766  0.739  0.962  52   0.541     79              0.385            0.000     13.154
+E1 terrain+desert+protected          0.721  0.773  0.739  0.962  53   0.534     78              1.330            0.053     13.380
+E1g E1 with grass                    0.722  0.776  0.739  0.962  53   0.551     79              6.352            0.263     13.494
+C1 percentile per state              0.719  0.766  0.739  0.962  52   0.541     79              0.000            0.000     13.070
+C2 percentile per ecoregion          0.735  0.753  0.740  0.942  52   0.666     79             75.427            1.032     13.102
+E2 E1 + percentile per state         0.721  0.774  0.739  0.962  52   0.543     79              1.209            0.047     13.071
+E3 A2 + desert + protected           0.719  0.767  0.739  0.962  52   0.540     79              0.404            0.000     13.156
+D1 learned from OSM byways           0.589  0.692  0.539  0.766  47   0.672     89             89.112           61.268     13.070
+D2 learned from FHWA scenic/natural  0.537  0.637  0.475  0.761  46   0.520     88             90.300           63.462     13.072
+D3 learned blend, shipped class adj  0.682  0.794  0.731  0.956  45   0.496     86             88.752           59.106     13.312
+
+2. BYWAY PROXY auc (trunk-tertiary, byway term removed)
+region                                            ne                        co                        ut                
+label                                      byway_osm fhwa_sn fhwa_hc byway_osm fhwa_sn fhwa_hc byway_osm fhwa_sn fhwa_hc
+name                                                                                                                    
+S0 shipped                                     0.611   0.618   0.583     0.661   0.718   0.521     0.555   0.560   0.440
+A1 recal per state                             0.611   0.618   0.583     0.654   0.707   0.513     0.554   0.558   0.439
+A2 relief cap + recal per state                0.611   0.618   0.583     0.647   0.696   0.501     0.543   0.549   0.420
+B1 +terrain                                    0.614   0.624   0.583     0.669   0.731   0.526     0.561   0.567   0.437
+B2 +desert                                     0.611   0.618   0.583     0.673   0.730   0.551     0.579   0.575   0.541
+B3 +desert+grass                               0.617   0.617   0.589     0.673   0.703   0.552     0.565   0.555   0.500
+B4 +protected                                  0.612   0.624   0.582     0.663   0.720   0.523     0.565   0.569   0.476
+E1 terrain+desert+protected                    0.614   0.629   0.582     0.681   0.744   0.557     0.596   0.593   0.567
+E1g E1 with grass                              0.620   0.629   0.589     0.685   0.725   0.558     0.585   0.577   0.532
+C1 percentile per state                        0.611   0.618   0.583     0.661   0.718   0.521     0.555   0.560   0.440
+C2 percentile per ecoregion                    0.552   0.585   0.546     0.514   0.536   0.379     0.455   0.476   0.379
+E2 E1 + percentile per state                   0.614   0.629   0.582     0.681   0.744   0.557     0.596   0.593   0.567
+E3 A2 + desert + protected                     0.612   0.623   0.582     0.659   0.709   0.530     0.579   0.576   0.566
+D1 learned from OSM byways                     0.811   0.861   0.758     0.829   0.891   0.777     0.847   0.870   0.669
+D1 learned from OSM byways (LORO)              0.798   0.852   0.741     0.812   0.879   0.764     0.798   0.819   0.647
+D2 learned from FHWA scenic/natural            0.765   0.885   0.720     0.828   0.896   0.766     0.849   0.867   0.703
+D2 learned from FHWA scenic/natural (LORO)     0.793   0.848   0.729     0.827   0.890   0.768     0.819   0.831   0.736
+D3 learned blend, shipped class adj            0.735   0.758   0.716     0.764   0.823   0.665     0.715   0.703   0.664
+D3 learned blend, shipped class adj (LORO)     0.682   0.714   0.651     0.733   0.788   0.642     0.672   0.666   0.639
+
+2. BYWAY PROXY auc_eco (trunk-tertiary, byway term removed)
+region                                            ne                        co                        ut                
+label                                      byway_osm fhwa_sn fhwa_hc byway_osm fhwa_sn fhwa_hc byway_osm fhwa_sn fhwa_hc
+name                                                                                                                    
+S0 shipped                                     0.574   0.566   0.559     0.518   0.564   0.400     0.483   0.491   0.411
+A1 recal per state                             0.574   0.566   0.559     0.510   0.551   0.395     0.482   0.489   0.410
+A2 relief cap + recal per state                0.574   0.566   0.559     0.516   0.559   0.395     0.481   0.489   0.400
+B1 +terrain                                    0.576   0.572   0.559     0.530   0.588   0.402     0.487   0.497   0.407
+B2 +desert                                     0.574   0.565   0.559     0.521   0.566   0.416     0.485   0.477   0.450
+B3 +desert+grass                               0.576   0.564   0.564     0.530   0.536   0.413     0.452   0.447   0.417
+B4 +protected                                  0.574   0.568   0.559     0.520   0.571   0.401     0.489   0.495   0.445
+E1 terrain+desert+protected                    0.576   0.574   0.559     0.535   0.596   0.418     0.496   0.489   0.473
+E1g E1 with grass                              0.578   0.573   0.563     0.548   0.573   0.415     0.467   0.463   0.446
+C1 percentile per state                        0.574   0.566   0.559     0.518   0.564   0.400     0.483   0.491   0.411
+C2 percentile per ecoregion                    0.574   0.566   0.559     0.518   0.564   0.400     0.483   0.491   0.411
+E2 E1 + percentile per state                   0.576   0.574   0.559     0.535   0.596   0.418     0.496   0.489   0.473
+E3 A2 + desert + protected                     0.574   0.568   0.559     0.521   0.566   0.411     0.491   0.481   0.476
+D1 learned from OSM byways                     0.754   0.811   0.696     0.736   0.802   0.631     0.774   0.811   0.551
+D1 learned from OSM byways (LORO)              0.742   0.810   0.675     0.723   0.793   0.631     0.711   0.733   0.517
+D2 learned from FHWA scenic/natural            0.724   0.837   0.639     0.728   0.804   0.609     0.773   0.805   0.591
+D2 learned from FHWA scenic/natural (LORO)     0.739   0.800   0.670     0.727   0.794   0.611     0.729   0.743   0.617
+D3 learned blend, shipped class adj            0.639   0.684   0.624     0.640   0.685   0.532     0.564   0.549   0.530
+D3 learned blend, shipped class adj (LORO)     0.580   0.660   0.542     0.630   0.660   0.559     0.539   0.521   0.507
+
+2b. NATIONAL POOL (three regions, equal weight, byway term removed)
+label                                byway_osm  fhwa_sn
+name                                                   
+S0 shipped                               0.599    0.569
+A1 recal per state                       0.614    0.603
+A2 relief cap + recal per state          0.607    0.596
+B1 +terrain                              0.607    0.583
+B2 +desert                               0.612    0.601
+B3 +desert+grass                         0.615    0.589
+B4 +protected                            0.603    0.578
+E1 terrain+desert+protected              0.624    0.624
+E1g E1 with grass                        0.629    0.615
+C1 percentile per state                  0.613    0.608
+C2 percentile per ecoregion              0.504    0.495
+E2 E1 + percentile per state             0.635    0.637
+E3 A2 + desert + protected               0.623    0.611
+D1 learned from OSM byways               0.830    0.882
+D2 learned from FHWA scenic/natural      0.818    0.886
+D3 learned blend, shipped class adj      0.740    0.767
+
+3. DISTRIBUTIONS: share of km >= 7 (%)
+region                                 ne           co                                          ut                               
+group                                 ALL all-NE   ALL basin mountains plains plateau/canyon   ALL basin mountains plateau/canyon
+name                                                                                                                             
+S0 shipped                           13.1   13.1   6.3   0.9      21.6    0.6            3.5   4.7   1.5      16.1            3.7
+A1 recal per state                   13.1   13.1  14.7   3.0      45.9    2.5           10.6  13.4   6.0      40.0           11.5
+A2 relief cap + recal per state      13.1   13.1  13.8   2.7      42.5    2.6            9.7  12.9   5.9      38.5           10.8
+B1 +terrain                          13.3   13.3   8.3   0.9      28.7    0.6            4.3   6.3   2.0      22.9            4.4
+B2 +desert                           13.1   13.1   6.5   1.2      21.7    0.6            4.7   6.2   2.0      16.4            8.2
+B3 +desert+grass                     13.2   13.2   7.9   4.3      24.7    1.3            6.0   7.5   2.8      20.2            8.8
+B4 +protected                        13.2   13.2   6.5   1.0      21.9    0.6            4.0   5.1   1.6      16.7            5.0
+E1 terrain+desert+protected          13.4   13.4   8.7   1.3      29.1    0.6            6.8   9.0   2.8      24.1           12.0
+E1g E1 with grass                    13.5   13.5  10.3   4.5      32.6    1.3            8.3  10.8   3.8      29.6           12.9
+C1 percentile per state              13.1   13.1  13.1   2.4      41.9    2.0            8.8  13.1   5.8      39.2           11.1
+C2 percentile per ecoregion          13.1   13.1  13.1  13.1      13.1   13.1           13.1  12.8  12.6      13.2           13.1
+E2 E1 + percentile per state         13.1   13.1  13.1   2.9      41.2    1.4           12.1  13.1   4.6      32.3           17.9
+E3 A2 + desert + protected           13.2   13.2  13.6   4.0      40.2    2.4           13.3  11.7   4.3      27.6           16.4
+D1 learned from OSM byways           13.1   13.1  14.1   9.9      36.5    4.5           13.8  12.6   9.4      26.8            9.9
+D2 learned from FHWA scenic/natural  13.1   13.1  15.5   8.7      41.9    4.4           15.0  14.0   9.7      30.8           12.2
+D3 learned blend, shipped class adj  13.3   13.3  19.8  21.4      57.7    1.0           28.8  29.6  14.3      61.8           40.2
+
+   mean score
+region                                 ne           co                                          ut                               
+group                                 ALL all-NE   ALL basin mountains plains plateau/canyon   ALL basin mountains plateau/canyon
+name                                                                                                                             
+S0 shipped                           4.89   4.89  3.69  3.35      5.64   2.84           3.74  3.70  3.18      5.16           3.83
+A1 recal per state                   4.89   4.89  5.20  4.98      6.76   4.52           5.26  4.95  4.43      6.36           5.11
+A2 relief cap + recal per state      4.89   4.89  5.20  4.87      6.65   4.58           5.22  4.97  4.50      6.31           5.08
+B1 +terrain                          4.89   4.89  3.76  3.36      5.86   2.84           3.80  3.79  3.22      5.41           3.90
+B2 +desert                           4.89   4.89  3.78  3.71      5.66   2.88           4.11  4.21  3.58      5.22           4.83
+B3 +desert+grass                     4.92   4.92  4.46  5.08      6.12   3.69           4.63  4.55  3.91      5.74           5.08
+B4 +protected                        4.89   4.89  3.70  3.35      5.66   2.85           3.77  3.73  3.18      5.19           3.92
+E1 terrain+desert+protected          4.90   4.90  3.85  3.72      5.89   2.88           4.19  4.33  3.63      5.50           4.98
+E1g E1 with grass                    4.93   4.93  4.53  5.10      6.34   3.69           4.71  4.67  3.97      6.02           5.23
+C1 percentile per state              4.89   4.89  4.89  4.76      6.66   4.11           4.93  4.87  4.33      6.33           5.04
+C2 percentile per ecoregion          4.89   4.89  4.88  4.89      4.88   4.88           4.89  4.84  4.79      4.90           4.88
+E2 E1 + percentile per state         4.89   4.89  4.89  4.96      6.64   4.03           5.23  4.88  4.21      6.00           5.51
+E3 A2 + desert + protected           4.89   4.89  5.18  5.06      6.58   4.51           5.44  4.87  4.27      5.79           5.51
+D1 learned from OSM byways           4.89   4.89  4.21  4.78      6.29   3.13           4.82  4.33  3.60      5.99           4.75
+D2 learned from FHWA scenic/natural  4.89   4.89  3.85  4.67      6.38   2.52           4.70  4.31  3.58      5.96           4.74
+D3 learned blend, shipped class adj  4.88   4.88  5.08  5.98      7.30   3.89           5.85  5.49  4.37      7.33           6.58
+
+4. BENCHMARKS (length-weighted mean score)
+   region    kind                                road      km  S0 shipped  A2 relief cap + recal per state  B1 +terrain  E1 terrain+desert+protected  E1g E1 with grass  C1 percentile per state  E2 E1 + percentile per state  D1 learned from OSM byways  D3 learned blend, shipped class adj
+0      ne  scenic                      Kancamagus Hwy    56.5         8.6                              8.6          8.8                          8.8                8.8                      8.6                           8.7                         6.1                                  8.9
+1      ne  scenic                        Mohawk Trail    78.0         5.4                              5.4          5.5                          5.5                5.5                      5.4                           5.5                         7.9                                  6.2
+2      ne  scenic                              VT 100   351.4         6.8                              6.8          6.9                          6.9                7.0                      6.8                           6.9                         6.6                                  7.7
+3      ne  scenic                            Route 6A   109.4         6.0                              6.0          6.0                          6.0                6.0                      6.0                           6.0                         3.8                                  5.6
+4      ne    dull                    I 90 (Mass Pike)   446.5         0.6                              0.6          0.6                          0.6                0.6                      0.6                           0.6                         9.2                                  1.5
+5      ne    dull                                I 95  1821.2         0.4                              0.4          0.4                          0.4                0.4                      0.4                           0.4                         8.9                                  0.7
+6      co  scenic             US 550, all of it in CO   250.1         5.0                              6.1          5.4                          5.5                5.8                      6.0                           6.2                         7.8                                  7.9
+7      co  scenic  Million Dollar Hwy (named section)    36.3         7.5                              8.2          8.5                          8.5                8.5                      8.2                           8.7                         8.1                                  9.9
+8      co  scenic           CO 141 Unaweep-Tabeguache   244.9         5.1                              6.4          5.3                          6.0                6.4                      6.3                           6.8                         5.4                                  8.2
+9      co  scenic                      Rim Rock Drive    36.5         6.6                              7.7          7.0                          8.0                8.0                      7.5                           8.3                         7.0                                  9.4
+10     co  scenic                    Trail Ridge Road    77.2         7.6                              8.4          8.2                          8.9                8.9                      8.3                           9.0                         7.4                                  9.6
+11     co  scenic          Highway of Legends (CO 12)   116.4         6.1                              7.0          6.2                          6.2                6.8                      7.1                           6.9                         6.8                                  8.0
+12     co  scenic                    Kebler Pass Road    49.9         6.5                              7.5          7.0                          7.0                7.1                      7.4                           7.5                         6.4                                  8.9
+13     co    dull                 I 70 east of Denver   522.6         0.1                              0.3          0.1                          0.1                0.2                      0.1                           0.1                         8.5                                  0.4
+14     co    dull                                I 76   688.5         0.5                              0.9          0.5                          0.5                0.6                      0.6                           0.6                         8.1                                  0.9
+15     co    dull                US 287 on the plains   310.6         1.5                              3.4          1.5                          1.5                3.0                      1.6                           1.5                         6.4                                  3.6
+16     co    dull                              US 385   533.3         1.8                              3.7          1.8                          1.8                2.7                      2.3                           2.2                         5.9                                  3.7
+17     ut  scenic             SR 12 (Scenic Byway 12)   199.4         5.5                              6.6          5.6                          6.2                6.4                      6.7                           6.7                         6.9                                  8.0
+18     ut  scenic               Zion-Mount Carmel Hwy    12.6         7.1                              8.5          8.0                          8.9                8.9                      8.3                           9.1                         7.8                                  9.9
+19     ut  scenic            Zion Canyon Scenic Drive    10.3         9.9                             10.0         10.0                         10.0               10.0                     10.0                          10.0                         8.0                                 10.0
+20     ut  scenic             SR 128 (Colorado River)    71.8         6.0                              7.3          6.1                          7.5                7.5                      7.2                           7.8                         5.8                                  8.6
+21     ut  scenic                Potash Road (SR 279)    24.6         7.3                              8.6          7.4                          8.8                8.8                      8.5                           9.1                         7.4                                 10.0
+22     ut  scenic           Capitol Reef Scenic Drive    12.9         6.2                              7.3          6.4                          7.8                7.8                      7.3                           8.2                         6.5                                  9.3
+23     ut  scenic           Bryce Canyon Scenic Drive    29.7         6.3                              7.5          6.5                          7.3                7.3                      7.5                           7.8                         6.8                                  9.4
+24     ut  scenic           Logan Canyon Scenic Byway    59.7         7.9                              8.6          8.2                          8.2                8.3                      8.7                           8.4                         7.7                                  9.2
+25     ut  scenic                     Mirror Lake Hwy    86.3         6.8                              7.8          7.1                          7.1                7.2                      7.9                           7.5                         6.4                                  9.2
+26     ut  scenic            Big Cottonwood Canyon Rd    25.0         9.0                              9.7          9.5                          9.5                9.5                      9.6                           9.6                         7.4                                  9.8
+27     ut    dull              I 80 west of Salt Lake   318.2         0.1                              0.2          0.1                          0.2                0.2                      0.1                           0.3                         9.1                                  1.7
+28     ut    dull           I 15 through Millard/Juab   352.9         0.1                              0.3          0.1                          0.2                0.3                      0.2                           0.2                         9.0                                  1.6
+29     ut    dull                   US 6 Delta-Eureka   137.5         2.4                              3.9          2.4                          3.3                3.8                      3.4                           3.9                         4.0                                  5.7
+done 94s
