@@ -1,6 +1,6 @@
 # US map data: what exists, how big, how good
 
-**Status:** measured 2026-10-11 against `main` at `2ed3f47` on branch `claude/us-map-data`. Nothing in `pipeline/`, `server/`, `ios/` or `data/` changed. Every figure comes from a script in `tools/us_map_data/`, and its output is in `tools/us_map_data/results/`, unless the text says otherwise. This answers `docs/us-data-evaluation-brief.md`, which is deleted in the merge that brings it back.
+**Status:** measured 2026-10-11 against `main` at `2ed3f47`, scoped to the 48 states and DC, merged 2026-10-12. Nothing in `pipeline/`, `server/`, `ios/` or `data/` changed. Every figure comes from a script in `tools/us_map_data/`, and its output is in `tools/us_map_data/results/`, unless the text says otherwise. It answers the US data evaluation brief, which [briefs.md](briefs.md) lists (`git show 88b1314:docs/us-data-evaluation-brief.md`); "the brief" below means that one.
 
 This is the data half of the US question. The routing half (graph size, search, the
 serving box) is the feasibility review, `docs/usa-extension-feasibility.md`. It is cited
@@ -712,7 +712,7 @@ Nationally:
 - `passengervehicle=open` covers 189,916 mi. That is *legal*, not *suitable*: the
   maintenance level is the physical signal.
 
-**Published forest by forest, as Trap 7 warned:**
+**Published forest by forest, as the brief warned:**
 - 438 of 489 ranger districts are marked as having MVUM data.
 - Nine forests have none, or a handful of stray segments: Okanogan-Wenatchee (6.9 mi:
   the forest east of the North Cascades Highway and Chinook Pass), Modoc, Tonto,
@@ -821,7 +821,7 @@ that OSM leaves unflagged, and a private flag to 69 km. The Plains states' A5x f
   - **CDOT's COtrip** developer page redirects to the map, so the feed's terms and
     format were not determined.
 
-### 6.8 State DOT road-class layers: the 50-state survey
+### 6.8 State DOT road-class layers: the 48 states and DC
 
 `state_dot_survey.py` searched ArcGIS Online's catalogue twice per state, skipping city
 and county servers. It probed each candidate's line layers for fields and
@@ -902,7 +902,7 @@ Licences:
   uses the RIGIS licence agreement.
 - **The rest:** disclaimers, with no licence.
 
-state_roads.py's bespoke integration does not scale to 50 schemas. **HPMS/ARNOLD is the
+state_roads.py's bespoke integration does not scale to 49 schemas. **HPMS/ARNOLD is the
 same information in one schema**, and its absence of private roads is itself a signal:
 a road in OSM but not in ARNOLD is the private-road test Maine's layer already gives
 state_roads.py.
@@ -1011,7 +1011,7 @@ own directory.
 | `mvum_survey.py`, `mvum_osm_match.py`, `osm_match.py` | MVUM nationally; one forest against OSM | `mvum_national.json`, `mvum_osm_gmug.json` |
 | `tiger_sizes.py`, `tiger_osm_match.py` | TIGER sizes; six counties against OSM | `tiger_2026_sizes.csv`, `tiger_osm_colorado.json` |
 | `federal_layers.py` | TIGERweb, NPS, BLM and FHWA byway counts for the 48 states | `federal_layers.json` |
-| `state_dot_survey.py`, `state_dot_table.py` | the 50-state DOT survey | `state_dot_layers.csv` |
+| `state_dot_survey.py`, `state_dot_table.py` | the state DOT survey, 48 states and DC | `state_dot_layers.csv` |
 | `budget.py` | the per-state disk and memory budget | `budget_by_state.csv` |
 
 Figures derived from OpenStreetMap are © OpenStreetMap contributors, under the ODbL

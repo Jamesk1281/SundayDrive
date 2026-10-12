@@ -5,8 +5,8 @@ grouped `outStatistics` queries give miles and segment counts by MVUM symbol,
 by the SEASONAL flag, by what a passenger car and a high-clearance vehicle are
 allowed, by maintenance level and surface, and by forest. That is enough to say
 which fields carry season dates and vehicle class nationally, and how many
-forests publish at all (the brief's Trap 7: the layer is published forest by
-forest). mvum_osm_match.py does the one-forest comparison against OSM.
+forests publish at all (the layer is published forest by forest).
+mvum_osm_match.py does the one-forest comparison against OSM.
 
 Also HEADs the Clearinghouse's national downloads for their sizes, and counts
 the ranger districts the layer's own status layer marks as having MVUM data

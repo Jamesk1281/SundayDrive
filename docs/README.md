@@ -86,6 +86,7 @@ is a column value in published data.
 | --- | --- |
 | [new-england-rollout.md](new-england-rollout.md) | The six-state rollout, executed. One decision in it was overruled by what shipped — flagged at the top |
 | [new-england-expansion.md](new-england-expansion.md) | Staging the other five extracts, with two predictions that turned out wrong |
+| [us-map-data-findings.md](us-map-data-findings.md) | **The data side of a US build** (the 48 states and DC): each dataset's size to fetch, build and serve, and its quality, by km in 16 states and by proxy in the rest. **Viable: space is not the obstacle** (about 9 GB of working disk at peak, building state by state). **The routing-safety gaps are**, and nearly all close with public data plus code changes: seasonal closures closures.py misses, unflagged 4WD roads, the all-year permit rule and low default speeds. Also corrects the New England terrain findings' relief maximum |
 
 ## Hosting, legal and product
 
