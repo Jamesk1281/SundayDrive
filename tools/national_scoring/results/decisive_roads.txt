@@ -1,0 +1,86 @@
+                                                                  roads       km
+region test                                       group                         
+co     E1 promotes to 7+                          mountains          24    822.0
+                                                  plateau/canyon      3     86.0
+       agreed 7+                                  mountains          39   1193.0
+                                                  plateau/canyon      1     11.0
+       agreed dull                                basin               3    210.0
+                                                  mountains          23   1576.0
+                                                  plains             58   3565.0
+                                                  plateau/canyon     30    716.0
+       ecoregion percentile promotes              plains             12    174.0
+                                                  plateau/canyon      1     14.0
+       middle                                     basin               5    203.0
+                                                  mountains          60   1898.0
+                                                  plains            488  13345.0
+                                                  plateau/canyon    112   2909.0
+       scale-only (percentile per state) promotes mountains          35    789.0
+                                                  plains              1     10.0
+                                                  plateau/canyon      3     64.0
+ut     E1 promotes to 7+                          basin               3     35.0
+                                                  mountains          11    257.0
+                                                  plateau/canyon      7    159.0
+       agreed 7+                                  mountains          14    380.0
+                                                  plateau/canyon      5    150.0
+       agreed dull                                basin              46   1577.0
+                                                  mountains          13    734.0
+                                                  plateau/canyon     29    637.0
+       ecoregion percentile promotes              basin               3     57.0
+                                                  plateau/canyon      1     18.0
+       middle                                     basin             224   5779.0
+                                                  mountains          31    687.0
+                                                  plateau/canyon    113   3922.0
+       scale-only (percentile per state) promotes basin               4     97.0
+                                                  mountains          16    413.0
+                                                  plateau/canyon      5    161.0
+
+ E1 promotes to 7+
+region          group                                        road     ref    km  S0 shipped  E1 terrain+desert+protected  C1 percentile per state  C2 percentile per ecoregion
+    co      mountains                                      CO 145  CO 145 138.7         6.8                          7.3                      7.6                          6.5
+    co      mountains                                      CO 133  CO 133 104.6         6.7                          7.2                      7.6                          6.4
+    co      mountains                                        US 6    US 6  92.4         6.6                          7.0                      7.5                          5.9
+    ut      mountains                         Mirror Lake Highway  SR 150  86.3         6.8                          7.1                      7.9                          6.5
+    co      mountains Grand Mesa National Scenic & Historic Byway   CO 65  59.8         6.8                          7.1                      7.6                          6.5
+    co      mountains                      Flat Tops Scenic Byway    CR 8  57.4         6.9                          7.1                      7.8                          6.7
+    co plateau/canyon                              Rim Rock Drive          36.5         6.6                          8.0                      7.5                          7.8
+    ut      mountains                                      US 189  US 189  35.0         6.9                          7.8                      8.0                          6.7
+    co      mountains                          Pikes Peak Highway          31.0         6.9                          7.8                      7.8                          6.2
+    ut plateau/canyon                    Heads Of The Creeks Road BLM 320  30.1         5.5                          7.2                      6.7                          6.8
+    co      mountains                     Coal Creek Canyon Drive   CO 72  30.1         6.7                          7.0                      7.5                          6.2
+    co      mountains                                      CR 306  CR 306  29.7         6.3                          7.1                      7.2                          5.5
+    ut      mountains                   Bryce Canyon Scenic Drive          29.7         6.3                          7.3                      7.5                          6.3
+    co plateau/canyon                                Mesa Verde 1    MV 1  29.7         6.2                          7.5                      7.1                          7.3
+
+ scale-only (percentile per state) promotes
+region          group                                   road    ref    km  S0 shipped  E1 terrain+desert+protected  C1 percentile per state  C2 percentile per ecoregion
+    co      mountains                     Highway Of Legends  CO 12 101.4         6.4                          6.5                      7.3                          5.9
+    ut plateau/canyon                                  SR 35  SR 35  87.1         5.9                          6.2                      7.1                          6.4
+    ut      mountains                                 SR 143 SR 143  67.9         6.6                          6.8                      7.7                          6.3
+    co      mountains                          Tarryall Road  CR 77  66.7         6.6                          6.7                      7.5                          5.9
+    co      mountains Colorado River Headwaters Scenic Byway  US 40  65.8         6.1                          6.3                      7.1                          5.4
+    ut      mountains                                  SR 39  SR 39  46.7         6.3                          6.5                      7.4                          6.0
+    co      mountains                                  CO 91  CO 91  37.2         6.3                          6.9                      7.2                          5.5
+    ut          basin                            Canyon Road         36.7         5.9                          6.2                      7.0                          7.6
+    ut      mountains                       Chalk Creek Road         36.3         5.8                          5.9                      7.0                          5.5
+    ut      mountains                                  SR 96  SR 96  36.0         6.0                          6.3                      7.1                          5.6
+    ut      mountains                                  SR 65  SR 65  34.9         6.2                          6.6                      7.4                          5.9
+    co      mountains                                  CO 62  CO 62  34.6         6.1                          6.2                      7.1                          5.8
+    co plateau/canyon                                  CO 65  CO 65  33.1         6.0                          6.6                      7.1                          7.0
+    ut      mountains                      Cedar Canyon Road  SR 14  32.7         6.2                          6.7                      7.4                          5.9
+
+ ecoregion percentile promotes
+region          group                road              ref   km  S0 shipped  E1 terrain+desert+protected  C1 percentile per state  C2 percentile per ecoregion
+    ut          basin   Wasatch Boulevard                  26.0         5.3                          6.2                      6.5                          7.1
+    ut          basin  Middle Canyon Road                  21.1         5.1                          5.7                      6.3                          7.1
+    co         plains   Briargate Parkway                  20.1         4.5                          4.6                      5.8                          7.2
+    co         plains    West 44th Avenue            CR 58 20.0         4.8                          4.9                      6.0                          7.3
+    co         plains       Brighton Road                  18.9         4.8                          5.1                      6.0                          7.4
+    co         plains    West 80th Avenue                  18.2         4.8                          4.8                      6.0                          7.4
+    co         plains      Riverdale Road                  18.2         5.2                          5.2                      6.3                          7.8
+    ut plateau/canyon    Reds Canyon Loop CR 1019;BLM 6848 18.0         5.8                          6.7                      6.9                          7.1
+    co         plains  West Jewell Avenue                  15.6         4.6                          4.6                      5.8                          7.0
+    co plateau/canyon Missouri Creek Road         BLM 1062 13.8         5.9                          6.1                      6.9                          7.0
+    co         plains  West Morrison Road             CO 8 11.6         5.0                          5.0                      6.2                          7.1
+    co         plains              CO 120           CO 120 10.6         5.0                          6.0                      6.2                          7.7
+    co         plains        Simms Street                  10.5         4.4                          4.4                      5.7                          7.0
+    ut          basin    Monroe Boulevard                  10.2         5.2                          5.3                      6.4                          7.0

@@ -1,0 +1,5 @@
+           name  ne_all  ne_oct  ne_prec7  ne_n7  ne_fhwa_sn  ne_fhwa_sn_eco  ne_share7  co_fhwa_sn  co_fhwa_sn_eco  co_share7  ut_fhwa_sn  ut_fhwa_sn_eco  ut_share7
+RELIEF_FULL=100   0.719   0.767     0.962     52       0.618           0.566     13.070       0.718           0.564      6.314       0.560           0.491      4.653
+RELIEF_FULL=150   0.721   0.764     0.956     45       0.609           0.562     10.513       0.711           0.569      5.312       0.556           0.493      3.784
+RELIEF_FULL=175   0.721   0.759     0.951     41       0.605           0.560      9.781       0.707           0.570      4.835       0.552           0.492      3.360
+RELIEF_FULL=250   0.719   0.750     0.941     34       0.596           0.555      8.514       0.695           0.568      3.708       0.540           0.486      2.403

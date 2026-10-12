@@ -1,0 +1,46 @@
+seasonal closures: 223 edges (182.2 km, 197 ways) in 7 windows
+closed to cars: 3,271 edges (1693.9 km, 530 ways, 522 barriers and fords, 2,186 by state road class), and no driving through 108 more barriers; 3,101 junctions cut off behind them
+state road classes: 31,638 private edges (13324.3 km), start or end only; 2,186 closed (1237.7 km); 15,977 unpaved (4404.8 km)
+router loaded 52s
+Concord MA - Amherst MA 59s
+Amherst MA - Pittsfield MA 66s
+Northampton MA - Brattleboro VT 73s
+Great Barrington MA - Litchfield CT 80s
+Worcester MA - Keene NH 86s
+Brattleboro VT - Woodstock VT 94s
+Woodstock VT - Stowe VT 101s
+Montpelier VT - Burlington VT 109s
+Manchester VT - Rutland VT 117s
+Rutland VT - Hanover NH 124s
+Hanover NH - Lincoln NH 132s
+Lincoln NH - North Conway NH 139s
+North Conway NH - Bethel ME 146s
+Portland ME - Camden ME 153s
+Augusta ME - Camden ME 160s
+Concord NH - Portsmouth NH 168s
+Keene NH - Concord NH 176s
+Hartford CT - Litchfield CT 182s
+Mystic CT - Newport RI 189s
+Providence RI - Plymouth MA 195s
+Pittsfield MA - Manchester VT 202s
+Stowe VT - Burlington VT 210s
+Worcester MA - Northampton MA 216s
+Portsmouth NH - Portland ME 224s
+                                          trips  extra_min  extra_min_mean  beaut_own  beaut_shipped       km  shared
+cand                                pref                                                                             
+S0 shipped                          0.5      24      18.13           19.63     536.37         536.37  1959.89    1.00
+                                    1.0      24      29.82           30.20     711.04         711.04  2027.45    1.00
+B1 +terrain                         0.5      24      18.13           19.97     571.96         555.92  1970.14    0.98
+                                    1.0      24      29.82           30.20     727.30         711.04  2027.45    1.00
+B3 +desert+grass                    0.5      24      18.13           19.63     540.65         536.37  1959.89    1.00
+                                    1.0      24      29.82           29.68     712.90         707.43  2025.87    0.98
+E1 terrain+desert+protected         0.5      24      18.13           19.97     571.96         555.92  1970.14    0.98
+                                    1.0      24      33.55           31.44     751.60         731.82  2036.77    0.99
+E1g E1 with grass                   0.5      24      18.13           19.97     576.92         555.92  1970.14    0.98
+                                    1.0      24      32.38           30.95     755.10         730.35  2036.18    0.97
+E2 E1 + percentile per state        0.5      24      18.13           19.63     541.23         536.37  1959.89    1.00
+                                    1.0      24      33.55           31.43     741.03         731.55  2036.63    0.99
+C2 percentile per ecoregion         0.5      24      18.62           20.23     473.31         562.47  1957.00    0.95
+                                    1.0      24      32.64           32.22     645.08         718.12  2048.45    0.81
+D3 learned blend, shipped class adj 0.5      24      13.24           17.75     710.28         457.35  1942.82    0.78
+                                    1.0      24      23.68           26.40     893.84         584.22  2008.04    0.60
