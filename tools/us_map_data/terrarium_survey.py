@@ -31,11 +31,17 @@ whose relief component (relief / RELIEF_FULL, clipped) rises by 0.1 or more,
 which is the only part a mountain tile already at the cap cannot show.
 
 A fifth step, `rates`, turns the decode sample into national estimates: each
-state's sample is weighted by its share of the outline tiles (Alaska holds 39%),
-and the standard error is the stratified binomial one. The full regional
+state's sample is weighted by its share of the outline tiles, and the standard
+error is the stratified binomial one. It also gives the national bytes from the
+HEAD sample the same way. The full regional
 censuses (the review's Colorado cache, data/raw/terrain for New England) are
 reported beside it, not pooled into it, because a census of one coast is not a
 sample of the country.
+
+The committed samples (results/terrarium_head_sample.csv, _decode_sample.csv)
+were drawn from a wider frame, and the rows outside scope.py's states were
+dropped afterwards, which leaves every in-scope state's sample exactly as drawn.
+A re-run now draws a different sample of the same design.
 
 Usage: python -I terrarium_survey.py tiles  <states.zip> <out_dir>
        python -I terrarium_survey.py head   <out_dir> [per_state]
@@ -46,6 +52,7 @@ Usage: python -I terrarium_survey.py tiles  <states.zip> <out_dir>
 
 import csv
 import io
+from collections import defaultdict
 import math
 import random
 import sys
@@ -72,8 +79,8 @@ SPIKE_MIN_M = 150.0        # ... and none departs this far from flat neighbours
 SPIKE_SPREAD = 10.0        # times the neighbours' robust spread (1.4826 x MAD)
 SPREAD_FLOOR_M = 5.0
 SEED = 20261011
-# Territories in the outline file, outside the 50 states + DC.
-NOT_IN_SCOPE = {"60", "66", "69", "72", "78"}
+# Everything in the outline file outside the contiguous 48 + DC (scope.py).
+from scope import OUT_ABBR, OUT_FIPS as NOT_IN_SCOPE  # noqa: E402
 
 
 def lon2x(lon):
@@ -96,7 +103,7 @@ def y2lat(y):
 
 def state_tiles(geom):
     """{(x, y)} of every z11 tile the geometry touches, part by part, so that
-    Alaska's Aleutians across the antimeridian are not a 360-degree box."""
+    a state in several parts is never one box spanning the gaps between them."""
     import shapely
     parts = list(getattr(geom, "geoms", [geom]))
     out = set()
@@ -128,8 +135,7 @@ def cmd_tiles(states_zip, out):
         t = state_tiles(r.geometry)
         for c in t:
             union.setdefault(c, r["STUSPS"])
-        # elevation.py's single box is meaningless across the antimeridian.
-        bb = bbox_tiles(r.geometry) if r["STUSPS"] != "AK" else ""
+        bb = bbox_tiles(r.geometry)
         rows.append({"state": r["STUSPS"], "name": r["NAME"], "outline_tiles": len(t),
                      "bbox_tiles": bb,
                      "bbox_mosaic_gb": round(bb * 256 * 256 * BYTES_PER_PX / 1e9, 1)
@@ -146,10 +152,9 @@ def cmd_tiles(states_zip, out):
         w.writerow(["state", "x", "y"])
         for (x, y), s in sorted(union.items()):
             w.writerow([s, x, y])
-    lower48 = {c for c, s in union.items() if s not in ("AK", "HI")}
-    xs = [c[0] for c in lower48]
-    ys = [c[1] for c in lower48]
-    print(f"union {len(union):,} tiles; lower 48 + DC {len(lower48):,}; lower-48 box "
+    xs = [c[0] for c in union]
+    ys = [c[1] for c in union]
+    print(f"union {len(union):,} tiles; their bounding box "
           f"{(max(xs) - min(xs) + 1) * (max(ys) - min(ys) + 1):,}")
 
 
@@ -372,16 +377,13 @@ def write_decode(rows, path):
 def cmd_rates(out, out_csv, censuses):
     by = load_union(out)
     rows = list(csv.DictReader(open(out / "terrarium_decode_sample.csv")))
-    rnd = [r for r in rows if ":" not in r["state"] and r["status"] == "200"]
+    rnd = [r for r in rows if ":" not in r["state"] and r["status"] == "200"
+           and r["state"] not in OUT_ABBR]
     tests = {"out of band": lambda r: int(r["oob_px"]) > 0,
              "residue": lambda r: int(r["residue_px"]) > 0,
              "raises the relief component": lambda r: int(r["relief_component_raised_px"]) > 0}
     result = []
-    # Alaska's 40 sampled tiles each stand for ~576 and its source differs, so
-    # it is estimated apart from the lower 48 rather than allowed to swamp them.
-    regions = {"lower 48 + DC": lambda st: st not in ("AK", "HI"),
-               "Alaska": lambda st: st == "AK", "Hawaii": lambda st: st == "HI",
-               "all 50 + DC": lambda st: True}
+    regions = {"contiguous 48 + DC": lambda st: st not in OUT_ABBR}
     for region, keep in regions.items():
         states = [st for st in by if keep(st)]
         total = sum(len(by[st]) for st in states)
@@ -404,6 +406,27 @@ def cmd_rates(out, out_csv, censuses):
                            "rate_pct": round(100 * k / n_all, 3) if n_all else "",
                            "us_tiles_estimate": round(est),
                            "us_tiles_se": round(math.sqrt(var)), "us_tiles_total": total})
+    heads = defaultdict(list)
+    hp = out / "terrarium_head_sample.csv"
+    if hp.exists():
+        for r in csv.DictReader(open(hp)):
+            if r["bytes"] and r["state"] not in OUT_ABBR:
+                heads[r["state"]].append(int(r["bytes"]))
+        est, var, n_all = 0.0, 0.0, 0
+        for st, tiles in by.items():
+            b = np.array(heads.get(st, []), dtype=float)
+            if st in OUT_ABBR or not len(b):
+                continue
+            n, Nn = len(b), len(tiles)
+            n_all += n
+            est += Nn * b.mean()
+            if n > 1:
+                var += Nn ** 2 * b.var(ddof=1) / n * (1 - n / Nn)
+        result.append({"set": "HEAD sample, contiguous 48 + DC", "test": "bytes",
+                       "tiles": n_all, "hits": "", "rate_pct": "",
+                       "us_tiles_estimate": round(est), "us_tiles_se": round(math.sqrt(var)),
+                       "us_tiles_total": sum(len(t) for st, t in by.items()
+                                             if st not in OUT_ABBR)})
     for path in censuses:
         crow = [r for r in csv.DictReader(open(path)) if r["status"] == "200"]
         for name, hit in tests.items():

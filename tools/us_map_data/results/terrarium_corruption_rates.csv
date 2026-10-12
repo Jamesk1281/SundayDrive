@@ -1,16 +1,8 @@
 set,test,tiles,hits,rate_pct,us_tiles_estimate,us_tiles_se,us_tiles_total
-"national sample, lower 48 + DC",out of band,1895,2,0.106,18,15,35778
-"national sample, lower 48 + DC",residue,1895,16,0.844,111,33,35778
-"national sample, lower 48 + DC",raises the relief component,1895,16,0.844,111,33,35778
-"national sample, Alaska",out of band,40,0,0.0,0,0,23056
-"national sample, Alaska",residue,40,3,7.5,1729,972,23056
-"national sample, Alaska",raises the relief component,40,3,7.5,1729,972,23056
-"national sample, Hawaii",out of band,40,0,0.0,0,0,113
-"national sample, Hawaii",residue,40,7,17.5,20,6,113
-"national sample, Hawaii",raises the relief component,40,5,12.5,14,5,113
-"national sample, all 50 + DC",out of band,1975,2,0.101,18,15,58947
-"national sample, all 50 + DC",residue,1975,26,1.316,1860,972,58947
-"national sample, all 50 + DC",raises the relief component,1975,24,1.215,1855,972,58947
+"national sample, contiguous 48 + DC",out of band,1895,2,0.106,18,15,35778
+"national sample, contiguous 48 + DC",residue,1895,16,0.844,111,33,35778
+"national sample, contiguous 48 + DC",raises the relief component,1895,16,0.844,111,33,35778
+"HEAD sample, contiguous 48 + DC",bytes,4639,,,4143510176,11203716,35778
 colorado-cache,out of band,1656,2,0.121,,,
 colorado-cache,residue,1656,3,0.181,,,
 colorado-cache,raises the relief component,1656,1,0.06,,,

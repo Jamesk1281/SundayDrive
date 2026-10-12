@@ -26,7 +26,6 @@ from state_dot_survey import KINDS, STATES  # noqa: E402
 # (url, scope) per state; scope says what the layer covers.
 CHOSEN = {
     "AL": ("https://services.arcgis.com/LZzQi3xDiclG6XvQ/arcgis/rest/services/September_8th_2016_Highway_Functional_Classification/FeatureServer/0", "functional class only, 2016"),
-    "AK": (None, "not found by catalogue search (only a borough's layer and the continental NTAD North American Roads)"),
     "AZ": ("https://services6.arcgis.com/clPWQMwZfdWn4MQZ/arcgis/rest/services/ADOT_Highway_Performance_Monitoring_System_(HPMS)_2022_Data/FeatureServer/5", "HPMS 2022 pavement layer, statewide"),
     "AR": ("https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Transportation/FeatureServer/18", "statewide all roads (state GIS office)"),
     "CA": ("https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/CRS_Functional_Classification/FeatureServer/0", "statewide public roads, functional class only"),
@@ -36,7 +35,6 @@ CHOSEN = {
     "DC": ("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Transportation_WebMercator/MapServer/48", "district-wide"),
     "FL": (None, "not found by catalogue search"),
     "GA": (None, "not found by catalogue search (city layers only)"),
-    "HI": (None, "not found by catalogue search"),
     "ID": ("https://gisp.itd.idaho.gov/server/rest/services/GDWarehouse/LocalRoadInventory/FeatureServer/1", "local road inventory"),
     "IL": ("https://services2.arcgis.com/aIrBD8yn1TDTEXoz/arcgis/rest/services/Roads2017/FeatureServer/0", "statewide all roads, 2017"),
     "IN": ("https://gisdata.in.gov/server/rest/services/Hosted/Road_Centerlines_of_Indiana_Current/FeatureServer/0", "statewide centerlines"),

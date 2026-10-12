@@ -1,4 +1,4 @@
-"""Tier 1: tag coverage for all 50 states + DC from Geofabrik's per-state taginfo.
+"""Tier 1: tag coverage for the contiguous 48 + DC from Geofabrik's per-state taginfo.
 
 These are OBJECT COUNTS, a proxy only. Taginfo counts OSM objects, not
 kilometres, and a short residential stub counts the same as a 20 km pass. Two

@@ -1,0 +1,423 @@
+{
+ "scope": "contiguous 48 + DC",
+ "envelope": [
+  -125.0,
+  24.4,
+  -66.9,
+  49.5
+ ],
+ "tigerweb_by_mtfcc": [
+  {
+   "MTFCC": "S1400",
+   "n": 13668504
+  },
+  {
+   "MTFCC": "S1740",
+   "n": 1214223
+  },
+  {
+   "MTFCC": "S1500",
+   "n": 288400
+  },
+  {
+   "MTFCC": "S1630",
+   "n": 196940
+  },
+  {
+   "MTFCC": "S1750",
+   "n": 194562
+  },
+  {
+   "MTFCC": "S1640",
+   "n": 133711
+  },
+  {
+   "MTFCC": "S1730",
+   "n": 72091
+  },
+  {
+   "MTFCC": "S1780",
+   "n": 42874
+  },
+  {
+   "MTFCC": "S1710",
+   "n": 13906
+  },
+  {
+   "MTFCC": "S1820",
+   "n": 4236
+  },
+  {
+   "MTFCC": "S1720",
+   "n": 159
+  },
+  {
+   "MTFCC": "S1830",
+   "n": 22
+  }
+ ],
+ "nps_by_seasonal": [
+  {
+   "SEASONAL": "No",
+   "n": 16397
+  },
+  {
+   "SEASONAL": "Unknown",
+   "n": 11754
+  },
+  {
+   "SEASONAL": "Yes",
+   "n": 2212
+  },
+  {
+   "SEASONAL": "",
+   "n": 11
+  }
+ ],
+ "nps_by_highclearance": [
+  {
+   "RDHICLEAR": "No",
+   "n": 24479
+  },
+  {
+   "RDHICLEAR": "Unknown",
+   "n": 5491
+  },
+  {
+   "RDHICLEAR": "Yes",
+   "n": 274
+  },
+  {
+   "RDHICLEAR": " ",
+   "n": 130
+  }
+ ],
+ "blm_public_by_obsrve_route_use_class": [
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Unknown",
+   "n": 46105,
+   "mi": 20540.57649872
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": null,
+   "n": 13684,
+   "mi": 3446.0133109
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD High Clearance/Specialized",
+   "n": 13329,
+   "mi": 4045.39362217
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD LOW",
+   "n": 9713,
+   "mi": 3564.71068472
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD HIGH CLEARANCE / SPECIALIZED",
+   "n": 6573,
+   "mi": 4924.55540401
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4wd Low",
+   "n": 5426,
+   "mi": 3209.19088506
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD Low",
+   "n": 4034,
+   "mi": 2075.14975273
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2WD LOW",
+   "n": 3337,
+   "mi": 877.78091354
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2WD Low",
+   "n": 1701,
+   "mi": 2823.36198344
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "UNKNOWN",
+   "n": 2362,
+   "mi": 655.84035828
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4wd High Clearance / Specialized",
+   "n": 2013,
+   "mi": 231.72235216
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2wd Low",
+   "n": 835,
+   "mi": 357.3649653
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "ATV",
+   "n": 580,
+   "mi": 202.81728916
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "UTV",
+   "n": 321,
+   "mi": 243.80247418
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Motorized Single Track",
+   "n": 179,
+   "mi": 30.69795492
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "MOTORIZED SINGLE TRACK",
+   "n": 82,
+   "mi": 29.38480866
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "",
+   "n": 28,
+   "mi": 27.188736640000002
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD High Clearance/ Specialized",
+   "n": 27,
+   "mi": 9.30879208
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Non-Mechanized",
+   "n": 25,
+   "mi": 21.01292064
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Non-Motorized",
+   "n": 19,
+   "mi": 4.75477767
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Primitive Road - 4WD high clearance",
+   "n": 16,
+   "mi": 1.67771685
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Over Snow Vehicle",
+   "n": 2,
+   "mi": 12.20126384
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": " ",
+   "n": 9,
+   "mi": 0
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Primitive Road - 4WD low clearance",
+   "n": 3,
+   "mi": 0.34020052
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Trail - UTV",
+   "n": 1,
+   "mi": 0.13553544
+  }
+ ],
+ "blm_public_by_plan_season_rstrct_code": [
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "NO",
+   "n": 92709,
+   "mi": 35072.03722816
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": null,
+   "n": 8953,
+   "mi": 3987.30040713
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "No",
+   "n": 6514,
+   "mi": 6143.72698142
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "YES",
+   "n": 2047,
+   "mi": 958.83938026
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "N/A",
+   "n": 157,
+   "mi": 1132.66941414
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "UNK",
+   "n": 14,
+   "mi": 28.870132889999997
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "Yes",
+   "n": 10,
+   "mi": 11.53965763
+  }
+ ],
+ "blm_limited_by_obsrve_route_use_class": [
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD HIGH CLEARANCE / SPECIALIZED",
+   "n": 12174,
+   "mi": 26330.57134994
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Unknown",
+   "n": 2458,
+   "mi": 2084.27790169
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD LOW",
+   "n": 1535,
+   "mi": 2446.16593037
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2WD LOW",
+   "n": 1937,
+   "mi": 813.96733939
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "UNKNOWN",
+   "n": 1797,
+   "mi": 1459.26899267
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD Low",
+   "n": 1676,
+   "mi": 239.18267269
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4wd High Clearance / Specialized",
+   "n": 829,
+   "mi": 511.89368751
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD High Clearance/Specialized",
+   "n": 819,
+   "mi": 543.96369064
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4wd Low",
+   "n": 706,
+   "mi": 338.51247395
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": null,
+   "n": 681,
+   "mi": 290.67436229
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "ATV",
+   "n": 370,
+   "mi": 287.19275487
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "MOTORIZED SINGLE TRACK",
+   "n": 200,
+   "mi": 133.3367205
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2wd Low",
+   "n": 178,
+   "mi": 174.08738623
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "4WD High Clearance / Specialized",
+   "n": 156,
+   "mi": 32.00174043
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "UTV",
+   "n": 56,
+   "mi": 46.34659026
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "2WD Low",
+   "n": 35,
+   "mi": 23.23773113
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "NON-MOTORIZED",
+   "n": 3,
+   "mi": 7.85270838
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "IMPASSABLE",
+   "n": 3,
+   "mi": 3.14323111
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": " ",
+   "n": 3,
+   "mi": 0
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Non-Motorized",
+   "n": 2,
+   "mi": 2.24795247
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Impassable",
+   "n": 2,
+   "mi": 0.68223018
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "Motorized Single Track",
+   "n": 1,
+   "mi": 0.08712618
+  },
+  {
+   "OBSRVE_ROUTE_USE_CLASS": "NON-MECHANIZED",
+   "n": 1,
+   "mi": 0.33672247
+  }
+ ],
+ "blm_limited_by_plan_season_rstrct_code": [
+  {
+   "PLAN_SEASON_RSTRCT_CODE": null,
+   "n": 15453,
+   "mi": 29530.87272196
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "NO",
+   "n": 6574,
+   "mi": 4548.20507728
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "YES",
+   "n": 1874,
+   "mi": 988.50805855
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "Unknown",
+   "n": 888,
+   "mi": 239.24823776
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "No",
+   "n": 576,
+   "mi": 172.39739355
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "Yes",
+   "n": 170,
+   "mi": 179.01449485999999
+  },
+  {
+   "PLAN_SEASON_RSTRCT_CODE": "UNK",
+   "n": 87,
+   "mi": 110.78531139
+  }
+ ],
+ "byways_by_designation": [
+  {
+   "n": 167,
+   "Current_Desig": "NSB"
+  },
+  {
+   "n": 55,
+   "Current_Desig": "AAR"
+  }
+ ]
+}

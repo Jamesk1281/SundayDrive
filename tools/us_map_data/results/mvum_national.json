@@ -63,31 +63,31 @@
   "st_length(shape)"
  ],
  "description": "The feature class indicates the specific types of motorized vehicles allowed on the designated routes and their seasons of use. The feature class is designed to be consistent with the Motor Vehicle Use Map (MVUM). Only roads with a SYMBOL attribute value of 1, 2, 3, 4, 11, and 12 are Forest Service System roads and contain data concerning their availability for OHV (Off Highway Vehicle) use. This data is published and refreshed on a unit by unit basis as needed. Information for each individual unit must be verified as to be consistent with the published MVUMs prior to inclusion in this data. Not every National Forest has data included in this feature class.",
- "count": 150789,
+ "count": 150022,
  "by_symbol": [
   {
    "symbol": "1",
    "mvum_symbol_name": "Roads open to all Vehicles, Yearlong",
-   "n": 71969,
-   "mi": 98181.247
+   "n": 71443,
+   "mi": 96777.427
   },
   {
    "symbol": "3",
    "mvum_symbol_name": "Roads open to highway legal vehicles only, Yearlong",
-   "n": 40024,
-   "mi": 50677.604
+   "n": 39855,
+   "mi": 50489.835
   },
   {
    "symbol": "2",
    "mvum_symbol_name": "Roads open to all Vehicles, Seasonal",
-   "n": 23154,
-   "mi": 29472.432
+   "n": 23149,
+   "mi": 29432.569
   },
   {
    "symbol": "4",
    "mvum_symbol_name": "Roads open to highway legal vehicles only, Seasonal",
-   "n": 11941,
-   "mi": 15354.051
+   "n": 11876,
+   "mi": 15323.854
   },
   {
    "symbol": "12",
@@ -98,25 +98,25 @@
   {
    "symbol": "11",
    "mvum_symbol_name": "Special Designation, Yearlong",
-   "n": 1501,
-   "mi": 1661.32
+   "n": 1499,
+   "mi": 1660.664
   }
  ],
  "by_seasonal": [
   {
    "seasonal": "yearlong",
-   "n": 113464,
-   "mi": 150564.621
+   "n": 112781,
+   "mi": 148993.795
   },
   {
    "seasonal": "seasonal",
-   "n": 36325,
-   "mi": 46216.519
+   "n": 36260,
+   "mi": 46147.524
   },
   {
    "seasonal": null,
-   "n": 331,
-   "mi": 313.661
+   "n": 312,
+   "mi": 291.177
   },
   {
    "seasonal": "Seasonal",
@@ -142,13 +142,13 @@
  "by_passengervehicle": [
   {
    "passengervehicle": "open",
-   "n": 145716,
-   "mi": 191555.349
+   "n": 144969,
+   "mi": 189915.585
   },
   {
    "passengervehicle": null,
-   "n": 5006,
-   "mi": 5996.449
+   "n": 4986,
+   "mi": 5973.908
   },
   {
    "passengervehicle": " ",
@@ -159,13 +159,13 @@
  "by_highclearancevehicle": [
   {
    "highclearancevehicle": "open",
-   "n": 146701,
-   "mi": 192657.057
+   "n": 145956,
+   "mi": 191020.751
   },
   {
    "highclearancevehicle": null,
-   "n": 4031,
-   "mi": 4915.646
+   "n": 4009,
+   "mi": 4889.647
   },
   {
    "highclearancevehicle": " ",
@@ -186,33 +186,33 @@
  "by_operationalmaintlevel": [
   {
    "operationalmaintlevel": "2 - HIGH CLEARANCE VEHICLES",
-   "n": 123407,
-   "mi": 144083.527
+   "n": 122924,
+   "mi": 143028.208
   },
   {
    "operationalmaintlevel": "3 - SUITABLE FOR PASSENGER CARS",
-   "n": 18723,
-   "mi": 40983.841
+   "n": 18521,
+   "mi": 40417.591
   },
   {
    "operationalmaintlevel": "4 - MODERATE DEGREE OF USER COMFORT",
-   "n": 5326,
-   "mi": 9152.741
+   "n": 5266,
+   "mi": 9137.619
   },
   {
    "operationalmaintlevel": "5 - HIGH DEGREE OF USER COMFORT",
-   "n": 2468,
-   "mi": 2459.875
+   "n": 2456,
+   "mi": 2456.302
   },
   {
    "operationalmaintlevel": null,
-   "n": 727,
-   "mi": 778.333
+   "n": 720,
+   "mi": 762.144
   },
   {
    "operationalmaintlevel": "1 - BASIC CUSTODIAL CARE (CLOSED)",
-   "n": 97,
-   "mi": 107.575
+   "n": 94,
+   "mi": 101.723
   },
   {
    "operationalmaintlevel": " ",
@@ -238,38 +238,33 @@
  "by_surfacetype": [
   {
    "surfacetype": "NAT - NATIVE MATERIAL",
-   "n": 100028,
-   "mi": 115537.66
+   "n": 100007,
+   "mi": 115519.029
   },
   {
    "surfacetype": "AGG - CRUSHED AGGREGATE OR GRAVEL",
-   "n": 30250,
-   "mi": 55950.008
+   "n": 30065,
+   "mi": 55434.01
   },
   {
    "surfacetype": "IMP - IMPROVED NATIVE MATERIAL",
-   "n": 9495,
-   "mi": 14504.388
+   "n": 9476,
+   "mi": 14469.629
   },
   {
    "surfacetype": "AC - ASPHALT",
-   "n": 4765,
-   "mi": 4718.189
+   "n": 4711,
+   "mi": 4705.208
   },
   {
    "surfacetype": "BST - BITUMINOUS SURFACE TREATMENT",
-   "n": 2608,
-   "mi": 3267.291
+   "n": 2597,
+   "mi": 3264.655
   },
   {
    "surfacetype": null,
-   "n": 2060,
-   "mi": 1596.178
-  },
-  {
-   "surfacetype": "PIT - PIT RUN SHOT ROCK",
-   "n": 461,
-   "mi": 1060.361
+   "n": 2052,
+   "mi": 1582.993
   },
   {
    "surfacetype": "AGG - SCORIA",
@@ -278,8 +273,8 @@
   },
   {
    "surfacetype": "P - PAVED",
-   "n": 521,
-   "mi": 262.537
+   "n": 513,
+   "mi": 258.783
   },
   {
    "surfacetype": " ",
@@ -320,23 +315,23 @@
  "by_jurisdiction": [
   {
    "jurisdiction": "FS - FOREST SERVICE",
-   "n": 149804,
-   "mi": 196627.057
+   "n": 149048,
+   "mi": 194989.434
   },
   {
    "jurisdiction": null,
-   "n": 628,
-   "mi": 669.047
+   "n": 623,
+   "mi": 657.482
   },
   {
    "jurisdiction": "P - PRIVATE",
-   "n": 224,
-   "mi": 151.295
+   "n": 223,
+   "mi": 150.359
   },
   {
    "jurisdiction": "C - COUNTY, PARISH, BOROUGH",
-   "n": 70,
-   "mi": 98.673
+   "n": 67,
+   "mi": 92.088
   },
   {
    "jurisdiction": " ",
@@ -355,8 +350,8 @@
   },
   {
    "jurisdiction": "S - STATE",
-   "n": 7,
-   "mi": 8.286
+   "n": 5,
+   "mi": 2.69
   },
   {
    "jurisdiction": "FS",
@@ -691,11 +686,6 @@
    "mi": 1605.788
   },
   {
-   "forestname": "Tongass National Forest",
-   "n": 647,
-   "mi": 1589.831
-  },
-  {
    "forestname": "National Forests in Mississippi",
    "n": 1157,
    "mi": 1589.813
@@ -871,11 +861,6 @@
    "mi": 144.564
   },
   {
-   "forestname": "Chugach National Forest",
-   "n": 119,
-   "mi": 65.097
-  },
-  {
    "forestname": "Hoosier National Forest",
    "n": 214,
    "mi": 42.869
@@ -889,11 +874,6 @@
    "forestname": "Columbia River Gorge National Scenic Area",
    "n": 39,
    "mi": 21.45
-  },
-  {
-   "forestname": null,
-   "n": 1,
-   "mi": 7.377
   },
   {
    "forestname": "Okanogan-Wenatchee National Forest",
@@ -927,11 +907,11 @@
   }
  ],
  "passengervehicle_datesopen": {
-  "distinct": 728,
+  "distinct": 727,
   "top": [
    {
     "passengervehicle_datesopen": "01/01-12/31",
-    "mi": 150434.369
+    "mi": 148824.904
    },
    {
     "passengervehicle_datesopen": "04/01-11/30",
@@ -939,7 +919,7 @@
    },
    {
     "passengervehicle_datesopen": "05/01-11/30",
-    "mi": 2771.078
+    "mi": 2770.879
    },
    {
     "passengervehicle_datesopen": "04/15-12/15",
@@ -1047,7 +1027,7 @@
    },
    {
     "passengervehicle_datesopen": "05/01-09/30",
-    "mi": 324.206
+    "mi": 323.579
    },
    {
     "passengervehicle_datesopen": "12/02-10/14",
@@ -1092,11 +1072,11 @@
   ]
  },
  "highclearancevehicle_datesopen": {
-  "distinct": 735,
+  "distinct": 734,
   "top": [
    {
     "highclearancevehicle_datesopen": "01/01-12/31",
-    "mi": 149857.896
+    "mi": 148251.889
    },
    {
     "highclearancevehicle_datesopen": "04/01-11/30",
@@ -1104,7 +1084,7 @@
    },
    {
     "highclearancevehicle_datesopen": "05/01-11/30",
-    "mi": 2771.348
+    "mi": 2771.149
    },
    {
     "highclearancevehicle_datesopen": "04/15-12/15",
@@ -1208,7 +1188,7 @@
    },
    {
     "highclearancevehicle_datesopen": "05/01-09/30",
-    "mi": 328.667
+    "mi": 328.04
    },
    {
     "highclearancevehicle_datesopen": "05/01-10/11   10/22-11/30",
@@ -1255,6 +1235,30 @@
     "mi": 273.876
    }
   ]
+ },
+ "districts": {
+  "all": 489,
+  "with_data": 438,
+  "forests_with_no_district": [
+   "Angeles National Forest",
+   "Apache-Sitgreaves National Forests",
+   "Malheur National Forest",
+   "Modoc National Forest",
+   "National Forests in Alabama",
+   "Okanogan-Wenatchee National Forest",
+   "Six Rivers National Forest",
+   "Tonto National Forest",
+   "Wallowa-Whitman National Forest"
+  ],
+  "forests_partly_missing": {
+   "Beaverhead-Deerlodge National Forest": "4 of 5",
+   "Cherokee National Forest": "1 of 4",
+   "Coconino National Forest": "1 of 3",
+   "Colville National Forest": "1 of 5",
+   "Dakota Prairie Grasslands": "1 of 4",
+   "Nebraska National Forest": "1 of 5",
+   "Willamette National Forest": "1 of 4"
+  }
  },
  "downloads": [
   {

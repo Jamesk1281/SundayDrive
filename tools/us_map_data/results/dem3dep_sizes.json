@@ -3,17 +3,16 @@
   "1": {
    "objects": 15338,
    "tifs": 3812,
-   "tif_bytes": 130282729488
+   "tif_bytes": 130282729488,
+   "contiguous_us_tifs": 950,
+   "contiguous_us_bytes": 45714892266
   },
   "13": {
    "objects": 5967,
    "tifs": 1449,
-   "tif_bytes": 493546513472
-  },
-  "2": {
-   "objects": 2087,
-   "tifs": 521,
-   "tif_bytes": 5324406394
+   "tif_bytes": 493546513472,
+   "contiguous_us_tifs": 949,
+   "contiguous_us_bytes": 363558662760
   }
  },
  "National Elevation Dataset (NED) 1 arc-second": {
@@ -29,12 +28,5 @@
   "bytes_current": 382422308212,
   "bytes_all_listed": 1597658817223,
   "example": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n06e162/USGS_13_n06e162_20130911.tif"
- },
- "National Elevation Dataset (NED) Alaska 2 arc-second": {
-  "products_listed": 623,
-  "cells": 521,
-  "bytes_current": 785870826,
-  "bytes_all_listed": 889453041,
-  "example": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/2/TIFF/historical/n52e177/USGS_2_n52e177_20210819.tif"
  }
 }

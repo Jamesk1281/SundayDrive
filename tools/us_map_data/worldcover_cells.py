@@ -1,4 +1,4 @@
-"""The ESA WorldCover v200 (2021) tiles covering the 50 states + DC, by HEAD.
+"""The ESA WorldCover v200 (2021) tiles covering the contiguous 48 + DC, by HEAD.
 
 WorldCover is a grid of 3-degree cells named for their SOUTH-WEST corner
 (landcover.py: the floor, never the ceil). A cell that is all ocean is left out
@@ -16,10 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from netutil import head  # noqa: E402
+from scope import OUT_FIPS  # noqa: E402
 
 TILE_URL = ("https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/"
             "ESA_WorldCover_10m_2021_v200_{tile}_Map.tif")
-NOT_IN_SCOPE = {"60", "66", "69", "72", "78"}
 
 
 def name(lat0, lon0):
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     import geopandas as gpd
     import shapely
     st = gpd.read_file(f"zip://{sys.argv[1]}")
-    st = st[~st["STATEFP"].isin(NOT_IN_SCOPE)]
+    st = st[~st["STATEFP"].isin(OUT_FIPS)]
     cells = {}
     for _, r in st.iterrows():
         for p in getattr(r.geometry, "geoms", [r.geometry]):

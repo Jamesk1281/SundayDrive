@@ -2,7 +2,7 @@
 
 Two instruments, because the first disagreed with itself:
   api      the National Map's product API: every product of the 1 and 1/3
-           arc-second DEMs and Alaska's 2 arc-second, summing `sizeInBytes`.
+           arc-second DEMs, summing `sizeInBytes`.
            It lists superseded versions of a cell beside the current one, and
            its paging repeats items, so cells are de-duplicated by name;
   s3       the bucket listing itself (prd-tnm, public, ListObjectsV2), under
@@ -10,7 +10,12 @@ Two instruments, because the first disagreed with itself:
            current 1x1 degree cell, with its exact size. This is the number
            the findings use; the API's is kept to show the gap.
 
-Usage: python -I dem3dep_survey.py <out.json>
+Both list every cell the program holds, border cells included, so the S3 sums
+are also given for the cells that touch the 48 states and DC (Census 2023
+outlines; scope.py). A cell is named for its north-west corner: n40w106 spans
+lat 39..40 and lon -106..-105.
+
+Usage: python -I dem3dep_survey.py <states.zip> <out.json>
 """
 
 import json
@@ -23,8 +28,7 @@ from netutil import get_json  # noqa: E402
 
 API = "https://tnmaccess.nationalmap.gov/api/v1/products"
 DATASETS = ["National Elevation Dataset (NED) 1 arc-second",
-            "National Elevation Dataset (NED) 1/3 arc-second",
-            "National Elevation Dataset (NED) Alaska 2 arc-second"]
+            "National Elevation Dataset (NED) 1/3 arc-second"]
 CELL = re.compile(r"([ns]\d{2}[ew]\d{3})", re.IGNORECASE)
 
 
@@ -44,11 +48,11 @@ def products(dataset):
         offset += 1000
 
 
-def s3_listing(prefix):
+def s3_listing(prefix, inside):
     import xml.etree.ElementTree as ET
     from netutil import request
     ns = {"s3": "http://s3.amazonaws.com/doc/2006-03-01/"}
-    token, n, size, tifs = None, 0, 0, 0
+    token, n, size, tifs, in_n, in_size = None, 0, 0, 0, 0, 0
     while True:
         url = ("https://prd-tnm.s3.amazonaws.com/?list-type=2&prefix=" + prefix
                + (f"&continuation-token={urllib.parse.quote(token)}" if token else ""))
@@ -60,18 +64,42 @@ def s3_listing(prefix):
             key = c.find("s3:Key", ns).text
             n += 1
             if key.endswith(".tif"):
+                b = int(c.find("s3:Size", ns).text)
                 tifs += 1
-                size += int(c.find("s3:Size", ns).text)
+                size += b
+                m = CELL.search(key)
+                if m and inside(m.group(1).lower()):
+                    in_n += 1
+                    in_size += b
         if root.find("s3:IsTruncated", ns).text != "true":
-            return {"objects": n, "tifs": tifs, "tif_bytes": size}
+            return {"objects": n, "tifs": tifs, "tif_bytes": size,
+                    "contiguous_us_tifs": in_n, "contiguous_us_bytes": in_size}
         token = root.find("s3:NextContinuationToken", ns).text
+
+
+def contiguous_us(states_zip):
+    """A test for whether a 1x1 degree cell name touches the contiguous 48 + DC."""
+    import geopandas as gpd
+    import shapely
+    from scope import OUT_FIPS
+    st = gpd.read_file(f"zip://{states_zip}")
+    land = shapely.prepared.prep(shapely.unary_union(st[~st["STATEFP"].isin(OUT_FIPS)].geometry))
+
+    def inside(cell):
+        lat_n = int(cell[1:3]) * (1 if cell[0] == "n" else -1)
+        lon_w = int(cell[4:7]) * (-1 if cell[3] == "w" else 1)
+        return land.intersects(shapely.box(lon_w, lat_n - 1, lon_w + 1, lat_n))
+    return inside
 
 
 if __name__ == "__main__":
     import urllib.parse
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    inside = contiguous_us(sys.argv[1])
     out = {"s3_current": {}}
-    for res in ("1", "13", "2"):
-        out["s3_current"][res] = s3_listing(f"StagedProducts/Elevation/{res}/TIFF/current/")
+    for res in ("1", "13"):
+        out["s3_current"][res] = s3_listing(f"StagedProducts/Elevation/{res}/TIFF/current/",
+                                            inside)
         print("s3", res, out["s3_current"][res], flush=True)
     for ds in DATASETS:
         items, total = products(ds)
@@ -87,4 +115,4 @@ if __name__ == "__main__":
                    "bytes_all_listed": sum(int(i.get("sizeInBytes") or 0) for i in items),
                    "example": next(iter(cells.values())).get("downloadURL") if cells else None}
         print(ds, out[ds], flush=True)
-    Path(sys.argv[1]).write_text(json.dumps(out, indent=1))
+    Path(sys.argv[2]).write_text(json.dumps(out, indent=1))

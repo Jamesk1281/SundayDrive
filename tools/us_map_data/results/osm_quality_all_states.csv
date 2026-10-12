@@ -1,6 +1,5 @@
 state,sampled,drivable_ways,unpaved_pct_proxy,unpaved_pct_km_estimate,maxspeed_pct_tertiary_proxy,maxspeed_pct_tertiary_km_estimate,maxspeed_pct_secondary_proxy,maxspeed_pct_secondary_km_estimate,tiger_reviewed_no_pct_proxy,tiger_reviewed_no_pct_km_estimate,surface_tagged_pct_proxy,surface_tagged_pct_km_estimate,4wd_only_proxy_pct,seasonal_any_highway_ways,car_conditional_any_highway_ways,signals_per_100km_proxy
 alabama,False,302229,1.904,10.0,18.86,13.3,47.47,37.8,75.092,81.7,20.125,26.4,0.0,0,4,4.47
-alaska,False,41621,15.511,29.9,31.94,24.0,51.59,41.4,48.653,54.2,35.42,44.2,0.0,93,2,3.45
 arizona,False,375804,6.147,16.2,31.43,23.6,57.28,46.4,22.509,26.9,60.306,73.2,0.0,4,124,9.46
 arkansas,False,207025,5.481,15.3,14.41,9.7,21.26,14.9,51.09,56.7,18.75,24.8,0.0,2,14,1.89
 california,False,1243279,1.56,9.5,33.64,25.4,53.48,43.1,38.028,43.1,37.04,46.1,0.0,413,798,31.23
@@ -10,7 +9,6 @@ delaware,False,44539,0.26,7.6,25.22,18.5,43.38,34.2,32.219,37.0,22.434,29.1,0.0,
 district-of-columbia,False,15553,0.0,7.3,40.63,31.1,46.35,36.8,10.57,14.4,81.18,97.5,0.0,0,70,113.88
 florida,False,884731,1.105,8.9,33.95,25.7,60.03,48.8,40.327,45.5,34.407,43.0,0.0,0,234,19.41
 georgia,False,488181,4.47,13.8,30.82,23.1,53.43,43.0,57.123,63.0,33.24,41.7,0.0,20,22,6.75
-hawaii,False,34742,1.629,9.6,25.17,18.5,48.1,38.4,13.203,17.2,45.803,56.3,0.0,0,15,22.47
 idaho,False,125967,7.927,18.8,23.71,17.3,47.86,38.2,52.446,58.1,38.97,48.3,0.0,10,26,1.55
 illinois,False,485394,0.735,8.3,27.58,20.5,36.39,28.1,60.255,66.3,21.97,28.5,0.0,70,195,8.73
 indiana,False,309651,1.739,9.8,25.74,19.0,41.73,32.8,61.515,67.6,20.742,27.1,0.0,4,59,6.53

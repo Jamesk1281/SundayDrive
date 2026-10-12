@@ -2,7 +2,7 @@
 
 extract.py admits a road-route relation as a byway when its network is in
 BYWAY_NETWORKS (New England's five) or it carries scenic=yes. This counts, for
-the 50 states + DC, what that rule admits and what it misses:
+the contiguous 48 states and DC, what that rule admits and what it misses:
 
   networks   relation `network=` values naming a scenic or byway system, from
              each state's taginfo (`key/values` on relations; one cached call
@@ -32,6 +32,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from scope import OUT_ABBR, OUT_FIPS  # noqa: E402
 from taginfo_proxy import BASE, cached  # noqa: E402
 
 # extract.py's BYWAY_NETWORKS, repeated so this needs no pipeline import.
@@ -48,7 +49,7 @@ def main():
     import geopandas as gpd
     import shapely
     outlines = gpd.read_file(f"zip://{states_zip}")
-    outlines = outlines[~outlines["STATEFP"].isin({"60", "66", "69", "72", "78"})]
+    outlines = outlines[~outlines["STATEFP"].isin(OUT_FIPS)]
     centers = {e["id"]: e.get("center") for e in json.load(open(centers_path))["elements"]}
 
     def state_of(c):
@@ -89,13 +90,15 @@ def main():
             net = t.get("network", "")
             if net and not net.upper().startswith("US"):
                 continue
+            if len(net.split(":")) > 1 and net.split(":")[1] in OUT_ABBR:
+                continue
             if net:
                 parts = net.split(":")
                 state = parts[1] if len(parts) > 1 and len(parts[1]) == 2 else ""
             else:
                 state = state_of(centers.get(e["id"]))
                 if not state:
-                    continue                  # outside the 50 states + DC
+                    continue                  # outside the contiguous 48 + DC
             w.writerow([e["id"], net, state, t.get("ref", ""), t.get("name", ""),
                         bool(NUMBERED.match(net))])
     print(f"{len(found)} US networks name a scenic system; scenic=yes relations written")

@@ -88,7 +88,6 @@ relation,network,state,ref,name,numbered_highway
 12796456,,ID,US 2,Panhandle Historic Rivers Passage,False
 12840863,US:WI:Rustic,WI,R117,Rustic Road 117,False
 13058969,US:AB:NSB:Connecticut River,AB,,Connecticut River Byway (NH),False
-13080150,,HI,,Hana Highway,False
 13285852,US:MN:GRT,MN,,Glacial Ridge Trail,False
 13483234,,MN,,Saint Croix Scenic Byway,False
 14179499,,NH,,Mount Washington Auto Road,False
@@ -96,7 +95,6 @@ relation,network,state,ref,name,numbered_highway
 14249251,US:AB:NSB,AB,,Volcanic Legacy Scenic Byway,False
 14428669,,AZ,FR 300,Rim Road,False
 15037415,,AL,,Talladega Scenic Drive,False
-15038030,,AK,,Haines Highway - Valley of the Eagles,False
 15080845,,OK,,Talimena Scenic Drive,False
 15081056,,CA,,Death Valley Scenic Byway,False
 15081204,,CA,,Ebbetts Pass Scenic Byway,False
@@ -160,7 +158,6 @@ relation,network,state,ref,name,numbered_highway
 15611972,,WV,,Coal Heritage Trail,False
 15612072,,WV,,Highland Scenic Highway,False
 15612180,,WY,,Flaming Gorge - Green River Basin Scenic Byway,False
-15624981,,AK,,Seward Highway,False
 15625092,,AZ,,Coronado Trail Scenic Byway,False
 15625130,,AZ,,Kaibab Plateau-North Rim Parkway,False
 15625275,,AZ,,Red Rock Scenic Byway,False

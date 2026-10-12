@@ -5,25 +5,26 @@
 This is the data half of the US question. The routing half (graph size, search, the
 serving box) is the feasibility review, `docs/usa-extension-feasibility.md`. It is cited
 here, and corrected in four places (§9). The scope is every dataset the pipeline reads
-today or would need, for the 50 states and DC: how much disk each takes to fetch, build
-and serve, and how good it is for what `pipeline/` reads from it. Gaps are ranked and
-split into routing safety and scenery.
+today or would need, for the contiguous 48 states and DC, which is what "the US" means
+here: how much disk each takes to fetch, build and serve, and how good it is for what
+`pipeline/` reads from it. Gaps are ranked and split into routing safety and scenery.
 
 ## Verdict
 
-**Space is not the obstacle. The routing-safety gaps in the data are, and nearly all
-of them close with data that is public, plus changes to code that reads OSM.**
+**Viable: nothing in the data blocks a US build. Space is not the obstacle. The
+routing-safety gaps in the data are, and nearly all of them close with data that is
+public, plus changes to code that reads OSM.**
 
 1. **A full-US build fits this Mac if it keeps compact packs rather than processed
    directories.**
    - Built one state at a time, the peak working space is about **9 GB**: the largest
      state in flight (California or Texas, 4.8 GB) plus 4.4 GB of finished packs.
-   - Keeping every processed directory and its rasters needs 46-56 GB.
+   - Keeping every processed directory and its rasters needs 40-47 GB.
    - Serving takes about 4.4 GB compact, 1.0 GB compressed. The US graph is about
-     **19.2M nodes**, not the review's 23.4M: its fit overestimated every rural state
+     **19.1M nodes**, not the review's 23.4M: its fit overestimated every rural state
      counted since, South Dakota by 178% (§2).
-   - Memory binds one stage. elevation.py's in-RAM mosaic is 13.3 GB for Texas and
-     56 GB for Alaska, so those two need a tiled elevation stage.
+   - Memory binds one stage, and every state fits it. elevation.py's in-RAM mosaic
+     peaks at 13.3 GB, for Texas, so built state by state it needs no tiled stage.
 2. **Seasonal closures are the largest safety gap, and most of it is in closures.py,
    not in OSM.**
    - Of 18 passes and park roads checked against their operators, closures.py closes 11,
@@ -46,15 +47,14 @@ of them close with data that is public, plus changes to code that reads OSM.**
      272 km in Washington.
 4. **Byways: extract.py's network allowlist admits 48 of the 310 relations filed in
    state byway networks.**
-   - `scenic=yes` admits 213 relations nationally, and 168 are missed outright: Ohio 26,
+   - `scenic=yes` admits 210 relations nationally, and 168 are missed outright: Ohio 26,
      Oregon 23, California 22, Iowa 21, Colorado and Kentucky 15 each.
    - Two whole numbered highways would become byways: US 34 (451 km) and NY 30 (485 km).
 5. **Terrarium is good enough to keep, with a patch from 3DEP.**
-   - About 0.3% of lower-48 tiles (111 ± 33) hold corrupt pixels *inside* elevation.py's
+   - About 0.3% of tiles (111 ± 33 of 35,778) hold corrupt pixels *inside* elevation.py's
      validity band that raise the relief score.
-   - Nearly all are on coasts: 12% of coastal tiles against 0.2% inland. In the
+   - Nearly all are on coasts: 9% of coastal tiles against 0.2% inland. In the
      mountains, relief is already at its cap, so most cannot raise it.
-   - Alaska's sample also turns up source seams, so Alaska needs its own pass.
    - The deployed New England raster has 31 such tiles and inflates 25.5 km of road by
      up to 1.7 points. Its maximum relief of 1,453 m is one of them, on the Maine coast,
      not the White Mountains (§9).
@@ -72,27 +72,27 @@ Every finding is ranked in §7, each with the dataset or code change that closes
 
 ## 1. The datasets
 
-"Fetch" is bytes off the wire for the 50 states and DC. "Build" is what the pipeline
+"Fetch" is bytes off the wire for the 48 states and DC. "Build" is what the pipeline
 writes from it. "Serve" is what a request needs in memory. Sizes come from HEAD
 `Content-Length`, index pages, bucket listings and ArcGIS layer JSON. The only things
 downloaded whole were the nine sampled state extracts (1,436 MB, each deleted after use;
 §3), TIGER files for six Colorado counties (6 MB), one forest's MVUM roads, the Census
-state outlines (3 MB), and 1,997 Terrarium tiles for the corruption sample (§6.1).
+state outlines (3 MB), and about 2,000 Terrarium tiles for the corruption sample (§6.1).
 
 | dataset | what the pipeline reads, or would | licence | format, access | cadence | US fetch | build | serve |
 |---|---|---|---|---|---:|---:|---:|
-| OSM extracts (Geofabrik) | everything in extract, graph, closures | ODbL 1.0 | PBF per state, HTTPS, no key; 1.1-1.7 MB/s on 2026-10-11 | daily | **12.00 GB** (51 extracts; the US file is 12.20 GB) | processed 25-26 GB | in the pack |
-| Terrarium z11 (AWS open data) | elevation.py → relief | per source, see `docs/data-sources.md` | 256 px PNG tiles on S3, no key | static: tiles last modified Nov 2017 | **6.56 ± 0.06 GB**, 58,947 tiles | rasters 16-25 GB | none (scores are baked in) |
-| ESA WorldCover v200 2021 | landcover.py tree cover | CC BY 4.0 | 3° COGs, S3 eu-central-1, range requests | static (Oct 2022) | **11.58 GB**, 205 cells, streamed rather than stored | in processed | none |
-| USFS MVUM roads | *new*: season dates, vehicle class, maintenance level on Forest Service roads | CC BY 4.0 (data.gov) | ArcGIS MapServer (150,789 features, 2,000 a page); national shapefile 236 MB, GDB 129 MB | refreshed forest by forest; GDB May 2025 | **0.13 GB** (GDB) | small | small |
-| Census TIGER/Line 2026 roads | *new*: MTFCC S1500 (4WD), S1740 (private service) | public domain | shapefile per county, www2.census.gov | annual (2026-10-06) | **3.88 GB** (3,144 county zips) | small | — |
-| NPS Public Roads | *new*: SEASONAL, SEASDESC, RDHICLEAR, RDSURFACE | not stated on the layer | ArcGIS MapServer, 31,313 features | maintained by parks | tens of MB *(not measured)* | small | small |
-| BLM GTLF public roads | *new*: route-use class (4WD), seasonal restriction | US public domain | ArcGIS MapServer, 110,437 + limited-use layer; also shapefile, GDB on data.gov | Aug 2026 | small *(not measured)* | small | — |
-| FHWA America's Byways | *new*: designated byway geometry | none stated | ArcGIS FeatureServer, 227 per-state records | layer dated 2026-08-04 | < 50 MB *(est.)* | small | — |
-| PAD-US 4.1 | *new*: protected areas, park designation | public domain | national GDB zip on ScienceBase | about yearly (4.1: 2025-03-31) | **1.52 GB** | | |
-| USGS 3DEP 1″ / 1/3″ | *alternative* elevation, or Terrarium's patch | public domain | COG per 1° cell on S3; windows read in place | rolling | 130.3 GB (3,812 cells) / 493.5 GB (1,449) if fetched whole | | |
+| OSM extracts (Geofabrik) | everything in extract, graph, closures | ODbL 1.0 | PBF per state, HTTPS, no key; 1.1-1.7 MB/s on 2026-10-11 | daily | **11.83 GB** (49 extracts: the 48 states and DC) | processed 25-26 GB | in the pack |
+| Terrarium z11 (AWS open data) | elevation.py → relief | per source, see `docs/data-sources.md` | 256 px PNG tiles on S3, no key | static: tiles last modified Nov 2017 | **4.14 ± 0.01 GB**, 35,778 tiles | rasters 11-16 GB | none (scores are baked in) |
+| ESA WorldCover v200 2021 | landcover.py tree cover | CC BY 4.0 | 3° COGs, S3 eu-central-1, range requests | static (Oct 2022) | **9.09 GB**, 131 cells, streamed rather than stored | in processed | none |
+| USFS MVUM roads | *new*: season dates, vehicle class, maintenance level on Forest Service roads | CC BY 4.0 (data.gov) | ArcGIS MapServer (150,022 features in the 48 states, 2,000 a page); national shapefile 236 MB, GDB 129 MB | refreshed forest by forest; GDB May 2025 | **0.13 GB** (GDB) | small | small |
+| Census TIGER/Line 2026 roads | *new*: MTFCC S1500 (4WD), S1740 (private service) | public domain | shapefile per county, www2.census.gov | annual (2026-10-06) | **3.86 GB** (3,109 county zips) | small | — |
+| NPS Public Roads | *new*: SEASONAL, SEASDESC, RDHICLEAR, RDSURFACE | not stated on the layer | ArcGIS MapServer, 30,374 features | maintained by parks | tens of MB *(not measured)* | small | small |
+| BLM GTLF public roads | *new*: route-use class (4WD), seasonal restriction | US public domain | ArcGIS MapServer, 110,404 + 25,622 limited-use features; also shapefile, GDB on data.gov | Aug 2026 | small *(not measured)* | small | — |
+| FHWA America's Byways | *new*: designated byway geometry | none stated | ArcGIS FeatureServer, 222 per-state records | layer dated 2026-08-04 | < 50 MB *(est.)* | small | — |
+| PAD-US 4.1 | *new*: protected areas, park designation | public domain | national GDB zip on ScienceBase; per-state zips too | about yearly (4.1: 2025-03-31) | **1.52 GB** (the national file) | | |
+| USGS 3DEP 1″ / 1/3″ | *alternative* elevation, or Terrarium's patch | public domain | COG per 1° cell on S3; windows read in place | rolling | 45.7 GB (950 cells) / 363.6 GB (949) if fetched whole | | |
 | FHWA HPMS 2024 | *new*: posted speed limit, ownership | CC0 (data.gov lists it "non-public" all the same) | per-state geodatabases via BTS | yearly (2026-04-30) | *not determined* | | |
-| NHDPlus HR | *alternative* water | public domain | national GDB | frozen (Release 1, Jul 2022) | 28.1 GB | | |
+| NHDPlus HR | *alternative* water | public domain | national GDB | frozen (Release 1, Jul 2022) | 28.1 GB (the national file) | | |
 | State DOT road layers | state_roads.py (4 states today) | 7 of 38 open, 2 restrictive (§6.8) | ArcGIS REST, one per state | varies | per state; New England's raw GeoJSON is 53-290 MB each | | |
 | Census 2020 Urban Areas | the residential-streets change in flight | public domain | TIGER UAC20 zip | decennial | **74.1 MB** national; the file in `data/raw/census` is New England only (102 areas) | | |
 
@@ -111,41 +111,37 @@ are:
 - the rasters at 184-278 KB per bounding-box tile, measured on the same two builds;
 - the compact pack at the review's 230 B per node.
 
-**The US graph is about 19.2M nodes.** The review fitted 23.4M on 8 counted states: the
+**The US graph is about 19.1M nodes.** The review fitted 23.4M on 8 counted states: the
 six New England states, Colorado and California. The 9 states counted here were all
 more rural, and its fit overestimated every one of them: South Dakota by 178%, Montana 111%, Kansas 84%,
 Wyoming 73%, Oregon 46%, Utah 37%, Mississippi 27% and Tennessee 17%. Washington came
 within 1%. The same model refitted on all 17 gives 7.03 nodes per urban km and 0.98 per
-rural km of FHWA public road. That is 19.2M nodes and 24.5M edges, 5.1M of the nodes
-counted. Leave-one-out error is 19% mean and 53% worst (South Dakota), so the range is
+rural km of FHWA public road. That is about 19.1M nodes and 24.4M edges for the 48
+states and DC, 5.1M of the nodes counted. Leave-one-out error is 19% mean and 53% worst (South Dakota), so the range is
 roughly ±20%. The rural coefficient fell from 2.46 to 0.98: rural states have fewer
 graph nodes per km of public road than New England, most likely because long unbroken
 ways need few of them.
 
 | | total | largest single state |
 |---|---:|---|
-| fetch: OSM extracts | 12.0 GB | California 1.33 GB |
-| fetch: Terrarium tiles | 6.6 GB | Alaska 2.4 GB; lower 48 4.5 GB in all |
-| fetch: WorldCover, streamed | 11.6 GB | lower 48 9.09 GB, Alaska 2.46 GB |
+| fetch: OSM extracts | 11.8 GB | California 1.33 GB |
+| fetch: Terrarium tiles | 4.1 GB | Texas 0.29 GB |
+| fetch: WorldCover, streamed | 9.1 GB | — |
 | build: processed directories | 25-26 GB | Texas 2.2 GB *(fit)*, California 2.1 GB |
-| build: relief and elevation rasters | 16-25 GB | Texas 1.5 GB |
+| build: relief and elevation rasters | 11-16 GB | Texas 1.5 GB |
 | serve: compact pack | **4.4 GB** | Texas 374 MB, California 351 MB |
 | serve: xz download | **≤ 1.0 GB** | |
-| RAM: elevation.py mosaic, 37 B per pixel over the box | — | Texas 13.3 GB, California 9.9 GB, Alaska 56 GB |
+| RAM: elevation.py mosaic, 37 B per pixel over the box | — | Texas 13.3 GB, California 9.9 GB |
 
 **Peak working space, one state at a time:**
 - **9.2 GB** keeping only compact packs. The largest transient is California or Texas
   at 4.8 GB (extract, tile cache, rasters, processed directory), plus 4.4 GB of packs.
-- **46-56 GB** keeping every processed directory and its rasters.
+- **40-47 GB** keeping every processed directory and its rasters.
 - The Mac's 20 GB free is enough for the first and not the second.
 
-Two states need work before they can be built at all:
-- **Alaska:** its outline crosses the antimeridian, so elevation.py's single box would
-  span the globe. Even its 23,056 outline tiles would be a 56 GB mosaic.
-- **Hawaii:** its box stretches to Kure Atoll and holds 8,100 tiles, against 113 for the
-  islands themselves.
-- Both need per-island or tiled elevation. That is the stage the review already
-  flagged, at 146 GB for the contiguous US in one mosaic.
+Every state fits elevation.py's single in-RAM box as it stands. The largest is Texas at
+13.3 GB, then California at 9.9 GB. Only a whole-country mosaic would need the tiled
+stage the review priced at 146 GB, and a state-by-state build never makes one.
 
 | state | extract (GB) | graph nodes (M) | Terrarium (GB) | box mosaic RAM (GB) | processed + rasters (GB) | compact pack (MB) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -163,7 +159,8 @@ Two states need work before they can be built at all:
 Two tiers, as the brief set them:
 - **Tier 2, measured:** length-weighted over the graph graph.py would build, in 16
   states.
-- **Tier 1, the proxy:** object counts from Geofabrik's per-state taginfo, for all 51.
+- **Tier 1, the proxy:** object counts from Geofabrik's per-state taginfo, for all 49
+  (the 48 states and DC).
 
 The sample is:
 - the six New England extracts in `data/raw/` (2026-08-25);
@@ -282,7 +279,7 @@ What the tables say:
   import, not TIGER) and 76% of Mississippi's. It measures how much of the TIGER 2005
   geometry nobody has touched, which is where the A5x tracks sit.
 
-### 3.2 The proxy, for all 51
+### 3.2 The proxy, for all 49
 
 `taginfo_proxy.py` reads each state's taginfo at about 27 calls a state, all cached.
 Two proxies:
@@ -308,7 +305,6 @@ states, which are starred (§3.3; `osm_quality_all_states.csv`).
 | state | drivable ways | unpaved %: proxy → km est. | tertiary maxspeed %: proxy → km est. | `tiger:reviewed=no` % (km est.) | `4wd_only` % of ways | signals per 100 km (proxy) | ways with `seasonal` / car `*:conditional` |
 |---|---:|---|---|---:|---:|---:|---|
 | AL | 302,229 | 1.9 → 10 | 19 → 13 | 82 | 0.00 | 4.5 | 0 / 4 |
-| AK | 41,621 | 15.5 → 30 | 32 → 24 | 54 | 0.00 | 3.5 | 93 / 2 |
 | AZ | 375,804 | 6.1 → 16 | 31 → 24 | 27 | 0.00 | 9.5 | 4 / 124 |
 | AR | 207,025 | 5.5 → 15 | 14 → 10 | 57 | 0.00 | 1.9 | 2 / 14 |
 | CA | 1,243,279 | 1.6 → 10 | 34 → 25 | 43 | 0.00 | 31.2 | 413 / 798 |
@@ -318,7 +314,6 @@ states, which are starred (§3.3; `osm_quality_all_states.csv`).
 | DC | 15,553 | 0.0 → 7 | 41 → 31 | 14 | 0.00 | 113.9 | 0 / 70 |
 | FL | 884,731 | 1.1 → 9 | 34 → 26 | 46 | 0.00 | 19.4 | 0 / 234 |
 | GA | 488,181 | 4.5 → 14 | 31 → 23 | 63 | 0.00 | 6.8 | 20 / 22 |
-| HI | 34,742 | 1.6 → 10 | 25 → 18 | 17 | 0.00 | 22.5 | 0 / 15 |
 | ID | 125,967 | 7.9 → 19 | 24 → 17 | 58 | 0.00 | 1.6 | 10 / 26 |
 | IL | 485,394 | 0.7 → 8 | 28 → 20 | 66 | 0.00 | 8.7 | 70 / 195 |
 | IN | 309,651 | 1.7 → 10 | 26 → 19 | 68 | 0.00 | 6.5 | 4 / 59 |
@@ -483,8 +478,8 @@ Two more things the table shows:
 ## 5. Byways: the census
 
 `byway_census.py` combines two sources. Per-state taginfo gives every relation `network`
-naming a scenic system (51 calls). One Overpass query gives every road route tagged
-`scenic=yes`. The 86 of those with no network were placed by their member geometry's
+naming a scenic system (49 calls). One Overpass query gives every road route tagged
+`scenic=yes`. The 83 of those with no network were placed by their member geometry's
 centre, inside the Census outlines. The network-regex query was tried twice and timed
 out both times (504), so taginfo stands in for it. extract.py admits a relation when its
 network is in `BYWAY_NETWORKS` or it carries `scenic=yes`.
@@ -492,14 +487,12 @@ network is in `BYWAY_NETWORKS` or it carries `scenic=yes`.
 | state | scenic-system networks (relations) | admitted by network | `scenic=yes` relations | missed | numbered highways carrying `scenic=yes` |
 |---|---|---:|---:|---:|---|
 | AL | — | 0 | 2 | 0 | US:AL 281 |
-| AK | — | 0 | 2 | 0 |  |
 | AZ | US:AZ:Scenic (24) | 0 | 27 | 2 |  |
 | CA | US:CA:CR:Scenic (2); US:CA:San_Francisco:49_Mile_Scenic_Drive (1); US:CA:Scenic (21) | 0 | 10 | 22 | US:CA 160 |
 | CO | US:CO:Scenic (26) | 0 | 11 | 15 |  |
 | CT | — | 0 | 1 | 0 |  |
 | FL | US:FL:Scenic (27) | 0 | 28 | 0 |  |
 | GA | US:GA:Scenic (2) | 0 | 2 | 1 |  |
-| HI | — | 0 | 1 | 0 |  |
 | ID | — | 0 | 6 | 0 |  |
 | IL | — | 0 | 1 | 0 |  |
 | IA | US:IA:Scenic (21) | 0 | 0 | 21 |  |
@@ -546,7 +539,7 @@ heritage routes. They are left out of "missed".
 **Totals:**
 - 310 relations in 25 states' byway networks. The allowlist admits 48 (Massachusetts 14,
   Vermont 9, New York 25).
-- 213 relations nationally carry `scenic=yes`.
+- 210 relations nationally carry `scenic=yes`.
 - **168 are missed.** Ohio's 26, Oregon's 23, California's 22, Iowa's 21, Colorado's and
   Kentucky's 15 each, Nebraska's 9, Nevada's 8 and New Jersey's 7 carry the byway
   network and no `scenic=yes`.
@@ -585,21 +578,17 @@ In the sampled states, by drivable km in relations named or tagged scenic:
 | WY | 5 | 224 | 213 | 95% |
 
 The FHWA's national layer (§6.6) is an independent check, but a partial one. It holds
-the 184 National Scenic Byways and All-American Roads as 227 per-state records:
-Colorado has 13 of its 26 state byways in it.
+the National Scenic Byways and All-American Roads as 222 per-state records: Colorado
+has 13 of its 26 state byways in it.
 
 ## 6. The other layers
 
 ### 6.1 Terrarium
 
-**Size.** The outlines of the 50 states and DC touch **58,947 z11 tiles**:
-- 35,778 in the lower 48 and DC;
-- 23,056 in Alaska;
-- 113 in Hawaii.
-
-The review's "about 60,400" for the contiguous US was its bounding box, which holds
-60,060 by this count. A stratified HEAD sample of 4,839 tiles, up to 100 per state, puts
-the total at **6.56 ± 0.06 GB** (one standard error). The mean per tile runs from 75 KB
+**Size.** The outlines of the 48 states and DC touch **35,778 z11 tiles**. The review's
+"about 60,400" was their bounding box, which holds 60,060 by this count. A stratified
+HEAD sample of 4,639 tiles, up to 100 per state, puts the total at **4.14 ± 0.01 GB**
+(one standard error). The mean per tile runs from 75 KB
 (Rhode Island, Florida) to 143 KB (West Virginia), median 115 KB. Bytes follow terrain,
 as the brief warned. Every sampled HEAD returned 200. The tiles were last modified in
 November 2017, so corruption in them is permanent.
@@ -612,17 +601,17 @@ November 2017, so corruption in them is permanent.
   robust spread.
 - Both tests run on the ocean-clamped elevation, which is what elevation.py's relief
   filter reads. So garbage bathymetry the clamp makes harmless does not count, and
-  neither does a 30 m sea stack beside deep water. An unclamped first version flagged one
-  on Maui.
+  neither does a 30 m sea stack beside deep water, which an unclamped first version
+  flagged.
 
 The first test finds Colorado's fringe pixels: −639 m and exact-0 m pixels in 2,500 m
 terrain, around blocks the band already masks. The second finds New England's coastal
-spikes, 150-1,453 m beside 0 m. It raises **nothing on 21 control tiles**: Yosemite
-Valley, Half Dome, El Capitan, the Grand Canyon twice, Zion, Hells Canyon, the Whitney
-escarpment, Rainier, Denali, Kings Canyon, Logan Pass, Waimea Canyon, Na Pali, the
-Columbia Gorge, the Tetons, Crater Lake, Lake Tahoe, Lake Chelan, Death Valley and New
-Orleans. The one control it flags is the Salton Sea, where a 2×2 block of 304-479 m
-sits in the middle of the water. That was checked pixel by pixel. Every residue is
+spikes, 150-1,453 m beside 0 m. It raises **nothing on 18 of 19 control tiles**:
+Yosemite Valley (with Half Dome and El Capitan on the same tile), the Grand Canyon
+twice, Zion, Hells Canyon, the Whitney escarpment, Rainier, Kings Canyon, Logan Pass,
+the Columbia Gorge, the Tetons, Crater Lake, Lake Tahoe, Lake Chelan, Death Valley, New
+Orleans, Big Sur and the Outer Banks. The one control it flags is the Salton Sea, where
+a 2×2 block of 304-479 m sits in the middle of the water. That was checked pixel by pixel. Every residue is
 priced two ways:
 - the relief it adds;
 - the pixels where it raises the relief *component* (relief / `RELIEF_FULL`, clipped)
@@ -633,25 +622,21 @@ priced two ways:
 |---|---:|---:|---:|---:|---:|
 | the review's Colorado cache (every tile in the state's box) | 1,656 | 2 | 3 | 1 | 3,941 m |
 | `data/raw/terrain`, New England (every tile in the deployed box) | 2,120 | 9 | 31 | 31 | 1,453 m |
-| national sample: 40 random tiles per state | 1,975 | 2 | 26 | 24 | 1,158 m |
-| control tiles (steep, deep lakes, below sea level, coasts) | 22 | 0 | 1 | 1 | 479 m |
+| national sample: 40 random tiles per state | 1,895 | 2 | 16 | 16 | 599 m |
+| control tiles (steep, deep lakes, below sea level, coasts) | 19 | 0 | 1 | 1 | 479 m |
 
 What the national sample says (`terrarium_corruption_rates.csv`). Each state is weighted
 by its share of the outline tiles, with stratified binomial standard errors.
-- **Lower 48 and DC:** 16 of 1,895 sampled tiles have residue that raises the relief
+- **Nationally:** 16 of 1,895 sampled tiles have residue that raises the relief
   component, about **111 ± 33 tiles of 35,778 (0.3%)**.
-- **It is a coastal defect.** 19 of the 158 sampled coastal tiles (12%) carry it, against
-  4 of 1,805 inland (0.2%). The 160 desert-state tiles (Arizona, Nevada, Utah, New
-  Mexico) had none, and 1 of the 80 mountain tiles did. The hits sit on the Potomac,
+- **It is a coastal defect.** 12 of the 127 sampled coastal tiles (9%) carry it, against
+  3 of 1,762 inland (0.2%). None of the 160 desert-state tiles (Arizona, Nevada, Utah,
+  New Mexico) or the 68 mountain tiles did. The hits sit on the Potomac,
   Patuxent and Chesapeake tidewater, the Delaware shore, Florida's Atlantic coast from
   Miami Beach to near Jacksonville, Cape Romain in South Carolina, Long Island Sound,
-  Nantucket and the Maine coast.
-- **Hawaii:** 5 of its 40, about 14 of 113 tiles. These are isolated 166-504 m pixels
-  beside sea-level ground.
-- **Alaska:** 3 of its 40, which weights to about 1,700 ± 1,000 tiles. That is too few
-  hits to pin down. Two of them are not spikes but source seams: a straight 340 m step
-  across many columns, and a two-column strip at a tile edge. Alaska needs its own pass
-  before it is built.
+  Nantucket and the Maine coast. The three inland ones are the same kind of blob: a
+  one-pixel trench in New Hampshire, a tidal-river pixel in Maryland and one on
+  Florida's coastal plain.
 
 In the mountains the harm is smaller than the metres suggest. Two of Colorado's three
 bad tiles add 2,800-3,900 m of relief and change `c_relief` nowhere, because the
@@ -685,18 +670,13 @@ Colorado tiles in 3DEP's 1 arc-second DEM, read as windows of the COGs over HTTP
 
 Terrarium's US source is 3DEP, and it shows: resampled 3DEP with a few hundred broken
 pixels. Patching it from 3DEP needs only the flagged pixels' windows, a few MB, not
-3DEP's 130 GB.
+3DEP's 45.7 GB.
 
 ### 6.2 WorldCover
 
-The outlines touch 211 3° cells, and 205 exist (`worldcover_cells.csv`):
-- 131 cover the lower 48 and DC, 9.09 GB;
-- 70 cover Alaska, 2.46 GB;
-- 4 cover Hawaii, 0.02 GB.
-
-The six absent cells are all Northwestern Hawaiian Islands water, with at most
-0.0005 square degrees of outline land among them and no roads. The bucket passes the
-control: a bogus tile name returns 404.
+The outlines touch 131 3° cells, **every one of which exists**, 9.09 GB in all
+(`worldcover_cells.csv`). None is absent. The bucket passes the control: a bogus tile
+name returns 404.
 
 Quality for what landcover.py reads is the review's: median Colorado tree fraction 0.00,
 57.8% of km at 0. That is a scenery problem, not a data defect. WorldCover's other
@@ -705,10 +685,10 @@ tiles carry them.
 
 ### 6.3 3DEP
 
-The bucket listing (`dem3dep_sizes.json`, S3 ListObjects) gives exact current sizes:
-- 1″: 3,812 cells, **130.3 GB**, including Alaska and the border cells;
-- 1/3″: 1,449 cells, **493.5 GB**;
-- Alaska's 2″: 521 cells, 5.3 GB.
+The bucket listing (`dem3dep_sizes.json`, S3 ListObjects) gives exact current sizes, for
+the cells that touch the 48 states and DC:
+- 1″: 950 cells, **45.7 GB**;
+- 1/3″: 949 cells, **363.6 GB**.
 
 The National Map's product API disagrees with its own bucket. It lists superseded
 versions beside current ones and its paging repeats items, so its `sizeInBytes` sums
@@ -716,28 +696,28 @@ are not usable. Quality against Terrarium is in §6.1.
 
 ### 6.4 USFS Motor Vehicle Use Map
 
-**The national schema** (`mvum_survey.py`; `mvum_national.json`) is one layer of 150,789
-segments and 197,625 miles. Fields:
+**The national schema** (`mvum_survey.py`; `mvum_national.json`) is one layer: 150,022
+segments and 195,963 miles in the 48 states. Fields:
 - `seasonal` (yearlong/seasonal);
 - open or closed and **dates open per vehicle class**: `passengervehicle_datesopen`,
-  `highclearancevehicle_datesopen` and twelve more, written `04/01-11/30`, 728 distinct
+  `highclearancevehicle_datesopen` and twelve more, written `04/01-11/30`, 727 distinct
   strings;
 - `operationalmaintlevel`, `surfacetype`, `symbol`.
 
 Nationally:
 - **73% of MVUM road miles are maintenance level 2, "high clearance vehicles"**
-  (144,084 mi).
-- Level 3 and up, suitable for passenger cars, is 52,596 mi.
-- 47,105 mi are seasonal (symbols 2, 4 and 12).
-- `passengervehicle=open` covers 191,555 mi. That is *legal*, not *suitable*: the
+  (143,028 mi).
+- Level 3 and up, suitable for passenger cars, is 52,012 mi.
+- 47,035 mi are seasonal (symbols 2, 4 and 12).
+- `passengervehicle=open` covers 189,916 mi. That is *legal*, not *suitable*: the
   maintenance level is the physical signal.
 
 **Published forest by forest, as Trap 7 warned:**
-- 450 of 503 ranger districts are marked as having MVUM data.
-- Ten forests have none, or a handful of stray segments: Okanogan-Wenatchee (6.9 mi:
+- 438 of 489 ranger districts are marked as having MVUM data.
+- Nine forests have none, or a handful of stray segments: Okanogan-Wenatchee (6.9 mi:
   the forest east of the North Cascades Highway and Chinook Pass), Modoc, Tonto,
-  Apache-Sitgreaves, Malheur, Wallowa-Whitman, Angeles, Six Rivers, the National
-  Forests in Alabama, and El Yunque (Puerto Rico).
+  Apache-Sitgreaves, Malheur, Wallowa-Whitman, Angeles, Six Rivers and the National
+  Forests in Alabama.
 - The Gallatin half of Custer Gallatin, around Bozeman and West Yellowstone, has 6 mi.
 
 **Against OSM in one forest:** Grand Mesa, Uncompahgre and Gunnison NFs (Colorado), the
@@ -762,14 +742,14 @@ The other 819 km carry no seasonal tag in OSM at all.
 
 ### 6.5 TIGER/Line
 
-**Size:** 3,144 county road files for the 50 states and DC, **3.88 GB** zipped (2026
+**Size:** 3,109 county road files for the 48 states and DC, **3.86 GB** zipped (2026
 vintage, released 2026-10-06; `tiger_2026_sizes.csv`, from the directory listing's
 rounded sizes). The primary-and-secondary files are 0.28 GB.
 
-TIGERweb counts segments nationally by MTFCC:
-- S1400 local roads 13,903,067;
-- **S1740 private service roads 1,221,450**;
-- **S1500 4WD trails 302,858**.
+TIGERweb counts segments by MTFCC (`federal_layers.py`, inside the 48 states' envelope):
+- S1400 local roads 13,668,504;
+- **S1740 private service roads 1,214,223**;
+- **S1500 4WD trails 288,400**.
 
 **Against OSM in six counties of one sample state, Colorado** (Ouray, San Juan, Hinsdale,
 San Miguel, Weld, Moffat: the San Juan 4WD country, an oil-and-ranch plains county and a
@@ -786,9 +766,10 @@ that OSM leaves unflagged, and a private flag to 69 km. The Plains states' A5x f
 
 ### 6.6 NPS roads and closures; FHWA byways
 
-**NPS Public Roads** (`mapservices.nps.gov`, 31,313 segments):
-- Fields: `SEASONAL` (Yes 2,313 / No 17,077 / **Unknown 11,912, 38%**), free-text
-  `SEASDESC`, `RDHICLEAR` (275 Yes), `RDSURFACE`, `OPENTOPUBLIC`.
+**NPS Public Roads** (`mapservices.nps.gov`, 30,374 segments in the 48 states;
+`federal_layers.py`):
+- Fields: `SEASONAL` (Yes 2,212 / No 16,397 / **Unknown 11,754, 39%**), free-text
+  `SEASDESC`, `RDHICLEAR` (274 Yes), `RDSURFACE`, `OPENTOPUBLIC`.
 - It flags four of §4's untagged or free-text roads as seasonal (Glacier Point, Teton
   Park Road, Crater Lake, Old Fall River), and Kuwohi Road and Lassen too. Only Teton
   Park Road's flag comes with dates ("Seasonal Closure Nov1 to May1"); the rest say
@@ -799,7 +780,7 @@ that OSM leaves unflagged, and a private flag to 69 km. The Plains states' A5x f
 
 **FHWA America's Byways** (an ArcGIS layer published by a USDOT account,
 `FHWA_ScenicByways_08042026`):
-- 227 per-state polyline records, 57 All-American Roads and 170 National Scenic Byways.
+- 222 per-state polyline records, 55 All-American Roads and 167 National Scenic Byways.
 - Fields: name, state, designation, intrinsic qualities.
 - No licence is stated.
 - An older copy on ArcGIS Online (`NTIR_TRANS_NationalScenicByways_NSBP_ln`, owned by
@@ -812,11 +793,12 @@ that OSM leaves unflagged, and a private flag to 69 km. The Plains states' A5x f
   2025-03-31 (ScienceBase item JSON). It was not compared against OSM's protected areas
   here (§8).
 - **BLM GTLF:**
-  - "Roads managed for public motorized use", 110,437 segments, about 47,000 mi. Its
-    route-use class is Unknown or blank on 53%; "4WD high clearance / specialized" is
-    about 9,000 mi, "4WD low" 8,900 and "2WD low" 4,100. A seasonal restriction is
-    marked on 970 mi.
-  - The "limited public motorized use" layer, about 36,000 mi, is 77% high-clearance.
+  - "Roads managed for public motorized use", 110,404 segments, about 47,300 mi
+    (`federal_layers.py`). Its route-use class is Unknown or blank on 52%; "4WD high
+    clearance / specialized" is about 9,200 mi, "4WD low" 8,800 and "2WD low" 4,100. A
+    seasonal restriction is marked on 970 mi.
+  - The "limited public motorized use" layer, 25,622 segments and about 35,800 mi, is
+    77% high-clearance, with a seasonal restriction on 1,170 mi.
   - Class values come in three spellings each ("4WD Low", "4wd Low", "4WD LOW").
   - US public domain; updated 2026-08-14.
 - **HPMS 2024:**
@@ -851,7 +833,6 @@ registers it would be missed, so a miss is not evidence the layer is private.
 | state | layer (features) | scope | fields for class / maintenance / surface / ownership / season |
 |---|---|---|---|
 | AL | 2016 Highway Functional Classification (150,799) | functional class only, 2016 | class `Functional` |
-| AK | — | not found by catalogue search (a borough's layer, and the continental NTAD North American Roads) | — |
 | AZ | ADOT HPMS PavementCondition2022 (143,793) | HPMS pavement layer, statewide | surface `TravelSurfaceType_REF`; ownership `Owner_REF` |
 | AR | ROADS_ACF (458,050) | statewide all roads (state GIS office) | class `rd_class`; surface `rd_surftyp` |
 | CA | CRS Functional Classification (779,834) | statewide public roads, class only | class `F_System` |
@@ -861,7 +842,6 @@ registers it would be missed, so a miss is not evidence the layer is private.
 | DC | Roadway Functional Classification (13,833) | district-wide | class `FHWAFUNCTIONALCLASS`; surface `SURFACE_TYPE`; ownership `OWNERSHIP` |
 | FL | — | not found by catalogue search | — |
 | GA | — | not found by catalogue search (city layers only) | — |
-| HI | — | not found by catalogue search | — |
 | ID | Local Road Inventory (22,358) | local roads | status `RoadStatus`; surface `SurfaceType`; jurisdiction `LRI_Jurisdiction_Primary` |
 | IL | ROADS2017 (563,163) | statewide, 2017 | maintenance `MAINT_TYPE`; surface `SURF_TYP` |
 | IN | Road Centerlines of Indiana Current (569,734) | statewide | class `roadclass` |
@@ -902,8 +882,8 @@ registers it would be missed, so a miss is not evidence the layer is private.
 | WI | Local Road Network snapshot (1,011,803) | local roads | surface `SURF_TYCD` |
 | WY | — | not found by catalogue search (a TIGER copy only) | — |
 
-**37 states and DC have a public layer; 13 were not found**: AK, FL, GA, HI, MS, MO,
-MT (server 503), NM, ND, OH, PA, SC, WY.
+**37 states and DC have a public layer; 11 were not found**: FL, GA, MS, MO, MT (server
+503), NM, ND, OH, PA, SC, WY.
 
 Of the 38 layers:
 - **26 cover the public road network statewide**, some only its local roads and some
@@ -950,14 +930,14 @@ anything over a dull one.
 | Sc1 | **Byways missed, and two highways wrongly made byways** | 168 of 310 network relations missed; US 34 and NY 30 | admit state byway networks by pattern; refuse numbered-highway networks unless the relation is short or names a byway; **FHWA byways** as a check | days |
 | Sc2 | **Western scenery invisible** | review §6: tree cover 0 on most Western km, relief capped | **WorldCover** shrub, bare and snow classes, already fetched; **PAD-US** designation; relief derivatives | the scenery track: months of drives, not data |
 | Sc3 | **Overstated rural minutes overprice scenic detours** | the slider trades minutes for scenery, and rural untagged minutes run long by the S4 margin | the S4 refit | with S4 |
-| Sc4 | **Terrarium spikes inflate relief on flat coasts** | §6.1: 12% of coastal tiles; 25.5 km of deployed New England road | mask the residue with this detector before elevation.py's filters, and patch it from **3DEP** windows | a day |
+| Sc4 | **Terrarium spikes inflate relief on flat coasts** | §6.1: 9% of coastal tiles; 25.5 km of deployed New England road | mask the residue with this detector before elevation.py's filters, and patch it from **3DEP** windows | a day |
 
 ## 8. What cannot be determined from the data available
 
 - **Untagged speeds.** Whether untagged rural roads are driven like tagged ones. The
   harmonic means are of *posted* limits on the roads that carry a tag. Only drives
   measure the rest; `SPEED_FACTOR` is the existing instrument.
-- **Bulk-only metrics.** OSM quality in the 35 unsampled states by km. Taginfo's proxy
+- **Bulk-only metrics.** OSM quality by km in the 32 unsampled states and DC. Taginfo's proxy
   is the best available, and §3.3 says how far to trust each column. A km figure for
   any of them needs its extract (Texas 0.72 GB, California 1.33 GB).
 - **Texas by proxy.** Geofabrik's Texas taginfo has no combination statistics.
@@ -972,13 +952,13 @@ anything over a dull one.
   nationally by segment (1.22M), not by km against OSM.
 - **PAD-US against OSM's protected areas,** and how much it would add to `c_forest` or a
   designation component. Not measured.
-- **State DOT layers missed by catalogue search.** The 13 states without one may still
+- **State DOT layers missed by catalogue search.** The 11 states without one may still
   publish one on their own servers. Licences on the 38 found are what their item pages
   say, not legal readings.
-- **Terrarium nationally beyond the sample.** The rates come from 1,975 random tiles,
-  plus the Colorado and New England censuses (3,776 tiles). Alaska's estimate rests on 3
-  hits. Finding every corrupt tile means decoding all 58,947, a 6.6 GB fetch. It is
-  cheap, but it is the bulk download the brief excluded.
+- **Terrarium nationally beyond the sample.** The rate comes from 1,895 random tiles and
+  16 hits, plus the Colorado and New England censuses (3,776 tiles). Finding every
+  corrupt tile means decoding all 35,778, a 4.1 GB fetch. It is cheap, but it is the
+  bulk download the brief excluded.
 
 ## 9. Corrections to earlier documents
 
@@ -988,12 +968,12 @@ anything over a dull one.
   not open in January. closures.py's all-year rule closed it every day of the year,
   for `vehicle=permit`. Its "a January plan would cross the Continental Divide" does not
   hold for its own build; a July plan could not cross it either.
-- **The review, §1, "~23.4M nodes (19-28M)":** about 19.2M (±20%) on 17 counted states.
+- **The review, §1, "~23.4M nodes (19-28M)":** about 19.1M for the 48 states and DC
+  (±20%) on 17 counted states.
   Its fit overestimated every rural state counted since, South Dakota by 178%. Its
   compact US pack is therefore about 4.4 GB, not 5.5.
 - **The review, §5, "the contiguous US at zoom 11 is about 60,400 tiles":** that is the
-  bounding box (60,060 by this count). The outlines need 35,778, or 58,947 with Alaska
-  and Hawaii.
+  bounding box (60,060 by this count). The outlines need 35,778.
 - **The review, §5 defect 5, Colorado's 2,300-4,536 m of fake relief:** true in metres,
   but the relief score is capped at `RELIEF_FULL` = 100 m. Only one of the three tiles
   changes `c_relief` at all, because the surrounding mountains are already at the cap.
@@ -1018,17 +998,19 @@ own directory.
 | `geofabrik_sizes.py` | HEAD of every state extract; US file history | `osm_extract_sizes.csv`, `osm_us_history.csv` |
 | `sample_states.sh` | download, measure, delete, one state at a time | — |
 | `osm_metrics.py` | tier 2: km-weighted tag quality over graph.py's graph | `metrics/<state>.json`, summarised in `osm_quality_measured.csv` |
-| `taginfo_proxy.py` | tier 1: taginfo proxies for 51 states, cached | `taginfo_proxy.csv` |
+| `scope.py` | what "the US" means here: the 48 states and DC | — |
+| `taginfo_proxy.py` | tier 1: taginfo proxies for 49 regions, cached | `taginfo_proxy.csv` |
 | `summarize.py` | measured, proxy and calibrated tables | `osm_quality_measured.csv`, `proxy_vs_measured.csv`, `proxy_accuracy.csv`, `osm_quality_all_states.csv` |
 | `seasonal_roads.json`, `seasonal_check.py`, `seasonal_truth.json`, `seasonal_table.py` | the 23-road ground truth | `seasonal/<state>.json` (every matched way and gate, with its tags), `seasonal_ground_truth.csv` |
 | `overpass_queries.py` | the small Overpass queries: five answered, and the network regex timed out twice | — |
 | `byway_census.py`, `byway_state_table.py` | byway networks and `scenic=yes` relations | `byway_networks.csv`, `byway_scenic_yes.csv`, `byway_census_by_state.csv`, `byway_sampled_states.csv` |
-| `terrarium_survey.py` | tile counts, HEAD sample, decode and detector | `terrarium_tiles_by_state.csv`, `terrarium_head_sample.csv`, `terrarium_decode_*.csv` |
+| `terrarium_survey.py` | tile counts, HEAD sample, decode, detector and rates | `terrarium_tiles_by_state.csv`, `terrarium_head_sample.csv`, `terrarium_decode_*.csv`, `terrarium_corruption_rates.csv` |
 | `ne_relief_spikes.py` | the deployed New England raster's residue, priced in chunks | `ne_relief_spikes.json` |
 | `worldcover_cells.py` | WorldCover cells by HEAD | `worldcover_cells.csv` |
 | `dem3dep_survey.py`, `dem3dep_vs_terrarium.py` | 3DEP sizes; Terrarium against 3DEP 1″ | `dem3dep_sizes.json`, `dem3dep_vs_terrarium_colorado.csv` |
 | `mvum_survey.py`, `mvum_osm_match.py`, `osm_match.py` | MVUM nationally; one forest against OSM | `mvum_national.json`, `mvum_osm_gmug.json` |
 | `tiger_sizes.py`, `tiger_osm_match.py` | TIGER sizes; six counties against OSM | `tiger_2026_sizes.csv`, `tiger_osm_colorado.json` |
+| `federal_layers.py` | TIGERweb, NPS, BLM and FHWA byway counts for the 48 states | `federal_layers.json` |
 | `state_dot_survey.py`, `state_dot_table.py` | the 50-state DOT survey | `state_dot_layers.csv` |
 | `budget.py` | the per-state disk and memory budget | `budget_by_state.csv` |
 

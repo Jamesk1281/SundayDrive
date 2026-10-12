@@ -103,12 +103,8 @@ def main():
         for r in rows:
             w.writerow({k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items()})
     tot = lambda k: sum(r[k] for r in rows)
-    # Alaska's outline crosses the antimeridian and Hawaii's box spans the
-    # whole island chain to Kure Atoll, so neither has a meaningful single box:
-    # both need per-island or tiled elevation. The peaks are the lower 48's.
-    lower = [r for r in rows if r["state"] not in ("AK", "HI")]
-    big = max(lower, key=lambda r: r["transient_gb_hi"])
-    ram = max(lower, key=lambda r: r["mosaic_ram_gb"])
+    big = max(rows, key=lambda r: r["transient_gb_hi"])
+    ram = max(rows, key=lambda r: r["mosaic_ram_gb"])
     print(f"fit: {coef[0]:.2f} nodes per urban km, {coef[1]:.2f} per rural km, "
           f"{len(names)} states measured")
     print(f"US nodes {tot('nodes') / 1e6:.1f} M ({sum(r['nodes'] for r in rows if r['nodes_measured']) / 1e6:.1f} M measured)")
@@ -117,10 +113,10 @@ def main():
     print(f"build: processed {tot('processed_gb_lo'):.0f}-{tot('processed_gb_hi'):.0f} GB, rasters "
           f"{tot('rasters_gb_lo'):.0f}-{tot('rasters_gb_hi'):.0f} GB")
     print(f"serve: compact {tot('pack_gb'):.2f} GB, xz {tot('pack_xz_gb_hi'):.2f} GB at most")
-    print(f"largest lower-48 transient: {big['state']} {big['transient_gb_hi']:.1f} GB "
+    print(f"largest single-state transient: {big['state']} {big['transient_gb_hi']:.1f} GB "
           f"(pbf {big['pbf_gb']:.2f}, tiles {big['terrarium_gb']:.2f}, rasters "
           f"{big['rasters_gb_hi']:.2f}, processed {big['processed_gb_hi']:.2f})")
-    print(f"largest lower-48 mosaic: {ram['state']} {ram['mosaic_ram_gb']:.1f} GB at "
+    print(f"largest mosaic: {ram['state']} {ram['mosaic_ram_gb']:.1f} GB at "
           f"{ram['bbox_tiles']} box tiles")
     keep_all = tot("processed_gb_hi") + tot("rasters_gb_hi") + big["transient_gb_hi"]
     keep_lo = tot("processed_gb_lo") + tot("rasters_gb_lo") + big["transient_gb_hi"]

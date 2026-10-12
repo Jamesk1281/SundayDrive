@@ -1,6 +1,5 @@
 state,name,outline_tiles,bbox_tiles,bbox_mosaic_gb
 AL,Alabama,557,726,1.8
-AK,Alaska,23056,,
 AZ,Arizona,1200,1360,3.3
 AR,Arkansas,600,750,1.8
 CA,California,1862,4071,9.9
@@ -10,7 +9,6 @@ DE,Delaware,39,66,0.2
 DC,District of Columbia,4,6,0.0
 FL,Florida,626,1892,4.6
 GA,Georgia,629,896,2.2
-HI,Hawaii,113,8100,19.6
 ID,Idaho,1210,2088,5.1
 IL,Illinois,738,1008,2.4
 IN,Indiana,459,600,1.5
