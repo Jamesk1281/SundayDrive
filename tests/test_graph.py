@@ -237,8 +237,15 @@ class TestControlCounting:
 class TestOnRealData:
     def test_the_blend_covers_every_component_the_graph_carries(self, edges):
         """A c_ column with no WEIGHTS entry would be silently unweighted in
-        score.py and a KeyError in graph.py — catch the mismatch here instead."""
-        assert set(components(edges)) == set(ALL_COMPONENTS)
+        score.py and a KeyError in graph.py — catch the mismatch here instead.
+
+        A graph built before the national components lacks exactly those two,
+        which the Router reads as zero (router.OPTIONAL_BASELINE); any other gap
+        is a real mismatch."""
+        from router import OPTIONAL_BASELINE
+        have = set(components(edges))
+        assert have <= set(ALL_COMPONENTS), have - set(ALL_COMPONENTS)
+        assert set(ALL_COMPONENTS) - have <= OPTIONAL_BASELINE
 
     def test_long_edges_no_longer_read_a_single_point(self, edges):
         """A midpoint reading makes an edge's score exactly equal to some

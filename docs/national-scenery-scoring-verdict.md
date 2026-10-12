@@ -2,6 +2,12 @@
 
 **Status:** measured 2026-10-12 against `main` at `0fca74f`. Nothing in `pipeline/`, `server/`, `ios/`, `tests/` or `data/` changed. Every figure comes from a script in `tools/national_scoring/`, and its output is in `tools/national_scoring/results/`, unless the text says otherwise. It answers the national scenery scoring brief, `docs/us-scenery-scoring-brief.md` until this merges and [briefs.md](briefs.md) after; "the brief" below means that one. The choice of system is the owner's. This recommends and builds nothing.
 
+> **Built on the `usa` branch, 2026-10-12:** candidate E1, recommendation 1 below,
+> is in the pipeline. Rebuilding Utah and a copy of New England with it reproduces
+> this document's E1 figures. See
+> [national-scenery-components.md](national-scenery-components.md). Nothing below
+> was changed by the build: it is still what was measured, on `main` at `0fca74f`.
+
 ## The verdict
 
 **The structural choice can be made now. Whether it is right in the West cannot.

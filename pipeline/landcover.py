@@ -1,4 +1,4 @@
-"""Sample ESA WorldCover tree cover at every road chunk midpoint.
+"""Sample ESA WorldCover tree cover, and desert and rock, at every road chunk midpoint.
 
 OSM's green polygons record land *designation*, not vegetation, and that makes
 `c_green` wildly non-uniform across New England: the OSM/WorldCover completeness
@@ -11,9 +11,13 @@ docs/geodata-sources-findings.md and docs/geodata-peer-review-verdict.md.
 
 Reads ESA WorldCover v200 2021 (10 m, CC-BY 4.0, global) and writes:
 
-  data/processed/tree_cover.parquet   lon, lat, tree fraction per chunk
+  data/processed/tree_cover.parquet   lon, lat, tree fraction per chunk, and
+                                      the desert-and-rock fraction within ~1 km
 
-score.py joins it into `c_forest = 0.5 * c_green + 0.5 * tree`. The join is
+score.py joins it into `c_forest = max(0.5 * c_green + 0.5 * tree, desert)`.
+The desert half is the national extension measured in
+docs/national-scenery-scoring-verdict.md: it is ~0 everywhere in New England
+and is what lets canyon country register at all. The join is
 positional, so this stage chunks the roads with score.py's own chunk_roads() and
 stores the midpoint it sampled; score.py refuses a file whose midpoints do not
 match the ones it is about to score.
@@ -26,7 +30,9 @@ Massachusetts' largest, 757 MB for Maine's. Peak RSS was 1.9 GB for
 Massachusetts, most of it the chunked road frame rather than the raster. That is
 the opposite cost shape to elevation.py, whose in-RAM float64 mosaic plus max/min
 filters is already 5.6 GB for New England and grows with every state added.
-There is no mosaic, no filter pass and no coverage guard here.
+There is no mosaic, no filter pass and no coverage guard here. The desert count
+holds one boolean copy of the window alongside it for a moment, so a tile
+covered corner to corner now peaks near 2.6 GB rather than 1.3 GB.
 
 Usage: python landcover.py <processed_dir> [--stream]
 
@@ -44,6 +50,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import rasterio
+import rasterio.errors
 import requests
 from rasterio.windows import Window
 
@@ -57,6 +64,22 @@ TILE_URL = ("https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/
 # measures. Kept as a named constant because "== 10" reads like an index.
 TREE_CLASS = 10
 
+# Desert and rock: shrubland, bare or sparse vegetation, snow and ice, and moss
+# and lichen -- the open land the West is made of and New England has almost none
+# of (each rounds to 0.000 of New England's road surroundings). Grassland (30) is
+# left out on purpose. It points the wrong way on every check that can see it
+# (Colorado's scenic byways, the New England marks), and WorldCover files most of
+# Colorado's sagebrush under it, so it cannot tell prairie from the Western Slope.
+# Whether prairie counts is the owner's call: docs/national-scenery-scoring-verdict.md §8.
+DESERT_CLASSES = (20, 60, 70, 100)
+
+# Built-up land, counted in the same ~1 km box. Not a scenery term: score.py
+# uses it to keep landmark credit (protected.py) off city parks. PAD-US files
+# Boston's Charles River, Mystic River and Old Harbor reservations as state parks,
+# which credited Storrow Drive, Memorial Drive and Soldiers Field Road +0.84.
+# All 108 km of New England landmark road with this box over 30% built were urban
+# parks of that kind; Utah had none, Colorado 11 km.
+BUILT_CLASS = 50
 # The tile grid: 3-degree cells on a 1/12000-degree pixel, named for their
 # SOUTH-WEST corner. That naming is the trap in this file. Deriving the tile
 # with ceil() instead of floor() sends every point three degrees east, where it
@@ -83,6 +106,12 @@ TILE_PX = TILE_DEG * PX_PER_DEG  # 36000
 SAMPLE_BOX_M = 100.0
 M_PER_DEG_LAT = 111_320.0
 
+# Desert is judged over a landscape, not a verge: a ~1 km ground box. A desert
+# road's 100 m verge is often graded fill or a wash, while the view is the mesa.
+# In New England the bare pixels inside a 100 m box are quarries and gravel pits,
+# which score.py's max() with forest keeps harmless.
+DESERT_BOX_M = 1000.0
+
 
 def tile_name(tile_row: int, tile_col: int) -> str:
     """Tile id from its position on the global 3-degree grid, e.g. N42W072."""
@@ -100,16 +129,16 @@ def tile_bounds(tile_row: int, tile_col: int):
     return lon0, lat0, lon0 + TILE_DEG, lat0 + TILE_DEG
 
 
-def window_px(lat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Odd pixel dimensions of a ~SAMPLE_BOX_M ground box at each latitude.
+def window_px(lat: np.ndarray, box_m: float = SAMPLE_BOX_M) -> tuple[np.ndarray, np.ndarray]:
+    """Odd pixel dimensions of a ~box_m ground box at each latitude.
 
     Rows are constant (a degree of latitude is a degree of latitude); columns
     widen towards the pole as a degree of longitude shortens.
     """
     m_per_px_lat = M_PER_DEG_LAT / PX_PER_DEG
     m_per_px_lon = M_PER_DEG_LAT * np.cos(np.radians(lat)) / PX_PER_DEG
-    rows = np.full(len(lat), max(3, int(round(SAMPLE_BOX_M / m_per_px_lat)) | 1))
-    cols = np.maximum(3, np.rint(SAMPLE_BOX_M / m_per_px_lon).astype(np.int64) | 1)
+    rows = np.full(len(lat), max(3, int(round(box_m / m_per_px_lat)) | 1))
+    cols = np.maximum(3, np.rint(box_m / m_per_px_lon).astype(np.int64) | 1)
     return rows, cols
 
 
@@ -182,14 +211,48 @@ def check_georeferencing(src, tile_row: int, tile_col: int, tile: str):
             f"floor(lon/3)*3, not ceil.")
 
 
-def sample_tree_fraction(lon: np.ndarray, lat: np.ndarray, cache: Path,
-                         stream: bool) -> np.ndarray:
-    """Fraction of each point's ~100 m ground box classified as tree cover.
+def tile_absent(tile: str) -> bool:
+    """True only for a cell WorldCover genuinely omits (all ocean), not for a
+    network failure: a 404 on the tile itself, asked for directly."""
+    try:
+        return requests.head(TILE_URL.format(tile=tile), timeout=60).status_code == 404
+    except requests.RequestException:
+        return False
+
+
+def _clip_boxes(r0, r1, c0, c1):
+    """Per tile, each box's part inside it, in tile-local pixels."""
+    parts: dict[tuple[int, int], dict] = {}
+    lr0, lr1, lc0, lc1 = r0.tolist(), r1.tolist(), c0.tolist(), c1.tolist()
+    ltr0, ltr1 = (r0 // TILE_PX).tolist(), (r1 // TILE_PX).tolist()
+    ltc0, ltc1 = (c0 // TILE_PX).tolist(), (c1 // TILE_PX).tolist()
+    for i in range(len(lr0)):
+        for tr in range(ltr0[i], ltr1[i] + 1):
+            row_lo, row_hi = tr * TILE_PX, tr * TILE_PX + TILE_PX - 1
+            for tc in range(ltc0[i], ltc1[i] + 1):
+                col_lo, col_hi = tc * TILE_PX, tc * TILE_PX + TILE_PX - 1
+                parts.setdefault((tr, tc), {})[i] = (
+                    max(lr0[i], row_lo) - row_lo, min(lr1[i], row_hi) - row_lo,
+                    max(lc0[i], col_lo) - col_lo, min(lc1[i], col_hi) - col_lo)
+    return parts
+
+
+def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
+                 stream: bool) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Tree fraction of each point's ~100 m ground box, and the desert-and-rock
+    and built-up fractions of its ~1 km box, from one read of each tile.
 
     Points are converted to a global pixel index before anything else, so a
     sample box that straddles a tile edge is counted from both tiles rather than
     silently truncated -- Massachusetts' southern border sits on the lat 42
     tile line, so that is real road, not a corner case.
+
+    The tree half is exactly what this stage computed before desert was added:
+    same boxes, same counts, same assertion. The desert box contains the tree box,
+    so the window bounding the desert boxes in a tile covers both. The one new
+    case is a desert box reaching into a cell WorldCover omits because it is all
+    ocean, which a 1 km box near the coast can do and a 100 m one never has. Those
+    pixels count as water (not desert); a tree box reaching one still stops the run.
     """
     n = len(lon)
     # Global pixel grid. Every WorldCover tile is a 36000-pixel cell of this one
@@ -201,65 +264,83 @@ def sample_tree_fraction(lon: np.ndarray, lat: np.ndarray, cache: Path,
 
     rows_px, cols_px = window_px(lat)
     expected = rows_px * cols_px
-    r0, r1 = grow - rows_px // 2, grow + rows_px // 2
-    c0, c1 = gcol - cols_px // 2, gcol + cols_px // 2
-
-    # Which tile(s) each box touches. Almost always one; two or four at a seam.
-    boxes: dict[tuple[int, int], list] = {}
-    lr0, lr1, lc0, lc1 = r0.tolist(), r1.tolist(), c0.tolist(), c1.tolist()
-    ltr0, ltr1 = (r0 // TILE_PX).tolist(), (r1 // TILE_PX).tolist()
-    ltc0, ltc1 = (c0 // TILE_PX).tolist(), (c1 // TILE_PX).tolist()
-    for i in range(n):
-        for tr in range(ltr0[i], ltr1[i] + 1):
-            row_lo, row_hi = tr * TILE_PX, tr * TILE_PX + TILE_PX - 1
-            for tc in range(ltc0[i], ltc1[i] + 1):
-                col_lo, col_hi = tc * TILE_PX, tc * TILE_PX + TILE_PX - 1
-                boxes.setdefault((tr, tc), []).append((
-                    i,
-                    max(lr0[i], row_lo) - row_lo, min(lr1[i], row_hi) - row_lo,
-                    max(lc0[i], col_lo) - col_lo, min(lc1[i], col_hi) - col_lo,
-                ))
+    small = _clip_boxes(grow - rows_px // 2, grow + rows_px // 2,
+                        gcol - cols_px // 2, gcol + cols_px // 2)
+    drows, dcols = window_px(lat, DESERT_BOX_M)
+    d_expected = drows * dcols
+    big = _clip_boxes(grow - drows // 2, grow + drows // 2,
+                      gcol - dcols // 2, gcol + dcols // 2)
 
     tree_n = np.zeros(n, dtype=np.int64)
     total_n = np.zeros(n, dtype=np.int64)
-    order = sorted(boxes)
+    desert_n = np.zeros(n, dtype=np.int64)
+    built_n = np.zeros(n, dtype=np.int64)
+    d_total_n = np.zeros(n, dtype=np.int64)
+    order = sorted(big)
     print(f"{n:,} midpoints across {len(order)} WorldCover tile(s): "
           f"{', '.join(tile_name(*k) for k in order)}")
 
     for tr, tc in order:
-        items = boxes[(tr, tc)]
+        bitems, sitems = big[(tr, tc)], small.get((tr, tc), {})
         tile = tile_name(tr, tc)
         t0 = time.time()
         # One read per tile: the window bounding every box that lands in it.
-        rlo = min(it[1] for it in items)
-        rhi = max(it[2] for it in items)
-        clo = min(it[3] for it in items)
-        chi = max(it[4] for it in items)
-        with open_tile(tile, cache, stream) as src:
-            check_georeferencing(src, tr, tc, tile)
-            arr = src.read(1, window=Window(clo, rlo, chi - clo + 1, rhi - rlo + 1))
-        print(f"  {tile}: {len(items):,} boxes, read {arr.shape[1]}x{arr.shape[0]} px "
-              f"({arr.nbytes / 1e6:.0f} MB) in {time.time() - t0:.0f}s")
+        rlo = min(b[0] for b in bitems.values())
+        rhi = max(b[1] for b in bitems.values())
+        clo = min(b[2] for b in bitems.values())
+        chi = max(b[3] for b in bitems.values())
+        try:
+            with open_tile(tile, cache, stream) as src:
+                check_georeferencing(src, tr, tc, tile)
+                arr = src.read(1, window=Window(clo, rlo, chi - clo + 1, rhi - rlo + 1))
+        except (SystemExit, rasterio.errors.RasterioIOError):
+            if sitems or not tile_absent(tile):
+                raise
+            for i, (br0, br1, bc0, bc1) in bitems.items():
+                d_total_n[i] += (br1 - br0 + 1) * (bc1 - bc0 + 1)
+            print(f"  {tile}: absent from WorldCover (all ocean); "
+                  f"{len(bitems):,} desert boxes reach it, counted as water")
+            continue
+        print(f"  {tile}: {len(sitems):,} tree boxes, {len(bitems):,} desert boxes, "
+              f"read {arr.shape[1]}x{arr.shape[0]} px ({arr.nbytes / 1e6:.0f} MB) "
+              f"in {time.time() - t0:.0f}s")
 
-        for i, br0, br1, bc0, bc1 in items:
+        for i, (br0, br1, bc0, bc1) in sitems.items():
             w = arr[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1]
             tree_n[i] += int((w == TREE_CLASS).sum())
             total_n[i] += w.size
+        desert = np.isin(arr, DESERT_CLASSES)
+        built = arr == BUILT_CLASS
         del arr
+        for i, (br0, br1, bc0, bc1) in bitems.items():
+            w = desert[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1]
+            desert_n[i] += int(w.sum())
+            built_n[i] += int(built[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1].sum())
+            d_total_n[i] += w.size
+        del desert, built
 
     # Every pixel of every box has to have been read from somewhere. This is the
     # assertion that fires if a tile is mis-indexed, mis-clipped, or missing --
     # the failure mode this source has is a plausible number, not an exception.
-    short = np.flatnonzero(total_n != expected)
-    if len(short):
-        i = short[0]
-        raise SystemExit(
-            f"{len(short):,} sample boxes did not read their full pixel count "
-            f"(first: point {i} at {lon[i]:.5f},{lat[i]:.5f} got {total_n[i]} of "
-            f"{expected[i]} px). A box reaching into a tile that was never "
-            f"opened, or a tile index off by one cell.")
+    for label, got, want in (("tree", total_n, expected), ("desert", d_total_n, d_expected)):
+        short = np.flatnonzero(got != want)
+        if len(short):
+            i = short[0]
+            raise SystemExit(
+                f"{len(short):,} {label} sample boxes did not read their full pixel "
+                f"count (first: point {i} at {lon[i]:.5f},{lat[i]:.5f} got {got[i]} "
+                f"of {want[i]} px). A box reaching into a tile that was never "
+                f"opened, or a tile index off by one cell.")
 
-    return (tree_n / total_n).astype(np.float32)
+    return ((tree_n / total_n).astype(np.float32),
+            (desert_n / d_total_n).astype(np.float32),
+            (built_n / d_total_n).astype(np.float32))
+
+
+def sample_tree_fraction(lon: np.ndarray, lat: np.ndarray, cache: Path,
+                         stream: bool) -> np.ndarray:
+    """Tree cover alone, as this stage computed before desert was added."""
+    return sample_cover(lon, lat, cache, stream)[0]
 
 
 def main(processed_dir: str, stream: bool = False):
@@ -276,10 +357,11 @@ def main(processed_dir: str, stream: bool = False):
     lon, lat = mids.x.to_numpy(), mids.y.to_numpy()
     print(f"{len(roads):,} ways -> {len(chunks):,} chunks in {time.time() - t0:.0f}s")
 
-    tree = sample_tree_fraction(lon, lat, cache, stream)
+    tree, desert, built = sample_cover(lon, lat, cache, stream)
 
     out_path = d / "tree_cover.parquet"
-    pd.DataFrame({"lon": lon, "lat": lat, "tree": tree}).to_parquet(out_path)
+    pd.DataFrame({"lon": lon, "lat": lat, "tree": tree, "desert": desert,
+                  "built": built}).to_parquet(out_path)
     print(f"wrote {out_path} ({len(tree):,} chunks) in {time.time() - t0:.0f}s total")
 
     # Length-weighted, because a value is only as important as the kilometres it
@@ -294,6 +376,9 @@ def main(processed_dir: str, stream: bool = False):
           f"p75 {p75:.2f}  mean {(tree * km).sum() / km.sum():.3f}")
     print(f"      {100 * km[tree >= 0.999].sum() / km.sum():.1f}% of km at 1.0, "
           f"{100 * km[tree <= 0.001].sum() / km.sum():.1f}% at 0.0")
+    print(f"desert and rock within ~{DESERT_BOX_M:.0f} m (len-weighted): mean "
+          f"{(desert * km).sum() / km.sum():.3f}, "
+          f"{100 * km[desert >= 0.5].sum() / km.sum():.1f}% of km at 0.5 or more")
 
 
 if __name__ == "__main__":

@@ -273,11 +273,23 @@ DEFAULT_WEIGHTS = np.array([w for *_, w in BEAUTY_TYPES])
 # Baseline "quality" signals: always on, not user-tunable. Twistiness, mapped
 # viewpoints, and explicit scenic tags form a floor of beauty under every road,
 # so a fine road no one toggled on is never scored flat zero.
+#
+# Mountain-scale terrain and landmark designation join them. Both are national
+# components (docs/national-scenery-scoring-verdict.md) that are ~0 in New England,
+# and neither is something a driver would trade against water or town, so they
+# get no slider: a slider would be a tune-screen and app change for a term that
+# is zero on 95% of the region the app ships in.
 BASELINE = [
     ("c_curves",     WEIGHTS["curves"]),
     ("c_views",      WEIGHTS["views"]),
     ("c_scenic_tag", WEIGHTS["scenic_tag"]),
+    ("c_grand",      WEIGHTS["grand"]),
+    ("c_protected",  WEIGHTS["protected"]),
 ]
+# Baseline columns a graph built before the national components does not carry.
+# Read as zero, which is exactly what score.py wrote for them before they existed,
+# so the deployed graph serves unchanged on a restart.
+OPTIONAL_BASELINE = {"c_grand", "c_protected"}
 
 # Minimum component value for a stretch of road to count toward a beauty type in
 # the route summary. It has to sit *below* the smallest partial-credit band any
@@ -1615,12 +1627,16 @@ class Router:
         # Inputs for re-scoring each edge live under a user's beauty weights (see
         # _edge_scores). We split the score.py formula into pieces that let us
         # recompute it as one matrix-vector product per request:
-        #   base_score   : the always-on baseline blend (curves/views/scenic tag)
+        #   base_score   : the always-on baseline blend (curves/views/scenic tag,
+        #                  and grand/protected where the graph carries them)
         #   pref_matrix  : column k = default_weight_k * component_k, so scaling
         #                  column k by the user's weight leans into that type
         #   score_adj    : the road-class penalty, re-added after stretch
         self.unpaved_frac, self.score_adj = self._load_unpaved(e)
-        self.base_score = sum(w * e[col].to_numpy() for col, w in BASELINE)
+        self.base_score = sum(
+            w * (e[col].to_numpy() if col in e.columns or col not in OPTIONAL_BASELINE
+                 else np.zeros(len(e)))
+            for col, w in BASELINE)
         self.pref_matrix = np.column_stack(
             [w * e[col].to_numpy() for _, _, col, w in BEAUTY_TYPES]
         )

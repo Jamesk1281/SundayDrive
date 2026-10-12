@@ -1468,7 +1468,14 @@ class TestLegacyGraphMigration:
         were penalised when it was built, so `compacted` is invisible to the
         recovery — 1.0 pp of residential km. Using the current set here fails by
         exactly that gap, which is a real limitation of the restart-only path
-        and is recorded beside `LEGACY_UNPAVED`."""
+        and is recorded beside `LEGACY_UNPAVED`.
+
+        So it only means something on a legacy graph. A graph built since
+        2026-08-29 carries `unpaved_frac` straight from the current `UNPAVED`
+        set, and against the legacy tags it is off by that same `compacted` gap
+        (residential 0.140 against 0.129 on a rebuilt New England)."""
+        if "unpaved_frac" in router.edges.columns:
+            pytest.skip("graph built since 2026-08-29: nothing was recovered")
         from score import LEGACY_UNPAVED
         dirt = chunks["surface"].fillna("").str.lower().isin(LEGACY_UNPAVED)
         km = chunks["length_m"].to_numpy() / 1000.0

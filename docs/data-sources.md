@@ -18,8 +18,12 @@ in [Licensing: the open questions, answered](licensing-open-questions.md).
 | Source | Used for | Licence |
 | --- | --- | --- |
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) (Geofabrik extracts) | every road, street name and turn restriction | Open Database License (ODbL) 1.0 |
-| [ESA WorldCover](https://esa-worldcover.org) 10 m 2021 v200 | half of `c_forest`, so present in every score | CC BY 4.0 |
-| [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Terrarium, AWS Open Data) | `c_relief` | an **aggregate** — see below |
+| [ESA WorldCover](https://esa-worldcover.org) 10 m 2021 v200 | half of `c_forest` (tree cover), and its desert-and-rock alternative, so present in every score | CC BY 4.0 |
+| [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Terrarium, AWS Open Data) | `c_relief`, and `c_grand` (terrain.py) | an **aggregate** — see below |
+| [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview) (USGS Gap Analysis Project) | `c_protected` (protected.py), on the `usa` branch only | public domain (US federal government work); no credit required, "USGS PAD-US" as a courtesy |
+
+PAD-US is the one source here with no attribution obligation, so adding it does
+not change the app's credit line.
 
 The basemap the routes are drawn on is Apple's, via MapKit, which renders its own
 attribution.

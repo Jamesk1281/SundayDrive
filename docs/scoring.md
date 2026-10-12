@@ -11,6 +11,21 @@ record land *designation* rather than vegetation and are three times more
 complete in Rhode Island than in Maine — see
 [`docs/geodata-sources-findings.md`](geodata-sources-findings.md). A weighted blend (tunable constants at the top of `score.py`)
 produces a 0–10 composite, with a penalty for highways.
+
+Three national components, chosen in
+[`docs/national-scenery-scoring-verdict.md`](national-scenery-scoring-verdict.md)
+(candidate E1), extend this for the West. They are ~0 in New England by design:
+
+- **`c_grand`:** mountain- and canyon-scale terrain, from `terrain.py`'s 3 km
+  range, credited above relief's 100 m cap.
+- **Desert and rock:** WorldCover shrub, bare, snow and moss within ~1 km, which
+  take the forest slot by `max()`.
+- **`c_protected`:** inside a PAD-US landmark (national or state park, monument,
+  wilderness), from `protected.py`, and not in built-up land. PAD-US counts
+  Boston's river reservations as parks.
+
+Each one's input missing means its term is zero, so a build made before them
+scores exactly as before.
 The router charges a minutes-equivalent penalty per km of *unscenic* road, so the
 preference knob trades extra time for scenery.
 

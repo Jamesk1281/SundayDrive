@@ -4,18 +4,23 @@ Scoring components (the per-segment "beauty vector"):
   water   - proximity to lakes/reservoirs/rivers
   coast   - proximity to the ocean coastline
   forest  - OSM woods/forests/parks/reserves, blended half-and-half with
-            measured tree cover from landcover.py
+            measured tree cover from landcover.py; or desert and rock within
+            ~1 km, whichever is larger
   curves  - heading change per km (twistiness)
   relief  - local terrain relief from elevation.py (hills, valleys, overlooks)
+  grand   - mountain- and canyon-scale terrain above relief's cap, from terrain.py
   farm    - adjacency to farmland/orchards/meadows
   views   - proximity to mapped viewpoints
   scenic  - designated scenic byway (OSM route relation, or scenic=yes)
+  protected - inside a landmark protected area (PAD-US, from protected.py)
   urban   - proximity to town/village centers and retail/commercial districts
 
 The relief component is read from data/processed/relief.tif if present
-(run elevation.py first); the tree-cover half of forest from
-data/processed/tree_cover.parquet (run landcover.py first). Either one missing
-degrades its component to zero and prints a notice.
+(run elevation.py first); the tree-cover and desert halves of forest from
+data/processed/tree_cover.parquet (run landcover.py first); grand from
+range3k.tif (terrain.py) and protected from protected.parquet (protected.py).
+Any one missing degrades its component to zero and prints a notice, so a build
+made before the national components scores exactly as it did.
 
 Each chunk keeps its component vector (the per-segment "beauty vector")
 plus a composite 0-10 score. Output: scored_chunks.parquet.
@@ -56,10 +61,20 @@ WEIGHTS = {
     "water": 0.22, "coast": 0.13, "forest": 0.18, "curves": 0.13,
     "relief": 0.16, "farm": 0.06, "views": 0.05, "scenic_tag": 0.07,
     "urban": 0.14,
+    # The national extension (docs/national-scenery-scoring-verdict.md, candidate
+    # E1). Both are ~0 in New England -- c_grand is zero on 95% of its km and
+    # c_protected on 99.7% of its chunks -- so they leave its calibration where it
+    # was: 1.3% of its km move by more than 0.25 and the holdout marks do not move
+    # (docs/national-scenery-components.md §4).
+    # Hand-set by analogy, not fitted: mountain-scale terrain at a bit under
+    # relief's own weight, landmark designation at the byway tag's. The verdict's
+    # §5 sweeps both (0.05-0.20 and 0-0.14) and neither is a knife-edge.
+    "grand": 0.10, "protected": 0.07,
 }
 # Composite calibration: score = 10 * ((raw + RAW_BASE) * STRETCH + score_adj).
-# The weights sum to 1.14, but no real road collects them all (a coastal road
-# isn't farmland), so `raw` tops out near 0.65 in practice — leaving the old
+# The weights sum to 1.31 (1.14 before grand and protected), but no real road
+# collects them all (a coastal road isn't farmland, and grand and protected are
+# ~0 in New England), so `raw` tops out near 0.65 there — leaving the old
 # scale bunched into 0–6 with "8/10" unreachable. RAW_BASE is the baseline
 # pleasantness of an ordinary road with no standout feature; STRETCH then opens
 # the rest of the range. Fitted so p50 lands near 4.5 and p99 near 9.5 (see
@@ -82,6 +97,23 @@ CURVE_FULL = 160.0       # deg/km that counts as maximally twisty
 # well below alpine terrain: only 2.5% of the state reaches 160 m, so that
 # threshold left the hills component — and the app's Hills slider — inert.
 RELIEF_FULL = 100.0
+
+# Mountain- and canyon-scale terrain, from terrain.py's 3 km range, credited only
+# above the scale RELIEF_FULL already saturates at. Zero below GRAND_START, just
+# above New England's 95th-percentile road (293 m); full at GRAND_FULL, about the
+# depth of Colorado's deepest byway valleys (its byway km reach 979 m at p99).
+# Raising RELIEF_FULL instead was measured and rejected: at 250 m it costs New
+# England's holdout 0.016 and moves the West's within-landscape ranking by 0.004.
+GRAND_START = 300.0
+GRAND_FULL = 900.0
+
+# Landmark credit stops where the ~1 km around the road is more than this share
+# built up (WorldCover class 50, from landcover.py). PAD-US files Boston's river
+# reservations as state parks, so without it Storrow Drive scored as a landmark,
+# +0.84 on an urban expressway. The cut sits where New England's
+# landmark km divide: every km above 0.3 was an urban park or reservation
+# (108 km); Utah has none above it, Colorado 11 km (Denver's reservoir parks).
+PROTECTED_BUILT_MAX = 0.3
 CLASS_ADJ = {
     "motorway": -0.45, "motorway_link": -0.40, "trunk": -0.10, "trunk_link": -0.18,
     "primary": -0.04, "primary_link": -0.10, "secondary": 0.0, "secondary_link": -0.10,
@@ -387,19 +419,14 @@ def sample_relief(chunks: gpd.GeoDataFrame, relief_path: Path) -> np.ndarray:
     return np.clip(vals / RELIEF_FULL, 0, 1)
 
 
-def sample_tree_cover(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
-    """Per-chunk WorldCover tree-cover fraction, as written by landcover.py.
+def read_aligned(chunks: gpd.GeoDataFrame, path: Path, stage: str) -> pd.DataFrame:
+    """A per-chunk table written by another stage, checked midpoint by midpoint.
 
     Joined by position, so the file has to have been built from this same
     roads.parquet. It records the midpoint it sampled and every one of them is
     checked here, because a misaligned join has no symptom: it would credit one
     road with another's trees and still produce a plausible score.
     """
-    if not path.exists():
-        print(f"NOTE: {path.name} missing; c_forest falls back to OSM green at "
-              f"half strength, which under-scores the whole network "
-              f"(run landcover.py to enable measured tree cover)")
-        return np.zeros(len(chunks))
     mids = chunks.geometry.interpolate(0.5, normalized=True).to_crs(4326)
     tc = pd.read_parquet(path)
     if not (len(tc) == len(chunks)
@@ -408,8 +435,64 @@ def sample_tree_cover(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
         raise SystemExit(
             f"{path.name} holds {len(tc):,} chunks that do not line up with the "
             f"{len(chunks):,} being scored — it was built from a different "
-            f"roads.parquet. Re-run landcover.py against this one.")
-    return tc["tree"].to_numpy()
+            f"roads.parquet. Re-run {stage} against this one.")
+    return tc
+
+
+def sample_cover(chunks: gpd.GeoDataFrame, path: Path):
+    """Per-chunk WorldCover tree-cover, desert-and-rock and built-up fractions, as
+    written by landcover.py. A file from before desert was added has neither
+    later column: desert scores 0, which is what it was, and built comes back
+    None, which sample_protected treats as "cannot tell a city park from a
+    national one" and so credits nothing."""
+    if not path.exists():
+        print(f"NOTE: {path.name} missing; c_forest falls back to OSM green at "
+              f"half strength, which under-scores the whole network "
+              f"(run landcover.py to enable measured tree cover)")
+        return np.zeros(len(chunks)), np.zeros(len(chunks)), None
+    tc = read_aligned(chunks, path, "landcover.py")
+    if "desert" not in tc.columns:
+        print(f"NOTE: {path.name} has no desert column; desert and rock score 0 "
+              f"(re-run landcover.py to enable it)")
+        return tc["tree"].to_numpy(), np.zeros(len(chunks)), None
+    built = tc["built"].to_numpy() if "built" in tc.columns else None
+    return tc["tree"].to_numpy(), tc["desert"].to_numpy(), built
+
+
+def sample_tree_cover(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
+    """Tree cover alone."""
+    return sample_cover(chunks, path)[0]
+
+
+def sample_grand(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
+    """Mountain-scale terrain at each chunk midpoint, from terrain.py, 0..1."""
+    if not path.exists():
+        print(f"NOTE: {path.name} missing; c_grand = 0 "
+              f"(run terrain.py to enable mountain-scale terrain)")
+        return np.zeros(len(chunks))
+    import rasterio
+    mids = chunks.geometry.interpolate(0.5, normalized=True).to_crs(3857)
+    coords = np.column_stack([mids.x.values, mids.y.values])
+    with rasterio.open(path) as src:
+        vals = np.fromiter((v[0] for v in src.sample(coords)), dtype=float, count=len(coords))
+    vals = np.nan_to_num(vals, nan=0.0)
+    return np.clip((vals - GRAND_START) / (GRAND_FULL - GRAND_START), 0, 1)
+
+
+def sample_protected(chunks: gpd.GeoDataFrame, path: Path,
+                     built: np.ndarray | None) -> np.ndarray:
+    """1.0 where protected.py found the chunk inside a landmark protected area
+    and the land within ~1 km is not built up (PROTECTED_BUILT_MAX)."""
+    if not path.exists():
+        print(f"NOTE: {path.name} missing; c_protected = 0 "
+              f"(run protected.py with PAD-US to enable it)")
+        return np.zeros(len(chunks))
+    landmark = read_aligned(chunks, path, "protected.py")["landmark"].to_numpy().astype(float)
+    if built is None:
+        print(f"NOTE: tree_cover.parquet has no built column, so a city park cannot "
+              f"be told from a national one; c_protected = 0 (re-run landcover.py)")
+        return np.zeros(len(chunks))
+    return landmark * (built <= PROTECTED_BUILT_MAX)
 
 
 def components(df) -> list[str]:
@@ -529,12 +612,19 @@ def main(processed_dir: str, cache: bool = True):
     # permanently on for a user who set the slider to zero. See
     # docs/geodata-sources-findings.md.
     green_flag = green.near(geoms, DIST["green"]).astype(float)
-    tree = sample_tree_cover(chunks, d / "tree_cover.parquet")
-    chunks["c_forest"] = 0.5 * green_flag + 0.5 * tree
+    tree, desert, built = sample_cover(chunks, d / "tree_cover.parquet")
+    # Desert and rock share forest's slot rather than taking a weight of their
+    # own: a canyon road is to Utah what a wooded road is to Vermont, and max()
+    # adds no weight mass and leaves the forest/park slider whole. In New England
+    # desert is ~0, and where it is not (quarries, gravel pits) max() with forest
+    # swallows it. docs/national-scenery-scoring-verdict.md §8 prices the choice.
+    chunks["c_forest"] = np.maximum(0.5 * green_flag + 0.5 * tree, desert)
     chunks["c_farm"] = near_flags(farm_tree, geoms, DIST["farm"]).astype(float)
     chunks["c_views"] = near_flags(view_tree, geoms, DIST["view"]).astype(float)
     chunks["c_scenic_tag"] = chunks["scenic"].astype(float)
     chunks["c_relief"] = sample_relief(chunks, d / "relief.tif")
+    chunks["c_grand"] = sample_grand(chunks, d / "range3k.tif")
+    chunks["c_protected"] = sample_protected(chunks, d / "protected.parquet", built)
 
     # Townscape: full credit inside a retail/commercial district or close to a
     # town-center node, tapering to partial credit across the town's wider orbit.

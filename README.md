@@ -69,7 +69,9 @@ osmium merge data/raw/{connecticut,maine,massachusetts,new-hampshire,rhode-islan
 R=data/raw/new-england-latest.osm.pbf; D=data/processed-ne
 .venv/bin/python pipeline/extract.py   "$R" "$D"
 .venv/bin/python pipeline/elevation.py "$D" 11   # terrain relief raster
-.venv/bin/python pipeline/landcover.py "$D"      # WorldCover tree cover
+.venv/bin/python pipeline/landcover.py "$D"      # WorldCover tree cover, and desert and rock
+.venv/bin/python pipeline/terrain.py   "$D"      # mountain-scale terrain (3 km range), from elevation.tif
+.venv/bin/python pipeline/protected.py "$D" PADUS4_1Geodatabase.gdb  # optional: PAD-US landmarks
 .venv/bin/python pipeline/score.py     "$D"      # scenic score per chunk (cached; --no-cache forces)
 .venv/bin/python pipeline/render.py    "$D" out  # heatmap + regional maps
 .venv/bin/python pipeline/graph.py     "$R" "$D" # routable graph

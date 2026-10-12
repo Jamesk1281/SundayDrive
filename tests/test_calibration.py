@@ -79,13 +79,20 @@ class TestScoreScale:
         vector — if graph.py ever attaches a chunk's score to the wrong edge,
         this is what catches it."""
         from score import WEIGHTS, composite
-        key = {"c_water": "water", "c_coast": "coast", "c_forest": "forest",
-               "c_curves": "curves", "c_relief": "relief", "c_farm": "farm",
-               "c_views": "views", "c_scenic_tag": "scenic_tag",
-               "c_urban": "urban"}
-        raw = sum(WEIGHTS[k] * edges[c].to_numpy() for c, k in key.items())
+        # Every component the graph carries, so a graph built with the national
+        # components (c_grand, c_protected) is checked on them too, and one built
+        # before them on the nine it has.
+        cols = [c for c in edges.columns if c.startswith("c_")]
+        raw = sum(WEIGHTS[c[2:]] * edges[c].to_numpy() for c in cols)
         assert np.allclose(composite(raw, edges["score_adj"].to_numpy()),
                            edges["score"].to_numpy(), atol=1e-9)
+
+    @pytest.mark.parametrize("component", ["c_grand", "c_protected"])
+    def test_national_components_within_unit_range(self, edges, component):
+        if component not in edges.columns:
+            pytest.skip(f"{component}: graph built before the national components")
+        v = edges[component].to_numpy()
+        assert v.min() >= 0.0 and v.max() <= 1.0
 
 
 class TestBreakdownThreshold:
@@ -119,6 +126,8 @@ class TestBreakdownThreshold:
                 f"is no longer banded. Give it a cut of its own in "
                 f"BREAKDOWN_OVERRIDE and name it in `continuous` here")
             bands = values[values > 1e-9]
+            if len(bands) == 0:
+                continue  # never credited here: an inland region has no coast
             assert bands.min() >= threshold, (
                 f"{label}: score.py awards {column}={bands.min()} but the "
                 f"summary only counts >= {threshold}, so that band is invisible")
