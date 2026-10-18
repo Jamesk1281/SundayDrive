@@ -63,3 +63,30 @@ def router():
     _require(*ROUTER_DATA)
     from router import Router
     return Router(str(DATA))
+
+
+# How far a test's named place may snap before the graph is taken not to cover
+# it. A real place snaps within a few hundred metres; a place outside the built
+# region snaps to the region's edge, tens of kilometres away.
+COVERAGE_M = 5_000.0
+
+
+def require_places(router, **places):
+    """Skip unless the graph reaches every named (lat, lon).
+
+    `data/processed` in the main checkout is still the August Massachusetts
+    build; the New England one is `data/processed-ne`. Pointed at the first,
+    a test about Waitsfield or Stowe would quietly plan from the Massachusetts
+    line and fail on numbers that were never about its trip, which is how four
+    tests on `usa` read as regressions on 2026-10-18.
+    """
+    far = {}
+    for name, (lat, lon) in places.items():
+        metres = router.snap(lat, lon)[1]
+        if metres > COVERAGE_M:
+            far[name] = metres
+    if far:
+        where = ", ".join(f"{n} {m / 1000:.0f} km" for n, m in far.items())
+        pytest.skip(f"the graph at {DATA} does not reach {where} from the "
+                    f"nearest road; point SUNDAYDRIVE_DATA at the New England "
+                    f"build")
