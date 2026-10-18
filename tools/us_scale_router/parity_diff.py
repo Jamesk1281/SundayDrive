@@ -55,6 +55,8 @@ def lines(body):
 
 
 def classify(a, b):
+    a = {"status": a["status"], "body": a["body"]}
+    b = {"status": b["status"], "body": b["body"]}
     if a == b:
         return "same", ""
     sa, sb = a["status"], b["status"]

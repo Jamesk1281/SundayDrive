@@ -95,25 +95,31 @@ class Strings:
 
 
 class Lines:
-    """Polylines as int32 lon/lat (1e-7 degrees), one run of vertices per row."""
+    """Polylines as int32 lon/lat (1e-7 degrees), one run of vertices per row.
+
+    Geometry that is not on OSM's grid, which only a test's hand-made graph
+    has, is kept as float64 degrees instead (`scale` 1), rather than moved.
+    """
 
     def __init__(self, xy, start):
         self.xy, self.start = xy, start
+        self.scale = SCALE if xy.dtype == np.int32 else 1.0
 
     @classmethod
     def from_wkb(cls, wkb, chunk=500_000):
         """From an array of WKB linestrings, a chunk at a time so that no more
         than `chunk` shapely objects ever exist at once."""
-        parts, counts = [], []
+        parts, counts, exact = [], [], True
         for i in range(0, len(wkb), chunk):
             geoms = shapely.from_wkb(wkb[i:i + chunk])
             coords, index = shapely.get_coordinates(geoms, return_index=True)
             fixed = np.round(coords * SCALE)
-            if not np.array_equal(fixed / SCALE, coords):
-                raise ValueError("a vertex is not on OSM's 1e-7 degree grid, so "
-                                 "storing it as an integer would move it")
-            parts.append(fixed.astype(np.int32))
+            exact = exact and np.array_equal(fixed / SCALE, coords)
+            parts.append(coords if not exact else fixed.astype(np.int32))
             counts.append(np.bincount(index, minlength=len(geoms)))
+        if not exact:
+            # Off the grid somewhere: keep every vertex as it came.
+            parts = [p if p.dtype == np.float64 else p / SCALE for p in parts]
         xy = np.concatenate(parts) if parts else np.zeros((0, 2), np.int32)
         start = np.zeros(len(wkb) + 1, np.int64)
         if counts:
@@ -125,7 +131,7 @@ class Lines:
 
     def coords(self, row: int) -> np.ndarray:
         """One line's [lon, lat] vertices as float64."""
-        return self.xy[self.start[row]:self.start[row + 1]] / SCALE
+        return self.xy[self.start[row]:self.start[row + 1]] / self.scale
 
     def many(self, rows):
         """Vertices of several lines, concatenated, with the position in
@@ -134,7 +140,7 @@ class Lines:
         a, b = self.start[rows], self.start[rows + 1]
         idx = np.repeat(np.arange(len(rows)), b - a)
         take = _ranges(a, b)
-        return self.xy[take] / SCALE, idx
+        return self.xy[take] / self.scale, idx
 
     def bounds(self):
         """Per line (lon_min, lat_min, lon_max, lat_max), float64 degrees."""
@@ -145,7 +151,7 @@ class Lines:
         for k, (op, col) in enumerate(((np.minimum, 0), (np.minimum, 1),
                                        (np.maximum, 0), (np.maximum, 1))):
             v = op.reduceat(self.xy[:, col], at) if len(at) else np.zeros(0)
-            out[nonempty, k] = v / SCALE
+            out[nonempty, k] = v / self.scale
             out[~nonempty, k] = np.nan
         return out
 

@@ -375,6 +375,8 @@ CORRIDOR_SHARE = 0.5
 CORRIDOR_KM = 20.0
 CORRIDOR_TOUCH = 0.9
 CORRIDOR_WIDENINGS = 2
+# Corridors kept for the next search of the same trip (`Router.corridor`).
+CORRIDOR_CACHE = 4
 
 # The longest point-to-point trip the server plans, in straight-line km between
 # the snapped ends: the range over which corridor search was measured to stay
@@ -465,7 +467,6 @@ SNAP_OPEN_MAX_M = 20000.0
 # starts up to three hours early in the West and ends up to three hours late in
 # the East, always overnight and always toward closed, which is the side a gate
 # in a snowstorm should err on. docs/router-at-us-scale.md, "Closure dates".
-REGION_TZ = ZoneInfo("America/New_York")
 US_TIME_ZONES = (ZoneInfo("America/New_York"), ZoneInfo("America/Los_Angeles"))
 
 
@@ -1122,7 +1123,7 @@ class Router:
         self.length_m = t["length_m"].to_numpy()
         self.text = {c: Strings.from_arrow(t[c]) for c in self.EDGE_TEXT
                      if c in names}
-        self._minutes = t["minutes"].to_numpy()
+        self.free_minutes = t["minutes"].to_numpy()
         self._controls = {c: t[c].to_numpy() for c in CONTROL_COLUMNS}
         oneway = pc.utf8_lower(pc.cast(t["oneway"], pa.string()))
         self._oneway_rev = pc.fill_null(pc.is_in(oneway, pa.array(sorted(ONEWAY_REV))),
@@ -1166,7 +1167,7 @@ class Router:
                    "_rev_indptr", "_tail_order", "_tail_start", "_edge_order",
                    "_edge_start", "edge_u_idx", "edge_v_idx", "km", "length_m",
                    "unpaved_frac", "score_adj", "base_score", "pref_matrix",
-                   "_score", "_breakdown", "_roundabout", "_snap_closed",
+                   "free_minutes", "_score", "_breakdown", "_roundabout", "_snap_closed",
                    "_slot_flags",
                    "_private_slots", "_private_cost", "_car_closed_slots",
                    "_through_slots")
@@ -1255,6 +1256,8 @@ class Router:
         """What a built router and a loaded one both set up last: the objects
         that answer questions over the flat arrays."""
         self._scratch = _Scratch(self.n)
+        self._corridors = {}
+        self._corridor_lock = threading.Lock()
         self._edge_geom_m = ProjectedLines(self.lines)
         self._edge_tree = LineIndex(self.edge_grid, self._edge_geom_m)
         if self._has_access:
@@ -1263,8 +1266,9 @@ class Router:
         else:
             self._access_geom_m = self._access_tree = None
         self._dep_bearing = {}
+        self._flags_from = self._flag_sources()
         # Build-only state, gone once the arrays are made.
-        for name in ("_frame", "_minutes", "_controls", "_oneway_fwd",
+        for name in ("_frame", "_oneway_fwd",
                      "_oneway_rev", "_osm_u", "_osm_v"):
             self.__dict__.pop(name, None)
 
@@ -1467,7 +1471,8 @@ class Router:
         box's journal drops buffered stdout (server/DEPLOY-oracle.md, Part 8).
         """
         self._car_closed_slots = None
-        self._snap_closed = np.zeros(self.m, bool)
+        # `m`, or a test stub's `edges`, which is all it carries.
+        self._snap_closed = np.zeros(getattr(self, "m", None) or len(self.edges), bool)
         self._way_out, self._way_in = {}, {}
         c = self.closed_to_cars
         if c is None:
@@ -2207,7 +2212,7 @@ class Router:
         table = [SPEED_FACTOR.get(hw.text(c), SURFACE_SPEED_FACTOR)
                  for c in range(len(hw.offsets) - 1)]
         factor = np.append(np.array(table, float), SURFACE_SPEED_FACTOR)[hw.codes]
-        return self._minutes / factor
+        return self.free_minutes / factor
 
     def _control_minutes(self) -> tuple[np.ndarray, np.ndarray]:
         """Per undirected edge, minutes lost to traffic controls each way.
@@ -2388,6 +2393,11 @@ class Router:
             for exits in getattr(self, "_through_exits", {}).values():
                 flags[exits] |= SLOT_SEASONAL
         return flags
+
+    def _flag_sources(self):
+        """What `_slot_flags` was built from, by identity."""
+        return (id(getattr(self, "_private_slots", None)),
+                id(self._car_closed_slots), id(self.closures))
 
     def _hop_pairs(self, tails, heads) -> np.ndarray:
         """The pair id of each (tail, head) hop, or -1 where no road joins them.
@@ -2600,11 +2610,16 @@ class Router:
         # small share of any corridor, and testing every slot against each
         # set was a third of a request.
         flags = None if everything else self._slot_flags[slots]
+        # The flags summarise these three sets as they were when the graph was
+        # built. A caller that has since swapped one (a test closing or
+        # opening a gate) gets exact membership instead.
+        fresh = getattr(self, "_flags_from", None) == self._flag_sources()
         if getattr(self, "_private_slots", None) is not None and len(self._private_slots):
             if everything:
                 w[self._private_slots] += self._private_cost
             else:
-                k = np.flatnonzero(flags & SLOT_PRIVATE)
+                k = (np.flatnonzero(flags & SLOT_PRIVATE) if fresh
+                     else np.flatnonzero(_members_of(self._private_slots, slots)[1]))
                 at = np.searchsorted(self._private_slots, slots[k])
                 w[k] += self._private_cost[at]
         closed = self._closed_slots(on)
@@ -2612,13 +2627,16 @@ class Router:
             if everything:
                 w[closed] += np.inf
             else:
-                k = np.flatnonzero(flags & SLOT_SEASONAL)
+                k = (np.flatnonzero(flags & SLOT_SEASONAL) if fresh
+                     else np.arange(len(slots)))
                 w[k[_members_of(closed, slots[k])[1]]] += np.inf
         if self._car_closed_slots is not None:
             if everything:
                 w[self._car_closed_slots] = np.inf
-            else:
+            elif fresh:
                 w[flags & SLOT_CLOSED != 0] = np.inf
+            else:
+                w[_members_of(self._car_closed_slots, slots)[1]] = np.inf
         if blocked is not None and len(blocked):
             if everything:
                 w[blocked] = np.inf
@@ -3032,8 +3050,22 @@ class Router:
         Read off the node grid: the cells within the ellipse's bounding box,
         then each node in them tested exactly. Time and memory follow the
         corridor, not the graph.
+
+        The last CORRIDOR_CACHE are kept: a plan's fastest and scenic arms,
+        and the closed-for-season check after them, search the same trip.
         """
-        return Corridor(self, self._ellipse_nodes(trip, budget_km))
+        key = (trip.lat1, trip.lon1, trip.lat2, trip.lon2, round(budget_km, 6))
+        with self._corridor_lock:
+            hit = self._corridors.pop(key, None)
+            if hit is not None:
+                self._corridors[key] = hit          # move to the warm end
+                return hit
+        c = Corridor(self, self._ellipse_nodes(trip, budget_km))
+        with self._corridor_lock:
+            self._corridors[key] = c
+            while len(self._corridors) > CORRIDOR_CACHE:
+                self._corridors.pop(next(iter(self._corridors)))
+        return c
 
     def _ellipse_nodes(self, trip, budget_km: float) -> np.ndarray:
         """Graph indices v with |a v| + |v b| <= `budget_km`, ascending.
@@ -3170,6 +3202,7 @@ class Router:
         rows = np.asarray(rows, np.int64)
         data = {col: strings.values(rows) for col, strings in self.text.items()}
         data["length_m"] = np.asarray(self.length_m[rows])
+        data["minutes"] = np.asarray(self.free_minutes[rows])
         data["score"] = np.asarray(self._score[rows])
         for k, (_, col, _) in enumerate(SCENERY_BREAKDOWN):
             data[col] = np.asarray(self._breakdown[rows, k])

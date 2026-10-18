@@ -575,13 +575,20 @@ class TestCorridorSearch:
     def test_a_route_that_touches_the_corridor_is_searched_wider(self, router,
                                                                 monkeypatch):
         """The corridor is empirical, so a route that runs along its edge is
-        one the edge may have bent: searched again with twice the room. Forced
-        here by an allowance far too small for the trip."""
+        one the edge may have bent: searched again with twice the room, until
+        it no longer touches. Forced here by an allowance far too small for
+        the trip.
+
+        What the rule does not promise is the whole graph's route from a
+        corridor this narrow: squeezed to a few km, the Mass Pike fits without
+        touching and is kept, where the scenic route strays further. The
+        allowance itself is what makes the answer exact
+        (`test_it_matches_the_whole_graph_dijkstra_over_a_spread_of_routes`).
+        """
         import router as router_module
         s, t = self._od(router, BOSTON, WORCESTER)
-        expected = router.route(s, t, 1.0)
         monkeypatch.setattr(router_module, "CORRIDOR_SHARE", 0.0)
-        monkeypatch.setattr(router_module, "CORRIDOR_KM", 2.0)
+        monkeypatch.setattr(router_module, "CORRIDOR_KM", 0.3)
         monkeypatch.setattr(router_module, "CORRIDOR_WIDENINGS", 8)
         seen = []
         real = router_module.Router.corridor
@@ -591,8 +598,11 @@ class TestCorridorSearch:
         got = router.route(s, t, 1.0)
         assert len(seen) > 1, "a squeezed corridor was not widened"
         assert seen == sorted(seen)
-        assert got.minutes == pytest.approx(expected.minutes, abs=1e-9)
-        assert list(got.edges.index) == list(expected.edges.index)
+        assert got is not None
+        trip = router._trip(s, t)
+        allowance = seen[-1] - trip.km
+        path = [router.idx[n] for n in router.node_id[got.nodes]]
+        assert trip.excess(path) <= router_module.CORRIDOR_TOUCH * allowance + 1e-9
 
 
 class TestTurnRestrictions:

@@ -102,6 +102,7 @@ def main():
     for name, extra in (("km", link_km), ("length_m", link_km * 1000.0),
                         ("unpaved_frac", np.zeros(L)), ("score_adj", np.zeros(L)),
                         ("base_score", np.zeros(L)), ("_score", np.zeros(L)),
+                        ("free_minutes", link_km / LINK_KMH * 60.0),
                         ("_roundabout", np.zeros(L, bool)),
                         ("_snap_closed", np.zeros(L, bool))):
         arrays[name] = np.concatenate([tile(name), extra])
