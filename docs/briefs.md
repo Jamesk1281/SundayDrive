@@ -80,6 +80,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/wrong-way-timeout-brief.md` | `git show 1be0691:docs/wrong-way-timeout-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), "The wrong-way time-out"; D9 in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) §8.3 |
 | `docs/safety-quick-fixes-brief.md` | `git show 93cf704:docs/safety-quick-fixes-brief.md` | [safety-quick-fixes.md](safety-quick-fixes.md) |
 | `docs/national-marketing-brief.md` | `git show 426c2e5:docs/national-marketing-brief.md` | [marketing-plan.md](marketing-plan.md), rewritten for a national first launch |
+| `docs/western-landcover-brief.md` | `git show 06ae07f:docs/western-landcover-brief.md` | [western-landcover-verdict.md](western-landcover-verdict.md), with the scripts and results in `tools/western_landcover/` (on `usa`) |
 
 ## Briefs kept out of history
 
