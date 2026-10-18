@@ -78,11 +78,12 @@ R=data/raw/new-england-latest.osm.pbf; D=data/processed-ne
 .venv/bin/python pipeline/closures.py  "$R" "$D" # roads closed for the season, and to cars all year
 ```
 
-`closures.py` writes `seasonal_closures.parquet` and `closed_to_cars.parquet`
-in one pass. Both name edges by their row in `graph_edges.parquet`, so it reruns
-after every `graph.py`. The router refuses a table built against another graph
-rather than closing whichever roads now sit at those rows
-([`docs/closed-roads.md`](docs/closed-roads.md)).
+`closures.py` writes `seasonal_closures.parquet`, `closed_to_cars.parquet` and
+`osm_unpaved.parquet` in one pass. All three name edges by their row in
+`graph_edges.parquet`, so it reruns after every `graph.py`. The router refuses a
+table built against another graph rather than closing whichever roads now sit
+at those rows ([`docs/closed-roads.md`](docs/closed-roads.md),
+[`docs/safety-quick-fixes.md`](docs/safety-quick-fixes.md)).
 
 ## Run the API
 

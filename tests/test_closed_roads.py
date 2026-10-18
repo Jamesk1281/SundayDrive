@@ -19,11 +19,11 @@ import pytest
 import shapely
 from pyproj import Transformer
 
-from closures import join_closed_to_cars
-from common import (CAR_ACCESS_KEYS, CLOSED_TO_CARS, CRS_METERS, barrier_closes,
-                    car_access, closed_to_cars)
+from closures import join_closed_to_cars, join_unpaved, tiger_unpaved, too_rough
+from common import (CAR_ACCESS_KEYS, CLOSED_TO_CARS, CRS_METERS, SEALED,
+                    barrier_closes, car_access, closed_to_cars)
 from conftest import DATA, ROOT, ROUTER_DATA
-from router import ClosedToCars, Router
+from router import ClosedToCars, OsmUnpaved, Router
 
 _TO_M = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
 _TO_LL = Transformer.from_crs(CRS_METERS, 4326, always_xy=True)
@@ -244,6 +244,107 @@ class TestTheJoin:
         assert np.isnan(table.iloc[0]["at_m"])
 
 
+class TestTooRoughForACar:
+    """Decided 2026-10-18: 4WD-only and very rough roads are closed to cars,
+    as fords are; `smoothness=bad` stays open (docs/safety-quick-fixes.md)."""
+
+    @pytest.mark.parametrize("tags,found", [
+        ({"4wd_only": "yes"}, ["4wd_only=yes"]),
+        ({"4wd_only": " Yes "}, ["4wd_only=yes"]),
+        ({"smoothness": "very_bad"}, ["smoothness=very_bad"]),
+        ({"smoothness": "horrible"}, ["smoothness=horrible"]),
+        ({"smoothness": "very_horrible"}, ["smoothness=very_horrible"]),
+        ({"smoothness": "impassable"}, ["smoothness=impassable"]),
+        ({"4wd_only": "yes", "smoothness": "horrible"},
+         ["4wd_only=yes", "smoothness=horrible"]),
+    ])
+    def test_closed(self, tags, found):
+        assert too_rough(tags) == found
+
+    @pytest.mark.parametrize("tags", [
+        {"smoothness": "bad"}, {"smoothness": "intermediate"}, {"smoothness": "good"},
+        {"4wd_only": "no"}, {"4wd_only": "recommended"}, {"tracktype": "grade5"},
+        {"surface": "dirt"}, {},
+    ])
+    def test_open(self, tags):
+        assert too_rough(tags) == []
+
+    def test_its_way_closes_its_own_edges_and_says_why(self):
+        edges = _edges((1, 2, _BOWED), (1, 2, _STRAIGHT))
+        way = {**_way(7, [1, 98, 99, 2], closes="smoothness=very_bad"), "kind": "rough"}
+        table, _ = join_closed_to_cars([way], {}, edges)
+        assert list(table["edge"]) == [1]
+        assert tuple(table.iloc[0][["kind", "tag"]]) == ("rough", "smoothness=very_bad")
+        assert np.isnan(table.iloc[0]["at_m"])
+
+
+class TestTigersFourWheelDriveClass:
+    """TIGER's A5x is unpaved, not closed, unless OSM's own surface says it
+    is sealed (docs/safety-quick-fixes.md, "Unpaved")."""
+
+    @pytest.mark.parametrize("tags", [
+        {"tiger:cfcc": "A51"}, {"tiger:cfcc": "A52"}, {"tiger:cfcc": "A53"},
+        {"tiger:cfcc": "A51", "surface": "gravel"},
+        {"tiger:cfcc": "A51", "surface": "dirt"},
+        {"tiger:cfcc": "A51;A51"},
+        {"tiger:cfcc": " a51 ", "surface": "unpaved"},
+    ])
+    def test_unpaved(self, tags):
+        assert tiger_unpaved(tags) == f"tiger:cfcc={tags['tiger:cfcc'].strip()}"
+
+    @pytest.mark.parametrize("surface", sorted(SEALED))
+    def test_a_sealed_surface_wins(self, surface):
+        """61.9 of New England's 711.6 km of A51 carry one."""
+        assert tiger_unpaved({"tiger:cfcc": "A51", "surface": surface}) is None
+        assert tiger_unpaved({"tiger:cfcc": "A51", "surface": surface.upper()}) is None
+
+    @pytest.mark.parametrize("value", [
+        "A41", "A31", "A74", "",
+        # A way joined from a 4WD trail and a road of another class.
+        "A41;A51", "A51;A41", "A41:A51", "A51;A74",
+        "A5", "A510",
+    ])
+    def test_anything_else_is_left_to_its_surface(self, value):
+        assert tiger_unpaved({"tiger:cfcc": value}) is None
+        assert tiger_unpaved({}) is None
+
+    def test_its_way_counts_its_own_edges(self):
+        edges = _edges((1, 2, _BOWED), (1, 2, _STRAIGHT), (2, 3, [_N[2], _N[3]]))
+        table = join_unpaved([{"way_id": 7, "name": "Trail", "tag": "tiger:cfcc=A51",
+                               "refs": [1, 98, 99, 2],
+                               "coords": [_N[r] for r in (1, 98, 99, 2)]}], edges)
+        assert list(table["edge"]) == [1]
+        assert table.iloc[0]["tag"] == "tiger:cfcc=A51"
+
+    def test_a_table_built_against_another_graph_is_refused(self):
+        table = pd.DataFrame({"edge": [0, 1], "u": [10, 11], "v": [11, 99],
+                              "way_id": [7, 7], "tag": "tiger:cfcc=A51",
+                              "name": "", "length_m": [100.0, 200.0]})
+        with pytest.raises(RuntimeError, match="closures.py"):
+            OsmUnpaved(table, np.array([10, 11]), np.array([11, 12]))
+        o = OsmUnpaved(table.iloc[:1], np.array([10, 11]), np.array([11, 12]))
+        assert (o.edges.tolist(), o.n_ways, o.km) == ([0], 1, 0.1)
+
+    def test_the_router_counts_them_as_dirt_and_says_so(self, tmp_path, capsys):
+        stub = SimpleNamespace(edges=pd.DataFrame({"u": [10, 11, 12], "v": [11, 12, 13]}))
+        Router._read_closed_to_cars(stub, tmp_path)
+        assert stub.osm_unpaved is None
+        assert "unpaved by TIGER's 4WD class: none" in capsys.readouterr().out
+        frac = np.array([0.0, 0.5, 0.0])
+        e = pd.DataFrame(index=[0, 1, 2])
+        assert Router._state_unpaved(stub, e, frac) is frac
+
+        pd.DataFrame({"edge": [2], "u": [12], "v": [13], "way_id": [7],
+                      "tag": "tiger:cfcc=A51", "name": "", "length_m": [1500.0]}
+                     ).to_parquet(tmp_path / "osm_unpaved.parquet")
+        Router._read_closed_to_cars(stub, tmp_path)
+        assert ("unpaved by TIGER's 4WD class: 1 edges (1.5 km, 1 ways)"
+                in capsys.readouterr().out)
+        assert Router._state_unpaved(stub, e, frac).tolist() == [0.0, 0.5, 1.0]
+        # A slice of the edges gets its own rows and no others.
+        assert Router._state_unpaved(stub, e.iloc[:2], frac[:2]).tolist() == [0.0, 0.5]
+
+
 # ------------------------------------------------------------------ the loader
 
 def _row(edge, u, v, rule="edge", osm_type="way", osm_id=7, at_m=np.nan):
@@ -408,7 +509,7 @@ class TestTheTable:
             shut |= set(closed_router.state_roads.edges["closed"].tolist())
         assert len(c.edges) == len(shut)
         assert len(c.through) == table.loc[table["rule"] == "through", "osm_id"].nunique()
-        assert len(closed_router._through_split) == len(c.through)
+        assert len(closed_router._through_all_year) == len(c.through)
 
 
 # ------------------------------------------------------------------ the routes
@@ -510,6 +611,78 @@ class TestTheSnapStaysOnItsSide:
         s, _ = r.snap(*_ll(mid))
         assert s in (int(r.edge_u_idx[chosen]), int(r.edge_v_idx[chosen]))
         assert r.route(s, r.snap(*BOSTON)[0], 0.0) is not None
+
+
+# Two roads closed as too rough for a car (docs/safety-quick-fixes.md):
+# Beartown State Forest Road in Monterey, MA, `smoothness=horrible` over two
+# edges, and McMurphy Road in New Hampshire, the extract's one `4wd_only=yes`.
+BEARTOWN_WAY = 8656702
+MCMURPHY_WAY = 710696943
+
+
+def _rough_edges(table, way):
+    rows = table[(table["osm_type"] == "way") & (table["osm_id"] == way)]
+    if rows.empty or "rough" not in set(rows["kind"]):
+        pytest.skip("closed_to_cars.parquet predates the rough-road rule; rerun closures.py")
+    return sorted(rows["edge"].astype(int))
+
+
+class TestTooRoughOnTheBuild:
+    def test_they_are_closed_and_say_why(self, table):
+        rows = table[table["osm_id"] == BEARTOWN_WAY]
+        if rows.empty or "rough" not in set(rows["kind"]):
+            pytest.skip("closed_to_cars.parquet predates the rough-road rule; rerun closures.py")
+        assert set(rows["tag"]) == {"smoothness=horrible"}
+        assert len(rows) == 2
+        assert set(table.loc[table["osm_id"] == MCMURPHY_WAY, "tag"]) == {"4wd_only=yes"}
+        assert not table.loc[table["tag"].str.contains("smoothness=bad\\b", regex=True)].shape[0]
+
+    @pytest.mark.parametrize("way", [BEARTOWN_WAY, MCMURPHY_WAY])
+    def test_no_route_drives_them_and_one_would_without_the_rule(
+            self, closed_router, table, monkeypatch, way):
+        r = closed_router
+        edges = _rough_edges(table, way)
+        ends = sorted({int(r.edge_u_idx[e]) for e in edges} ^ {int(r.edge_v_idx[e]) for e in edges})
+        lat, lon = r.nodes["lat"].to_numpy(), r.nodes["lon"].to_numpy()
+        a, b = (lat[ends[0]], lon[ends[0]]), (lat[ends[-1]], lon[ends[-1]])
+        for pref in (0.0, 0.5):
+            for s, t in ((r.snap(*a)[0], r.snap_destination(*b)[0]),
+                         (r.snap(*b)[0], r.snap_destination(*a)[0])):
+                res = r.route(s, t, pref, {})
+                assert res is not None
+                assert not set(edges) & set(res.edges.index), (way, pref)
+        # The control: with these edges open, the same trip drives them.
+        slots = np.flatnonzero(np.isin(r.eidx, edges))
+        monkeypatch.setattr(r, "_car_closed_slots",
+                            np.setdiff1d(r._car_closed_slots, slots))
+        res = r.route(r.snap(*a)[0], r.snap_destination(*b)[0], 0.0, {})
+        assert set(edges) & set(res.edges.index)
+
+    def test_a_point_on_one_starts_on_the_nearest_open_road(self, closed_router, table):
+        r = closed_router
+        edges = _rough_edges(table, BEARTOWN_WAY)
+        for e in edges:
+            assert r._snap_closed[e]
+            mid = r._edge_geom_m[e].interpolate(0.5, normalized=True)
+            s, _ = r.snap(*_ll(mid))
+            out = r.route(s, r.snap_destination(*BOSTON)[0], 0.5, {})
+            assert out is not None and not set(edges) & set(out.edges.index)
+            t, _ = r.snap_destination(*_ll(mid))
+            back = r.route(r.snap(*BOSTON)[0], t, 0.5, {})
+            assert back is not None and not set(edges) & set(back.edges.index)
+
+
+class TestTigersFourWheelDriveClassOnTheBuild:
+    def test_every_row_is_dirt_to_the_router_and_none_is_closed_for_it(
+            self, closed_router, table):
+        r = closed_router
+        if r.osm_unpaved is None:
+            pytest.skip("osm_unpaved.parquet missing; run pipeline/closures.py")
+        assert (r.unpaved_frac[r.osm_unpaved.edges] == 1.0).all()
+        unpaved = pd.read_parquet(DATA / "osm_unpaved.parquet")
+        assert set(unpaved["tag"].str.slice(0, 13)) == {"tiger:cfcc=A5"}
+        # Unpaved, not closed: closures.py closes nothing for the class.
+        assert not table["tag"].str.contains("tiger", regex=False).any()
 
 
 class TestABarrierBetweenTwoRoads:
@@ -670,3 +843,13 @@ def test_the_deploy_script_ships_the_table_and_reports_it():
                     if line.startswith("OPTIONAL="))
     assert "closed_to_cars" in optional.split("=", 1)[1].strip('"').split()
     assert "'closed to cars'" in script
+
+
+def test_the_deploy_script_ships_the_unpaved_table_and_reports_it():
+    """Without it the box takes TIGER's 4WD trails as paved, with nothing in
+    any log (docs/safety-quick-fixes.md, "Deploy steps")."""
+    script = (ROOT / "server" / "deploy-oracle.sh").read_text()
+    optional = next(line for line in script.splitlines()
+                    if line.startswith("OPTIONAL="))
+    assert "osm_unpaved" in optional.split("=", 1)[1].strip('"').split()
+    assert "unpaved by TIGER" in script

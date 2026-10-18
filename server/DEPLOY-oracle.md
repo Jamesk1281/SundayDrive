@@ -347,6 +347,7 @@ cd ~/Scenic/data/processed-ne && sha256sum *.parquet
 | `access_entries.parquet` | 31.9 MB | optional, same |
 | `seasonal_closures.parquet` | 0.02 MB | optional, but without it routes use roads closed for the season. The router prints `seasonal closures: ...` at startup either way |
 | `closed_to_cars.parquet` | 0.07 MB | optional, but without it routes drive through locked gates and onto roads closed to cars. The router prints `closed to cars: ...` at startup either way |
+| `osm_unpaved.parquet` | 0.04 MB | optional, but without it routes take TIGER's 4WD trails as paved. The router prints `unpaved by TIGER's 4WD class: ...` at startup either way (docs/safety-quick-fixes.md) |
 
 On the first run all 382 MB crossed in 16 s. If yours drops, re-run the
 identical command until the checksums match.
