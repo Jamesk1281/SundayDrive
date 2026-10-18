@@ -24,6 +24,7 @@ import pytest
 from scipy.sparse import csr_matrix
 
 import looper
+from conftest import require_places
 from looper import (CANDIDATE_TOLERANCE, DISC_SLACK, EARTH_KM, LoopPlanner,
                     _Fields)
 
@@ -33,6 +34,12 @@ STOWE = (44.4654, -72.6874)
 PETERSHAM = (42.4879, -72.1889)
 BAR_HARBOR = (44.3876, -68.2039)
 MILLINOCKET = (45.6573, -68.7098)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def new_england(router):
+    require_places(router, Needham=NEEDHAM, Stowe=STOWE, Petersham=PETERSHAM,
+                   Bar_Harbor=BAR_HARBOR, Millinocket=MILLINOCKET)
 
 
 @pytest.fixture(scope="module")
@@ -176,6 +183,8 @@ class TestTheProof:
         re-entering costs more again, and `_refine` proves them."""
         for place, km in ((STOWE, 10.0), (NEEDHAM, 80.0), (PETERSHAM, 80.0)):
             cost, disc, f = self._cut(router, capped, place, km)
+            if disc is None:      # most of the graph: searched whole, exact
+                continue
             idx = capped.candidates(f, km)
             if not f.out.exact[idx].all() or not f.back.exact[idx].all():
                 break

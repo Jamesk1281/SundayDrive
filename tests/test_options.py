@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 import shapely
 
-from conftest import DATA, ROOT, ROUTER_DATA
+from conftest import DATA, ROOT, ROUTER_DATA, require_places
 
 ON = date(2026, 10, 6)
 GAP_OPEN = date(2026, 10, 10)
@@ -44,6 +44,8 @@ def server():
 
 @pytest.fixture(scope="module")
 def R(server):
+    require_places(server.ROUTER, Waitsfield=WAITSFIELD, Warren=WARREN,
+                   Bristol=BRISTOL, Needham=NEEDHAM)
     return server.ROUTER
 
 
