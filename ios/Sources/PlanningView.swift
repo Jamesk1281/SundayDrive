@@ -35,7 +35,7 @@ struct PlanningView: View {
     @Bindable var model: RouteModel
 
     @State private var stage: PlanStage = .home
-    @State private var camera: MapCameraPosition = .region(.newEngland)
+    @State private var camera: MapCameraPosition = .region(.coverage)
     @State private var showingTaste = false
     @State private var showingSources = false
     /// True while any address field on the current stage has the keyboard.
@@ -121,6 +121,15 @@ struct PlanningView: View {
             guard model.loops.response == nil, let start = model.loops.start else { return }
             fitGeneration += 1
             withAnimation { camera = .around(start) }
+        }
+        // The launch check found the phone inside the covered area: leave the
+        // whole-country camera for the user's own part of it, unless they
+        // have already started planning something the camera is showing.
+        .onChange(of: model.launchFix?.latitude) {
+            guard let fix = model.launchFix, stage == .home,
+                  model.start == nil, model.loops.start == nil else { return }
+            fitGeneration += 1
+            withAnimation { camera = .region(.home(around: fix)) }
         }
     }
 

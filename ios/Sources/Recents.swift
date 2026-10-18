@@ -31,9 +31,9 @@ enum Recents {
     /// list never needs its own screen or a scroll.
     static let limit = 5
 
-    /// The saved destinations, minus any outside New England.
+    /// The saved destinations, minus any outside the covered area.
     ///
-    /// Search can no longer produce one (`NewEngland.firstInside`), but an
+    /// Search can no longer produce one (`Coverage.firstInside`), but an
     /// entry saved before it could still route somewhere the server refuses,
     /// one tap from the first screen. Dropped on reading rather than deleted:
     /// the store is left as it was found.
@@ -41,7 +41,7 @@ enum Recents {
         guard let data = UserDefaults.standard.data(forKey: key),
               let rows = try? JSONDecoder().decode([Recent].self, from: data)
         else { return [] }
-        return rows.filter { NewEngland.contains($0.coordinate) }
+        return rows.filter { Coverage.contains($0.coordinate) }
     }
 
     /// Record a destination, most recent first, de-duplicated by name so the

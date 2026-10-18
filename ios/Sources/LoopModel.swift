@@ -135,10 +135,10 @@ final class LoopModel {
 
     /// Where autocomplete results are ranked around — the map's camera, same as
     /// the directions tab. Without it every search is answered from the middle of
-    /// the state.
-    var searchRegion: MKCoordinateRegion = .massachusetts
+    /// the country.
+    var searchRegion: MKCoordinateRegion = .coverageEnvelope
 
-    /// The first result in New England, never simply the first — see
+    /// The first result in the covered area, never simply the first — see
     /// `RouteModel.resolve`.
     private func resolve(_ request: MKLocalSearch.Request, label: String) async {
         do {
@@ -147,8 +147,8 @@ final class LoopModel {
                 errorText = "No match for “\(label)”"
                 return
             }
-            guard let match = NewEngland.firstInside(result.mapItems) else {
-                errorText = NewEngland.notInNewEngland(label)
+            guard let match = Coverage.firstInside(result.mapItems) else {
+                errorText = Coverage.notCovered(label)
                 return
             }
             start = match.placemark.coordinate
@@ -166,7 +166,7 @@ final class LoopModel {
     /// Takes a fresh fix rather than the cached one for the same reason
     /// `RouteModel.useMyLocation` does: a Wi-Fi-derived location is often a
     /// street or two out, and here that error decides which roads are within
-    /// reach. And, as there, a fix outside New England stops here with a
+    /// reach. And, as there, a fix outside the covered area stops here with a
     /// message, and no request is made.
     func useMyLocation() async {
         isLocatingUser = true
@@ -180,7 +180,7 @@ final class LoopModel {
             return
         }
         guard locationManager.noteRegion(of: fix) == .inside else {
-            errorText = NewEngland.outsideHere
+            errorText = Coverage.outsideHere
             return
         }
         start = fix.coordinate

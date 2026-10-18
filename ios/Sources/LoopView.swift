@@ -75,7 +75,7 @@ struct LoopView: View {
         }
         .onChange(of: focused) { _, value in isSearching = value != nil }
         .onDisappear { isSearching = false }
-        // Outside New England, Home's Loop row brings you here without
+        // Outside the covered area, Home's Loop row brings you here without
         // locating you, so the field is ready for the town you type instead.
         .task {
             if model.locationManager.regionStatus == .outside,

@@ -30,12 +30,12 @@ struct HomeView: View {
                 }
 
                 intentRow(title: "Loop",
-                          subtitle: isOutside ? "Type a New England town to start"
+                          subtitle: isOutside ? "Type a town to start from"
                                               : "From here, about \(loopEstimate)",
                           systemImage: loopSymbol,
                           tint: .amberText, wash: .amberWash) {
                     stage = .loop
-                    // Outside New England, "from here" cannot be: the loop
+                    // Outside the covered area, "from here" cannot be: the loop
                     // stage opens on its start field instead (`LoopView`), and
                     // no fix is spent on a request the server would refuse.
                     guard !isOutside else { return }
@@ -102,7 +102,7 @@ struct HomeView: View {
         TimeText.compact(minutes: model.loops.estimatedMinutes(forKm: model.loops.targetKm))
     }
 
-    /// The last fix was outside New England: at launch, or from either
+    /// The last fix was outside the covered area: at launch, or from either
     /// My Location. See `RegionStatus`.
     private var isOutside: Bool { model.locationManager.regionStatus == .outside }
 

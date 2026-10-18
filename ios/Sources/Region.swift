@@ -1,68 +1,64 @@
 import MapKit
 
 extension MKCoordinateRegion {
-    /// The whole state of Massachusetts.
-    ///
-    /// The fallback "roughly where the user is" box, used for the initial map
-    /// camera and as the search bias until we have something better. When the
-    /// app expands beyond MA, this is the single place to widen.
-    static let massachusetts = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 42.15, longitude: -71.8),
-        span: MKCoordinateSpan(latitudeDelta: 2.6, longitudeDelta: 2.6)
-    )
-
-    /// All six states the app serves — **the opening map camera, and nothing
+    /// The 48 contiguous states — **the opening map camera, and nothing
     /// else.**
     ///
-    /// The camera and the search bias want different boxes, and conflating them
-    /// is why this was a single constant. The camera answers "where am I, and
-    /// does this app cover me?", and the honest answer is New England, not one
-    /// state of six (`roadmap.md`). The *bias* must stay tight for the reason
-    /// `around(_:)` records below: completions rank by distance from the box's
-    /// centre, so widening it is how "main street" starts offering a main
-    /// street four towns away.
+    /// The camera answers "where am I, and does this app cover me?". Before
+    /// the phone has a fix, the honest answer is the whole covered area; once
+    /// the launch check finds the phone inside it, the camera moves to
+    /// `home(around:)` (`PlanningView`). The search bias wants a different
+    /// box, for the reason `around(_:)` records below.
     ///
-    /// **Taller than New England, and centred north of it, on purpose.** The
-    /// map card runs up under the status bar, and MapKit fits the box to the
-    /// whole 306 pt card without knowing that. Measured on 2026-10-04, the old
-    /// box (centre 43.6, -71.3, 6.4° square) put Fort Kent 28 pt *above* the
-    /// card on an iPhone SE and a 17 Pro Max alike, and northern New Hampshire
-    /// under the Dynamic Island. This one puts the northern tip of Maine
-    /// (Estcourt Station, 47.46) at y = 72, 10 pt below the 17 Pro Max's
-    /// 62 pt status bar, and Connecticut's southern tip at y = 282, clear of
-    /// Apple's logo row. The longitude span only has to be narrower than the
-    /// card shows, so the fit stays height-limited on the narrowest phone.
-    static let newEngland = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 45.05, longitude: -70.34),
-        span: MKCoordinateSpan(latitudeDelta: 9.3, longitudeDelta: 7.6)
+    /// The fit is width-limited on every phone: the area is about two and a
+    /// half times as wide as it is tall on the map, and the home card is
+    /// wider than it is tall. So the latitude span only has to be no bigger
+    /// than the card shows, and the status bar cannot hide anything in it.
+    /// Measured on the simulator; see `docs/app-goes-national.md`.
+    static let coverage = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 37.6, longitude: -95.85),
+        span: MKCoordinateSpan(latitudeDelta: 24.0, longitudeDelta: 59.6)
     )
 
-    /// The bounding box of New England plus a tenth of a degree all round —
-    /// **for search, and never for deciding what is in.**
+    /// The bounding box of the covered area plus a tenth of a degree all
+    /// round — **for search, and never for deciding what is in.**
     ///
-    /// What a search falls back to once its bias has left New England (see
-    /// `NewEngland.searchBias`), and the only region a typed search is ever
-    /// restricted to. Built from the generated outline's own bounds, so it
-    /// takes in every vertex of it, Fort Kent and Lubec included. Any box that
-    /// does also takes in Montauk, Sherbrooke and Edmundston, which is why
-    /// `NewEngland.contains` decides containment and this does not.
-    static let newEnglandEnvelope: MKCoordinateRegion = {
+    /// What a search falls back to once its bias has left the covered area
+    /// (see `Coverage.searchBias`), the only region a typed search is ever
+    /// restricted to, and the bias before the map has reported a camera. Built
+    /// from the generated outline's own bounds, so it takes in every vertex of
+    /// it, Key West and the Northwest Angle included. It also takes in Toronto,
+    /// Vancouver and Tijuana, which is why `Coverage.contains` decides
+    /// containment and this does not.
+    static let coverageEnvelope: MKCoordinateRegion = {
         let margin = 0.1
         return MKCoordinateRegion(
             center: CLLocationCoordinate2D(
-                latitude: (NewEnglandBoundary.south + NewEnglandBoundary.north) / 2,
-                longitude: (NewEnglandBoundary.west + NewEnglandBoundary.east) / 2),
+                latitude: (CoverageBoundary.south + CoverageBoundary.north) / 2,
+                longitude: (CoverageBoundary.west + CoverageBoundary.east) / 2),
             span: MKCoordinateSpan(
-                latitudeDelta: NewEnglandBoundary.north - NewEnglandBoundary.south + 2 * margin,
-                longitudeDelta: NewEnglandBoundary.east - NewEnglandBoundary.west + 2 * margin))
+                latitudeDelta: CoverageBoundary.north - CoverageBoundary.south + 2 * margin,
+                longitudeDelta: CoverageBoundary.east - CoverageBoundary.west + 2 * margin))
     }()
+
+    /// Where the home map goes once the launch check has a fix inside the
+    /// covered area: a box about 300 km across, centred on the phone.
+    ///
+    /// Big enough that an approximate fix, which can be kilometres out, still
+    /// lands the phone well inside it, and that a day's drive from home is on
+    /// the map; small enough that the search bias, which follows the camera,
+    /// ranks around the user rather than from the middle of the country.
+    static func home(around center: CLLocationCoordinate2D) -> MKCoordinateRegion {
+        around(center, meters: 300_000)
+    }
 
     /// A box roughly `meters` across, centered on a point.
     ///
-    /// Search results are ranked by distance from the bias region's center, and
-    /// the statewide box centers on Oxford — 40 miles from Boston. Biasing to
-    /// where the user actually is (or is looking on the map) is what stops
-    /// "main street" offering a main street four towns away.
+    /// Search results are ranked by distance from the bias region's center,
+    /// and a box much bigger than the user's surroundings centres somewhere
+    /// they are not. Biasing to where the user actually is (or is looking on
+    /// the map) is what stops "main street" offering a main street four towns
+    /// away.
     static func around(_ center: CLLocationCoordinate2D,
                        meters: CLLocationDistance = 30_000) -> MKCoordinateRegion {
         MKCoordinateRegion(center: center, latitudinalMeters: meters, longitudinalMeters: meters)

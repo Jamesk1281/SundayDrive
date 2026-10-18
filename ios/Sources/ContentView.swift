@@ -27,8 +27,8 @@ struct ContentView: View {
     /// here only to know when the first launch's notice has been acknowledged.
     @AppStorage("hasSeenBeforeYouDrive") private var hasSeenNotice = false
 
-    /// The phone is outside New England and has not yet said "Got it" this
-    /// launch. See `OutsideNewEnglandView`.
+    /// The phone is outside the covered area and has not yet said "Got it"
+    /// this launch. See `OutsideCoverageView`.
     @State private var showingOutsideWarning = false
     /// Whether this launch has checked, so it checks once and warns once.
     @State private var checkedWhereabouts = false
@@ -52,7 +52,7 @@ struct ContentView: View {
             }
 
             if showingOutsideWarning {
-                OutsideNewEnglandView { showingOutsideWarning = false }
+                OutsideCoverageView { showingOutsideWarning = false }
                     .transition(.opacity)
                     .zIndex(1)
             }

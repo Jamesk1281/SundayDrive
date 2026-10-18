@@ -48,18 +48,21 @@ struct BeforeYouDriveView: View {
 
                     Text("What it does not do").sectionLabel()
 
-                    limit("New England only.",
-                          "Six states, 236,000 km of road, all of it measured.")
+                    limit("The 48 contiguous states and DC only.",
+                          "Directions go up to 500 km (310 miles) in a straight line. "
+                          + "Loops have their own limits.")
+                    limit("Driven in New England only.",
+                          "Everywhere else, routes come from the same map data and the "
+                          + "same scoring, but nobody has driven them to check.")
                     limit("No lane guidance.",
-                          "The data covers between 4.6% and 23.8% of junction approaches "
-                          + "depending on the state, which is not enough to tell you which "
+                          "In the states measured, the data covers between 4.6% and 23.8% "
+                          + "of junction approaches, which is not enough to tell you which "
                           + "lane to be in.")
                     limit("No live traffic.",
                           "Every time shown is a model, not a measurement.")
-                    limit("Beauty is not measured evenly.",
-                          "The terrain component saturates north of Massachusetts, so a "
-                          + "Maine road and a Connecticut road are not scored on quite the "
-                          + "same ruler.")
+                    limit("Beauty is a model.",
+                          "One ruler for the whole country, checked against drivers’ "
+                          + "ratings in New England only.")
                     limit("Seasonal roads.",
                           "Some mountain roads close for winter. The app avoids the "
                           + "closures OpenStreetMap records, but not every closure is "
