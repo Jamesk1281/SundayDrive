@@ -5,6 +5,10 @@
 #   EPA Level III ecoregions (28 MB zip; public domain)
 #   PAD-US 4.1 national geodatabase (1.52 GB zip, 2.0 GB unpacked; public domain)
 # WorldCover is fetched tile by tile by wc_grids.py.
+# 2026-10-18: the PAD-US zip below now 404s (its real name and a bogus one alike); ScienceBase moved
+# it behind a file manager whose download link needs a signed-in session. padus_rest.py reads the
+# same combined layer from USGS's public feature service, one region bbox at a time, and padus.py
+# takes that file (build_region.sh's PADUS_FILE). The PAD-US step is last, so the rest still lands.
 set -e
 : ${NS_WORK:?set NS_WORK}
 mkdir -p $NS_WORK/fhwa $NS_WORK/eco_dl/x $NS_WORK/padus_dl $NS_WORK/padus_x
