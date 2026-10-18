@@ -51,11 +51,19 @@ them at pref 1, fastest roads either side. They are how the app fetches an
 option in full and how it reroutes one mid-drive.
 
 Every route and loop avoids the roads OpenStreetMap marks closed for the season
-on the day of the request, in New England's time zone (pipeline/closures.py).
-When the only way to a destination is one of them, /api/route says so: a 404
-whose error is CLOSED_FOR_SEASON.
+on the day of the request, judged on every date the contiguous US is on at that
+moment (router.region_today, pipeline/closures.py). When the only way to a
+destination is one of them, /api/route says so: a 404 whose error is
+CLOSED_FOR_SEASON.
+
+A point-to-point trip is capped at router.MAX_TRIP_KM in a straight line
+between its snapped ends, and refused before any search with a 400 whose
+`code` is "TRIP_TOO_LONG" (a reroute, with a heading, at
+router.REROUTE_MAX_TRIP_KM). docs/router-at-us-scale.md.
 
 Run:  python server/app.py [processed_dir]   (default: data/processed)
+With SUNDAYDRIVE_PACK set, the graph is mapped from that pack
+(tools/us_scale_router/pack.py) instead of built from the parquets.
 """
 
 import os
@@ -72,8 +80,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
                     LoopPlanner)  # noqa: E402
-from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED, Router,  # noqa: E402
-                    region_today)
+from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED,  # noqa: E402
+                    MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, Router, region_today)
 import options as route_options  # noqa: E402
 
 # How far a user may push a single beauty type. 0 ignores it; the upper bound
@@ -102,9 +110,32 @@ LOOP_RETRACE_NOTE = 0.15
 # come up serving the default region and the default data directory, and
 # answer every request as though that were correct. Delete both legacy names
 # at the first release, not before.
-REGION = (os.environ.get("SUNDAYDRIVE_REGION")
-          or os.environ.get("VICTORYLAP_REGION")
-          or os.environ.get("SCENIC_REGION", "New England"))
+#
+# A pack names its region (tools/us_scale_router/pack.py --region), so the
+# national graph says "the contiguous United States" without anyone having to
+# remember to set this; the environment still wins, and a graph built from
+# parquets with nothing set is New England's, as it always was. Resolved after
+# the graph loads, below.
+REGION_ENV = (os.environ.get("SUNDAYDRIVE_REGION")
+              or os.environ.get("VICTORYLAP_REGION")
+              or os.environ.get("SCENIC_REGION"))
+
+def _outside(what: str) -> str:
+    """The 400 for a point no road we cover is near. The app shows it as
+    written (ios RouteService), so it is a sentence for a driver."""
+    return f"Sunday Drive covers {REGION}, and {what} is outside it."
+
+
+# The 400 for a trip longer than the cap allows, as `code`, beside the words.
+TRIP_TOO_LONG = "TRIP_TOO_LONG"
+
+
+def _too_far(km: float, cap: float) -> str:
+    """What the app shows for a trip over the cap, in the miles it uses."""
+    return (f"That trip is {km * 0.621371:.0f} miles in a straight line. "
+            f"Sunday Drive plans drives of up to {cap * 0.621371:.0f} miles, "
+            "so pick a stop along the way and plan it in two parts.")
+
 
 # The 404 for a trip that only a road closed for the season connects. Kept
 # apart from "no route found", which reads as a wrong pin or a broken app: this
@@ -123,6 +154,12 @@ PROCESSED = (os.environ.get("SUNDAYDRIVE_DATA")
              or os.environ.get("VICTORYLAP_DATA")
              or os.environ.get("SCENIC_DATA", str(ROOT / "data" / "processed")))
 
+# A pack of the graph in PROCESSED (`Router.save_pack`, built by
+# tools/us_scale_router/pack.py), mapped instead of rebuilding the graph at
+# startup. Unset, the graph is built from the parquets as it always was. The
+# US graph needs one: built in place it would not fit the box.
+PACK = os.environ.get("SUNDAYDRIVE_PACK") or None
+
 # Route options (pipeline/options.py) are off unless this is set. They cost
 # about twice today's plan on the box (docs/route-options.md, "Capacity"), so
 # the owner turns them on after measuring there, and can turn them off again
@@ -136,9 +173,9 @@ CORS(app)
 # bottleneck when the server runs on a laptop behind a tunnel.
 Compress(app)
 
-print(f"loading graph from {PROCESSED} ...")
-ROUTER = Router(PROCESSED)
-# len(ROUTER.nodes), not ROUTER.n: the router overwrites `n` with the
+print(f"loading graph from {PACK or PROCESSED} ...", flush=True)
+ROUTER = Router(PROCESSED, pack=PACK)
+# ROUTER.n_real, not ROUTER.n: the router overwrites `n` with the
 # turn-restriction-expanded index count (~+1.2%), so reporting it here made
 # /api/health disagree with graph_nodes.parquet after a code-only deploy on
 # identical data — a false alarm in the one number a smoke check compares.
@@ -151,6 +188,8 @@ ROUTER = Router(PROCESSED)
 # ~0.7 s of CPU-bound numpy, so two at once would contend for the same cores and
 # finish no sooner, and the second request is almost always the same user
 # tapping the compass again.
+REGION = REGION_ENV or ROUTER.region or "New England"
+
 LOOPER = LoopPlanner(ROUTER)
 LOOP_LOCK = threading.Lock()
 
@@ -225,7 +264,7 @@ def _not_alone():
     # `api_route`'s `_computing()`; the locks are belt and braces.
     return IN_FLIGHT > 1 or LOOP_LOCK.locked() or REJOIN_LOCK.locked()
 
-print(f"ready: {len(ROUTER.nodes):,} nodes "
+print(f"ready: {ROUTER.n_real:,} nodes "
       f"({ROUTER.n:,} routing slots after turn-restriction splits)")
 
 
@@ -409,11 +448,24 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # road as the crow flies, which is routinely the wrong side of the building.
     t, t_off = ROUTER.snap_destination(*b)
     if max(s_off, t_off) > SNAP_MAX_M:
-        return jsonify(error="point is outside the covered road network "
-                             f"(currently {REGION})"), 400
+        return jsonify(error=_outside("that point")), 400
     if s == t:
         return jsonify(error="those points are too close together — "
                              "they sit on the same stretch of road"), 400
+
+    # The cap, before any search: corridor search was measured to stay near
+    # today's latency up to MAX_TRIP_KM, and a longer trip is refused rather
+    # than left to run past the app's 20 s. A reroute (it carries a heading)
+    # gets more room, because a driver who has wandered past the cap
+    # mid-drive is better served slowly than not at all. A loop's rejoin is
+    # bounded by the loop's own length. docs/router-at-us-scale.md.
+    if via is None:
+        moving = heading is not None or declined_uturn
+        cap = REROUTE_MAX_TRIP_KM if moving else MAX_TRIP_KM
+        km = ROUTER.trip_km(s, t)
+        if km > cap:
+            return jsonify(error=_too_far(km, cap), code=TRIP_TOO_LONG,
+                           max_km=cap, km=round(km, 1)), 400
 
     # Both routes are scored with the user's beauty weights so the two numbers
     # the app puts side by side ("scenery 4.1 -> 6.3") are on one scale. The
@@ -432,8 +484,7 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         # a destination — there is no building to find the car park entrance for.
         w, w_off = ROUTER.snap(*via)
         if w_off > SNAP_MAX_M:
-            return jsonify(error="that waypoint is outside the covered road "
-                                 f"network (currently {REGION})"), 400
+            return jsonify(error=_outside("that waypoint")), 400
         # The rejoin's own planner and lock, never the loop builds': a driver
         # is not queued behind anyone's "Try another direction", and is never
         # refused as busy (docs/loop-lock-contention.md). Still inside
@@ -566,8 +617,7 @@ def api_loop():
     # destination pin to pull out of a car park.
     start, offset = ROUTER.snap(*start_ll)
     if offset > SNAP_MAX_M:
-        return jsonify(error="point is outside the covered road network "
-                             f"(currently {REGION})"), 400
+        return jsonify(error=_outside("that point")), 400
 
     with _computing():
         return _loop(start, target_km, pref, weights, sector, avoid_unpaved, day)
@@ -671,8 +721,7 @@ def _cached_loop(key):
 
 @app.get("/api/health")
 def health():
-    return jsonify(status="ok", nodes=len(ROUTER.nodes),
-                   routing_slots=ROUTER.n)
+    return jsonify(status="ok", nodes=ROUTER.n_real, routing_slots=ROUTER.n)
 
 
 @app.get("/")
@@ -688,7 +737,7 @@ def index():
     return jsonify(
         service="sundaydrive-api",
         status="ok",
-        nodes=len(ROUTER.nodes),
+        nodes=ROUTER.n_real,
         routing_slots=ROUTER.n,
         endpoints={
             "/api/route": ("from=LAT,LON&to=LAT,LON[&pref=0..1][&via=LAT,LON]"

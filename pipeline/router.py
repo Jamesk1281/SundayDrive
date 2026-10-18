@@ -35,26 +35,29 @@ writes out/route_fastest.geojson and out/route_scenic.geojson.
 
 import json
 import math
+import pickle
 import sys
+import threading
 import warnings
 from datetime import date, datetime
 from functools import cached_property
-from heapq import heappop, heappush
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.compute as pc
+import pyarrow.parquet as pq
 import shapely
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import breadth_first_order, connected_components, dijkstra
 from shapely.ops import substring
-from shapely.strtree import STRtree
 from pyproj import Transformer
 
 from common import (CLOSURE_WINDOW, CONTROL_COLUMNS, CRS_METERS, ONEWAY_FWD,
                     ONEWAY_REV, in_window)
+from compact import Grid, Lines, Strings, _ranges
 from score import (CLASS_ADJ, LEGACY_UNPAVED_ADJ, WEIGHTS, blend, components,
                    composite)
 
@@ -343,84 +346,58 @@ SCENERY_BREAKDOWN = [(label, col, BREAKDOWN_OVERRIDE.get(col, BREAKDOWN_MIN))
 # same thing.
 BEAUTIFUL_SCORE = 7.0
 
-# --- A* on the fastest arm --------------------------------------------------
-# `route(pref=0)` is an A* rather than the full-graph Dijkstra every other
-# search runs, because a Dijkstra with no target early-exit settles all 801,719
-# nodes of the New England graph whether the trip is 5.6 km or 314 minutes.
+# --- Corridor search ----------------------------------------------------------
+# Every route is searched inside an ellipse around the trip, not over the whole
+# map: the nodes v with |s v| + |v t| <= d + CORRIDOR_SHARE * d + CORRIDOR_KM,
+# where d is the straight-line distance between the two ends, in great-circle
+# km between junctions. docs/router-at-us-scale.md, "Corridor search".
 #
-# The bound is ALT: travel time to and from a fixed set of landmarks, combined
-# through the triangle inequality. Over 12 OD pairs spanning New England, 16 of
-# them let A* settle 1.9% of the graph at the median. The count is what chose
-# 16: docs/astar-fastest-arm.md measured 8 landmarks at 3.8% and 1.6x
-# worse on the two hardest pairs, and a straight-line bound at 9.0% and up to
-# 48% — which is why the straight-line version is not the cheap one to build
-# first but the one that does not work.
+# The allowance is the feasibility review's (docs/usa-extension-feasibility.md
+# §3). How far a route strays from the straight line, as the worst point's
+# |s v| + |v t| - d: on 150 New England scenic routes p50 4.3 km, p99 34 km,
+# max 50 km, and never more than 0.49 of d; fastest routes at most 0.50 of d.
+# Half the trip plus 20 km held all 300 sampled scenic routes and every fastest
+# one, and the search inside it returned the whole-graph optimum on 80 of 80
+# trips. Its size depends on the trip, not on the map, which is the point: a
+# 300 km trip searches about 134,000 km² whether the graph is New England or
+# the contiguous US.
 #
-# Sixteen costs 32 Dijkstras at load and 103 MB of float32 table. Measured on
-# New England, against the same load without them: 22.6 s -> 32.1 s, and peak
-# RSS 4.56 GB -> 4.66 GB, which is the 2.4% the plan budgeted for.
+# It is empirical, so the answer checks itself. A route that comes within
+# CORRIDOR_TOUCH of the allowance at its worst point may be one the boundary
+# bent, and is searched again with the allowance doubled, up to
+# CORRIDOR_WIDENINGS times.
 #
-# **Why one landmark set is correct for every request.** `_weights` is
-# `d_minutes` plus strictly non-negative addends, so `w >= d_minutes` pointwise
-# for every pref, every beauty-weight vector, every `avoid_unpaved` and every
-# date, a seasonal closure's +inf being one more such addend. A bound
-# on travel time is therefore a bound on every metric this router can be asked
-# for, and the tables depend on no user parameter. A road closed to cars all
-# year is one more +inf addend, and so is a movement through a barrier
-# (`_split_through_barriers` leaves those slots in the graph and prices them in
-# `_weights`), so the tables are built on the graph with nothing closed and stay
-# admissible. Only the fastest arm uses them — see `route` — but they would be
-# *admissible* on any of them.
-ALT_LANDMARKS = 16
+# This replaced the A* the fastest arm used (docs/astar-fastest-arm.md). Its
+# landmark tables were 103 MB on New England and would be about 2.5 GB for the
+# US, sixteen landmarks bound a continent far worse than a region, and the
+# corridor already makes the fastest arm local.
+CORRIDOR_SHARE = 0.5
+CORRIDOR_KM = 20.0
+CORRIDOR_TOUCH = 0.9
+CORRIDOR_WIDENINGS = 2
 
-# Slack subtracted from every bound, in minutes, to absorb float32 rounding.
-# The tables are float32 (103 MB; float64 would be 205 MB) and the bound is a
-# *difference* of two stored values, so rounding to nearest can put it above
-# the truth. The graph's longest finite distance is 813 minutes, where a
-# float32 ulp is 6.1e-5 min, which caps the total error — two stored values
-# plus the subtraction — at about 1.5e-4 min. This is a 6x margin over that.
-#
-# Erring downward, always. An inadmissible bound is the one failure here with
-# no symptom: it returns a wrong route that looks entirely right. A slack of
-# 1e-3 min is 60 ms of driving, which no ETA in this app can express.
-ALT_SLACK_MIN = 1e-3
+# The longest point-to-point trip the server plans, in straight-line km between
+# the snapped ends: the range over which corridor search was measured to stay
+# near today's latency (feasibility §3). Enforced by server/app.py before any
+# search starts. A reroute gets REROUTE_MAX_TRIP_KM instead, because refusing a
+# driver mid-drive who has wandered past the cap is worse than a slow answer.
+MAX_TRIP_KM = 500.0
+REROUTE_MAX_TRIP_KM = 650.0
 
-# Stand-in for "no path" in the landmark tables, in minutes. The New England
-# graph is not strongly connected — per landmark, 206 nodes cannot be reached
-# from it and 2 cannot reach it — and `inf - inf` is `nan`, which compares
-# false against everything and would silently switch the bound off. A finite
-# sentinel gives both cases the right answer instead: sentinel minus a real
-# distance is a huge bound, which correctly prunes a node that provably cannot
-# reach the target at all, and sentinel minus sentinel is 0, which is no
-# information and is safe. Far above the 813-minute longest real distance.
-ALT_UNREACHABLE_MIN = 1e6
+# Grid cells, in degrees, of the two spatial indexes. Nodes, for corridors and
+# loop discs: 0.1 degree is about 11 by 8 km, so a 20 km trip reads a few dozen
+# cells and a 500 km one a few thousand. Roads, for snapping: 0.01 degree puts
+# a New England road in 1.37 cells on average.
+NODE_CELL_DEG = 0.1
+EDGE_CELL_DEG = 0.01
 
-# How much of the graph `_astar` may settle before it gives up and lets the
-# whole-graph Dijkstra have the query. A* is a bet that the search is small,
-# and the bet does lose: a destination in the corner of Maine, or one that no
-# road reaches at all, walks most of the graph through a Python heap and
-# finishes several times *slower* than scipy's C would have.
-#
-# Set at the break-even point, which is the only defensible place for it: past
-# here the A* has already spent what the Dijkstra would have cost, so it is no
-# longer risking anything it could win. Measured at 1.5-2.0 us per settled node
-# against a 277-304 ms whole-graph Dijkstra over 801,719 nodes, which puts
-# break-even at 16-23% of the graph depending on the sample. Held as a
-# *fraction* because both sides of that division scale with the node count, so
-# the figure carries to a graph of another size.
-#
-# What it costs when it fires, measured over 250 uniformly random OD pairs: it
-# fired on 22 of them, and the slowest whole arm was 630 ms against the old
-# arm's slowest 787 ms. Over 250 pairs at realistic trip lengths it fired on
-# none. The bet is bounded on both sides — a query that gives up pays about
-# twice the old arm, and no query A* would have won is refused.
-ALT_SETTLE_FRACTION = 0.20
+EARTH_KM = 6371.0088
 
-# `_astar` returning "I gave up", which is not the same answer as `None` —
-# there is no route — and must not be confused with it.
-_ASTAR_GAVE_UP = object()
+# The bits of `Router._slot_flags`.
+SLOT_PRIVATE, SLOT_CLOSED, SLOT_SEASONAL = 1, 2, 4
 
 _TO_M = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
+_FROM_M = Transformer.from_crs(CRS_METERS, 4326, always_xy=True)
 
 # How much further than the nearest road `snap` will look when it has a
 # heading to judge with. Wide enough to reach the carriageway above or below
@@ -474,24 +451,35 @@ SNAP_OPEN_MAX_M = 20000.0
 # --- Seasonal closures --------------------------------------------------------
 # The roads OSM marks closed or unmaintained in winter, read from
 # seasonal_closures.parquet (pipeline/closures.py). Closed means unusable:
-# `_weights` adds +inf to a closed edge, which scipy's Dijkstra never relaxes
-# and `_astar` never improves a distance with. The ALT bound stays admissible,
-# because closing an edge can only lengthen a true cost.
+# `_weights` adds +inf to a closed edge, which scipy's Dijkstra never relaxes.
 # docs/seasonal-closures.md has the decisions.
 
 # The calendar closures are dated in. OSM writes `no @ (Oct 15-May 15)` in local
 # dates, and at 9 pm on Oct 14 in Vermont it is already Oct 15 in UTC.
+#
+# Nationally the day depends on where the road is, and this router does not
+# look that up. It judges a closure on every date the contiguous US is on at
+# that moment instead, and a road is closed if any of them closes it. The
+# country spans Eastern to Pacific time, so for three hours after midnight
+# Eastern there are two dates, and otherwise one. The cost is a window that
+# starts up to three hours early in the West and ends up to three hours late in
+# the East, always overnight and always toward closed, which is the side a gate
+# in a snowstorm should err on. docs/router-at-us-scale.md, "Closure dates".
 REGION_TZ = ZoneInfo("America/New_York")
+US_TIME_ZONES = (ZoneInfo("America/New_York"), ZoneInfo("America/Los_Angeles"))
 
 
-def region_today() -> date:
-    """Today in New England: the day a request's closures are judged on.
+def region_today():
+    """Today in the contiguous US: the date a request's closures are judged on,
+    or the two dates, earlier first, in the three hours after midnight Eastern
+    when the coasts disagree. `Router.closure_version` takes either.
 
     Read per request and never once at startup. The server runs for weeks, and
     the closed set changes on fixed dates in between: Lincoln Gap closes on
     Oct 15, VT-108 and Hurricane Mountain Road on Nov 1.
     """
-    return datetime.now(REGION_TZ).date()
+    days = sorted({datetime.now(tz).date() for tz in US_TIME_ZONES})
+    return days[0] if len(days) == 1 else tuple(days)
 
 
 class SeasonalClosures:
@@ -741,6 +729,327 @@ class OsmUnpaved:
         self.km = float(table.drop_duplicates("edge")["length_m"].sum() / 1000.0)
 
 
+# --- Compact storage --------------------------------------------------------
+# What stands in for the Python objects the router used to hold: the dict from
+# OSM node id to index, every road as a shapely object twice over, and an
+# STRtree over them. At US size those were most of an estimated 88 GB
+# (docs/usa-extension-feasibility.md §2). Each is replaced by flat arrays
+# (pipeline/compact.py) behind an object answering the same questions, so the
+# snapping code reads as it did. docs/router-at-us-scale.md, "The pack".
+
+
+class NodeIndex:
+    """OSM node id -> node index, by binary search over the sorted ids:
+    what `{nid: i for i, nid in enumerate(ids)}` answered, without the 2-3 GB
+    dict the US would need."""
+
+    def __init__(self, node_id: np.ndarray):
+        self.node_id = node_id
+
+    def __len__(self):
+        return len(self.node_id)
+
+    def get(self, osm_id, default=None):
+        i = int(np.searchsorted(self.node_id, osm_id))
+        if i < len(self.node_id) and self.node_id[i] == osm_id:
+            return i
+        return default
+
+    def __getitem__(self, osm_id):
+        i = self.get(osm_id)
+        if i is None:
+            raise KeyError(osm_id)
+        return i
+
+    def __contains__(self, osm_id):
+        return self.get(osm_id) is not None
+
+    def map(self, osm_ids) -> np.ndarray:
+        """Indices of many ids at once, -1 for any not in the graph."""
+        osm_ids = np.asarray(osm_ids)
+        i = np.searchsorted(self.node_id, osm_ids)
+        i = np.minimum(i, len(self.node_id) - 1)
+        return np.where(self.node_id[i] == osm_ids, i, -1)
+
+
+class ProjectedLines:
+    """Roads in CRS_METERS, built when asked for: what `edges.geometry
+    .to_crs(CRS_METERS).values` held for every road at startup.
+
+    Through the same transformer geopandas uses, so a line built here has the
+    same coordinates, to the bit, as the one the old router kept. Indexed by
+    an int for one line, or by an array for an array of them.
+    """
+
+    def __init__(self, lines: Lines):
+        self.lines = lines
+        self._memo = {}
+
+    def __len__(self):
+        return len(self.lines)
+
+    def __getitem__(self, rows):
+        if np.ndim(rows) == 0:
+            row = int(rows)
+            hit = self._memo.get(row)
+            if hit is None:
+                c = self.lines.coords(row)
+                x, y = _TO_M.transform(c[:, 0], c[:, 1])
+                hit = shapely.LineString(np.column_stack([x, y]))
+                if len(self._memo) > 50_000:
+                    self._memo.clear()
+                self._memo[row] = hit
+            return hit
+        rows = np.asarray(rows, np.int64)
+        coords, idx = self.lines.many(rows)
+        x, y = _TO_M.transform(coords[:, 0], coords[:, 1])
+        return shapely.linestrings(np.column_stack([x, y]), indices=idx)
+
+
+class LineIndex:
+    """The two questions STRtree answered over projected roads, from a lon/lat
+    grid: which lines' boxes meet a geometry's box (`query`), and which line
+    is nearest a point (`nearest`).
+
+    Both take geometries in CRS_METERS, as the tree did. The grid is in
+    degrees, so a query box is carried over to lon/lat with a margin before
+    the grid is read, and then held to the tree's own test: the line's box in
+    metres against the geometry's.
+    """
+
+    # How far past the corners a box in metres can bulge once mapped to
+    # degrees: CRS_METERS is conic, so its straight edges are curves in lon/lat.
+    MARGIN = 0.02
+
+    def __init__(self, grid: Grid, lines: ProjectedLines):
+        self.grid, self.lines = grid, lines
+
+    def _candidates(self, xmin, ymin, xmax, ymax):
+        xs = np.linspace(xmin, xmax, 5)
+        ys = np.linspace(ymin, ymax, 5)
+        gx, gy = np.meshgrid(xs, ys)
+        lon, lat = _FROM_M.transform(gx.ravel(), gy.ravel())
+        pad_lon = self.MARGIN * (lon.max() - lon.min()) + 1e-5
+        pad_lat = self.MARGIN * (lat.max() - lat.min()) + 1e-5
+        return self.grid.box(lon.min() - pad_lon, lat.min() - pad_lat,
+                             lon.max() + pad_lon, lat.max() + pad_lat)
+
+    def query(self, geometry):
+        """Lines whose box in metres meets `geometry`'s box, ascending."""
+        xmin, ymin, xmax, ymax = shapely.bounds(geometry)
+        found = self._candidates(xmin, ymin, xmax, ymax)
+        if not len(found):
+            return found
+        b = shapely.bounds(self.lines[found])
+        meets = ((b[:, 0] <= xmax) & (b[:, 2] >= xmin)
+                 & (b[:, 1] <= ymax) & (b[:, 3] >= ymin))
+        return found[meets]
+
+    def nearest(self, point):
+        """The line nearest `point`, the lowest index on a tie.
+
+        Searched in widening squares: once the nearest line found is no
+        further than the square's half-width, nothing outside it can be
+        nearer, because a line that close has its box inside the square.
+        """
+        reach, best = 250.0, None
+        while True:
+            found = self._candidates(point.x - reach, point.y - reach,
+                                     point.x + reach, point.y + reach)
+            if len(found):
+                d = shapely.distance(self.lines[found], point)
+                k = int(np.argmin(d))
+                best = int(found[k])
+                if d[k] <= reach:
+                    return best
+                reach = max(reach * 4.0, float(d[k]))
+            else:
+                reach *= 4.0
+            if reach > 2e7:
+                # Further than any two points of the contiguous US: an empty
+                # index, which only a graph with no roads has.
+                return best if best is not None else 0
+
+
+def _grid_heading(lat: float, lon: float, heading: float) -> float:
+    """A true heading at (lat, lon), as a bearing on CRS_METERS' grid.
+
+    A phone's course is measured from true north; every bearing the snapping
+    and turnaround code takes off a projected road is measured from the grid's
+    north. CRS_METERS is Massachusetts' conic, whose north turns away from true
+    north the further a place is from 71.5 W: 0.3 degrees in Boston and 2.2 in
+    Bar Harbor, but 31.4 in Los Angeles and 34.1 in Seattle, where "the end of
+    the road ahead" and "this road is the one you are on" would be judged
+    against the wrong direction.
+    """
+    x0, y0 = _TO_M.transform(lon, lat)
+    x1, y1 = _TO_M.transform(lon, lat + 0.001)
+    return (heading + math.degrees(math.atan2(x1 - x0, y1 - y0))) % 360.0
+
+
+def _true_heading(lat: float, lon: float, grid: float) -> float:
+    """`_grid_heading`'s inverse."""
+    x0, y0 = _TO_M.transform(lon, lat)
+    x1, y1 = _TO_M.transform(lon, lat + 0.001)
+    return (grid - math.degrees(math.atan2(x1 - x0, y1 - y0))) % 360.0
+
+
+def _osm_ends(router):
+    """The OSM node ids at each edge's two ends, which the closure tables are
+    checked against: from the build's arrays, or a test stub's `edges`."""
+    if getattr(router, "_osm_u", None) is not None:
+        return router._osm_u, router._osm_v
+    return router.edges["u"].to_numpy(), router.edges["v"].to_numpy()
+
+
+# The files a router is built from, and so the ones a pack has to match.
+PACK_SOURCES = ("graph_edges.parquet", "graph_nodes.parquet",
+                "turn_restrictions.parquet", "access_ways.parquet",
+                "access_entries.parquet", "closed_to_cars.parquet",
+                "seasonal_closures.parquet", "state_road_class.parquet",
+                "osm_unpaved.parquet")
+
+
+def _sources(processed_dir: Path) -> dict:
+    """A fingerprint of the files a router reads from `processed_dir`: each
+    one's size and a hash of its last 64 KB, where a parquet keeps its footer.
+    Empty when the directory is not there, as on a box that has only a pack.
+    Copying keeps it, unlike a modification time."""
+    import hashlib
+    out = {}
+    for name in PACK_SOURCES:
+        f = Path(processed_dir) / name
+        if f.exists():
+            size = f.stat().st_size
+            with open(f, "rb") as fh:
+                fh.seek(max(0, size - 65536))
+                out[name] = [size, hashlib.sha1(fh.read()).hexdigest()]
+    return out
+
+
+def _members_of(sorted_set: np.ndarray, query) -> tuple[np.ndarray, np.ndarray]:
+    """(position in `sorted_set`, whether it is there) for each of `query`."""
+    query = np.asarray(query)
+    if not len(sorted_set):
+        return np.zeros(len(query), np.int64), np.zeros(len(query), bool)
+    at = np.minimum(np.searchsorted(sorted_set, query), len(sorted_set) - 1)
+    return at, sorted_set[at] == query
+
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    """Great-circle km, elementwise over arrays or scalars."""
+    la1, la2 = np.radians(lat1), np.radians(lat2)
+    h = (np.sin((la2 - la1) / 2.0) ** 2
+         + np.cos(la1) * np.cos(la2) * np.sin(np.radians(lon2 - lon1) / 2.0) ** 2)
+    return 2.0 * EARTH_KM * np.arcsin(np.sqrt(np.minimum(h, 1.0)))
+
+
+class _Scratch:
+    """Node-sized int32 arrays of -1, lent out one per concurrent search.
+
+    A corridor is renumbered from 0, and mapping a road's head to its corridor
+    index is one gather through an array the size of the graph. Allocating
+    that per request would be the O(graph) cost corridor search exists to
+    avoid, so a request borrows one, sets its own nodes, and clears them again
+    before handing it back. Waitress runs four threads, so there are seldom
+    more than four.
+    """
+
+    def __init__(self, size: int):
+        self.size = size
+        self._free = []
+        self._lock = threading.Lock()
+
+    def take(self) -> np.ndarray:
+        with self._lock:
+            if self._free:
+                return self._free.pop()
+        return np.full(self.size, -1, np.int32)
+
+    def give(self, a: np.ndarray):
+        with self._lock:
+            self._free.append(a)
+
+
+class Corridor:
+    """The part of the graph one search runs over, renumbered from 0.
+
+    `nodes` are the graph's indices inside, ascending, so a node's corridor
+    index is its position there and the order of every node's roads is the
+    whole graph's. `pairs`, `indices` and `indptr` are the forward matrix over
+    the (tail, head) pairs with both ends inside; `exits` are the pairs that
+    leave it.
+    """
+
+    def __init__(self, router, nodes: np.ndarray):
+        r = router
+        self.router = r
+        self.nodes = nodes = np.asarray(nodes, np.int64)
+        starts = r._pair_indptr[nodes]
+        counts = r._pair_indptr[nodes + 1] - starts
+        pairs = _ranges(starts, starts + counts)
+        heads = r.u_head[pairs]
+        scratch = r._scratch.take()
+        try:
+            scratch[nodes] = np.arange(len(nodes), dtype=np.int32)
+            local_head = scratch[heads]
+        finally:
+            scratch[nodes] = -1
+            r._scratch.give(scratch)
+        inside = local_head >= 0
+        row = np.repeat(np.arange(len(nodes)), counts)
+        self.exits = pairs[~inside]
+        self.exit_tails = row[~inside]
+        self.pairs = pairs[inside]
+        self.indices = local_head[inside]
+        self.indptr = np.zeros(len(nodes) + 1, np.int64)
+        np.cumsum(np.bincount(row[inside], minlength=len(nodes)),
+                  out=self.indptr[1:])
+        self._rev = None
+
+    def __len__(self):
+        return len(self.nodes)
+
+    def local(self, idx):
+        """Corridor indices of graph indices, -1 for any outside."""
+        idx = np.atleast_1d(np.asarray(idx, np.int64))
+        at = np.minimum(np.searchsorted(self.nodes, idx), len(self.nodes) - 1)
+        return np.where(self.nodes[at] == idx, at, -1)
+
+    def matrix(self, pair_w):
+        """The forward matrix under per-pair weights, for these pairs."""
+        m = len(self.nodes)
+        return csr_matrix((pair_w, self.indices, self.indptr), shape=(m, m))
+
+    def reverse(self):
+        """(order, tails, indptr): the transpose's arcs, as positions into
+        `pairs`, with each head's arcs in the forward order, which is the
+        order scipy's own transpose gives. Read off the graph's own
+        transpose rows (`_rev_pairs`), so no sort."""
+        if self._rev is None:
+            r = self.router
+            m = len(self.nodes)
+            starts = r._rev_indptr[self.nodes]
+            counts = r._rev_indptr[self.nodes + 1] - starts
+            rev = r._rev_pairs[_ranges(starts, starts + counts)].astype(np.int64)
+            row = np.repeat(np.arange(m), counts)
+            # `pairs` is ascending, being each node's row in turn, so a pair
+            # inside the corridor is found in it by bisection.
+            at = np.minimum(np.searchsorted(self.pairs, rev), len(self.pairs) - 1)
+            inside = self.pairs[at] == rev if len(self.pairs) else np.zeros(len(rev), bool)
+            order = at[inside]
+            indptr = np.zeros(m + 1, np.int64)
+            np.cumsum(np.bincount(row[inside], minlength=m), out=indptr[1:])
+            self._rev = (order, self.local(r.u_tail[rev[inside]]).astype(np.int32),
+                         indptr)
+        return self._rev
+
+    def reverse_matrix(self, pair_w):
+        order, tails, indptr = self.reverse()
+        m = len(self.nodes)
+        return csr_matrix((pair_w[order], tails, indptr), shape=(m, m))
+
+
 class Router:
     # Columns the maneuver generator needs, and the graph build that writes
     # them. Checked at load and refused loudly, rather than degraded silently:
@@ -751,26 +1060,27 @@ class Router:
     REQUIRED_EDGE_COLUMNS = ("junction", "dest_ref", "dest_name", *CONTROL_COLUMNS)
     REQUIRED_NODE_COLUMNS = ("exit_ref",)
 
-    def __init__(self, processed_dir: str):
+    # The text columns kept per edge, dictionary-encoded (compact.Strings).
+    EDGE_TEXT = ("name", "ref", "highway", "junction", "dest_ref", "dest_name")
+
+    def __init__(self, processed_dir: str, pack: str | None = None):
+        """Load the graph in `processed_dir`.
+
+        With `pack`, a directory `save_pack` wrote from it, the graph is
+        mapped from there instead of rebuilt: seconds rather than minutes, and
+        most of it file-backed rather than held (docs/router-at-us-scale.md,
+        "The pack"). Without, everything is built here, by the same code the
+        pack was built with, so the two routers are the same router.
+        """
         d = Path(processed_dir)
-        self.edges = gpd.read_parquet(d / "graph_edges.parquet")
-        self.nodes = pd.read_parquet(d / "graph_nodes.parquet")
+        self._processed = d
+        self.region = None
+        if pack is not None:
+            self._load_pack(Path(pack))
+            self._finish()
+            return
         self.restrictions = self._read_restrictions(d)
-        self._require_columns()
-
-        ids = self.nodes["node_id"].to_numpy()
-        self.idx = {nid: i for i, nid in enumerate(ids)}
-        self.n = len(ids)
-        self._nx, self._ny = _TO_M.transform(
-            self.nodes["lon"].values, self.nodes["lat"].values
-        )
-
-        # Spatial index over the road *geometry*, not just its junctions, so
-        # snap() can find the road a point actually sits on — see snap(). Costs
-        # ~1 s to project and ~0.1 s to index, once, at startup.
-        self._edge_geom_m = self.edges.geometry.to_crs(CRS_METERS).values
-        self._edge_tree = STRtree(self._edge_geom_m)
-
+        self._read_graph(d)
         # Read before the graph is built, because their barriers between two
         # edges split junctions the way turn restrictions do, and the unpaved
         # share is settled while it is built.
@@ -780,6 +1090,227 @@ class Router:
         self._read_access(d)
         self._close_to_cars()
         self._mark_private()
+        self._build_indexes()
+        self._finish()
+
+    def _read_graph(self, d: Path):
+        """graph_nodes and graph_edges as flat arrays, never as frames.
+
+        The geometry is read a chunk at a time into int32 lon/lat
+        (`compact.Lines`), so the build never holds a shapely object per road:
+        at US size those alone are about 26 GB.
+        """
+        nodes = pq.read_table(d / "graph_nodes.parquet")
+        edge_file = pq.ParquetFile(d / "graph_edges.parquet")
+        self._require_columns(edge_file.schema_arrow.names, nodes.column_names)
+        self.node_id = nodes["node_id"].to_numpy()
+        if (np.diff(self.node_id) <= 0).any():
+            raise RuntimeError("graph_nodes.parquet is not sorted by node_id, "
+                               "which the node index's binary search needs")
+        self.node_lon = nodes["lon"].to_numpy()
+        self.node_lat = nodes["lat"].to_numpy()
+        self.exit_ref = Strings.from_arrow(nodes["exit_ref"])
+        self.n_real = self.n = len(self.node_id)
+        self.idx = NodeIndex(self.node_id)
+
+        names = [c for c in edge_file.schema_arrow.names
+                 if c not in ("geometry", "__index_level_0__")]
+        t = edge_file.read(columns=names)
+        self.m = t.num_rows
+        self._osm_u = t["u"].to_numpy()
+        self._osm_v = t["v"].to_numpy()
+        self.length_m = t["length_m"].to_numpy()
+        self.text = {c: Strings.from_arrow(t[c]) for c in self.EDGE_TEXT
+                     if c in names}
+        self._minutes = t["minutes"].to_numpy()
+        self._controls = {c: t[c].to_numpy() for c in CONTROL_COLUMNS}
+        oneway = pc.utf8_lower(pc.cast(t["oneway"], pa.string()))
+        self._oneway_rev = pc.fill_null(pc.is_in(oneway, pa.array(sorted(ONEWAY_REV))),
+                                        False).to_numpy(zero_copy_only=False)
+        self._oneway_fwd = pc.fill_null(pc.is_in(oneway, pa.array(sorted(ONEWAY_FWD))),
+                                        False).to_numpy(zero_copy_only=False)
+        # The frame `_load_unpaved` and the score blend read: every component,
+        # in the file's column order (score.blend sums in that order), plus
+        # what the legacy surface recovery needs.
+        cols = [c for c in names if c.startswith("c_")]
+        cols += [c for c in ("score_adj", "score", "unpaved_frac") if c in names]
+        self._frame = t.select(cols).to_pandas()
+        self._frame["highway"] = self.text["highway"].all_values()
+        self._breakdown = np.column_stack(
+            [t[col].to_numpy() for _, col, _ in SCENERY_BREAKDOWN])
+        del t
+        wkb = edge_file.read(columns=["geometry"])["geometry"]
+        self.lines = Lines.from_wkb(wkb.to_numpy(zero_copy_only=False))
+        del wkb
+
+    # --- The pack ------------------------------------------------------------
+    # A pack is this router's arrays written flat (`save_pack`), so a server
+    # maps them instead of rebuilding the graph. The ones every search reads
+    # are loaded whole into memory; the rest, read a few rows a request
+    # (geometry, names, the access layer), stay on disk and are paged in.
+    # Graph indices in a corridor are scattered over the whole index range,
+    # since node ids are OSM's, so a long trip touches nearly every page of
+    # the search arrays and paging them would make the first long trip read
+    # them all from disk. docs/router-at-us-scale.md, "The pack".
+    PACK_VERSION = 1
+    PACK_HOT = ("node_lat", "node_lon", "real_node", "private_inside",
+                "_pair_indptr", "u_head", "_pair_start", "_pair_slots",
+                "eidx", "flip", "d_minutes", "km", "unpaved_frac", "score_adj",
+                "base_score", "pref_matrix", "_rev_indptr", "_rev_pairs",
+                "_slot_flags",
+                "node_grid.order", "node_grid.start")
+    PACK_ARRAYS = ("node_id", "node_lat", "node_lon", "real_node",
+                   "private_inside", "exits_at_node", "tail", "head", "eidx",
+                   "flip", "d_minutes", "u_tail", "u_head", "slot_pair",
+                   "_pair_indptr", "_pair_slots", "_pair_start", "_rev_pairs",
+                   "_rev_indptr", "_tail_order", "_tail_start", "_edge_order",
+                   "_edge_start", "edge_u_idx", "edge_v_idx", "km", "length_m",
+                   "unpaved_frac", "score_adj", "base_score", "pref_matrix",
+                   "_score", "_breakdown", "_roundabout", "_snap_closed",
+                   "_slot_flags",
+                   "_private_slots", "_private_cost", "_car_closed_slots",
+                   "_through_slots")
+    PACK_OBJECTS = ("n", "n_real", "m", "n_pairs", "node_copies", "through_copy",
+                    "_through_split", "_through_all_year", "_through_exits",
+                    "_way_out", "_way_in", "closures", "closed_to_cars",
+                    "state_roads", "osm_unpaved", "restrictions",
+                    "_has_access",
+                    "_closed_to_cars_path", "_state_roads_path")
+
+    def save_pack(self, path, region: str | None = None):
+        """Write this router to `path` for `Router(processed_dir, pack=path)`.
+
+        `region` names what the graph covers, for the server's messages
+        (`server/app.py`, REGION)."""
+        path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+        arrays = {name: getattr(self, name) for name in self.PACK_ARRAYS
+                  if getattr(self, name) is not None}
+        absent = [name for name in self.PACK_ARRAYS if getattr(self, name) is None]
+        arrays.update(self.exit_ref.arrays("exit_ref"))
+        for col, strings in self.text.items():
+            arrays.update(strings.arrays(f"text.{col}"))
+        arrays.update({"lines.xy": self.lines.xy, "lines.start": self.lines.start})
+        arrays.update(self.node_grid.arrays("node_grid"))
+        arrays.update(self.edge_grid.arrays("edge_grid"))
+        if self._has_access:
+            arrays.update({"access.xy": self._access_lines.xy,
+                           "access.start": self._access_lines.start,
+                           "access.component": self._access_component,
+                           "access.entry_comp": self._access_entry_comp,
+                           "access.entry_lat": self._access_entry_lat,
+                           "access.entry_lon": self._access_entry_lon})
+            arrays.update(self._access_grid.arrays("access_grid"))
+        for name, a in arrays.items():
+            np.save(path / f"{name}.npy", np.ascontiguousarray(a))
+        with open(path / "objects.pickle", "wb") as f:
+            pickle.dump({k: getattr(self, k) for k in self.PACK_OBJECTS}, f,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        (path / "manifest.json").write_text(json.dumps({
+            "version": self.PACK_VERSION, "sources": _sources(self._processed),
+            "arrays": sorted(arrays), "absent": absent, "nodes": int(self.n_real),
+            "edges": int(self.m), "routing_nodes": int(self.n),
+            "region": region,
+            "built": datetime.now().isoformat(timespec="seconds")}, indent=1))
+
+    def _load_pack(self, path: Path):
+        manifest = json.loads((path / "manifest.json").read_text())
+        self.region = manifest.get("region")
+        if manifest["version"] != self.PACK_VERSION:
+            raise RuntimeError(f"{path} is pack version {manifest['version']}; "
+                               f"this router reads {self.PACK_VERSION}. "
+                               "Rebuild it with tools/us_scale_router/pack.py.")
+        here = _sources(self._processed)
+        if here and here != manifest["sources"]:
+            raise RuntimeError(
+                f"{path} was packed from different files than {self._processed} "
+                "holds now, so it would route over a graph that is no longer "
+                "there. Rebuild it with tools/us_scale_router/pack.py.")
+        a = {}
+        for name in manifest["arrays"]:
+            hot = name in self.PACK_HOT
+            a[name] = np.load(path / f"{name}.npy", mmap_mode=None if hot else "r")
+        for name in self.PACK_ARRAYS:
+            setattr(self, name, a.get(name))
+        with open(path / "objects.pickle", "rb") as f:
+            for k, v in pickle.load(f).items():
+                setattr(self, k, v)
+        self.exit_ref = Strings.load(a, "exit_ref")
+        self.text = {c: Strings.load(a, f"text.{c}") for c in self.EDGE_TEXT
+                     if f"text.{c}.codes" in a}
+        self.lines = Lines(a["lines.xy"], a["lines.start"])
+        self.node_grid = Grid.load(a, "node_grid")
+        self.edge_grid = Grid.load(a, "edge_grid")
+        if self._has_access:
+            self._access_lines = Lines(a["access.xy"], a["access.start"])
+            self._access_component = a["access.component"]
+            self._access_entry_comp = a["access.entry_comp"]
+            self._access_entry_lat = a["access.entry_lat"]
+            self._access_entry_lon = a["access.entry_lon"]
+            self._access_grid = Grid.load(a, "access_grid")
+        self._closed_slots_by_version = {}
+        self.idx = NodeIndex(self.node_id)
+
+    def _finish(self):
+        """What a built router and a loaded one both set up last: the objects
+        that answer questions over the flat arrays."""
+        self._scratch = _Scratch(self.n)
+        self._edge_geom_m = ProjectedLines(self.lines)
+        self._edge_tree = LineIndex(self.edge_grid, self._edge_geom_m)
+        if self._has_access:
+            self._access_geom_m = ProjectedLines(self._access_lines)
+            self._access_tree = LineIndex(self._access_grid, self._access_geom_m)
+        else:
+            self._access_geom_m = self._access_tree = None
+        self._dep_bearing = {}
+        # Build-only state, gone once the arrays are made.
+        for name in ("_frame", "_minutes", "_controls", "_oneway_fwd",
+                     "_oneway_rev", "_osm_u", "_osm_v"):
+            self.__dict__.pop(name, None)
+
+    # --- What the old router held, for tests and tools ----------------------
+    # Built on first use, from the files or the arrays. Nothing that answers a
+    # request reads these: each is the size of the whole graph.
+
+    @cached_property
+    def edges(self):
+        """graph_edges.parquet as the old router held it, `score` included
+        as `_load_unpaved` left it."""
+        import geopandas as gpd
+        e = gpd.read_parquet(self._processed / "graph_edges.parquet")
+        e["score"] = np.asarray(self._score)
+        return e
+
+    @cached_property
+    def nodes(self):
+        return pd.DataFrame({"node_id": np.asarray(self.node_id),
+                             "lon": np.asarray(self.node_lon),
+                             "lat": np.asarray(self.node_lat),
+                             "exit_ref": self.exit_ref.all_values()})
+
+    @property
+    def _private_slot_mask(self):
+        """Per slot, whether it is private road, or None when none is."""
+        if self._private_slots is None or not len(self._private_slots):
+            return None
+        return (self._slot_flags & SLOT_PRIVATE) != 0
+
+    @cached_property
+    def _nx(self):
+        return _TO_M.transform(np.asarray(self.node_lon), np.asarray(self.node_lat))[0]
+
+    @cached_property
+    def _ny(self):
+        return _TO_M.transform(np.asarray(self.node_lon), np.asarray(self.node_lat))[1]
+
+    @cached_property
+    def _pair_key(self):
+        return self.u_tail.astype(np.int64) * self.n + self.u_head
+
+    @cached_property
+    def _geom(self):
+        coords, idx = self.lines.many(np.arange(self.m))
+        return shapely.linestrings(coords, indices=idx)
 
     def _mark_private(self):
         """Price the private roads so a route only starts or ends on them.
@@ -808,21 +1339,20 @@ class Router:
         self._private_slots = None
         self._private_cost = None
         self.private_inside = np.zeros(self.n, bool)
-        self._private_slot_mask = None
         s = self.state_roads
         if s is None:
             print(f"state road classes: none, {self._state_roads_path.name} is "
                   "missing, so no road is private and OSM alone says what is "
                   "unpaved", flush=True)
             return
-        private = np.zeros(len(self.edges), bool)
+        private = np.zeros(self.m, bool)
         private[s.edges["private"]] = True
         # A public edge is one that is neither private nor closed: a closed
         # edge gives no way on or off a private road.
         public = ~private
         if self.closed_to_cars is not None:
             public[self.closed_to_cars.edges] = False
-        m = len(self.nodes)
+        m = self.n_real
         ends = (self.edge_u_idx[public], self.edge_v_idx[public])
         graph = csr_matrix((np.ones(len(ends[0])), ends), shape=(m, m))
         _, component = connected_components(graph, directed=False)
@@ -840,8 +1370,6 @@ class Router:
         cost = PRIVATE_MIN_PER_KM * self.km[self.eidx[slots]]
         cost[core[real[self.tail[slots]]]] += PRIVATE_ENTRY_MIN
         self._private_slots, self._private_cost = slots, cost
-        self._private_slot_mask = np.zeros(len(self.eidx), bool)
-        self._private_slot_mask[slots] = True
         km = s.km
         print(f"state road classes: {len(s.edges['private']):,} private edges "
               f"({km['private']:.1f} km), start or end only; "
@@ -866,9 +1394,7 @@ class Router:
             print(f"seasonal closures: none, {path.name} is missing, so every "
                   "road is open all year", flush=True)
             return
-        self.closures = SeasonalClosures(pd.read_parquet(path),
-                                         self.edges["u"].to_numpy(),
-                                         self.edges["v"].to_numpy())
+        self.closures = SeasonalClosures(pd.read_parquet(path), *_osm_ends(self))
         c = self.closures
         print(f"seasonal closures: {c.n_edges:,} edges ({c.km:.1f} km, "
               f"{c.n_ways:,} ways) in {len(c.windows)} windows; "
@@ -888,7 +1414,7 @@ class Router:
         same table, and the rest of what they say is used by `_load_unpaved`
         and `_mark_private` (docs/state-road-class.md).
         """
-        u, v = self.edges["u"].to_numpy(), self.edges["v"].to_numpy()
+        u, v = _osm_ends(self)
         state_path = d / "state_road_class.parquet"
         self._state_roads_path = state_path
         self.state_roads = None
@@ -941,7 +1467,7 @@ class Router:
         box's journal drops buffered stdout (server/DEPLOY-oracle.md, Part 8).
         """
         self._car_closed_slots = None
-        self._snap_closed = np.zeros(len(self.edges), bool)
+        self._snap_closed = np.zeros(self.m, bool)
         self._way_out, self._way_in = {}, {}
         c = self.closed_to_cars
         if c is None:
@@ -949,7 +1475,7 @@ class Router:
                   "missing, so every road and barrier in the graph is open to "
                   "cars", flush=True)
             return
-        shut = np.zeros(len(self.edges), bool)
+        shut = np.zeros(self.m, bool)
         shut[c.edges] = True
         self._car_closed_slots = np.union1d(np.flatnonzero(shut[self.eidx]),
                                             self._through_slots)
@@ -1021,7 +1547,7 @@ class Router:
         way_out = nearest(can_start, ~can_start, self.u_head, self.u_tail)
         return way_out, way_in
 
-    def closure_version(self, on: date | None) -> tuple:
+    def closure_version(self, on) -> tuple:
         """Which closure windows are in force on `on`: the closure version.
 
         Every cache of routes or edge weights keys on this, because an answer
@@ -1031,6 +1557,11 @@ class Router:
         """
         if on is None or self.closures is None:
             return ()
+        if isinstance(on, (tuple, list)):
+            # Every date the country is on (`region_today`): closed if any of
+            # them closes it.
+            return tuple(sorted(set().union(*(self.closures.version(d)
+                                              for d in on))))
         return self.closures.version(on)
 
     def _closed_slots(self, on: date | None):
@@ -1045,7 +1576,7 @@ class Router:
             return None
         slots = self._closed_slots_by_version.get(version)
         if slots is None:
-            closed = np.zeros(len(self.edges), bool)
+            closed = np.zeros(self.m, bool)
             closed[self.closures.edges(version)] = True
             slots = np.flatnonzero(closed[self.eidx])
             exits = getattr(self, "_through_exits", {})
@@ -1066,21 +1597,31 @@ class Router:
         one, and it must not stop a graph built before 2026-08-23 from serving.
         """
         ways, entries = d / "access_ways.parquet", d / "access_entries.parquet"
-        if not (ways.exists() and entries.exists()):
-            self._access_geom_m = None
-            self._access_tree = None
-            self._access_component = None
-            self._access_entries = {}
+        self._has_access = ways.exists() and entries.exists()
+        if not self._has_access:
             return
-        access = gpd.read_parquet(ways)
-        self._access_geom_m = access.geometry.to_crs(CRS_METERS).values
-        self._access_tree = STRtree(self._access_geom_m)
+        # Flat, like the roads: at US size the layer is tens of millions of
+        # service ways, which as shapely objects in a tree would outweigh the
+        # graph.
+        access = pq.read_table(ways, columns=["component", "geometry"])
+        self._access_lines = Lines.from_wkb(
+            access["geometry"].to_numpy(zero_copy_only=False))
         self._access_component = access["component"].to_numpy()
-        table = pd.read_parquet(entries)
-        self._access_entries = {
-            int(c): list(zip(g["lat"].to_numpy(), g["lon"].to_numpy()))
-            for c, g in table.groupby("component")
-        }
+        self._access_grid = Grid.build(self._access_lines.bounds(), EDGE_CELL_DEG)
+        table = pq.read_table(entries, columns=["component", "lat", "lon"])
+        comp = table["component"].to_numpy()
+        # Grouped by component in each group's own order, as groupby gave it.
+        order = np.argsort(comp, kind="stable")
+        self._access_entry_comp = comp[order]
+        self._access_entry_lat = table["lat"].to_numpy()[order]
+        self._access_entry_lon = table["lon"].to_numpy()[order]
+
+    def _access_entries(self, component: int):
+        """The (lat, lon) entrances of one service network, in table order."""
+        comp = self._access_entry_comp
+        a = int(np.searchsorted(comp, component, side="left"))
+        b = int(np.searchsorted(comp, component, side="right"))
+        return list(zip(self._access_entry_lat[a:b], self._access_entry_lon[a:b]))
 
     def access_point(self, lat: float, lon: float):
         """Where a driver actually enters the place at `lat, lon`, or None.
@@ -1114,7 +1655,7 @@ class Router:
         edge = int(self._edge_tree.nearest(point))
         if to_access >= self._edge_geom_m[edge].distance(point):
             return None
-        entries = self._access_entries.get(int(self._access_component[way]))
+        entries = self._access_entries(int(self._access_component[way]))
         if not entries:
             # A car park mapped with no connection to any drivable way. There is
             # nothing better to offer than the nearest road, which is what the
@@ -1169,11 +1710,15 @@ class Router:
             )
         return pd.read_parquet(path)
 
-    def _require_columns(self):
+    def _require_columns(self, edge_columns=None, node_columns=None):
+        edge_columns = (self.edges.columns if edge_columns is None
+                        else edge_columns)
+        node_columns = (self.nodes.columns if node_columns is None
+                        else node_columns)
         missing = [c for c in self.REQUIRED_EDGE_COLUMNS
-                   if c not in self.edges.columns]
+                   if c not in edge_columns]
         missing += [c for c in self.REQUIRED_NODE_COLUMNS
-                    if c not in self.nodes.columns]
+                    if c not in node_columns]
         if missing:
             raise RuntimeError(
                 f"the graph is missing {', '.join(missing)} — it was built "
@@ -1182,11 +1727,18 @@ class Router:
                 "over; see server/DEPLOY.md."
             )
 
-    @cached_property
+    @property
     def is_roundabout(self):
         """Per undirected edge, whether it is part of a rotary."""
-        j = self.edges["junction"].astype(str).str.lower()
-        return j.isin(("roundabout", "circular")).to_numpy()
+        return self._roundabout
+
+    def _rotaries(self):
+        """`is_roundabout`, from the junction tag: what pandas'
+        `astype(str).str.lower().isin(...)` said of the column."""
+        j = self.text["junction"]
+        table = [str(j.text(c)).lower() in ("roundabout", "circular")
+                 for c in range(len(j.offsets) - 1)]
+        return np.append(np.array(table, bool), False)[j.codes]
 
     def _count_exits_at_node(self):
         """Per node, how many roads leave it that are not part of a rotary.
@@ -1205,11 +1757,13 @@ class Router:
 
     @cached_property
     def maneuver_context(self):
+        # Only the junctions that carry a signed exit number, which are few.
         exit_refs = {}
-        refs = self.nodes["exit_ref"].astype(str).to_numpy()
-        for i, ref in enumerate(refs):
+        codes = self.exit_ref.codes
+        for i in np.flatnonzero(codes >= 0):
+            ref = self.exit_ref.text(int(codes[i]))
             if ref and ref != "nan":
-                exit_refs[i] = ref
+                exit_refs[int(i)] = ref
         return ManeuverContext(exit_refs, self.exits_at_node,
                                self.departure_bearings)
 
@@ -1250,7 +1804,7 @@ class Router:
         if banned.empty:
             return
 
-        by_edge = self._group(self.eidx, len(self.edges))
+        by_edge = self._group(self.eidx, self.m)
         by_tail = self._group(self.tail, self.n)
 
         forbidden = {}
@@ -1408,7 +1962,7 @@ class Router:
         self.d_minutes = np.concatenate([self.d_minutes,
                                          self.d_minutes[np.array(origin)]])
         closed, at = np.array(closed, bool), np.array(at)
-        ids = self.nodes["node_id"].to_numpy()
+        ids = self.node_id
         for b in self._through_split:
             exits = first + np.flatnonzero(closed & (at == b))
             if b in self._through_all_year:
@@ -1544,23 +2098,18 @@ class Router:
                 return []
         return plan
 
-    @cached_property
+    @property
     def _by_tail(self):
-        return self._group(self.tail, self.n)
+        """Slots grouped by the junction they leave, built with the graph."""
+        return self._tail_order, self._tail_start
 
-    @cached_property
-    def _dep_bearing(self):
-        """Per directed slot, its departure bearing, or NaN until first asked.
-
-        float64 and not float32 deliberately. `ManeuverContext.fork_side`
-        identifies the road the route itself takes by `abs(delta - wanted) <
-        1e-6`, and float32 carries about 1e-5 degrees here — enough to miss that
-        test, stop excluding the route's own road, and turn it into its own
-        "straighter rival". The 3 MB saved would buy a spurious fork. At float64
-        the cached value is bit-identical to the one computed in place, so
-        memoizing changes nothing but the time.
-        """
-        return np.full(len(self.tail), np.nan)
+    # `_dep_bearing` is a dict per slot, filled as junctions are asked about.
+    # It was a float64 array per slot, NaN until asked, which is 6 MB in New
+    # England and 360 MB for the US to hold a few thousand values. float64
+    # still, and for the same reason: `ManeuverContext.fork_side` identifies
+    # the road the route itself takes by `abs(delta - wanted) < 1e-6`, and
+    # float32 carries about 1e-5 degrees here, enough to turn the route's own
+    # road into its "straighter rival".
 
     def outgoing_slots(self, node_idx):
         """Every directed edge leaving a junction, as slot indices.
@@ -1573,7 +2122,7 @@ class Router:
 
     def slot_coords(self, slot):
         """A slot's geometry as [lon, lat] in the direction it is driven."""
-        coords = shapely.get_coordinates(self._geom[self.eidx[slot]])
+        coords = self.lines.coords(int(self.eidx[slot]))
         return coords[::-1] if self.flip[slot] else coords
 
     def departure_bearings(self, node_idx):
@@ -1592,17 +2141,17 @@ class Router:
         generation, and paid again for the fastest result and the scenic one. It
         matters most on a reroute, where the junctions are the ones already
         asked about: the junction set of a mid-drive reroute overlapped the route
-        it replaced 1,026 of 1,026. The table is one float per slot (6 MB, see
-        `_dep_bearing` for why not half that) and starts empty, so nothing is
-        paid at startup for roads never driven.
+        it replaced 1,026 of 1,026. The memo (`_dep_bearing`) starts empty, so
+        nothing is paid at startup for roads never driven.
         """
         slots = self.outgoing_slots(node_idx)
         cache = self._dep_bearing
         out = []
         for slot in slots:
-            cached = cache[slot]
-            if not math.isnan(cached):
-                out.append(float(cached))
+            slot = int(slot)
+            cached = cache.get(slot)
+            if cached is not None:
+                out.append(cached)
                 continue
             coords = self.slot_coords(slot)
             if len(coords) < 2:
@@ -1654,9 +2203,11 @@ class Router:
         least on the classes whose factor is best measured, and saying nothing
         about it.
         """
-        factor = (self.edges["highway"].map(SPEED_FACTOR)
-                  .fillna(SURFACE_SPEED_FACTOR).to_numpy())
-        return self.edges["minutes"].to_numpy() / factor
+        hw = self.text["highway"]
+        table = [SPEED_FACTOR.get(hw.text(c), SURFACE_SPEED_FACTOR)
+                 for c in range(len(hw.offsets) - 1)]
+        factor = np.append(np.array(table, float), SURFACE_SPEED_FACTOR)[hw.codes]
+        return self._minutes / factor
 
     def _control_minutes(self) -> tuple[np.ndarray, np.ndarray]:
         """Per undirected edge, minutes lost to traffic controls each way.
@@ -1668,30 +2219,25 @@ class Router:
         """
         out = []
         for direction in ("fwd", "rev"):
-            seconds = sum(cost * self.edges[f"n_{kind}_{direction}"].to_numpy()
+            seconds = sum(cost * self._controls[f"n_{kind}_{direction}"]
                           for kind, cost in CONTROL_SECONDS.items())
             out.append(seconds / 60.0)
         return out[0], out[1]
 
     def _build_directed(self):
-        e = self.edges
-        # Resolved once. Reaching it as `self.edges.geometry.values` costs a
-        # pandas __getitem__ and a geopandas _get_geometry per call, and
-        # slot_coords/_collect between them make a few thousand of those per
-        # route — measured at 86% of slot_coords' own cost, all of it spent
-        # re-finding the column rather than reading geometry.
-        self._geom = e.geometry.values
-        ui = e["u"].map(self.idx).to_numpy()
-        vi = e["v"].map(self.idx).to_numpy()
+        e = self._frame
+        ui = self.idx.map(self._osm_u)
+        vi = self.idx.map(self._osm_v)
+        if (ui < 0).any() or (vi < 0).any():
+            raise RuntimeError("graph_edges.parquet names nodes graph_nodes.parquet "
+                               "does not hold")
         # Kept per undirected edge (not per directed slot) so snap() can pick
         # between the two ends of the road segment it landed on.
         self.edge_u_idx, self.edge_v_idx = ui, vi
         minutes = self._driving_minutes()
         control_fwd, control_rev = self._control_minutes()
-        ow = e["oneway"].astype(str).str.lower()
-
-        fwd_ok = ~ow.isin(ONEWAY_REV).to_numpy()
-        rev_ok = ~ow.isin(ONEWAY_FWD).to_numpy()
+        fwd_ok = ~self._oneway_rev
+        rev_ok = ~self._oneway_fwd
 
         tails, heads, eidx, flip = [], [], [], []
         for ok, t, hh, f in [(fwd_ok, ui, vi, False), (rev_ok, vi, ui, True)]:
@@ -1702,7 +2248,7 @@ class Router:
         self.head = np.concatenate(heads)
         self.eidx = np.concatenate(eidx)        # back-reference to undirected edge row
         self.flip = np.concatenate(flip)
-        self.km = e["length_m"].to_numpy() / 1000.0   # per undirected edge
+        self.km = self.length_m / 1000.0   # per undirected edge
         # The travel time Dijkstra optimises and RouteResult reports: driving
         # time, plus whatever stopping the direction of travel is charged for.
         # One array, used for both, so the ETA cannot describe a different
@@ -1711,6 +2257,7 @@ class Router:
             self.flip, control_rev[self.eidx], control_fwd[self.eidx])
 
         # Counted on the plain graph, before junctions start being duplicated.
+        self._roundabout = self._rotaries()
         self.exits_at_node = self._count_exits_at_node()
         # ...and then duplicated, which is what makes turn restrictions
         # expressible. Everything below reads tail/head/eidx/flip, so it has to
@@ -1719,17 +2266,6 @@ class Router:
         # ...as are the barriers standing where two edges meet, for the same
         # reason and at the same point.
         self._split_through_barriers()
-
-        # Parallel edges: more than one directed edge can join the same
-        # (tail, head) — parallel roads between the same two junctions. scipy's
-        # csr_matrix *sums* duplicate coordinates, which would over-charge those
-        # hops, so route() collapses each node-pair to its single cheapest edge.
-        # Precompute the unique pairs and a slot -> pair-index map once here.
-        pairs = np.stack([self.tail, self.head], axis=1)
-        unique_pairs, slot_pair = np.unique(pairs, axis=0, return_inverse=True)
-        self.u_tail, self.u_head = unique_pairs[:, 0], unique_pairs[:, 1]
-        self.slot_pair = slot_pair.ravel()
-        self.n_pairs = len(unique_pairs)
 
         # Inputs for re-scoring each edge live under a user's beauty weights (see
         # _edge_scores). We split the score.py formula into pieces that let us
@@ -1748,11 +2284,36 @@ class Router:
             [w * e[col].to_numpy() for _, _, col, w in BEAUTY_TYPES]
         )
 
+        self._pair_up()
+        e_score = e["score"].to_numpy() if "score" in e.columns else None
+        self._score = e_score
+
+    def _pair_up(self):
+        """The (tail, head) pairs of the directed slots, and the CSR over them.
+
+        Separate from `_build_directed` so a graph assembled from arrays (the
+        synthetic US graph, tools/us_scale_router/synthetic.py) pairs up by the
+        same code.
+        """
+        # Parallel edges: more than one directed edge can join the same
+        # (tail, head) — parallel roads between the same two junctions. scipy's
+        # csr_matrix *sums* duplicate coordinates, which would over-charge those
+        # hops, so route() collapses each node-pair to its single cheapest edge.
+        # Precompute the unique pairs and a slot -> pair-index map once here.
+        # Folded into one int64 key per slot rather than `np.unique(axis=0)`
+        # over (tail, head) rows: the same sorted pairs and the same inverse,
+        # at a fraction of the time on a graph the size of the US.
+        key = self.tail.astype(np.int64) * self.n + self.head.astype(np.int64)
+        unique_key, slot_pair = np.unique(key, return_inverse=True)
+        self.u_tail, self.u_head = unique_key // self.n, unique_key % self.n
+        self.slot_pair = slot_pair.ravel()
+        self.n_pairs = len(unique_key)
+
         # (tail, head) -> directed-edge slots, used in _collect to map a node
         # path back to edges. Parallel roads mean a pair can hold several slots,
         # so this is a CSR-style grouping: the slots for pair p live in
-        # _pair_slots[_pair_start[p]:_pair_start[p + 1]], and _pair_key holds
-        # each pair's (tail, head) folded into one sorted integer to bisect on.
+        # _pair_slots[_pair_start[p]:_pair_start[p + 1]], and `_hop_pairs`
+        # finds a hop's pair by reading its tail's short row.
         #
         # A dict keyed by (tail, head) tuples is the obvious way to write this
         # and cost ~200 MB of the server's ~1 GB — three quarters of a million
@@ -1762,101 +2323,93 @@ class Router:
         self._pair_slots = order
         self._pair_start = np.searchsorted(self.slot_pair[order],
                                            np.arange(self.n_pairs + 1))
-        self._pair_key = self.u_tail.astype(np.int64) * self.n + self.u_head
 
         # `np.unique` sorted the pairs lexicographically above, which *is* CSR
         # order: one contiguous run of heads per tail. So the pair arrays are
         # already a CSR structure — `u_head` is the column-index array and any
-        # per-pair cost vector is the data array — and the A* can walk them
-        # with no per-request matrix build. That build is 15.2 ms of the old
-        # arm's 288 ms, and it is the sorting of an already-sorted COO.
+        # per-pair cost vector is the data array — and a corridor is cut out of
+        # them by reading the rows of its nodes, with no whole-graph pass.
         #
         # Checked rather than assumed: the grouping is a property of
-        # `np.unique`, not of this file, and `_astar` reading an ungrouped
+        # `np.unique`, not of this file, and a search reading an ungrouped
         # array would visit the wrong node's neighbours and return a plausible
         # wrong route.
         if self.n_pairs and (np.diff(self.u_tail) < 0).any():
             raise RuntimeError("directed pairs are not grouped by tail; "
-                               "_astar's CSR indexing assumes np.unique "
+                               "the corridor's CSR indexing assumes np.unique "
                                "returns them sorted")
         self._pair_indptr = np.zeros(self.n + 1, np.int64)
         np.cumsum(np.bincount(self.u_tail, minlength=self.n),
                   out=self._pair_indptr[1:])
-        self._build_alt_tables()
 
-    def _build_alt_tables(self):
-        """Travel time from and to ALT_LANDMARKS landmarks, for `route`'s A*.
+    def _build_indexes(self):
+        """The groupings and grids a request reads, made once with the graph.
 
-        **After `_apply_turn_restrictions`, never before.** That call grows
-        `self.n` from 794,685 to 801,719 by splitting junctions per approach.
-        Tables built against the pre-split node set would be the wrong length
-        and — worse — the wrong *indexing*: they would load, run, and return
-        plausible routes. This runs at the end of `_build_directed`, after both
-        the split and the pair collapse it indexes into.
-
-        The landmarks are placed by farthest-point selection over travel time:
-        each new one is the node hardest to reach from any already chosen. That
-        drives them to the corners of the region, which is where they make the
-        triangle inequality tight — a landmark in the middle of the map bounds
-        almost nothing, because going via it is a detour for every pair.
-
-        Built on `d_minutes`, the travel time, which no user parameter touches
-        (see ALT_LANDMARKS). 32 Dijkstras, measured at 9.5 s on New England.
-        They are a deterministic function of the graph and could be written
-        beside `graph_edges.parquet` instead if that ever stops being
-        acceptable; this keeps the data directory's contract unchanged, which
-        is worth 9.5 s paid once per process, where nobody is waiting.
+        Each answers in time proportional to what it returns: the slots
+        leaving a junction, the slots of a road, the pairs arriving at a node
+        (the transpose a loop's way home searches), the nodes in a box and
+        the roads in a box. Index arrays are narrowed to int32, which every
+        count here fits, to halve what the search arrays hold.
         """
-        self._alt_bwd = self._alt_fwd = None
-        if not self.n_pairs:
-            return
-        # Collapsed the same way `route` collapses its own weights: one entry
-        # per (tail, head), the cheapest parallel edge. The bound has to be
-        # taken on the graph the search actually walks — `min_e w >= min_e
-        # d_minutes` follows from the pointwise bound, so the collapse
-        # preserves it, but only between the *same* pairs.
-        pair_t = np.full(self.n_pairs, np.inf)
-        np.minimum.at(pair_t, self.slot_pair, self.d_minutes)
-        g = csr_matrix((pair_t, self.u_head, self._pair_indptr),
-                       shape=(self.n, self.n))
-        gT = csr_matrix((pair_t, (self.u_head, self.u_tail)),
-                        shape=(self.n, self.n))
+        self._tail_order, self._tail_start = self._group(self.tail, self.n)
+        self._edge_order, self._edge_start = self._group(self.eidx, self.m)
+        # Every pair, ordered by head and then by its own order: the
+        # transpose's row order, which is what scipy's transpose gives.
+        self._rev_pairs = np.argsort(self.u_head, kind="stable")
+        self._rev_indptr = np.zeros(self.n + 1, np.int64)
+        np.cumsum(np.bincount(self.u_head, minlength=self.n),
+                  out=self._rev_indptr[1:])
+        real = self.real_node
+        lat, lon = self.node_lat[real], self.node_lon[real]
+        self.node_grid = Grid.build(np.column_stack([lon, lat, lon, lat]),
+                                    NODE_CELL_DEG)
+        self.edge_grid = Grid.build(self.lines.bounds(), EDGE_CELL_DEG)
+        self._slot_flags = self._flag_slots()
+        for name in ("tail", "head", "eidx", "u_tail", "u_head", "slot_pair",
+                     "_pair_slots", "_tail_order", "_edge_order", "_rev_pairs",
+                     "real_node", "edge_u_idx", "edge_v_idx"):
+            setattr(self, name, getattr(self, name).astype(np.int32))
 
-        # The first landmark is the node furthest from the graph's centre of
-        # mass, so that selection starts at an edge of the region rather than
-        # wherever node 0 happens to be. Geometry goes through `real_node`:
-        # `_nx`/`_ny` are per `graph_nodes.parquet` row and the copies made for
-        # turn restrictions have no coordinates of their own. This is the only
-        # place coordinates enter — every later landmark is chosen by travel
-        # time, and the bound itself never touches them.
-        cx, cy = self._nx.mean(), self._ny.mean()
-        nxt = int(np.argmax((self._nx[self.real_node] - cx) ** 2
-                            + (self._ny[self.real_node] - cy) ** 2))
+    def _flag_slots(self) -> np.ndarray:
+        """One byte per directed slot saying which of `_weights`' sets it is
+        in: private (SLOT_PRIVATE), closed to cars all year (SLOT_CLOSED), or
+        closed for the season on some date (SLOT_SEASONAL). Fixed by the
+        data, so built once with the graph."""
+        flags = np.zeros(len(self.eidx), np.uint8)
+        if getattr(self, "_private_slots", None) is not None:
+            flags[self._private_slots] |= SLOT_PRIVATE
+        if self._car_closed_slots is not None:
+            flags[self._car_closed_slots] |= SLOT_CLOSED
+        if self.closures is not None:
+            every = tuple(self.closures.windows)
+            closed = np.zeros(self.m, bool)
+            closed[self.closures.edges(every)] = True
+            flags[closed[self.eidx]] |= SLOT_SEASONAL
+            for exits in getattr(self, "_through_exits", {}).values():
+                flags[exits] |= SLOT_SEASONAL
+        return flags
 
-        want = min(ALT_LANDMARKS, self.n)
-        land, bwd, chosen = [], np.empty((want, self.n)), want
-        reach = None
-        for i in range(want):
-            land.append(nxt)
-            # d(node -> L), so the pass runs on the transpose.
-            bwd[i] = dijkstra(gT, directed=True, indices=nxt)
-            reach = bwd[i] if reach is None else np.minimum(reach, bwd[i])
-            # Unreachable is not "far" for this purpose: a landmark no one can
-            # reach bounds nothing. -1 takes those out of the running.
-            far = np.where(np.isfinite(reach), reach, -1.0)
-            nxt = int(np.argmax(far))
-            if far[nxt] <= 0.0:
-                chosen = i + 1      # a graph too small to hold any more
+    def _hop_pairs(self, tails, heads) -> np.ndarray:
+        """The pair id of each (tail, head) hop, or -1 where no road joins them.
+
+        Read off the pair CSR, whose rows are short: a junction has a handful
+        of roads, so this is a few vectorised passes whatever the path's
+        length. It replaces a binary search over a key per pair, an int64
+        array the size of the graph.
+        """
+        tails = np.asarray(tails, np.int64)
+        heads = np.asarray(heads, np.int64)
+        start = self._pair_indptr[tails]
+        count = self._pair_indptr[tails + 1] - start
+        out = np.full(len(tails), -1, np.int64)
+        for k in range(int(count.max()) if len(count) else 0):
+            live = np.flatnonzero((count > k) & (out < 0))
+            if not len(live):
                 break
-        fwd = dijkstra(g, directed=True, indices=np.array(land))
-        # In place and then cast, rather than np.where into a new float64
-        # array: these are 103 MB each at float64 and this runs inside a load
-        # that already holds about 4 GB.
-        bwd = bwd[:chosen]
-        for table in (bwd, fwd):
-            table[~np.isfinite(table)] = ALT_UNREACHABLE_MIN
-        self._alt_bwd = bwd.astype(np.float32)
-        self._alt_fwd = fwd.astype(np.float32)
+            p = start[live] + k
+            hit = self.u_head[p] == heads[live]
+            out[live[hit]] = p[hit]
+        return out
 
     def _load_unpaved(self, e):
         """Per-edge unpaved share, and a `score_adj` with no surface term left.
@@ -1950,12 +2503,30 @@ class Router:
         it means. All-1.0 is a fixed point, so the precomputed column is
         untouched.
         """
-        w = np.array([weights.get(name, 1.0) for name, *_ in BEAUTY_TYPES], float)
+        return self._scores_of(None, self._beauty_vector(weights))
+
+    @staticmethod
+    def _beauty_vector(weights: dict) -> np.ndarray:
+        """The user's weights as `_edge_scores` applies them: in BEAUTY_TYPES
+        order, renormalised onto the default weight mass."""
+        w = np.array([(weights or {}).get(name, 1.0) for name, *_ in BEAUTY_TYPES],
+                     float)
         mass = float(w @ DEFAULT_WEIGHTS)
         if mass > 0:
             w = w * (DEFAULT_WEIGHTS.sum() / mass)
-        raw = self.base_score + self.pref_matrix @ w
-        return composite(raw, self.score_adj)
+        return w
+
+    def _scores_of(self, rows, w: np.ndarray) -> np.ndarray:
+        """`_edge_scores` for the edges `rows` only (None for all of them).
+
+        The same arithmetic on fewer rows: a row of `pref_matrix @ w` does not
+        depend on which other rows are in the product (tested), so a
+        corridor's scores are bit-identical to the whole graph's.
+        """
+        if rows is None:
+            return composite(self.base_score + self.pref_matrix @ w, self.score_adj)
+        return composite(self.base_score[rows] + self.pref_matrix[rows] @ w,
+                         self.score_adj[rows])
 
     def _weights(self, pref: float, scores: np.ndarray,
                  avoid_unpaved: float = 1.0,
@@ -1987,28 +2558,72 @@ class Router:
         private roads cost PRIVATE_ENTRY_MIN to turn onto, for every request,
         so a route only starts or ends on one (docs/state-road-class.md).
         """
-        penalty = self.km * (1.0 - scores / 10.0)           # km of "unscenic" road
+        return self._slot_weights(None, scores, pref, avoid_unpaved, on)
+
+    def _slot_weights(self, slots, scores, pref: float, avoid_unpaved: float = 1.0,
+                      on=None, blocked=None) -> np.ndarray:
+        """`_weights` for the directed `slots` only (None for all of them).
+
+        `scores` is per undirected edge: the whole graph's array when `slots`
+        is None, else the scores of `eidx[slots]`, in that order. The
+        arithmetic is `_weights`' own, term by term and in the same order, so
+        a corridor's weights are bit-identical to the whole graph's. `blocked`
+        is a sorted array of slots priced at +inf on top, which is how a
+        reroute that keeps ahead closes the way back (`_keep_ahead`).
+        """
+        everything = slots is None
+        e = self.eidx if everything else self.eidx[slots]
+        km = self.km if everything else self.km[e]
+        penalty = km * (1.0 - scores / 10.0)           # km of "unscenic" road
         # Clamped because a negative pref raised to a fractional power is a
         # *complex* number in Python ((-0.5) ** 1.3), which would silently poison
         # the whole cost matrix. The API clamps too; this keeps the class safe
         # for its other caller, the CLI.
         strength = max(0.0, min(1.0, pref)) ** PREF_CURVE
-        w = self.d_minutes + strength * BETA * penalty[self.eidx]
+        d_minutes = self.d_minutes if everything else self.d_minutes[slots]
+        w = d_minutes + strength * BETA * (penalty[self.eidx] if everything
+                                           else penalty)
 
         avoid = max(0.0, min(MAX_AVOID_UNPAVED, avoid_unpaved))
         if avoid:
-            dirt_km = self.km * self.unpaved_frac
-            w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km[self.eidx]
+            if everything:
+                dirt_km = self.km * self.unpaved_frac
+                w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km[self.eidx]
+            else:
+                dirt_km = km * self.unpaved_frac[e]
+                w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km
 
         # In place, which is safe: both lines above build `w` afresh, so it is
         # never `d_minutes` itself.
-        if getattr(self, "_private_slots", None) is not None:
-            w[self._private_slots] += self._private_cost
+        # A subset reads one flag byte per slot (`_slot_flags`) and looks up
+        # only the few it flags: the private, closed and seasonal slots are a
+        # small share of any corridor, and testing every slot against each
+        # set was a third of a request.
+        flags = None if everything else self._slot_flags[slots]
+        if getattr(self, "_private_slots", None) is not None and len(self._private_slots):
+            if everything:
+                w[self._private_slots] += self._private_cost
+            else:
+                k = np.flatnonzero(flags & SLOT_PRIVATE)
+                at = np.searchsorted(self._private_slots, slots[k])
+                w[k] += self._private_cost[at]
         closed = self._closed_slots(on)
         if closed is not None:
-            w[closed] += np.inf
+            if everything:
+                w[closed] += np.inf
+            else:
+                k = np.flatnonzero(flags & SLOT_SEASONAL)
+                w[k[_members_of(closed, slots[k])[1]]] += np.inf
         if self._car_closed_slots is not None:
-            w[self._car_closed_slots] = np.inf
+            if everything:
+                w[self._car_closed_slots] = np.inf
+            else:
+                w[flags & SLOT_CLOSED != 0] = np.inf
+        if blocked is not None and len(blocked):
+            if everything:
+                w[blocked] = np.inf
+            else:
+                w[_members_of(blocked, slots)[1]] = np.inf
         return w
 
     def snap(self, lat: float, lon: float,
@@ -2071,6 +2686,9 @@ class Router:
         x, y = _TO_M.transform(lon, lat)
         point = shapely.Point(x, y)
         aiming = heading if heading is not None and 0.0 <= heading < 360.0 else None
+        if aiming is not None:
+            # From true north to the grid the roads are measured on.
+            aiming = _grid_heading(lat, lon, aiming)
         e = int(self._edge_tree.nearest(point))
         if self._shut_at(e, point):
             e = self._nearest_open(point, e)
@@ -2079,8 +2697,9 @@ class Router:
         u, v = int(self.edge_u_idx[e]), int(self.edge_v_idx[e])
         node = self._barrier_end(e, point, u, v)
         if node is None and aiming is None:
-            du = (self._nx[u] - x) ** 2 + (self._ny[u] - y) ** 2
-            dv = (self._nx[v] - x) ** 2 + (self._ny[v] - y) ** 2
+            ex, ey = _TO_M.transform(self.node_lon[[u, v]], self.node_lat[[u, v]])
+            du = (ex[0] - x) ** 2 + (ey[0] - y) ** 2
+            dv = (ex[1] - x) ** 2 + (ey[1] - y) ** 2
             node = u if du <= dv else v
         elif node is None:
             node = self._forward_end(self._edge_geom_m[e], point, u, v, aiming)
@@ -2260,10 +2879,11 @@ class Router:
         # while RouteResult.mean_score read the stored neutral column, so a user
         # who asked for coast was shown a number computed as though they hadn't
         # (measured 1.9 points apart on a 0-10 scale). That number is the whole
-        # output of the tune screen.
-        scores = self._edge_scores(weights or {})
+        # output of the tune screen. Priced only where the search goes: a
+        # `Metric` scores and weighs whichever edges it is asked about, with
+        # `_edge_scores`' and `_weights`' own arithmetic.
         # `on` closes the roads shut for the season that day; see `_weights`.
-        w = self._weights(pref, scores, avoid_unpaved, on)
+        metric = self.metric(pref, weights, avoid_unpaved, on)
         # A junction split for turn restrictions stands at several indices, one
         # per approach that forbids something. Any of them is a legitimate place
         # to *arrive* — the restriction is on continuing through, and a route
@@ -2275,20 +2895,24 @@ class Router:
         targets = self.node_copies.get(dst_idx)
         if targets is None:
             targets = np.array([dst_idx])
-        path = self._cheapest(src_idx, targets, pref, w)
+        path = self._cheapest(src_idx, targets, metric)
         if path is None:
             return None
         aiming = (heading if heading is not None and 0.0 <= heading < 360.0
                   else None)
-        result = self._collect(path, w, scores, heading,
+        result = self._collect(path, metric, metric.scores, heading,
                                origin if aiming is not None else None)
         if keep_ahead and result.turns_around:
-            return self._keep_ahead(result, src_idx, targets, pref, w, scores,
+            return self._keep_ahead(result, src_idx, targets, metric,
                                     aiming, origin)
         return result
 
-    def _keep_ahead(self, turnaround, src_idx, targets, pref, w, scores,
-                    heading, origin):
+    def metric(self, pref: float, weights: dict = None, avoid_unpaved: float = 1.0,
+               on=None) -> "Metric":
+        """One request's prices, for whichever edges and slots it touches."""
+        return Metric(self, pref, weights, avoid_unpaved, on)
+
+    def _keep_ahead(self, turnaround, src_idx, targets, metric, heading, origin):
         """The route that goes on ahead, for a driver who declined `turnaround`.
 
         Searched with every road through the strip behind the driver closed in
@@ -2303,13 +2927,11 @@ class Router:
         or when going on costs more than TURN_BACK_CAP_MIN extra minutes. Both
         say so on the result, which still `turns_around`. docs/reroute-uturn.md.
         """
-        x, y = _TO_M.transform(origin[1], origin[0])
-        w_ahead = w.copy()
-        w_ahead[self._turn_back_slots(_behind_strip(x, y, heading), heading)] = np.inf
-        path = self._cheapest(src_idx, targets, pref, w_ahead)
+        ahead_metric = metric.blocking(self._turn_back_block(origin, heading))
+        path = self._cheapest(src_idx, targets, ahead_metric)
         if path is None:
             return turnaround
-        ahead = self._collect(path, w_ahead, scores, heading, origin)
+        ahead = self._collect(path, ahead_metric, metric.scores, heading, origin)
         if ahead.minutes - turnaround.minutes > TURN_BACK_CAP_MIN:
             return turnaround
         return ahead
@@ -2323,179 +2945,140 @@ class Router:
         road's other half, where "U-turn to stay on" turnarounds come back — is
         a road of its own and closes the same way.
         """
-        fwd = np.zeros(len(self._edge_geom_m), dtype=bool)
-        rev = np.zeros(len(self._edge_geom_m), dtype=bool)
+        out = []
         for e in self._edge_tree.query(strip):
             e = int(e)
             xy = shapely.get_coordinates(self._edge_geom_m[e])
-            fwd[e] = _turning_back(xy, strip, heading).any()
-            rev[e] = _turning_back(xy[::-1], strip, heading).any()
-        return np.flatnonzero(np.where(self.flip, rev[self.eidx], fwd[self.eidx]))
+            fwd = _turning_back(xy, strip, heading).any()
+            rev = _turning_back(xy[::-1], strip, heading).any()
+            if fwd or rev:
+                out.extend(int(k) for k in self._members((self._edge_order,
+                                                          self._edge_start), e)
+                           if (rev if self.flip[k] else fwd))
+        return np.array(sorted(out), dtype=np.int64)
 
-    def _cheapest(self, src_idx, targets, pref, w):
-        """The cheapest node path under directed weights `w`, or None."""
-        # Collapse parallel edges to the cheapest weight per node-pair, so the
-        # cost matrix has one entry per pair (no summed duplicates).
-        pair_w = np.full(self.n_pairs, np.inf)
-        np.minimum.at(pair_w, self.slot_pair, w)
-        # The fastest arm, and only it, goes through A*. At pref = 1 even a
-        # *perfect* heuristic still settles 78-93% of the graph on a long
-        # route, and a Python heap costs 3.6x what scipy's C does at equal
-        # work, so a scenic A* would be several times slower than this is
-        # (Trap 4 of the A* brief, git show
-        # a2ddddc:docs/astar-fastest-arm-brief.md). Every other request takes
-        # the path it always did.
-        path = _ASTAR_GAVE_UP
-        if pref == 0.0 and self._alt_bwd is not None:
-            path = self._astar(src_idx, targets, pair_w)
-        if path is _ASTAR_GAVE_UP:
-            path = self._dijkstra_path(src_idx, targets, pair_w)
+    def _turn_back_block(self, origin, heading: float) -> np.ndarray:
+        """The slots a reroute that keeps ahead closes: every road through
+        the strip behind a driver at `origin` (lat, lon) on true `heading`,
+        in the direction that leads back over it."""
+        grid = _grid_heading(origin[0], origin[1], heading)
+        x, y = _TO_M.transform(origin[1], origin[0])
+        return self._turn_back_slots(_behind_strip(x, y, grid), grid)
+
+    def _cheapest(self, src_idx, targets, metric, corridor=None):
+        """The cheapest node path from `src_idx` to any of `targets` under
+        `metric`, searched in the trip's corridor; None when there is none.
+
+        The corridor is widened when the route touches it (CORRIDOR_TOUCH),
+        and when it holds no route at all, since a way round can lie outside
+        it. Every pref takes this path: the fastest arm's A* is gone (see
+        CORRIDOR_SHARE).
+        """
+        targets = np.asarray(targets, np.int64)
+        trip = self._trip(src_idx, int(targets[0]))
+        allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
+        path = None
+        for attempt in range(CORRIDOR_WIDENINGS + 1):
+            c = self.corridor(trip, trip.km + allowance)
+            path = self._search(c, src_idx, targets, metric)
+            if path is not None and trip.excess(path) <= CORRIDOR_TOUCH * allowance:
+                return path
+            allowance *= 2.0
         return path
 
-    def _dijkstra_path(self, src_idx, targets, pair_w):
-        """Cheapest node path to any of `targets`, by settling the whole graph.
+    def _search(self, c: Corridor, src_idx, targets, metric):
+        """One Dijkstra over corridor `c`: the cheapest path to any of
+        `targets` inside it, as graph indices, or None.
 
-        scipy's Dijkstra has no target early-exit, so this costs the same 262 ms
-        on New England whatever the trip — which is the reason `_astar` exists.
-        It is still the right answer for the scenic arm, where the search has
-        to settle most of the graph anyway and C beats a Python heap.
+        scipy's Dijkstra has no target early-exit, so this settles the whole
+        corridor; the corridor is what keeps that small.
         """
-        g = csr_matrix((pair_w, (self.u_tail, self.u_head)), shape=(self.n, self.n))
-        dist, pred = dijkstra(g, directed=True, indices=src_idx,
+        g = c.matrix(metric.pair_weights(c.pairs))
+        src = int(c.local(src_idx)[0])
+        dist, pred = dijkstra(g, directed=True, indices=src,
                               return_predecessors=True)
-        dst_idx = int(targets[np.argmin(dist[targets])])
-        if not np.isfinite(dist[dst_idx]):
+        local = c.local(targets)
+        local = local[local >= 0]
+        if not len(local):
+            return None
+        dst = int(local[np.argmin(dist[local])])
+        if not np.isfinite(dist[dst]):
             return None
         # reconstruct node path
         path = []
-        cur = dst_idx
-        while cur != src_idx and cur >= 0:
+        cur = dst
+        while cur != src and cur >= 0:
             path.append(cur)
             cur = pred[cur]
         if cur < 0:
             return None
-        path.append(src_idx)
+        path.append(src)
         path.reverse()
-        return path
+        return [int(v) for v in c.nodes[path]]
 
-    def _alt_bound(self, targets: np.ndarray) -> np.ndarray:
-        """Lower bound, per node, on travel time to the nearest of `targets`.
+    def _trip(self, a: int, b: int) -> "Trip":
+        """The straight line between two nodes, for a corridor and its check."""
+        ra, rb = int(self.real_node[a]), int(self.real_node[b])
+        return Trip(self, float(self.node_lat[ra]), float(self.node_lon[ra]),
+                    float(self.node_lat[rb]), float(self.node_lon[rb]))
 
-        The ALT bound from one landmark L is the larger of the two triangle
-        inequalities that do not need a path through L to exist:
+    def trip_km(self, a: int, b: int) -> float:
+        """Straight-line km between two nodes: what MAX_TRIP_KM caps."""
+        return self._trip(a, b).km
 
-            d(n, t) >= d(n, L) - d(t, L)        and        d(L, t) - d(L, n)
+    def corridor(self, trip: "Trip", budget_km: float) -> Corridor:
+        """The nodes v with |a v| + |v b| <= `budget_km`, as a `Corridor`.
 
-        and the bound is the largest any landmark gives. Each term is
-        *consistent*, not merely admissible — `d(u,L) - d(t,L)` differs from
-        `d(v,L) - d(t,L)` by at most `w(u,v)` — and a pointwise max of
-        consistent functions is consistent, which is what lets `_astar` stop at
-        the first target it pops.
-
-        **The destination is a set** (see `route`). The exact bound for a set
-        is `min` over targets of the per-target bound, which would cost a pass
-        per target. This takes the min *inside* the max instead:
-
-            min_t max_L b_L(n, t)  >=  max_L min_t b_L(n, t)
-
-        The right-hand side is the weaker of the two and is still a lower bound
-        on the distance to the nearest target, because for each L,
-        `min_t b_L(n,t) <= min_t d(n,t)`. It costs the same as a single target
-        for any number of them, since both mins fold into a per-landmark
-        constant. The weakening is nothing in practice: the targets of a set
-        are copies of one junction, standing in the same place, so their
-        distances to a landmark differ only by which exits they are allowed.
+        Read off the node grid: the cells within the ellipse's bounding box,
+        then each node in them tested exactly. Time and memory follow the
+        corridor, not the graph.
         """
-        bwd, fwd = self._alt_bwd, self._alt_fwd
-        to_land = bwd[:, targets].max(axis=1) + np.float32(ALT_SLACK_MIN)
-        from_land = fwd[:, targets].min(axis=1) - np.float32(ALT_SLACK_MIN)
-        # Buffers per call, not reused across calls: waitress serves with four
-        # threads and `/api/route` holds no lock, so two routes can be in here
-        # at once. `np.empty` is free until written and the first op writes
-        # every element anyway.
-        h = np.empty(self.n, np.float32)
-        tmp = np.empty(self.n, np.float32)
-        np.subtract(bwd[0], to_land[0], out=h)
-        np.subtract(from_land[0], fwd[0], out=tmp)
-        np.maximum(h, tmp, out=h)
-        for i in range(1, len(bwd)):
-            np.subtract(bwd[i], to_land[i], out=tmp)
-            np.maximum(h, tmp, out=h)
-            np.subtract(from_land[i], fwd[i], out=tmp)
-            np.maximum(h, tmp, out=h)
-        # Clamped at zero, which is a correctness fix and not a tidy-up. A
-        # negative bound is merely no information *as a bound* — but `_astar`
-        # stops at the first target it pops, and it orders by `g + h`, so a
-        # target whose own bound is negative jumps the queue ahead of a
-        # cheaper sibling copy. Every target's bound is negative here, by at
-        # least ALT_SLACK_MIN, and they are not all negative by the *same*
-        # amount.
-        #
-        # Measured, before this line existed: junction 669074 has three
-        # copies, and A* returned the one costing 111.1124 min ahead of the
-        # one costing 111.0289 because their bounds were -0.0846 and -0.0010 —
-        # a 3e-5 min lead on `f`, bought with a route 0.084 min worse. It costs
-        # nothing anywhere else: 7 nodes of 801,719 had a negative bound.
-        np.maximum(h, 0.0, out=h)
-        return h
+        return Corridor(self, self._ellipse_nodes(trip, budget_km))
 
-    def _astar(self, src_idx, targets, pair_w):
-        """Cheapest node path to any of `targets`, settling as little as it can.
+    def _ellipse_nodes(self, trip, budget_km: float) -> np.ndarray:
+        """Graph indices v with |a v| + |v b| <= `budget_km`, ascending.
 
-        Measured over 12 OD pairs from 7 to 314 minutes, this settles 1.9% of
-        the graph at the median against the full Dijkstra's 100%, taking the
-        whole arm from 255 ms to 46 ms. Over 250 OD pairs at realistic trip
-        lengths, 304 ms to 38 ms.
-
-        Two details are load-bearing:
-
-        **It stops at the first target popped**, which is correct only because
-        `_alt_bound` bounds the distance to the *nearest* target rather than to
-        one chosen up front. A full Dijkstra can pick the cheapest copy of a
-        split junction afterwards because it settled all of them; this cannot.
-
-        **Staleness is decided by the g-value carried in the heap**, not by a
-        closed set. It is 19% faster (18.2 ms against 22.4 ms at the median),
-        and it also reopens a node if a shorter path to it turns up later —
-        which cannot happen with a consistent bound, and means a mistake in
-        `_alt_bound` costs speed rather than correctness.
-
-        Returns `_ASTAR_GAVE_UP` if the search outgrows ALT_SETTLE_FRACTION,
-        `None` if there is genuinely no route. The two are different answers
-        and the caller has to tell them apart.
+        Decided a grid cell at a time where it can be: a cell whose centre is
+        far enough inside the ellipse holds only nodes inside it, and one far
+        enough outside holds none, by the triangle inequality on the sphere.
+        Only the cells the boundary crosses are tested node by node, with the
+        same formula, so the answer is the per-node test's exactly.
         """
-        h = self._alt_bound(targets)
-        indptr, head = self._pair_indptr, self.u_head
-        goal = {int(t) for t in targets}
-        dist = {src_idx: 0.0}
-        pred = {}
-        heap = [(float(h[src_idx]), 0.0, src_idx)]
-        budget = int(ALT_SETTLE_FRACTION * self.n)
-        while heap:
-            _, g_u, u = heappop(heap)
-            if g_u > dist[u]:
-                continue
-            if u in goal:
-                path = [u]
-                while u != src_idx:
-                    u = pred[u]
-                    path.append(u)
-                path.reverse()
-                return path
-            budget -= 1
-            if budget < 0:
-                return _ASTAR_GAVE_UP
-            # float() on the way out of numpy, deliberately: these are the
-            # hottest lines in the router, and a np.float64 costs about twice
-            # a Python float in the arithmetic and in the heap comparison.
-            for i in range(indptr[u], indptr[u + 1]):
-                v = int(head[i])
-                nd = g_u + float(pair_w[i])
-                if nd < dist.get(v, np.inf):
-                    dist[v] = nd
-                    pred[v] = u
-                    heappush(heap, (nd + float(h[v]), nd, v))
-        return None
+        g = self.node_grid
+        # A disc about the midpoint holds the ellipse: |m v| <= (|a v| + |v b|)/2.
+        mid_lat = (trip.lat1 + trip.lat2) / 2.0
+        mid_lon = (trip.lon1 + trip.lon2) / 2.0
+        radius = budget_km / 2.0 * 1.02 + 1.0
+        dlat = math.degrees(radius / EARTH_KM)
+        top = min(89.0, max(abs(mid_lat - dlat), abs(mid_lat + dlat)))
+        dlon = min(180.0, dlat / math.cos(math.radians(top)))
+        x0 = max(0, int(math.floor((mid_lon - dlon - g.lon0) / g.cell)))
+        x1 = min(g.ncols - 1, int(math.floor((mid_lon + dlon - g.lon0) / g.cell)))
+        y0 = max(0, int(math.floor((mid_lat - dlat - g.lat0) / g.cell)))
+        y1 = min(g.nrows - 1, int(math.floor((mid_lat + dlat - g.lat0) / g.cell)))
+        if x1 < x0 or y1 < y0:
+            return np.zeros(0, np.int64)
+        cx, cy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+        cells = (cy * g.ncols + cx).ravel()
+        clon = g.lon0 + (cx.ravel() + 0.5) * g.cell
+        clat = g.lat0 + (cy.ravel() + 0.5) * g.cell
+        # Centre to corner, generously: degrees of latitude at their longest
+        # and longitude at the cell's widest, plus 2%.
+        wide = np.cos(np.radians(np.maximum(np.abs(clat) - g.cell / 2.0, 0.0)))
+        reach = 1.02 * (math.pi / 180.0) * EARTH_KM * (g.cell / 2.0) \
+            * np.sqrt(1.0 + wide ** 2)
+        centre = (haversine_km(trip.lat1, trip.lon1, clat, clon)
+                  + haversine_km(trip.lat2, trip.lon2, clat, clon))
+        whole = centre + 2.0 * reach <= budget_km
+        part = ~whole & (centre - 2.0 * reach <= budget_km)
+        take = lambda c: g.order[_ranges(g.start[c], g.start[c + 1])]
+        inside = take(cells[whole])
+        maybe = take(cells[part])
+        real = self.real_node[maybe]
+        lat, lon = self.node_lat[real], self.node_lon[real]
+        keep = (haversine_km(trip.lat1, trip.lon1, lat, lon)
+                + haversine_km(trip.lat2, trip.lon2, lat, lon)) <= budget_km
+        return np.sort(np.concatenate([inside, maybe[keep]]).astype(np.int64))
 
     def _collect(self, path, w, scores, heading=None, origin=None):
         """Turn a Dijkstra node path into the chosen edges, in travel order.
@@ -2507,33 +3090,35 @@ class Router:
         gather that edge's row and geometry (reversed if we drove it backwards).
         The edges come out in travel order, which is exactly what the
         turn-by-turn step list walks over to emit "turn onto X" maneuvers.
+
+        `w` is per directed slot and `scores` per undirected edge, each either
+        an array over the whole graph or a callable asked for just the rows it
+        needs (a `Metric` and its `scores`), which is how a request avoids
+        pricing the whole graph.
         """
         hops = np.asarray(path, dtype=np.int64)
-        keys = hops[:-1] * self.n + hops[1:]
-        pairs = np.searchsorted(self._pair_key, keys)
-
-        chosen = []
-        for hop, pair in enumerate(pairs):
-            if pair >= self.n_pairs or self._pair_key[pair] != keys[hop]:
-                # Every (tail, head) Dijkstra can traverse was indexed from the
-                # same arrays, so this is unreachable. Skipping the hop silently
-                # would be the worst way to be wrong about that: the drawn line
-                # would jump the gap and the distance would be under-reported,
-                # with nothing anywhere saying so.
-                raise RuntimeError(f"no directed edge for hop {hops[hop]} -> "
-                                   f"{hops[hop + 1]}; graph index is inconsistent")
-            slots = self._pair_slots[self._pair_start[pair]:self._pair_start[pair + 1]]
-            chosen.append(int(slots[np.argmin(w[slots])]))
+        pairs = self._hop_pairs(hops[:-1], hops[1:])
+        missing = np.flatnonzero(pairs < 0)
+        if len(missing):
+            # Every (tail, head) Dijkstra can traverse was indexed from the
+            # same arrays, so this is unreachable. Skipping the hop silently
+            # would be the worst way to be wrong about that: the drawn line
+            # would jump the gap and the distance would be under-reported,
+            # with nothing anywhere saying so.
+            hop = int(missing[0])
+            raise RuntimeError(f"no directed edge for hop {hops[hop]} -> "
+                               f"{hops[hop + 1]}; graph index is inconsistent")
+        chosen = self._best_slots(pairs, w)
 
         # The undirected edge rows (stats, names, geometry) in travel order.
-        edge_rows = [self.eidx[k] for k in chosen]
-        rows = self.edges.iloc[edge_rows]
+        edge_rows = self.eidx[chosen].astype(np.int64)
+        rows = self.edge_rows(edge_rows)
 
         # Stitch the per-edge geometries into one line, flipping any edge we
         # traversed against its stored direction so the points run start -> end.
         coords = []
-        for k in chosen:
-            c = shapely.get_coordinates(self._geom[self.eidx[k]])
+        for k, e in zip(chosen, edge_rows):
+            c = self.lines.coords(int(e))
             if self.flip[k]:
                 c = c[::-1]
             coords.append(c)
@@ -2554,10 +3139,139 @@ class Router:
         # everything downstream — exit numbers, rotary exit counts — is keyed by
         # the junction itself.
         real = [int(self.real_node[p]) for p in path]
-        return RouteResult(rows, stitch(coords), coords, scores[edge_rows],
+        route_scores = scores(edge_rows) if callable(scores) else scores[edge_rows]
+        return RouteResult(rows, stitch(coords), coords, route_scores,
                            nodes=real, context=self.maneuver_context,
                            edge_minutes=self.d_minutes[chosen],
                            start_heading=heading, origin=origin)
+
+    def _best_slots(self, pairs, w) -> np.ndarray:
+        """The directed slot each pair's hop takes: the cheapest of any
+        parallel roads under `w` (array or callable), the lowest slot on a
+        tie, as `np.argmin` takes it."""
+        pairs = np.asarray(pairs, np.int64)
+        start = self._pair_start[pairs].astype(np.int64)
+        count = self._pair_start[pairs + 1] - start
+        out = self._pair_slots[start].astype(np.int64)
+        multi = np.flatnonzero(count > 1)
+        if len(multi):
+            slots = self._pair_slots[_ranges(start[multi], start[multi] + count[multi])]
+            weights = w(slots) if callable(w) else w[slots]
+            at = 0
+            for k, c in zip(multi, count[multi]):
+                out[k] = slots[at + int(np.argmin(weights[at:at + c]))]
+                at += c
+        return out
+
+    # The edge columns a `RouteResult` reads, beyond the text ones.
+    def edge_rows(self, rows) -> pd.DataFrame:
+        """The edges `rows` as a small frame indexed by edge row: what
+        `edges.iloc[rows]` gave, without holding the whole table."""
+        rows = np.asarray(rows, np.int64)
+        data = {col: strings.values(rows) for col, strings in self.text.items()}
+        data["length_m"] = np.asarray(self.length_m[rows])
+        data["score"] = np.asarray(self._score[rows])
+        for k, (_, col, _) in enumerate(SCENERY_BREAKDOWN):
+            data[col] = np.asarray(self._breakdown[rows, k])
+        return pd.DataFrame(data, index=pd.Index(rows))
+
+    def edge_text(self, col: str, row: int):
+        """One edge's value of a text column, or None."""
+        strings = self.text.get(col)
+        return None if strings is None else strings.text(int(strings.codes[row]))
+
+
+class Trip:
+    """The straight line between a trip's two ends, in great-circle km, and
+    how far a route strays from it."""
+
+    def __init__(self, router, lat1, lon1, lat2, lon2):
+        self.router = router
+        self.lat1, self.lon1, self.lat2, self.lon2 = lat1, lon1, lat2, lon2
+        self.km = float(haversine_km(lat1, lon1, lat2, lon2))
+
+    def excess(self, path) -> float:
+        """The worst point's |a v| + |v b| - |a b| along `path`, in km."""
+        r = self.router
+        real = r.real_node[np.asarray(path, np.int64)]
+        lat, lon = r.node_lat[real], r.node_lon[real]
+        return float((haversine_km(self.lat1, self.lon1, lat, lon)
+                      + haversine_km(self.lat2, self.lon2, lat, lon)).max() - self.km)
+
+
+class Metric:
+    """One request's prices: `_edge_scores` and `_weights` for whichever edges
+    and slots are asked about, never for the whole graph.
+
+    That pricing was a whole-graph pass per request, 53 ms on New England and
+    about 1.6 s at US size (docs/usa-extension-feasibility.md §2). The
+    arithmetic is theirs, so a corridor's prices are the whole graph's to the
+    bit. `blocked` slots cost +inf on top: a reroute that keeps ahead.
+    """
+
+    def __init__(self, router, pref, weights=None, avoid_unpaved=1.0, on=None,
+                 blocked=None):
+        self.router = router
+        self.pref = pref
+        self.weights = weights or {}
+        self.w = router._beauty_vector(self.weights)
+        self.avoid_unpaved = avoid_unpaved
+        self.on = on
+        self.blocked = blocked
+        self._known = None
+
+    def scores(self, rows) -> np.ndarray:
+        """The 0-10 score of edges `rows` under the request's beauty weights."""
+        rows = np.asarray(rows, np.int64)
+        known = self._known
+        if known is not None and len(rows):
+            at = np.minimum(np.searchsorted(known[0], rows), len(known[0]) - 1)
+            if (known[0][at] == rows).all():
+                return known[1][at]
+        return self.router._scores_of(rows, self.w)
+
+    def remember(self, rows):
+        """Score `rows` once now and answer from that whenever asked again:
+        for a plan, which asks about the same corridor's roads many times."""
+        rows = np.unique(np.asarray(rows, np.int64))
+        self._known = (rows, self.router._scores_of(rows, self.w))
+
+    def __call__(self, slots) -> np.ndarray:
+        """The Dijkstra weight of each of `slots`."""
+        r = self.router
+        slots = np.asarray(slots, np.int64)
+        # At pref 0 the scenery term is `0.0 * BETA * penalty`, which is 0.0
+        # for every score, so the scores are not worth computing: the old
+        # router's fastest graphs were priced on zeros for the same reason.
+        if max(0.0, min(1.0, self.pref)) == 0.0:
+            scores = np.zeros(len(slots))
+        else:
+            scores = self.scores(r.eidx[slots])
+        return r._slot_weights(slots, scores, self.pref, self.avoid_unpaved,
+                               self.on, self.blocked)
+
+    def pair_weights(self, pairs, remember: bool = False) -> np.ndarray:
+        """Per pair, the cheapest of its parallel slots: what `_cheapest`
+        collapsed the whole graph to with `np.minimum.at`. With `remember`,
+        the roads' scores are kept for later questions (`remember`)."""
+        r = self.router
+        pairs = np.asarray(pairs, np.int64)
+        start = r._pair_start[pairs].astype(np.int64)
+        count = r._pair_start[pairs + 1] - start
+        if not len(pairs):
+            return np.zeros(0)
+        slots = r._pair_slots[_ranges(start, start + count)]
+        if remember:
+            self.remember(r.eidx[slots])
+        w = self(slots)
+        return np.minimum.reduceat(w, np.cumsum(count) - count)
+
+    def blocking(self, slots) -> "Metric":
+        """The same prices with `slots` closed as well."""
+        blocked = (np.asarray(slots, np.int64) if self.blocked is None
+                   else np.union1d(self.blocked, slots))
+        return Metric(self.router, self.pref, self.weights, self.avoid_unpaved,
+                      self.on, blocked)
 
 
 def stitch(coord_arrays):
@@ -2908,7 +3622,7 @@ class ManeuverContext:
 
 
 class RouteResult:
-    def __init__(self, edge_rows: gpd.GeoDataFrame, line, edge_coords=None,
+    def __init__(self, edge_rows: pd.DataFrame, line, edge_coords=None,
                  scores=None, nodes=None, context: "ManeuverContext" = None,
                  edge_minutes=None, start_heading=None, origin=None):
         self.edges = edge_rows

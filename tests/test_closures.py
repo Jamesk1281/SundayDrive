@@ -639,12 +639,11 @@ class TestRoutes:
         assert list(summer.edges.index) == list(plain.edges.index)
 
     def test_the_fastest_arm_is_still_exact_with_roads_closed(self, closed_router):
-        """The A* bound is built on the open graph. Closing roads only raises
-        true costs, so it stays admissible, and the A* must still find what a
-        whole-graph Dijkstra over the same masked weights does."""
+        """The corridor search must find what a whole-graph Dijkstra over the
+        same masked weights does: closing roads can push the best way round
+        out towards the corridor's edge, which is when it widens."""
         from scipy.sparse import csr_matrix
         from scipy.sparse.csgraph import dijkstra
-        from router import _ASTAR_GAVE_UP
 
         r = closed_router
         s, _ = r.snap(*STOWE)
@@ -653,8 +652,8 @@ class TestRoutes:
         w = r._weights(0.0, r._edge_scores({}), 1.0, JANUARY)
         pair_w = np.full(r.n_pairs, np.inf)
         np.minimum.at(pair_w, r.slot_pair, w)
-        path = r._astar(s, targets, pair_w)
-        assert path is not None and path is not _ASTAR_GAVE_UP
+        path = r._cheapest(s, targets, r.metric(0.0, None, 1.0, JANUARY))
+        assert path is not None
         hops = np.asarray(path, dtype=np.int64)
         cost = pair_w[np.searchsorted(r._pair_key, hops[:-1] * r.n + hops[1:])].sum()
         g = csr_matrix((pair_w, (r.u_tail, r.u_head)), shape=(r.n, r.n))

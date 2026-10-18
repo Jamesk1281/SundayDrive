@@ -207,11 +207,26 @@ EARTH_KM = 6371.0088
 # cap (docs/loop-speed.md).
 DISC_MAX_SHARE = 0.6
 
+# The field cache's ceiling in nodes searched, beside its count of entries. On
+# a continent one 400 km loop's passes cover a few million nodes, a few hundred
+# megabytes with their cost model, where New England's whole graph is 0.8M; four
+# of those would be most of the box (docs/router-at-us-scale.md, "Memory").
+FIELD_CACHE_NODES = 6_000_000
+
+# How many times `_fields` doubles a disc it cannot prove before keeping it.
+# On New England the first doubling is nearly always the whole graph (see
+# DISC_MAX_SHARE), so this only bites on a continent, where a whole-graph pass
+# is 25 s and never an answer (docs/router-at-us-scale.md, "Loops").
+DISC_WIDENINGS = 2
+
 # The score at or above which a road counts as properly beautiful — see
 # `router.BEAUTIFUL_SCORE`, which is where it now lives because point-to-point
 # routes report the same number. Re-exported rather than moved outright, so
 # `from looper import BEAUTIFUL_SCORE` keeps working for server/app.py.
 from router import BEAUTIFUL_SCORE  # noqa: E402,F401
+from router import (CORRIDOR_KM, CORRIDOR_SHARE, CORRIDOR_TOUCH,  # noqa: E402
+                    CORRIDOR_WIDENINGS, SLOT_PRIVATE)
+from compact import _ranges  # noqa: E402
 
 
 @dataclass
@@ -268,40 +283,102 @@ class Loop:
 class _CostModel:
     """Edge weights and per-node-pair lookups for one (pref, weights) setting.
 
-    Held apart from the fields below because it does not depend on the start, so
-    a user shuffling loops from one place reuses it for every press. About 30 MB
-    on the Massachusetts graph, 82 MB on New England's
-    (docs/loop-lock-contention.md).
+    Over every pair of the graph (`pairs` None), which is what the whole-graph
+    passes and the tests use, or over the pairs a disc touches (`pairs`, the
+    graph's pair ids ascending, `at` maps into it). The whole graph's model is
+    about 30 MB on the Massachusetts graph, 82 MB on New England's
+    (docs/loop-lock-contention.md), and would be about 2 GB on the US, so a
+    disc's passes are priced over the disc alone (docs/router-at-us-scale.md,
+    "Loops").
     """
 
-    scores: np.ndarray          # per undirected edge, 0-10, under the user's weights
-    w_slot: np.ndarray          # per directed slot, the Dijkstra weight
-    pair_w: np.ndarray          # per unique (tail, head), the cheapest slot's weight
+    metric: object              # router.Metric: the setting, priced on demand
+    pair_w: np.ndarray          # per pair, the cheapest slot's Dijkstra weight
     pair_km: np.ndarray         # ...and that slot's road length, scenic-km, edge id
     pair_scen: np.ndarray
     pair_eidx: np.ndarray
+    pairs: np.ndarray = None    # None: aligned to every pair of the graph
+    # The whole graph's model only: per edge scores and per slot weights.
+    scores: np.ndarray = None
+    w_slot: np.ndarray = None
+
+    def at(self, pairs):
+        """Positions of graph pair ids in this model's arrays."""
+        pairs = np.asarray(pairs, np.int64)
+        return pairs if self.pairs is None else np.searchsorted(self.pairs, pairs)
 
 
 @dataclass
 class _Field:
     """One Dijkstra pass from (or to) the start, with km and scenic-km recovered.
 
+    Held over the nodes it searched (`nodes`, ascending graph indices; every
+    node for a pass over the whole graph), as `lcost`, `lkm`, `lscen` and
+    `lpred`, the last in those local indices. `cost`, `km`, `scen`, `pred` and
+    `exact` are the same spread over the whole graph's indices, built when
+    asked for: they are what the tests compare against a whole-graph pass,
+    and nothing that answers a request reads them.
+
     `km` and `scen` are meaningless where `cost` is infinite — an unreachable
     node self-loops in the predecessor tree and accumulates zero. Callers must
     mask on `np.isfinite(cost)`; `_Fields.reachable` does it once.
     """
 
-    cost: np.ndarray
-    km: np.ndarray
-    scen: np.ndarray
-    pred: np.ndarray
+    nodes: np.ndarray
+    n: int
+    lcost: np.ndarray
+    lkm: np.ndarray
+    lscen: np.ndarray
+    lpred: np.ndarray
     # For a pass cut to a disc (`LoopPlanner._disc`), which nodes' cost and
     # path are provably the whole graph's; None for a pass over the whole
     # graph, where all are. `leave` is the cheapest way out of the disc, and
     # `refined` says `LoopPlanner._refine` has already run.
-    exact: np.ndarray = None
+    lexact: np.ndarray = None
     leave: float = np.inf
     refined: bool = False
+
+    @property
+    def whole(self):
+        return len(self.nodes) == self.n
+
+    def local(self, idx):
+        """Local indices of graph indices (all must be inside)."""
+        idx = np.asarray(idx, np.int64)
+        return idx if self.whole else np.searchsorted(self.nodes, idx)
+
+    def _spread(self, values, fill):
+        if self.whole:
+            return values
+        out = np.full(self.n, fill, dtype=values.dtype)
+        out[self.nodes] = values
+        return out
+
+    @property
+    def cost(self):
+        return self._spread(self.lcost, np.inf)
+
+    @property
+    def km(self):
+        return self._spread(self.lkm, 0.0)
+
+    @property
+    def scen(self):
+        return self._spread(self.lscen, 0.0)
+
+    @property
+    def pred(self):
+        if self.whole:
+            return self.lpred
+        out = np.full(self.n, -9999, dtype=self.lpred.dtype)
+        seen = self.lpred >= 0
+        out[self.nodes] = np.where(seen, self.nodes[np.maximum(self.lpred, 0)],
+                                   self.lpred)
+        return out
+
+    @property
+    def exact(self):
+        return None if self.lexact is None else self._spread(self.lexact, False)
 
 
 @dataclass
@@ -309,23 +386,72 @@ class _Disc:
     """The part of the graph near a start, as matrices for `_pass`.
 
     `nodes` are the whole graph's indices inside, ascending, and the disc's
-    own index of a node is its position there (`local`, -1 outside). `fwd`
-    and `rev` are (pair ids, column indices, row pointers) of the forward and
-    transposed matrices over the pairs with both ends inside; `exit_fwd` and
-    `exit_rev` are the pairs that leave the disc forward and enter it.
+    own index of a node is its position there. `fwd` and `rev` are (pair ids,
+    column indices, row pointers) of the forward and transposed matrices over
+    the pairs with both ends inside; `exit_fwd` and `exit_rev` are the pairs
+    that leave the disc forward and enter it. `pairs` is every pair id any of
+    those name, ascending: what a disc's cost model prices.
+
+    Cut in time proportional to the disc, from the router's node grid and its
+    forward and transposed pair rows, never by a pass over the graph.
     """
 
     nodes: np.ndarray
-    local: np.ndarray
     fwd: tuple
     rev: tuple
     exit_fwd: np.ndarray
     exit_rev: np.ndarray
+    pairs: np.ndarray
+    # Where `fwd`'s, `rev`'s and the exits' pairs sit in `pairs`, found once.
+    at: dict = None
+
+    def position(self, cost, which):
+        """Where the pairs of `which` ("fwd", "rev", "exit_fwd", "exit_rev")
+        sit in `cost`'s arrays."""
+        pairs = {"fwd": self.fwd[0], "rev": self.rev[0], "exit_fwd": self.exit_fwd,
+                 "exit_rev": self.exit_rev}[which]
+        if cost.pairs is None:
+            return pairs
+        if cost.pairs is self.pairs:
+            return self.at[which]
+        return cost.at(pairs)
+
+    def arcs(self, tails, heads):
+        """Positions in `fwd` of the arcs (tail, head), disc indices, all
+        inside: read off the tail's own short row."""
+        _, indices, indptr = self.fwd
+        tails = np.asarray(tails, np.int64)
+        heads = np.asarray(heads, np.int64)
+        start = indptr[tails]
+        count = indptr[tails + 1] - start
+        out = np.full(len(tails), -1, np.int64)
+        for k in range(int(count.max()) if len(count) else 0):
+            live = np.flatnonzero((count > k) & (out < 0))
+            if not len(live):
+                break
+            p = start[live] + k
+            hit = indices[p] == heads[live]
+            out[live[hit]] = p[hit]
+        return out
+
+    def local(self, idx):
+        idx = np.atleast_1d(np.asarray(idx, np.int64))
+        at = np.minimum(np.searchsorted(self.nodes, idx), len(self.nodes) - 1)
+        return np.where(self.nodes[at] == idx, at, -1)
 
     def graph(self, pair_w, reverse: bool):
+        """The matrix under `pair_w`, indexed by the graph's pair ids."""
         pairs, indices, indptr = self.rev if reverse else self.fwd
         m = len(self.nodes)
         return csr_matrix((pair_w[pairs], indices, indptr), shape=(m, m))
+
+    def matrix(self, cost, reverse: bool, pair_w=None):
+        """The matrix under a cost model, or under `pair_w` aligned with it."""
+        w = cost.pair_w if pair_w is None else pair_w
+        _, indices, indptr = self.rev if reverse else self.fwd
+        m = len(self.nodes)
+        at = self.position(cost, "rev" if reverse else "fwd")
+        return csr_matrix((w[at], indices, indptr), shape=(m, m))
 
 
 @dataclass
@@ -334,7 +460,7 @@ class _Fields:
 
     Carries the `_CostModel` they were built from, so a loop built off these
     fields cannot be priced under different weights than the ones that chose the
-    turnaround.
+    turnaround. Both passes run over the same nodes.
     """
 
     start: int
@@ -344,13 +470,18 @@ class _Fields:
     # The loop length, in km of either leg, that the passes' disc was cut for;
     # infinite for passes over the whole graph. See `_serves`.
     reach_km: float = np.inf
-    reachable: np.ndarray = _dc_field(default=None, repr=False)
+    disc: _Disc = None
+    lreachable: np.ndarray = _dc_field(default=None, repr=False)
 
     def __post_init__(self):
-        self.reachable = np.isfinite(self.out.cost) & np.isfinite(self.back.cost)
+        self.lreachable = np.isfinite(self.out.lcost) & np.isfinite(self.back.lcost)
 
     @property
-    def loop_km(self):
+    def nodes(self):
+        return self.out.nodes
+
+    @property
+    def lloop_km(self):
         """Estimated length of an out-and-back loop through each node.
 
         Exact for the mirror loop — verified against `route().km` to four
@@ -358,11 +489,24 @@ class _Fields:
         penalised leg home is a different path. Good enough to filter on, not
         good enough to report.
         """
-        return self.out.km + self.back.km
+        return self.out.lkm + self.back.lkm
+
+    @property
+    def lloop_scen(self):
+        return self.out.lscen + self.back.lscen
+
+    # The same over the whole graph's indices, for the tests.
+    @property
+    def reachable(self):
+        return self.out._spread(self.lreachable, False)
+
+    @property
+    def loop_km(self):
+        return self.out._spread(self.lloop_km, 0.0)
 
     @property
     def loop_scen(self):
-        return self.out.scen + self.back.scen
+        return self.out._spread(self.lloop_scen, 0.0)
 
 
 class LoopPlanner:
@@ -430,23 +574,32 @@ class LoopPlanner:
 
     def candidates(self, fields: _Fields, target_km: float,
                    tolerance: float = CANDIDATE_TOLERANCE,
-                   sector: str = None):
+                   sector: str = None, proven: bool = True):
         """Node indices that could be the turnaround of a loop of this length.
 
         The whole of step 2, and the reason the distance slider is free: this is
-        array work over every node in the state, measured at 1.1 ms.
+        array work over every node the passes searched, measured at 1.1 ms on
+        a whole-graph field set.
+
+        Only nodes both passes proved, on a disc (`_Field.lexact`), unless
+        `proven` is False, which is how `_serves` asks whether any were not.
+        A disc that `_fields` kept after it stopped widening can hold nodes it
+        did not prove, and a turnaround among them could differ from the whole
+        graph's.
         """
-        km = fields.loop_km
+        km = fields.lloop_km
         # Never round on private road off the main public network
         # (`Router.private_inside`): the way there and back would be a
         # private road in the middle of the drive, which
         # `Router._weights` prices out of every route and a turnaround would
         # bring back in (docs/state-road-class.md, "Loops").
-        ok = (fields.reachable
-              & ~self.router.private_inside
+        ok = (fields.lreachable
+              & ~self.router.private_inside[fields.nodes]
               & (np.abs(km - target_km) <= tolerance * target_km)
-              & (fields.out.km >= MIN_LEG_KM))
-        idx = np.where(ok)[0]
+              & (fields.out.lkm >= MIN_LEG_KM))
+        if proven and fields.out.lexact is not None:
+            ok &= fields.out.lexact & fields.back.lexact
+        idx = fields.nodes[np.where(ok)[0]]
         if sector is not None and len(idx):
             want = SECTORS.index(sector)
             idx = idx[self._sector_codes(fields.start, idx) == want]
@@ -521,9 +674,10 @@ class LoopPlanner:
         from two searches and the turn-by-turn reads continuously across the
         waypoint.
         """
-        cost = self._cost(round(float(pref), 4), _weights_key(weights),
-                          round(float(avoid_unpaved), 4), on)
-        out = self._leg(cost, int(src), int(via))
+        metric = self.router.metric(round(float(pref), 4),
+                                    dict(_weights_key(weights)),
+                                    round(float(avoid_unpaved), 4), on)
+        out = self._leg(metric, int(src), int(via))
         if out is None:
             return None
         # Threaded through whichever index of `via` the first leg actually
@@ -533,33 +687,45 @@ class LoopPlanner:
         # continuing from that copy is what keeps the second leg from taking a
         # turn the first leg's arrival forbids.
         for arrival in out:
-            back = self._leg(cost, arrival[-1], int(dst))
+            back = self._leg(metric, arrival[-1], int(dst))
             if back is not None:
                 # The cheapest way home from here; unlike the waypoint, the end
                 # of the route has nothing to continue into, so any arrival at
                 # it will do and the first is the best.
                 path = arrival + back[0][1:]
-                return self.router._collect(path, cost.w_slot, cost.scores)
+                return self.router._collect(path, metric, metric.scores)
         return None
 
-    def _leg(self, cost: _CostModel, src: int, dst: int):
+    def _leg(self, metric, src: int, dst: int):
         """Node paths from `src` to `dst`, cheapest arrival first.
 
         A list rather than one path, because a split junction can be arrived at
         several ways and only the caller knows whether the cheapest one can be
-        continued from.
+        continued from. Searched in the leg's corridor, widened as
+        `Router._cheapest` widens it (router.CORRIDOR_SHARE).
         """
-        dist, pred = dijkstra(self._graph(cost.pair_w), directed=True,
-                              indices=src, return_predecessors=True)
+        r = self.router
         ends = self._arrival_indices(dst)
-        ends = ends[np.isfinite(dist[ends])]
-        if not len(ends):
-            return None
-        paths = []
-        for end in ends[np.argsort(dist[ends])]:
-            path = _tree_path(pred, src, int(end))
-            if path is not None:
-                paths.append(path)
+        trip = r._trip(src, int(ends[0]))
+        allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
+        paths = None
+        for attempt in range(CORRIDOR_WIDENINGS + 1):
+            c = r.corridor(trip, trip.km + allowance)
+            local_src = int(c.local(src)[0])
+            dist, pred = dijkstra(c.matrix(metric.pair_weights(c.pairs)),
+                                  directed=True, indices=local_src,
+                                  return_predecessors=True)
+            local = c.local(ends)
+            local = local[local >= 0]
+            local = local[np.isfinite(dist[local])]
+            paths = []
+            for end in local[np.argsort(dist[local])]:
+                path = _tree_path(pred, local_src, int(end))
+                if path is not None:
+                    paths.append([int(v) for v in c.nodes[path]])
+            if paths and trip.excess(paths[0]) <= CORRIDOR_TOUCH * allowance:
+                return paths
+            allowance *= 2.0
         return paths or None
 
     def nearest_length(self, start: int, target_km: float, pref: float = 1.0,
@@ -567,14 +733,19 @@ class LoopPlanner:
                        on: date | None = None):
         """The closest loop length that has any candidate at all, or None.
 
-        For the message shown when `plan` returns None. Needs passes over the
-        whole graph, because the nearest length that works can lie outside
-        the disc `plan` searched; free when the cached passes already are,
-        two searches when they were cut to a disc (docs/loop-speed.md).
+        For the message shown when `plan` returns None. Needs passes over
+        every node a loop up to MAX_TARGET_KM could use, because the nearest
+        length that works can lie outside the disc `plan` searched: the whole
+        graph when that disc would hold most of it, otherwise the disc for the
+        longest loop, where only the nodes it proved count. Free when the
+        cached passes already cover it, two searches when they do not
+        (docs/loop-speed.md).
         """
         fields = self._fields(start, pref, weights, avoid_unpaved, on)
-        ok = fields.reachable & (fields.out.km >= MIN_LEG_KM)
-        km = fields.loop_km[ok]
+        ok = fields.lreachable & (fields.out.lkm >= MIN_LEG_KM)
+        if fields.out.lexact is not None:
+            ok &= fields.out.lexact & fields.back.lexact
+        km = fields.lloop_km[ok]
         km = km[(km >= MIN_TARGET_KM) & (km <= MAX_TARGET_KM)]
         if not len(km):
             return None
@@ -592,14 +763,15 @@ class LoopPlanner:
         (Spearman +0.24 against built score at Needham, -0.21 at Petersham) —
         and it does not matter, because trusting rank 1 costs 0.01 points.
         """
-        km = fields.loop_km
-        rate = fields.loop_scen[idx] / np.maximum(km[idx], 1e-9)
+        at = fields.out.local(idx)
+        km = fields.lloop_km[at]
+        rate = fields.lloop_scen[at] / np.maximum(km, 1e-9)
         lo = target_km * (1.0 - CANDIDATE_TOLERANCE)
         hi = target_km * (1.0 + CANDIDATE_TOLERANCE)
         out = []
         for a, b in zip(np.linspace(lo, hi, picks + 1)[:-1],
                         np.linspace(lo, hi, picks + 1)[1:]):
-            inside = (km[idx] >= a) & (km[idx] < b)
+            inside = (km >= a) & (km < b)
             if inside.any():
                 out.append(int(idx[np.where(inside)[0][np.argmax(rate[inside])]]))
         # A band narrower than one slice, or all candidates bunched at one
@@ -609,7 +781,7 @@ class LoopPlanner:
 
     # ---------------------------------------------------------------- building
 
-    def _build(self, fields, turnaround: int, penalty: float):
+    def _build(self, fields, turnaround: int, penalty: float, widened: int = 0):
         """Out along the cached tree, home along a Dijkstra that avoids it.
 
         The penalty is applied to the *undirected* edge, not to the directed
@@ -619,49 +791,59 @@ class LoopPlanner:
         """
         r = self.router
         cost = fields.cost
-        out_path = _tree_path(fields.out.pred, fields.start, turnaround)
-        if out_path is None:
+        out = fields.out
+        local_out = _tree_path(out.lpred, int(out.local(fields.start)),
+                               int(out.local(turnaround)))
+        if local_out is None:
             return None
+        out_path = [int(v) for v in out.nodes[local_out]]
         out_edges = self._path_edges(cost, out_path)
 
         # Re-collapse from slot level rather than scaling the per-pair weights
         # directly. Where two parallel roads join the same junctions and only one
         # was driven, only that one may be penalised, and the cheapest weight for
         # the pair may now belong to the other road.
-        w_slot = cost.w_slot.copy()
-        # Not on a private road, which a loop drives twice only when it starts
-        # on one: scaling PRIVATE_ENTRY_MIN would make any other way back onto
-        # it worth a detour of thousands of minutes (docs/state-road-class.md,
-        # "Loops").
-        retraced = np.isin(r.eidx, out_edges)
-        if r._private_slot_mask is not None:
-            retraced &= ~r._private_slot_mask
-        w_slot[retraced] *= penalty
-        pair_w = np.full(r.n_pairs, np.inf)
-        np.minimum.at(pair_w, r.slot_pair, w_slot)
+        pair_w = self._retraced(cost, out_edges, penalty)
 
         # Capped at what the back field's own way home costs under these
         # penalised weights. That path is a legal drive home, so the cheapest
         # one costs no more and the cap cannot change the answer; it stops the
         # search settling the rest of New England (docs/loop-speed.md).
-        dist, pred = dijkstra(self._graph(pair_w), directed=True,
-                              indices=turnaround, return_predecessors=True,
-                              limit=self._home_bound(fields, pair_w,
-                                                     turnaround))
+        limit = self._home_bound(fields, pair_w, turnaround)
+        homes = self._arrival_indices(fields.start)
+        if fields.disc is None:
+            dist, pred = dijkstra(self._graph(pair_w), directed=True,
+                                  indices=turnaround, return_predecessors=True,
+                                  limit=limit)
+            nodes = None
+        else:
+            found = self._home_in_disc(fields, cost, pair_w, turnaround,
+                                       homes, limit)
+            if found[3] is False and widened < DISC_WIDENINGS:
+                # Not provably the whole graph's way home: the penalised way
+                # home could leave the disc. Searched again wider, as the
+                # passes are (`_wider`), and kept as found after that.
+                return self._build(self._wider(fields), turnaround, penalty,
+                                   widened + 1)
+            dist, pred, nodes, _ = found
+            homes = homes[np.isin(homes, nodes)]
 
         # Closing the loop means *arriving* at the start, and a junction split for
         # turn restrictions stands at several indices — any of which is a legal
         # way to arrive, since a restriction forbids continuing through and a
         # route that ends here does not continue. Same rule `route()` applies to
         # a destination.
-        homes = self._arrival_indices(fields.start)
-        reachable = homes[np.isfinite(dist[homes])]
+        at = homes if nodes is None else np.searchsorted(nodes, homes)
+        reachable = at[np.isfinite(dist[at])]
         if not len(reachable):
             return None
         home = int(reachable[np.argmin(dist[reachable])])
-        back = _tree_path(pred, turnaround, home)
+        src = turnaround if nodes is None else int(np.searchsorted(nodes, turnaround))
+        back = _tree_path(pred, src, home)
         if back is None:
             return None
+        if nodes is not None:
+            back = [int(v) for v in nodes[back]]
 
         path = out_path + back[1:]
         # The route is reported under the *real* weights, not the penalised ones:
@@ -669,7 +851,10 @@ class LoopPlanner:
         # drawn geometry or the ETA. `_collect` uses them only to pick between
         # parallel roads on a hop, and `repeated_km` below would expose a
         # divergence as a road driven twice.
-        route = r._collect(path, cost.w_slot, cost.scores)
+        if cost.w_slot is not None:
+            route = r._collect(path, cost.w_slot, cost.scores)
+        else:
+            route = r._collect(path, cost.metric, cost.metric.scores)
         return Loop(
             route=route,
             turnaround_idx=turnaround,
@@ -681,18 +866,92 @@ class LoopPlanner:
             beautiful_km=route.beautiful_km,
         )
 
+    def _retraced(self, cost, out_edges, penalty):
+        """The cost model's pair weights with the roads already driven made
+        `penalty` times dearer.
+
+        Only the pairs those roads are on can change, so only they are
+        re-collapsed from their slots: the same minimum over the same values
+        as re-collapsing every slot of the graph, at the cost of the drive out
+        rather than of the graph.
+        """
+        r = self.router
+        pair_w = cost.pair_w.copy()
+        edges = np.unique(np.asarray(out_edges, np.int64))
+        if not len(edges):
+            return pair_w
+        slots = r._edge_order[_ranges(r._edge_start[edges],
+                                      r._edge_start[edges + 1])].astype(np.int64)
+        pairs = np.unique(r.slot_pair[slots]).astype(np.int64)
+        if cost.pairs is not None:
+            at = np.minimum(np.searchsorted(cost.pairs, pairs), len(cost.pairs) - 1)
+            ok = cost.pairs[at] == pairs
+            pairs, at = pairs[ok], at[ok]
+        else:
+            at = pairs
+        start = r._pair_start[pairs].astype(np.int64)
+        count = r._pair_start[pairs + 1] - start
+        group = r._pair_slots[_ranges(start, start + count)].astype(np.int64)
+        w = cost.metric(group)
+        # Not on a private road, which a loop drives twice only when it starts
+        # on one: scaling PRIVATE_ENTRY_MIN would make any other way back onto
+        # it worth a detour of thousands of minutes (docs/state-road-class.md,
+        # "Loops").
+        hit = (np.isin(r.eidx[group], edges)
+               & ((r._slot_flags[group] & SLOT_PRIVATE) == 0))
+        w[hit] *= penalty
+        pair_w[at] = np.minimum.reduceat(w, np.cumsum(count) - count)
+        return pair_w
+
+    def _home_in_disc(self, fields, cost, pair_w, turnaround, homes, limit):
+        """`_build`'s search home over the fields' disc: (dist, pred, nodes,
+        proved), `proved` False when the disc cannot show its way home is the
+        whole graph's.
+
+        A way home that leaves the disc must also come back into it. Leaving
+        costs at least the cheapest arc out from a node the search reached;
+        coming back costs at least the cheapest arc in plus the cheapest way
+        from there to the start, which the back field already holds: exact
+        where it proved the node, and never below its own `leave` where it did
+        not. Weights here are the back field's times a penalty of at least 1,
+        so neither bound can be too high. A way home cheaper than leaving plus
+        coming back is the whole graph's.
+        """
+        disc, back = fields.disc, fields.back
+        local = disc.local(turnaround)[0]
+        dist, pred = dijkstra(disc.matrix(cost, False, pair_w), directed=True,
+                              indices=int(local), return_predecessors=True,
+                              limit=limit)
+        at = disc.local(homes)
+        at = at[at >= 0]
+        best = dist[at].min() if len(at) else np.inf
+        r = self.router
+        out_ex, in_ex = disc.exit_fwd, disc.exit_rev
+        leave = ((dist[disc.local(r.u_tail[out_ex])]
+                  + pair_w[disc.position(cost, "exit_fwd")]).min()
+                 if len(out_ex) else np.inf)
+        if len(in_ex):
+            heads = back.local(r.u_head[in_ex])
+            to_start = np.minimum(back.lcost[heads], back.leave)
+            come_back = (cost.pair_w[disc.position(cost, "exit_rev")] + to_start).min()
+        else:
+            come_back = np.inf
+        bound = leave + come_back
+        # Proved when the way home found is cheaper than any that leaves, or
+        # when there is none and nothing that leaves is within the limit.
+        proved = bool(best < bound or (not np.isfinite(best) and not bound <= limit))
+        return dist, pred, disc.nodes, proved
+
     def _path_edges(self, cost, path):
         """Undirected edge ids for the hops of a node path."""
         hops = np.asarray(path, dtype=np.int64)
-        keys = hops[:-1] * self.router.n + hops[1:]
-        pair = np.searchsorted(self.router._pair_key, keys)
-        if (pair >= self.router.n_pairs).any() or \
-                (self.router._pair_key[pair] != keys).any():
+        pair = self.router._hop_pairs(hops[:-1], hops[1:])
+        if (pair < 0).any():
             # Every hop came out of a Dijkstra over these same arrays, so this
             # cannot happen. Saying so loudly beats a silently short loop.
             raise RuntimeError("loop hop has no directed edge; graph index is "
                                "inconsistent")
-        return cost.pair_eidx[pair]
+        return cost.pair_eidx[cost.at(pair)]
 
     def _arrival_indices(self, node: int):
         copies = self.router.node_copies.get(node)
@@ -706,7 +965,8 @@ class LoopPlanner:
         The pair arrays are already in CSR order (`Router._pair_indptr`), so
         this is the matrix `csr_matrix((pair_w, (u_tail, u_head)))` builds,
         neighbour order included, at a fifth of the cost: 0.013 of a search
-        against 0.062 (docs/loop-speed.md).
+        against 0.062 (docs/loop-speed.md). The whole graph's, so for a whole
+        graph's cost model only.
         """
         r = self.router
         return csr_matrix((pair_w, r.u_head, r._pair_indptr), shape=(r.n, r.n))
@@ -721,23 +981,24 @@ class LoopPlanner:
         more than the rounding either can carry.
         """
         r = self.router
-        pred = fields.back.pred
-        path, cur = [int(turnaround)], int(turnaround)
+        back = fields.back
+        pred = back.lpred
+        cur = int(back.local(turnaround))
+        path = [cur]
         # On the transpose `pred[v]` is the next node after v on the way home,
         # and the back pass's roots are the start's arrival indices.
         while pred[cur] >= 0:
             cur = int(pred[cur])
             path.append(cur)
-        if cur not in set(self._arrival_indices(fields.start).tolist()):
+        path = back.nodes[np.asarray(path, np.int64)]
+        if int(path[-1]) not in set(self._arrival_indices(fields.start).tolist()):
             return np.inf
         if len(path) < 2:
             return 0.0
-        hops = np.asarray(path, dtype=np.int64)
-        keys = hops[:-1] * r.n + hops[1:]
-        pair = np.searchsorted(r._pair_key, keys)
-        if (pair >= r.n_pairs).any() or (r._pair_key[pair] != keys).any():
+        pair = r._hop_pairs(path[:-1], path[1:])
+        if (pair < 0).any():
             return np.inf
-        bound = float(pair_w[pair].sum())
+        bound = float(pair_w[fields.cost.at(pair)].sum())
         return bound + 1e-9 * bound + 1e-9 if np.isfinite(bound) else np.inf
 
     # ------------------------------------------------------------------ fields
@@ -749,9 +1010,9 @@ class LoopPlanner:
 
         With `target_km`, the passes may be cut to a disc around the start
         that holds every candidate for that length (see `_serves`), which is
-        what makes a loop cheap; without it, they cover the whole graph.
-        Either way the candidates are exactly the ones a whole-graph pass
-        gives (docs/loop-speed.md).
+        what makes a loop cheap; without it, they cover every node a loop of
+        MAX_TARGET_KM could use. Either way the candidates are exactly the
+        ones a whole-graph pass gives (docs/loop-speed.md).
         """
         # `avoid_unpaved` is in the key for the same reason `pref` is: it moves
         # every edge weight, so a cached field set built under a different one
@@ -770,56 +1031,93 @@ class LoopPlanner:
             self._fields_by_key[key] = hit          # move to the warm end
             if self._serves(hit, target_km):
                 return hit
-        cost = self._cost(key[1], key[2], key[3], on)
+        asked = MAX_TARGET_KM if target_km is None else target_km
         fields = None
         # A cached disc that already covers this length, and was refined, but
-        # still cannot prove it would fail again cut smaller; go straight to
-        # the whole graph.
-        given_up = (hit is not None and target_km is not None
-                    and target_km * (1.0 + CANDIDATE_TOLERANCE) <= hit.reach_km
+        # still cannot prove it would fail again cut the same; go straight to
+        # a wider one.
+        given_up = (hit is not None and np.isfinite(hit.reach_km)
+                    and asked * (1.0 + CANDIDATE_TOLERANCE) <= hit.reach_km
                     and hit.out.refined)
-        if target_km is not None and not given_up:
-            # Cut for exactly this target, with no headroom for the slider:
-            # a wider disc costs every first loop more than it saves the
-            # next distance up (docs/loop-speed.md).
-            reach = float(target_km) * (1.0 + CANDIDATE_TOLERANCE)
-            disc = self._disc(int(start), reach * (1.0 + DISC_SLACK))
-            if disc is not None:
-                self.disc_passes += 1
-                fields = _Fields(start=int(start), cost=cost,
-                                 out=self._pass(cost, int(start), False, disc),
-                                 back=self._pass(cost, int(start), True, disc),
-                                 reach_km=reach)
-                if not self._serves(fields, target_km):
-                    # Both passes, even when one alone left a candidate
-                    # unproved: the disc is not kept, and a shorter target
-                    # reusing these passes may need the other.
-                    self.disc_refines += 1
-                    self._refine(cost, fields.out, disc, reverse=False)
-                    self._refine(cost, fields.back, disc, reverse=True)
-                if not self._serves(fields, target_km):
-                    self.disc_fallbacks += 1
-                    fields = None
+        # Cut for exactly this target, with no headroom for the slider: a
+        # wider disc costs every first loop more than it saves the next
+        # distance up (docs/loop-speed.md).
+        reach = float(asked) * (1.0 + CANDIDATE_TOLERANCE)
+        scale = 2.0 if given_up else 1.0
+        for attempt in range(DISC_WIDENINGS + 1):
+            disc = self._disc(int(start), scale * reach * (1.0 + DISC_SLACK))
+            if disc is None:
+                fields = None
+                break
+            self.disc_passes += 1
+            fields = self._disc_fields(key, int(start), disc, scale * reach, on)
+            if not self._serves(fields, asked):
+                # Both passes, even when one alone left a candidate
+                # unproved: the disc is not kept, and a shorter target
+                # reusing these passes may need the other.
+                self.disc_refines += 1
+                self._refine(fields.cost, fields.out, disc, reverse=False)
+                self._refine(fields.cost, fields.back, disc, reverse=True)
+            if self._serves(fields, asked):
+                break
+            # A disc twice as wide proves more, and is the whole graph once
+            # it would hold most of it (DISC_MAX_SHARE), which on New England
+            # it nearly always does. On a continent it never does, so after
+            # DISC_WIDENINGS the last disc is kept and its unproved nodes are
+            # left out of the candidates (`candidates`): a whole-graph pass is
+            # never a request's fallback there.
+            self.disc_fallbacks += 1
+            scale *= 2.0
         if fields is None:
             self.full_passes += 1
+            cost = self._cost(key[1], key[2], key[3], on)
             fields = _Fields(start=int(start), cost=cost,
                              out=self._pass(cost, int(start), reverse=False),
                              back=self._pass(cost, int(start), reverse=True))
         self._fields_by_key[key] = fields
-        while len(self._fields_by_key) > self._field_cache_size:
+        while len(self._fields_by_key) > self._field_cache_size or (
+                len(self._fields_by_key) > 1
+                and sum(len(f.nodes) for f in self._fields_by_key.values())
+                > FIELD_CACHE_NODES):
             self._fields_by_key.pop(next(iter(self._fields_by_key)))
         return fields
 
+    def _disc_fields(self, key, start, disc, reach, on):
+        cost = self._disc_cost(disc, key[1], key[2], key[3], on)
+        return _Fields(start=start, cost=cost,
+                       out=self._pass(cost, start, False, disc),
+                       back=self._pass(cost, start, True, disc),
+                       reach_km=reach, disc=disc)
+
+    def _wider(self, fields):
+        """The same field set over a disc twice as wide, or the whole graph.
+
+        For a loop build whose way home the disc could not prove: rare, and
+        answered as `_fields` answers an unproved candidate."""
+        if fields.disc is None:
+            return fields
+        reach = 2.0 * fields.reach_km
+        disc = self._disc(int(fields.start), reach * (1.0 + DISC_SLACK))
+        m = fields.cost.metric
+        key = (int(fields.start), m.pref, _weights_key(m.weights),
+               m.avoid_unpaved, None)
+        if disc is None:
+            cost = self._cost(key[1], key[2], key[3], m.on)
+            return _Fields(start=fields.start, cost=cost,
+                           out=self._pass(cost, fields.start, reverse=False),
+                           back=self._pass(cost, fields.start, reverse=True))
+        return self._disc_fields(key, int(fields.start), disc, reach, m.on)
+
     def _serves(self, fields, target_km):
         """Whether these passes give exactly the whole graph's candidates for
-        `target_km`.
+        `target_km` (None: for every length up to MAX_TARGET_KM).
 
         Always, for passes over the whole graph. For passes cut to a disc,
         two things must hold. The target must be one the disc was cut for:
         then every node that is a candidate on the whole graph has both legs
         inside the disc, so the disc finds it with the same cost and path.
         And every candidate the disc reports must be one both passes proved
-        (`_Field.exact`): no path through the rest of New England could have
+        (`_Field.lexact`): no path through the rest of the graph could have
         been cheaper, so it is not a node whose whole-graph path leaves the
         disc and is longer than the band. A cost `limit=` alone could not
         promise either half, because candidates are chosen on km and the
@@ -827,22 +1125,23 @@ class LoopPlanner:
         """
         if not np.isfinite(fields.reach_km):
             return True
-        if target_km is None or \
-                target_km * (1.0 + CANDIDATE_TOLERANCE) > fields.reach_km:
+        if target_km is None:
+            return fields.reach_km >= MAX_TARGET_KM * (1.0 + CANDIDATE_TOLERANCE)
+        if target_km * (1.0 + CANDIDATE_TOLERANCE) > fields.reach_km:
             return False
-        idx = self.candidates(fields, target_km)
-        return bool(fields.out.exact[idx].all() and fields.back.exact[idx].all())
+        idx = fields.out.local(self.candidates(fields, target_km, proven=False))
+        return bool(fields.out.lexact[idx].all() and fields.back.lexact[idx].all())
 
     def _disc(self, start: int, radius_km: float):
         """The part of the graph within `radius_km` of the start, as a
         `_Disc`, or None when that is most of the graph anyway.
 
         Distance is the great circle between real junctions, so every copy of
-        a split junction is in or out together with it.
+        a split junction is in or out together with it. The candidates come
+        off the router's node grid, so the cut costs what the disc holds.
         """
         r = self.router
-        lat = r.nodes["lat"].to_numpy()
-        lon = r.nodes["lon"].to_numpy()
+        lat, lon = r.node_lat, r.node_lon
         origin = int(r.real_node[start])
         la0, lo0 = np.radians(lat[origin]), np.radians(lon[origin])
         theta = radius_km / EARTH_KM
@@ -850,37 +1149,55 @@ class LoopPlanner:
         # most of the graph.
         lat_edge = min(abs(la0) + theta, np.radians(89.0))
         half_lon = np.arcsin(min(1.0, np.sin(theta) / np.cos(lat_edge)))
-        box = np.flatnonzero(
-            (np.abs(lat - lat[origin]) <= np.degrees(theta))
-            & (np.abs((lon - lon[origin] + 180.0) % 360.0 - 180.0)
-               <= np.degrees(half_lon)))
-        la, lo = np.radians(lat[box]), np.radians(lon[box])
+        dlat, dlon = np.degrees(theta), np.degrees(half_lon)
+        near = r.node_grid.box(lon[origin] - dlon - 1e-9, lat[origin] - dlat - 1e-9,
+                               lon[origin] + dlon + 1e-9, lat[origin] + dlat + 1e-9,
+                               unique=False)
+        real = r.real_node[near]
+        box = ((np.abs(lat[real] - lat[origin]) <= dlat)
+               & (np.abs((lon[real] - lon[origin] + 180.0) % 360.0 - 180.0) <= dlon))
+        near, real = near[box], real[box]
+        la, lo = np.radians(lat[real]), np.radians(lon[real])
         h = (np.sin((la - la0) / 2.0) ** 2
              + np.cos(la0) * np.cos(la) * np.sin((lo - lo0) / 2.0) ** 2)
-        real_in = np.zeros(len(lat), dtype=bool)
-        real_in[box] = 2.0 * np.arcsin(np.sqrt(np.minimum(h, 1.0))) <= theta
-        inside = real_in[r.real_node]
-        nodes = np.flatnonzero(inside)
+        nodes = np.sort(near[2.0 * np.arcsin(np.sqrt(np.minimum(h, 1.0))) <= theta])
         if len(nodes) > DISC_MAX_SHARE * r.n:
             return None
-        local = np.full(r.n, -1, dtype=np.int64)
-        local[nodes] = np.arange(len(nodes))
-        tail_in, head_in = inside[r.u_tail], inside[r.u_head]
-        both = tail_in & head_in
-        kept = np.flatnonzero(both)
-        # The same neighbour order the whole graph's matrices have: forward
-        # is the pairs' own (tail, head) order; reverse is a stable sort on
-        # head, which is what scipy's COO conversion does for the transpose.
-        if self._by_head is None:
-            self._by_head = np.argsort(r.u_head, kind="stable").astype(np.int32)
-        rev = self._by_head[both[self._by_head]]
-        return _Disc(nodes=nodes, local=local,
-                     fwd=_csr_parts(kept, local[r.u_tail[kept]],
-                                    local[r.u_head[kept]], len(nodes)),
-                     rev=_csr_parts(rev, local[r.u_head[rev]],
-                                    local[r.u_tail[rev]], len(nodes)),
-                     exit_fwd=np.flatnonzero(tail_in & ~head_in),
-                     exit_rev=np.flatnonzero(head_in & ~tail_in))
+        m = len(nodes)
+        scratch = r._scratch.take()
+        try:
+            scratch[nodes] = np.arange(m, dtype=np.int32)
+            # Forward: each inside node's own row of the pair CSR, which is
+            # the whole graph's neighbour order.
+            starts = r._pair_indptr[nodes]
+            counts = r._pair_indptr[nodes + 1] - starts
+            fwd = _ranges(starts, starts + counts)
+            head = scratch[r.u_head[fwd]]
+            frow = np.repeat(np.arange(m), counts)
+            # Reverse: each inside node's incoming pairs, ordered by head and
+            # then by pair, which is the stable sort on head scipy's
+            # transpose gives.
+            rstarts = r._rev_indptr[nodes]
+            rcounts = r._rev_indptr[nodes + 1] - rstarts
+            rev = r._rev_pairs[_ranges(rstarts, rstarts + rcounts)].astype(np.int64)
+            tail = scratch[r.u_tail[rev]]
+            rrow = np.repeat(np.arange(m), rcounts)
+        finally:
+            scratch[nodes] = -1
+            r._scratch.give(scratch)
+        fin, rin = head >= 0, tail >= 0
+        exit_fwd, exit_rev = fwd[~fin], rev[~rin]
+        fwd, frow, head = fwd[fin], frow[fin], head[fin]
+        rev, rrow, tail = rev[rin], rrow[rin], tail[rin]
+        pairs, inverse = np.unique(np.concatenate([fwd, exit_fwd, exit_rev]),
+                                   return_inverse=True)
+        a, b = len(fwd), len(fwd) + len(exit_fwd)
+        at = {"fwd": inverse[:a], "exit_fwd": inverse[a:b], "exit_rev": inverse[b:],
+              "rev": np.searchsorted(pairs, rev)}
+        return _Disc(nodes=nodes,
+                     fwd=_csr_parts(fwd, frow, head, m),
+                     rev=_csr_parts(rev, rrow, tail, m),
+                     exit_fwd=exit_fwd, exit_rev=exit_rev, pairs=pairs, at=at)
 
     def _pass(self, cost: _CostModel, start: int, reverse: bool, disc=None):
         """One Dijkstra, plus the km and scenic-km of every path it found.
@@ -895,8 +1212,7 @@ class LoopPlanner:
         `min_only` so that costs one pass and not one per copy.
 
         With a `disc`, the search and the accumulation run on the disc's nodes
-        only, and the result is spread back over the whole graph's indices,
-        unreached everywhere outside it, and `exact` says which nodes it proved.
+        only, and `lexact` says which nodes it proved.
         """
         r = self.router
         sources = (self._arrival_indices(start) if reverse
@@ -907,11 +1223,11 @@ class LoopPlanner:
                                shape=(r.n, r.n))
             else:
                 g = self._graph(cost.pair_w)
-            glob = None
+            nodes = np.arange(r.n, dtype=np.int64)
         else:
-            g = disc.graph(cost.pair_w, reverse)
-            sources = disc.local[sources]
-            glob = disc.nodes
+            g = disc.matrix(cost, reverse)
+            sources = disc.local(sources)
+            nodes = disc.nodes
         if reverse:
             dist, pred, _ = dijkstra(g, directed=True, indices=sources,
                                      return_predecessors=True, min_only=True)
@@ -919,39 +1235,34 @@ class LoopPlanner:
             dist, pred = dijkstra(g, directed=True, indices=int(sources[0]),
                                   return_predecessors=True)
 
-        nodes = np.arange(len(dist), dtype=np.int64)
+        local = np.arange(len(dist), dtype=np.int64)
         seen = pred >= 0
-        here = nodes[seen] if glob is None else glob[seen]
-        there = (pred[seen].astype(np.int64) if glob is None
-                 else glob[pred[seen]])
-        if reverse:
-            # On the transpose, `pred[v]` is the next node *after* v on the way
-            # home, so the arc that belongs to v is the original (v -> pred[v]).
-            keys = here * r.n + there
+        here, there = local[seen], pred[seen].astype(np.int64)
+        # On the transpose, `pred[v]` is the next node *after* v on the way
+        # home, so the arc that belongs to v is the original (v -> pred[v]).
+        tails, heads = (here, there) if reverse else (there, here)
+        if disc is None:
+            pair = r._hop_pairs(tails, heads)
         else:
-            keys = there * r.n + here
-        pair = np.searchsorted(r._pair_key, keys)
-        if (pair >= r.n_pairs).any() or (r._pair_key[pair] != keys).any():
+            pair = disc.arcs(tails, heads)
+        if (pair < 0).any():
             raise RuntimeError("shortest-path tree holds an edge the pair index "
                                "does not; graph index is inconsistent")
+        if disc is not None:
+            pair = disc.position(cost, "fwd")[pair]
 
         # The root and every unreachable node point at themselves and carry zero,
         # so the accumulation below terminates and leaves them at zero.
-        parent = np.where(seen, pred, nodes).astype(np.int64)
+        parent = np.where(seen, pred, local).astype(np.int64)
         edge_km = np.zeros(len(dist))
         edge_scen = np.zeros(len(dist))
-        edge_km[seen] = cost.pair_km[pair]
-        edge_scen[seen] = cost.pair_scen[pair]
+        at = pair if disc is not None else cost.at(pair)
+        edge_km[seen] = cost.pair_km[at]
+        edge_scen[seen] = cost.pair_scen[at]
         km, scen = _accumulate(parent, edge_km, edge_scen)
-        if glob is None:
-            return _Field(cost=dist, km=km, scen=scen, pred=pred)
-
-        full_cost = np.full(r.n, np.inf)
-        full_cost[glob] = dist
-        full_km, full_scen = np.zeros(r.n), np.zeros(r.n)
-        full_km[glob], full_scen[glob] = km, scen
-        full_pred = np.full(r.n, -9999, dtype=pred.dtype)
-        full_pred[glob] = np.where(seen, glob[np.maximum(pred, 0)], pred)
+        if disc is None:
+            return _Field(nodes=nodes, n=r.n, lcost=dist, lkm=km, lscen=scen,
+                          lpred=pred)
         # The cheapest way out of the disc: off a reached node inside, along
         # one arc to a node outside (on the transpose, along an arc arriving
         # from outside). Any path that leaves costs at least this, so a node
@@ -959,16 +1270,18 @@ class LoopPlanner:
         # by the same paths.
         if reverse:
             ex = disc.exit_rev
-            leave = full_cost[r.u_head[ex]] + cost.pair_w[ex]
+            leave = (dist[disc.local(r.u_head[ex])]
+                     + cost.pair_w[disc.position(cost, "exit_rev")])
         else:
             ex = disc.exit_fwd
-            leave = full_cost[r.u_tail[ex]] + cost.pair_w[ex]
+            leave = (dist[disc.local(r.u_tail[ex])]
+                     + cost.pair_w[disc.position(cost, "exit_fwd")])
         leave = float(leave.min()) if len(leave) else np.inf
-        return _Field(cost=full_cost, km=full_km, scen=full_scen,
-                      pred=full_pred, exact=full_cost < leave, leave=leave)
+        return _Field(nodes=nodes, n=r.n, lcost=dist, lkm=km, lscen=scen,
+                      lpred=pred, lexact=dist < leave, leave=leave)
 
     def _refine(self, cost: _CostModel, field: _Field, disc, reverse: bool):
-        """Widen `field.exact` to the nodes that leaving the disc and coming
+        """Widen `field.lexact` to the nodes that leaving the disc and coming
         back could not undercut. One more search over the disc.
 
         `_pass` proves a node only when it costs less than leaving the disc
@@ -990,8 +1303,8 @@ class LoopPlanner:
         if not np.isfinite(field.leave):
             return
         ex = disc.exit_fwd if reverse else disc.exit_rev
-        w = cost.pair_w[ex]
-        at = disc.local[r.u_tail[ex] if reverse else r.u_head[ex]]
+        w = cost.pair_w[disc.position(cost, "exit_fwd" if reverse else "exit_rev")]
+        at = disc.local(r.u_tail[ex] if reverse else r.u_head[ex])
         keep = np.isfinite(w)
         w, at = w[keep], at[keep]
         if not len(w):
@@ -1003,18 +1316,21 @@ class LoopPlanner:
         seeds, seed_w = at[order][first], w[order][first]
         pairs, indices, indptr = disc.rev if reverse else disc.fwd
         m = len(disc.nodes)
-        g = csr_matrix((np.concatenate([cost.pair_w[pairs], seed_w]),
+        at_pairs = disc.position(cost, "rev" if reverse else "fwd")
+        g = csr_matrix((np.concatenate([cost.pair_w[at_pairs], seed_w]),
                         np.concatenate([indices, seeds.astype(indices.dtype)]),
                         np.append(indptr, indptr[-1] + len(seeds))),
                        shape=(m + 1, m + 1))
         back_in = dijkstra(g, directed=True, indices=m)[:m]
-        inside = field.cost[disc.nodes]
-        field.exact[disc.nodes] |= inside < field.leave + back_in
+        field.lexact |= field.lcost < field.leave + back_in
 
     # -------------------------------------------------------------- cost model
 
     def _cost(self, pref: float, weights_key: tuple,
               avoid_unpaved: float = 1.0, on: date | None = None):
+        """The whole graph's cost model for a setting, cached: for passes over
+        the whole graph, which only a graph small enough for a disc to hold
+        most of it ever runs."""
         r = self.router
         # The closure version is in the key for the reason given in `_fields`.
         key = weights_key + (pref, avoid_unpaved, r.closure_version(on))
@@ -1039,21 +1355,44 @@ class LoopPlanner:
         # the retrace penalty landed on the edge the return leg was not using.
         best[r.slot_pair[winners[::-1]]] = winners[::-1]
         edge = r.eidx[best]
-        model = _CostModel(scores=scores, w_slot=w_slot, pair_w=pair_w,
-                           pair_km=r.km[edge],
-                           pair_scen=r.km[edge] * scores[edge],
-                           pair_eidx=edge)
+        model = _CostModel(metric=r.metric(pref, dict(weights_key), avoid_unpaved,
+                                           on),
+                           pair_w=pair_w, pair_km=r.km[edge],
+                           pair_scen=r.km[edge] * scores[edge], pair_eidx=edge,
+                           scores=scores, w_slot=w_slot)
         self._costs_by_key[key] = model
         while len(self._costs_by_key) > self._cost_cache_size:
             self._costs_by_key.pop(next(iter(self._costs_by_key)))
         return model
 
+    def _disc_cost(self, disc, pref, weights_key, avoid_unpaved, on):
+        """`_cost` over the pairs a disc touches only: the same numbers for
+        those pairs, priced in time proportional to the disc."""
+        r = self.router
+        metric = r.metric(pref, dict(weights_key), avoid_unpaved, on)
+        pairs = disc.pairs
+        start = r._pair_start[pairs].astype(np.int64)
+        count = r._pair_start[pairs + 1] - start
+        slots = r._pair_slots[_ranges(start, start + count)].astype(np.int64)
+        slot_w = metric(slots)
+        slot_start = np.cumsum(count) - count
+        pair_w = np.minimum.reduceat(slot_w, slot_start)
+        # The lowest slot reaching each pair's minimum, as `_cost` takes it:
+        # a group's slots are in ascending order, so its first minimum.
+        group = np.repeat(np.arange(len(pairs)), count)
+        hit = np.flatnonzero(slot_w == pair_w[group])
+        _, first = np.unique(group[hit], return_index=True)
+        best = slots[hit[first]]
+        edge = r.eidx[best].astype(np.int64)
+        return _CostModel(metric=metric, pair_w=pair_w, pair_km=r.km[edge],
+                          pair_scen=r.km[edge] * metric.scores(edge),
+                          pair_eidx=edge, pairs=pairs)
+
     # ---------------------------------------------------------------- geometry
 
     def _latlon(self, node: int):
         real = int(self.router.real_node[node])
-        row = self.router.nodes.iloc[real]
-        return (float(row["lat"]), float(row["lon"]))
+        return (float(self.router.node_lat[real]), float(self.router.node_lon[real]))
 
     def _sector_codes(self, start: int, nodes: np.ndarray):
         """Which compass octant each node sits in, seen from the start.
@@ -1062,8 +1401,7 @@ class LoopPlanner:
         eight 45-degree buckets, and Massachusetts is 300 km across.
         """
         r = self.router
-        lat = r.nodes["lat"].to_numpy()
-        lon = r.nodes["lon"].to_numpy()
+        lat, lon = r.node_lat, r.node_lon
         origin = int(r.real_node[start])
         real = r.real_node[np.asarray(nodes)]
         scale = np.cos(np.radians(lat[origin]))
