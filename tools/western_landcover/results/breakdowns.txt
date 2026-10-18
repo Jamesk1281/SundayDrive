@@ -1,0 +1,84 @@
+1. BYWAY AUC WITHIN EACH ECOREGION (trunk-tertiary, byway term removed; ecoregions with >= 20 byway km)
+region     label                         eco  byway_km  other_km    W0   N1r    L1    R1    R2
+    co   fhwa_sn           Colorado Plateaus   274.999  5138.863 0.406 0.435 0.405 0.406 0.407
+    co   fhwa_sn            Southern Rockies   800.470 10713.283 0.632 0.624 0.624 0.628 0.630
+    co   fhwa_sn     Southwestern Tablelands    88.770  9054.896 0.531 0.623 0.556 0.553 0.545
+    co byway_osm  Arizona/New Mexico Plateau   192.660  1824.099 0.492 0.596 0.578 0.547 0.484
+    co byway_osm           Colorado Plateaus   774.284  4639.579 0.540 0.539 0.530 0.542 0.527
+    co byway_osm                 High Plains   255.820 17856.952 0.401 0.409 0.394 0.445 0.404
+    co byway_osm            Southern Rockies  2378.957  9134.796 0.594 0.592 0.591 0.593 0.592
+    co byway_osm     Southwestern Tablelands   438.221  8705.444 0.364 0.381 0.361 0.388 0.354
+    ut   fhwa_sn           Colorado Plateaus   721.246  5998.465 0.465 0.468 0.471 0.465 0.477
+    ut   fhwa_sn Wasatch and Uinta Mountains   369.914  3611.358 0.559 0.548 0.550 0.556 0.562
+    ut byway_osm           Colorado Plateaus   819.808  5899.903 0.472 0.473 0.478 0.468 0.468
+    ut byway_osm Wasatch and Uinta Mountains   478.516  3502.757 0.564 0.543 0.548 0.556 0.564
+    ut byway_osm               Wyoming Basin    95.670   394.454 0.580 0.571 0.543 0.566 0.508
+
+2. NEW ENGLAND km with WorldCover grass_1k >= 0.5: 929 km
+nlcd_grass      0.070
+nlcd_pasture    0.325
+nlcd_crop       0.026
+nlcd_desert     0.065
+lf_grass        0.013
+lf_desert       0.014
+built_1k        0.032
+tree_1k         0.289
+
+3. OPEN-LAND FRACTIONS ON THE 151 NEW ENGLAND MARKS (AUC; marks_nonzero = marks where it is > 0.001)
+                all    oct    aug  marks_nonzero
+grass_1k      0.394  0.330  0.461          151.0
+crop_1k       0.389  0.448  0.324           78.0
+nlcd_grass    0.575  0.515  0.628           94.0
+nlcd_pasture  0.571  0.523  0.637           95.0
+nlcd_crop     0.520  0.537  0.506           12.0
+nlcd_desert   0.566  0.487  0.674           67.0
+lf_desert     0.504  0.509  0.500            0.0
+lf_grass      0.500  0.500  0.500            0.0
+
+4. WESTERN km MOVED > 0.25 AGAINST E1 (% of the landscape's km), and mean shift
+region name          group  up_025  down_025  mean_shift
+    co   N1            ALL   18.15      3.42        0.16
+    co   N1          basin   90.29      0.52        1.37
+    co   N1      mountains   28.54      0.59        0.28
+    co   N1         plains    2.97      3.58       -0.00
+    co   N1 plateau/canyon   52.07      7.95        0.49
+    co  N1r            ALL   17.01      3.78        0.15
+    co  N1r          basin   88.93      0.61        1.30
+    co  N1r      mountains   27.73      0.69        0.27
+    co  N1r         plains    2.84      3.67       -0.01
+    co  N1r plateau/canyon   46.43      9.81        0.41
+    co   L1            ALL   14.88      3.88        0.11
+    co   L1          basin   84.13      1.62        1.05
+    co   L1      mountains   20.60      0.57        0.17
+    co   L1         plains    6.05      3.05        0.03
+    co   L1 plateau/canyon   32.09     13.01        0.22
+    co   R1            ALL   27.12      3.52        0.15
+    co   R1          basin   69.63      8.20        0.44
+    co   R1      mountains   22.92      0.62        0.13
+    co   R1         plains   26.84      1.87        0.15
+    co   R1 plateau/canyon   30.61     14.42        0.13
+    co   R2            ALL    4.31      7.66       -0.02
+    co   R2          basin   34.25     23.49       -0.06
+    co   R2      mountains   10.33      1.18        0.06
+    co   R2         plains    0.38      3.61       -0.01
+    co   R2 plateau/canyon    6.16     32.79       -0.22
+    ut   N1            ALL   34.92      5.86        0.31
+    ut   N1          basin   27.30      7.99        0.23
+    ut   N1      mountains   38.42      1.10        0.41
+    ut   N1 plateau/canyon   48.09      4.60        0.41
+    ut  N1r            ALL   32.39      7.86        0.27
+    ut  N1r          basin   24.60     10.78        0.18
+    ut  N1r      mountains   37.03      1.20        0.38
+    ut  N1r plateau/canyon   45.14      6.20        0.37
+    ut   L1            ALL   22.61     14.23        0.10
+    ut   L1          basin   16.60     16.94        0.03
+    ut   L1      mountains   30.38      1.76        0.27
+    ut   L1 plateau/canyon   29.78     16.71        0.15
+    ut   R1            ALL   17.84     18.92        0.00
+    ut   R1          basin   13.04     20.04       -0.04
+    ut   R1      mountains   27.37      1.51        0.18
+    ut   R1 plateau/canyon   21.46     27.74       -0.01
+    ut   R2            ALL    4.41     38.05       -0.40
+    ut   R2          basin    1.74     33.01       -0.33
+    ut   R2      mountains   14.84      3.27        0.06
+    ut   R2 plateau/canyon    3.16     70.38       -0.84

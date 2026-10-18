@@ -24,7 +24,9 @@ Three environment variables, so no path on the author's machine is in the repo:
 | step | script | what it writes | measured cost (one region) |
 |---|---|---|---|
 | inputs | `fetch_inputs.sh` | FHWA byways (8 states), EPA L3 ecoregions, PAD-US 4.1 | 1.55 GB down, 2.0 GB unpacked |
-| WorldCover | `wc_grids.py <dl> <grid> <tile>...` | per-class pixel counts on a 12×12-pixel (~100 m) block grid, per 3° tile | ~70 s a tile; 22 tiles → 235 MB |
+| | `padus_rest.py <out> <bbox>` | PAD-US 4.1 from USGS's feature service, one region's bbox (the ScienceBase zip needs a login since 2026-10-18) | 30 s–3 min |
+| | `byway_ways.py <pbf> US:CO:Scenic <out>` | Colorado's 26 state byways, as way ids for `attrs.py` | seconds |
+| WorldCover | `wc_grids.py <dl> <grid> <tile>...` | per-class pixel counts on a 12×12-pixel (~100 m) block grid, per 3° tile, plus a 3×3-majority (~30 m) copy | ~70–190 s a tile |
 | region | `build_region.sh` | the unmodified pipeline, then the five feature steps below | Utah: ~15 min, 837 MB |
 | | `prep_region.py` | chunk table, and graph.py's exact chunk→edge averaging map (checked: max difference 0.0) | ~30 s |
 | | `terrain.py` | 3 km and 6 km range, height above the local minimum, depth below the local maximum | ~70 s, ~3 GB RAM |
@@ -58,9 +60,16 @@ metrics.
   `State_Nm` and filters `FeatClass` in pandas.
 - **ScienceBase's "manager" links are web pages, not files.** The catalog endpoint
   `catalog/file/get/<item>?name=<file>` serves the zip.
+- **A failed tile download is not an ocean cell.** `wc_grids.py` logged a transient failure on
+  N42W114 (Utah) as "missing (ocean?)", and `wc_sample.py` would have counted it as water. It
+  now treats only a 404 on the tile itself as absent.
+- **On `usa`, `landcover.py` already writes the desert column.** `build_region.sh` drops it
+  before `score.py`, so S0 stays S0 and `candidates.py` adds E1's desert once.
 - **WorldCover calls most of Colorado's sagebrush "grassland".** Grass is 41% of
   Colorado's road surroundings and shrub 2%. So land cover cannot separate the
-  Western Slope from the eastern plains.
+  Western Slope from the eastern plains. By km, 61% of that grass is in fact plains
+  prairie; [the Western land-cover verdict](../../docs/western-landcover-verdict.md)
+  measures the US sources that do separate them.
 
 ## Results
 
