@@ -58,7 +58,7 @@ roads in three states. What they add, each measured in the section named:
 The owner's answers to D1–D4, given on 2026-10-07 after the first version,
 are in §8.3.
 
-**Before submission (launch is planned for 2026-10-22, `docs/marketing-plan.md`):
+**Before submission (launch was planned for 2026-10-22; since 2026-10-18 the first release is the national app, `docs/marketing-plan.md` §7):
 about six to seven working days, all of it on the phone, none on the server.**
 
 1. **Say what is true when a reroute fails (P-04).** A day and a half. Today a failed

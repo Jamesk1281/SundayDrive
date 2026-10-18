@@ -1,5 +1,16 @@
 # App Store listing: promotional text, description, keywords
 
+> **2026-10-18: this is the New England listing, and it will not be entered.**
+> The owner decided that the first App Store release is the national app (the
+> 48 contiguous states and DC), estimated for summer 2027. The national
+> listing is later work. Before reusing any line here, check it against
+> [`marketing-plan.md`](marketing-plan.md) §3.4, which scopes every measured
+> claim to where it was measured: the six states, the 146,811 miles and the
+> score's validation are New England facts. Its citations of
+> `marketing-plan.md` (§0, §3.1, §3.3, §3.4, §5.7) resolve in the national
+> plan; the 95-byte keyword candidate and the 22 October dates are in the New
+> England plan, `git show 0fca74f:docs/marketing-plan.md`.
+
 **Status, 2026-10-04: drafted, not entered in App Store Connect.** Written
 against `main` `8e4e5c7` plus the four unmerged branches listed in §5, whose
 user-facing changes the copy already allows for. The name (*Sunday Drive*) and

@@ -1,5 +1,15 @@
 # Release plan: what shipping needs, in what order
 
+> **2026-10-18: the release this plan sequences is no longer the first one.**
+> The New England build will not be submitted: the owner decided on 2026-10-18
+> that the New England-only app is never made public, and that the first App
+> Store release is the national app (the 48 contiguous states and DC),
+> estimated for summer 2027. What below is about the store, the membership,
+> the domain and the legal answers still applies; the New England dates and
+> scope do not. The launch timeline is now [`marketing-plan.md`](marketing-plan.md)
+> §7, planned relative to national-ready (N). This plan's national version is
+> later work. **The domain `jameskouvlis.com` still expires 2026-10-28.**
+
 > **§6b — the rename — has since been executed, twice.** Scenic → **Victory
 > Lap** on 2026-09-20 (`098ff8f`, `14efbf6`) and Victory Lap → **Sunday Drive**
 > on 2026-09-21 (`c75ce1d`, `docs/sunday-drive-naming.md`). So the header's
