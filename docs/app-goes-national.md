@@ -168,7 +168,7 @@ strings are what drivers read.
 
 | Where | Was | Now |
 |---|---|---|
-| `project.yml`, `NSLocationWhenInUseUsageDescription` | "Your location is used to plan drives from where you are, to check that you’re in New England, and to guide you turn by turn." | "Your location is used to show the map where you are, to plan drives from there, to check that you’re in the area Sunday Drive covers, and to guide you turn by turn." |
+| `project.yml`, `NSLocationWhenInUseUsageDescription` | "Your location is used to plan drives from where you are, to check that you’re in New England, and to guide you turn by turn." | "Your location is used to show the map where you are, to plan drives from there, to check that you’re in the area the app covers, and to guide you turn by turn." (it must not name the app: `LocationTextAndContactTests`) |
 | `Coverage.notCovered` (search found only uncovered places) | "“X” isn’t in New England. Sunday Drive only covers the six New England states." | "“X” is outside the area Sunday Drive covers: the 48 contiguous states and Washington, DC." |
 | `Coverage.outsideHere` (My Location or Loop outside) | "You’re outside New England, so this can’t start from your location. Type a New England town as your start." | "You’re outside the area Sunday Drive covers, so this can’t start from your location. Type a town in the 48 contiguous states as your start." |
 | `OutsideCoverageView` body | "Sunday Drive only covers the six New England states: Connecticut, Maine, …" | "Sunday Drive only covers the 48 contiguous states and Washington, DC. You’re outside them, so Loop and My Location can’t plan a drive from where you are." |
@@ -208,7 +208,29 @@ only):
 
 ### 5.1 Full-suite run
 
-(filled in below when the run finishes)
+Run on 2026-10-18 on a simulator made for this work (iPhone 17 Pro, iOS 26.4),
+with `TEST_RUNNER_SUNDAYDRIVE_API` pointed at a local server on port 5191
+serving `processed-ne`. Took 36 min.
+
+**488 tests: 454 passed, 31 skipped, 3 failures.**
+- **1 was mine and is fixed.** `LocationTextAndContactTests.test_the_location_prompt_does_not_name_the_app`.
+  The first national purpose string said "the area Sunday Drive covers". It
+  now says "the area the app covers", and that class and
+  `PrivacyPolicyLinkTests` pass (7 of 7). The full suite was not run again
+  after this one-string change.
+- **2 are not from this change.** They are two assertions in
+  `DriveReplayTests.test_no_recorded_drive_hears_the_same_maneuver_twice`, on
+  the `drive-2026-10-06-122558` trace: "Sharp right onto Old North Dana Road"
+  spoken twice, and 149 utterances over 20 maneuvers. This red was recorded on
+  `main` on 2026-10-08. The test, `DriveReplay.swift`, `NavigationModel.swift`
+  and `VoiceGuide.swift` are identical to `usa` on this branch, and nothing on
+  the replay path calls `Coverage`. I did not re-run it on `usa` itself.
+- The 31 skips are opt-in harnesses: 22 `SimulatedDriveTests` (the e2e
+  drives, off without `SUNDAYDRIVE_E2E`), 8 `SimulatorScreenDriveTests` and 1
+  `ReplayDumpTests` (off without `SUNDAYDRIVE_REPLAY_OUT`).
+
+Python side: `tests/test_privacy_page.py` fails 2 of 6 on this branch, as
+predicted in §4, until `site/privacy` quotes the new purpose string.
 
 ## 6. App Store listing and screenshots the release needs
 
