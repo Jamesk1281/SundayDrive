@@ -10,14 +10,20 @@ extension MKCoordinateRegion {
     /// `home(around:)` (`PlanningView`). The search bias wants a different
     /// box, for the reason `around(_:)` records below.
     ///
-    /// The fit is width-limited on every phone: the area is about two and a
-    /// half times as wide as it is tall on the map, and the home card is
-    /// wider than it is tall. So the latitude span only has to be no bigger
-    /// than the card shows, and the status bar cannot hide anything in it.
-    /// Measured on the simulator; see `docs/app-goes-national.md`.
+    /// **Width-limited on every phone, so the centre's latitude is what places
+    /// it.** On the map the 48 states are about twice as wide as they are
+    /// tall, and the 306 pt home card is wider than that on no phone. MapKit
+    /// therefore fits the longitude span edge to edge, and the latitude span
+    /// only has to be no taller than the card shows. Centred on the states'
+    /// own middle (37.6), the first try put Mexico City in the bottom of the
+    /// card and the 49th parallel under the 17 Pro Max's 62 pt status bar.
+    /// Centred at 40.95, measured on the simulator on 2026-10-18: on the
+    /// 17 Pro Max the 49th parallel is at y = 69 and Key West at about 296 of
+    /// 305, right of Apple's logo; on an iPhone SE the parallel is at y = 80.
+    /// The 60.4° width leaves Cape Flattery and Lubec just inside the edges.
     static let coverage = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.6, longitude: -95.85),
-        span: MKCoordinateSpan(latitudeDelta: 24.0, longitudeDelta: 59.6)
+        center: CLLocationCoordinate2D(latitude: 40.95, longitude: -95.86),
+        span: MKCoordinateSpan(latitudeDelta: 24.0, longitudeDelta: 60.4)
     )
 
     /// The bounding box of the covered area plus a tenth of a degree all
