@@ -1,7 +1,9 @@
 """WorldCover class fractions at chunk midpoints, from wc_grids.py block counts.
 
-Usage: wc_sample.py <grid_dir> <reg_dir>
+Usage: wc_sample.py <grid_dir> <reg_dir> [--m3]
 Writes <reg_dir>/wc.parquet: <class>_100 (one ~100 m block) and <class>_1k (9x11 blocks, ~1 km).
+--m3 reads wc_grids.py's 3x3-majority (~30 m) counts instead and writes wc_m3.parquet, every
+column suffixed _m3: the resolution control in docs/western-landcover-verdict.md.
 Missing tiles (all-ocean cells WorldCover omits) count as water.
 """
 import sys
@@ -10,6 +12,8 @@ import numpy as np, pandas as pd
 from scipy.ndimage import uniform_filter
 NAMES = ["tree", "shrub", "grass", "crop", "built", "bare", "snow", "water", "wetland", "mangrove", "moss"]
 gd, reg = Path(sys.argv[1]), Path(sys.argv[2])
+M3 = "--m3" in sys.argv[3:]
+SUF, PER_BLOCK = ("_m3", 16) if M3 else ("", 144)
 ch = pd.read_parquet(reg / "chunks.parquet", columns=["lon", "lat"])
 bc = np.floor((ch.lon.values + 180) * 1000).astype(np.int64)
 br = np.floor((90 - ch.lat.values) * 1000).astype(np.int64)
@@ -23,19 +27,19 @@ def name(r, c):
 mos = np.zeros((len(NAMES), H, W), np.uint8)
 for r in range(tr0, tr1 + 1):
     for c in range(tc0, tc1 + 1):
-        p = gd / f"{name(r, c)}.npz"
+        p = gd / f"{name(r, c)}{SUF}.npz"
         sl = (slice((r - tr0) * 3000, (r - tr0 + 1) * 3000), slice((c - tc0) * 3000, (c - tc0 + 1) * 3000))
         if p.exists():
             mos[(slice(None),) + sl] = np.load(p)["counts"]
         else:
-            print("missing", name(r, c), "-> water"); mos[(NAMES.index("water"),) + sl] = 144
+            print("missing", name(r, c), "-> water"); mos[(NAMES.index("water"),) + sl] = PER_BLOCK
 rr, cc = br - tr0 * 3000, bc - tc0 * 3000
 out = {}
 for k, nm in enumerate(NAMES):
-    a = mos[k].astype(np.float32) / 144.0
-    out[f"{nm}_100"] = a[rr, cc]
-    out[f"{nm}_1k"] = uniform_filter(a, size=(9, 11), mode="nearest")[rr, cc]
+    a = mos[k].astype(np.float32) / PER_BLOCK
+    out[f"{nm}_100{SUF}"] = a[rr, cc]
+    out[f"{nm}_1k{SUF}"] = uniform_filter(a, size=(9, 11), mode="nearest")[rr, cc]
     del a
 df = pd.DataFrame(out)
-df.to_parquet(reg / "wc.parquet")
+df.to_parquet(reg / f"wc{SUF}.parquet")
 print(df.describe().T[["mean", "50%"]].round(3).to_string())

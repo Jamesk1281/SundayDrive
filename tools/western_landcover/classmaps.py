@@ -29,7 +29,10 @@ NLCD_PASTURE = (81,)
 NLCD_CROP = (82,)
 NLCD_NODATA = 250
 
-# ---------------------------------------------------------------- LANDFIRE EVT, LF2025
+# ---------------------------------------------------------------- LANDFIRE EVT
+# Written for LF2025; measured on LF2024, because LF2025's CONUS file carries values for the far
+# West only (the rest is nodata; found by sample30.py's coverage check, before any result was
+# read). The rules below are by physiognomy and name and were applied unchanged.
 # From the product's own physiognomy (EVT_PHYS) and names (EVT_NAME, EVT_GP_N):
 #   desert = natural Shrubland + Sparsely Vegetated + Snow-Ice + alpine herbaceous,
 #   minus the transitional classes, which are disturbance states of forest, not shrubland:

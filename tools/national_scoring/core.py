@@ -31,7 +31,8 @@ REG = SP / "reg"
 COMP = ["c_curves", "c_water", "c_coast", "c_forest", "c_farm", "c_views", "c_scenic_tag", "c_relief", "c_urban"]
 W = {c: S.WEIGHTS[c[2:]] for c in COMP}
 MAIN = ["trunk", "primary", "secondary", "tertiary"]
-EXTRA = ["terrain", "wc", "relief750", "attrs", "padus"]
+EXTRA = ["terrain", "wc", "relief750", "attrs", "padus",
+         "wc_m3", "lc30"]   # the last two: docs/western-landcover-verdict.md (tools/western_landcover)
 
 
 def _extras(region):

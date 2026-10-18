@@ -1,6 +1,8 @@
 """PAD-US 4.1 designation flags at chunk midpoints.
 
-Usage: padus.py <reg_dir> <state,state,...>
+Usage: padus.py <reg_dir> <state,state,...> [padus_rest.parquet]
+With a third argument, the polygons come from padus_rest.py's file (the same layer from USGS's
+feature service) instead of the ScienceBase geodatabase, and the state list is not used.
 prot_landmark: inside a national park, monument, conservation/recreation/scenic area, lake- or seashore,
                wilderness or wilderness study area, or state park/wilderness (Des_Tp).
 prot_landmark_near: within 500 m of one.  prot_gap12: inside GAP status 1-2 land.
@@ -16,8 +18,11 @@ reg, states = Path(sys.argv[1]), sys.argv[2].split(",")
 t0 = time.time()
 ch = pd.read_parquet(reg / "chunks.parquet", columns=["lon", "lat"])
 where = "State_Nm IN (" + ",".join(f"'{s}'" for s in states) + ")"  # OpenFileGDB returns nothing unless the where-field is also read, and drops rows on AND; filter below
-P = pyogrio.read_dataframe(G, layer="PADUS4_1Combined_Proclamation_Marine_Fee_Designation_Easement",
-                           columns=["FeatClass", "Des_Tp", "GAP_Sts", "Mang_Type", "Unit_Nm", "State_Nm"], where=where)
+if len(sys.argv) > 3:
+    P = gpd.read_parquet(sys.argv[3])
+else:
+    P = pyogrio.read_dataframe(G, layer="PADUS4_1Combined_Proclamation_Marine_Fee_Designation_Easement",
+                               columns=["FeatClass", "Des_Tp", "GAP_Sts", "Mang_Type", "Unit_Nm", "State_Nm"], where=where)
 P = P[P.FeatClass.isin(["Fee", "Designation"])].to_crs(5070)
 P["geometry"] = shapely.make_valid(P.geometry.values)
 pts = gpd.GeoSeries(gpd.points_from_xy(ch.lon, ch.lat), crs=4326).to_crs(5070).values
