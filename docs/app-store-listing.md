@@ -2,8 +2,8 @@
 
 > **2026-10-18: this is the New England listing, and it will not be entered.**
 > The owner decided that the first App Store release is the national app (the
-> 48 contiguous states and DC), estimated for summer 2027. The national
-> listing is later work. Before reusing any line here, check it against
+> 48 contiguous states and DC), due within weeks. The national listing
+> replaces this one; §5.7 of the marketing plan has its keyword candidate. Before reusing any line here, check it against
 > [`marketing-plan.md`](marketing-plan.md) §3.4, which scopes every measured
 > claim to where it was measured: the six states, the 146,811 miles and the
 > score's validation are New England facts. Its citations of

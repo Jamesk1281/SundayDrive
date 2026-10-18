@@ -2,7 +2,7 @@
 
 > **2026-10-18: the New England build will not be submitted.** The owner
 > decided that the first App Store release is the national app (the 48
-> contiguous states and DC), estimated for summer 2027. Most answers here
+> contiguous states and DC), due within weeks. Most answers here
 > (the EULA, the privacy label, export compliance) do not depend on region
 > and carry over; anything that names New England is to be re-answered for
 > the national build. The timeline is [`marketing-plan.md`](marketing-plan.md)
