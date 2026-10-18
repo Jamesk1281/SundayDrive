@@ -425,7 +425,36 @@ def resolve_restrictions(edges, restrictions):
     return frame.drop_duplicates(subset=["via_node", "from_edge", "to_edge"]), unresolved
 
 
-def main(pbf_path: str, processed_dir: str):
+def global_junctions(node_count: dict, junctions: np.ndarray) -> int:
+    """Count every node in `junctions` as a junction, in place, and return how
+    many nodes that changed.
+
+    `node_count` is counted from the ways in one extract, so a node where this
+    extract's road meets one that only the neighbouring extract carries looks
+    like a plain interior node, and the same road is split differently on each
+    side of a border. A national build counts junctions once, over the whole
+    country's ways (tools/national_build/junctions.py), and hands the sorted ids
+    in here. docs/national-build.md §2 has the measured cost of skipping this.
+    """
+    ids = np.fromiter(node_count.keys(), dtype=np.int64, count=len(node_count))
+    pos = np.searchsorted(junctions, ids)
+    hit = (pos < len(junctions)) & (junctions[np.minimum(pos, len(junctions) - 1)] == ids)
+    changed = 0
+    for nid in ids[hit].tolist():
+        if node_count[nid] < 2:
+            node_count[nid] = 2
+            changed += 1
+    return changed
+
+
+def build_scored_edges(pbf_path: str, processed_dir: str,
+                       junctions: np.ndarray | None = None):
+    """Parse the PBF, split its drivable ways into edges and score them, before
+    any component is cut. Returns (edges with `way_id`, the handler).
+
+    `junctions`, when given, is the sorted array of node ids that are junctions
+    over a larger area than this PBF; see `global_junctions`.
+    """
     d = Path(processed_dir)
     t0 = time.time()
 
@@ -433,6 +462,9 @@ def main(pbf_path: str, processed_dir: str):
     h.apply_file(pbf_path, locations=True, idx="flex_mem")
     print(f"parsed {len(h.ways):,} drivable ways in {time.time() - t0:.0f}s "
           f"({h.errors} skipped)")
+    if junctions is not None:
+        changed = global_junctions(h.node_count, junctions)
+        print(f"{changed:,} nodes are junctions only with roads outside this extract")
 
     fwd = Transformer.from_crs(4326, CRS_METERS, always_xy=True)
     to_m = lambda lons, lats: fwd.transform(lons, lats)
@@ -457,6 +489,13 @@ def main(pbf_path: str, processed_dir: str):
     chunks = gpd.read_parquet(d / "scored_chunks.parquet").to_crs(CRS_METERS)
     component_cols = attach_scores(edges, chunks)
     print(f"scored edges ({len(component_cols)} components) in {time.time() - t0:.0f}s")
+    return edges, h
+
+
+def main(pbf_path: str, processed_dir: str):
+    d = Path(processed_dir)
+    t0 = time.time()
+    edges, h = build_scored_edges(pbf_path, processed_dir)
 
     # --- keep largest connected component (undirected reachability) ---
     edges = largest_component(edges)
@@ -607,15 +646,24 @@ def largest_component(edges: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     `_build_directed` (shared via common.py), so the component kept here is
     exactly the one the router can traverse.
     """
+    mask = largest_component_mask(edges["u"].to_numpy(), edges["v"].to_numpy(),
+                                  edges["oneway"])
+    return edges[mask].reset_index(drop=True)
+
+
+def largest_component_mask(u: np.ndarray, v: np.ndarray, oneway) -> np.ndarray:
+    """`largest_component` on bare arrays: which edges it keeps.
+
+    Separate so that a national build can cut the component over ~24M edges
+    without holding their geometry (tools/national_build/stitch.py).
+    """
     from scipy.sparse import csr_matrix
     from scipy.sparse.csgraph import connected_components
 
-    node_ids = pd.unique(pd.concat([edges["u"], edges["v"]]))
-    idx = {nid: i for i, nid in enumerate(node_ids)}
-    ui = edges["u"].map(idx).to_numpy()
-    vi = edges["v"].map(idx).to_numpy()
+    node_ids, inverse = np.unique(np.concatenate([u, v]), return_inverse=True)
+    ui, vi = inverse[:len(u)], inverse[len(u):]
     n = len(node_ids)
-    ow = edges["oneway"].astype(str).str.lower()
+    ow = pd.Series(oneway).astype(str).str.lower()
     fwd_ok = ~ow.isin(ONEWAY_REV).to_numpy()
     rev_ok = ~ow.isin(ONEWAY_FWD).to_numpy()
     tails = np.concatenate([ui[fwd_ok], vi[rev_ok]])
@@ -623,11 +671,9 @@ def largest_component(edges: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     g = csr_matrix((np.ones(len(tails)), (tails, heads)), shape=(n, n))
     ncomp, labels = connected_components(g, directed=True, connection="strong")
     if ncomp == 1:
-        return edges.reset_index(drop=True)
-    biggest = np.bincount(labels).argmax()
-    keep_nodes = set(node_ids[labels == biggest])
-    mask = edges["u"].isin(keep_nodes) & edges["v"].isin(keep_nodes)
-    return edges[mask].reset_index(drop=True)
+        return np.ones(len(u), dtype=bool)
+    keep = labels == np.bincount(labels).argmax()
+    return keep[ui] & keep[vi]
 
 
 def node_table(edges: gpd.GeoDataFrame, exit_refs: dict | None = None) -> pd.DataFrame:

@@ -1,0 +1,20 @@
+[
+ {"name": "Hanover NH - Norwich VT", "from": [43.7022, -72.2896], "to": [43.7151, -72.3082]},
+ {"name": "Lebanon NH - White River Jct VT", "from": [43.6423, -72.2518], "to": [43.6490, -72.3193]},
+ {"name": "Keene NH - Brattleboro VT", "from": [42.9337, -72.2781], "to": [42.8509, -72.5579]},
+ {"name": "Walpole NH - Bellows Falls VT", "from": [43.0795, -72.4259], "to": [43.1334, -72.4440]},
+ {"name": "Littleton NH - St Johnsbury VT", "from": [44.3062, -71.7701], "to": [44.4193, -72.0151]},
+ {"name": "Cornish NH - Windsor VT", "from": [43.4806, -72.3426], "to": [43.4806, -72.3854]},
+ {"name": "Woodsville NH - Wells River VT", "from": [44.1520, -72.0370], "to": [44.1534, -72.0590]},
+ {"name": "Lancaster NH - Guildhall VT", "from": [44.4887, -71.5692], "to": [44.5653, -71.5592]},
+ {"name": "Charlestown NH - Springfield VT", "from": [43.2384, -72.4248], "to": [43.2984, -72.4823]},
+ {"name": "Claremont NH - Ascutney VT", "from": [43.3767, -72.3468], "to": [43.4006, -72.4065]},
+ {"name": "Orford NH - Fairlee VT", "from": [43.9045, -72.1395], "to": [43.9084, -72.1440]},
+ {"name": "Hinsdale NH - Vernon VT", "from": [42.7862, -72.4862], "to": [42.7626, -72.5137]},
+ {"name": "Concord NH - Montpelier VT", "from": [43.2081, -71.5376], "to": [44.2601, -72.5754]},
+ {"name": "Manchester NH - Rutland VT", "from": [42.9956, -71.4548], "to": [43.6106, -72.9726]},
+ {"name": "Portsmouth NH - Burlington VT", "from": [43.0718, -70.7626], "to": [44.4759, -73.2121]},
+ {"name": "North Conway NH - Woodstock VT", "from": [44.0537, -71.1284], "to": [43.6242, -72.5185]},
+ {"name": "Colebrook NH - Canaan VT", "from": [44.8945, -71.4959], "to": [44.9990, -71.5400]},
+ {"name": "Pittsburg NH - Island Pond VT", "from": [45.0509, -71.3912], "to": [44.8137, -71.8801]}
+]
