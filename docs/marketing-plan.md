@@ -1,82 +1,87 @@
 # Marketing plan: how Sunday Drive finds its drivers, for $0
 
-**Status: a plan; nothing in it has been executed. Written 2026-09-29 against
-`main` at `717c5bb`.** Every web fact was checked on 2026-09-29 and is listed
-in §14. Platform features change every few months, so anything marked
-*(re-check)* should be re-read before you build on it.
+**Status: a plan; nothing in it has been executed. Rewritten 2026-10-18 for a
+national first launch within weeks, against `main` at `0fca74f`.** The New
+England launch plan it replaces (L = Thursday 22 October 2026, written
+2026-09-29) is `git show 0fca74f:docs/marketing-plan.md`, last edited in
+`55f2288`. Web facts were re-checked on 2026-10-18 and are listed in §14 with
+that date. Facts carried over from the 2026-09-29 check and not re-read are
+marked *(re-check)*.
 
-> **Committed 2026-10-04, unchanged from 2026-09-29 apart from this note.**
-> Since then, two things have moved:
-> - **The membership (M) arrived on 2026-10-03,** not on the 2026-09-30 that
->   §7.4's worked example assumes. Every date after M in that table is three
->   days early.
-> - **The pre-submission review (2026-09-30) found two premises that do not
->   hold.** See [`pre-submission-review-verdict.md`](pre-submission-review-verdict.md)
->   §2.
->   - M-1: the northern roads this plan would showcase close for winter from
->     October 15.
->   - M-2: a viewer outside New England meets only an error.
->
-> The launch-date decision (§12, item 1) is still open.
+**What changed on 2026-10-18, decided by the owner:**
 
-This document sits beside [`release-plan.md`](release-plan.md). That one gets
-the app onto the App Store; this one gets people to it. Where the two touch
-(the domain, the server, the listing), this one points at the release plan
-instead of repeating it.
+1. **The New England-only app will never be public.** The first App Store
+   release is the national app: the 48 contiguous states and DC, **due within
+   the next couple of weeks**. A private TestFlight for invited friends is not
+   "public". Whether a *public* TestFlight link counts is not decided (§12).
+2. **Scenery is scored on one national scale.** A 7 means the same
+   everywhere. So the plains have almost no 7+ road (0.6% of eastern
+   Colorado's km), and the mountains have plenty (29% of Colorado's mountain km
+   under the scoring built on the `usa` branch,
+   `national-scenery-scoring-verdict.md` §7).
+3. **There will be no cross-country test drives.** Every scenery rating the
+   app has ever been checked against is from New England, and that will stay
+   true.
 
-**The constraints it was written to:**
+**What this is:** a side project by one college freshman. The plan is sized
+for that: about 3 hours a week, more in launch week, less in winter. The rest
+is unchanged: $0 marketing, a completely free app, no account, no tracking,
+open source, iPhone only.
 
-- **$0 marketing budget.** No ads, no paid placements, no paid tools. The only
-  money anywhere in it is the $99 Apple membership and the domain renewal that
-  the release needs anyway (§11).
-- **The app is completely free.** No price, no in-app purchase, no
-  subscription, no ads. There is no funnel after the install, so success is
-  installs, drives, ratings, and people telling people.
-- **New England only, iPhone only, one server, one person** — who is also a
-  student.
+It sits beside [`release-plan.md`](release-plan.md). That one gets the app onto
+the App Store; this one gets people to it.
 
 ---
 
 ## 0. The plan on one page
 
-1. **Getting onto the store gets you nothing by itself.** At least eight
-   scenic-driving apps launched in 2026. Six have zero ratings, and the best
-   has 14 (§2). What separates you from them has to be distribution.
-2. **Short video is the engine, and the TikTok instinct was right.** Post the
-   same clips to TikTok, Instagram Reels and YouTube Shorts, cut from one drive
-   a week. Since February 2026 TikTok has had a US *Local* feed, and Instagram
-   has a Map, so a location-tagged New England post can reach New Englanders
-   specifically (§5.1).
-3. **One-shot channels are the ignition.** A press story, one launch post per
-   subreddit, Show HN, and Apple's featuring nomination. You get roughly one of
-   each, so spend them when the app is on the store and in season (§7).
-4. **The advantage nobody can copy is the data.** Nobody else has a scenery
-   score for 146,811 miles of road. "The ten best-scoring drives in Vermont"
-   is a post no competitor can make (§6.3).
-5. **"Free, no account, no ads, no tracking, open source"** opens doors that
-   stay shut to commercial self-promotion. Say it, and keep it true (§3.3).
-6. **The earliest realistic launch is Thursday 22 October 2026**, which catches
-   the last peak weekend in southern New England. If it slips past about 27
-   October, release quietly and save the seasonal one-shots for a **spring
-   opener (Memorial Day weekend, 29–31 May 2027)** and **foliage 2027** (§7).
-7. **Before posting anything that could take off:** renew the domain (it
-   expires 28 October), load-test the server, and never film a loop that
-   starts at your house (§10).
+1. **Launch on a Thursday in early November: target Thursday 5 November
+   2026** (L). The app's launch doesn't depend on a season any more. Only two
+   hooks are dated: #30DayMapChallenge (all of November) and Thanksgiving
+   weekend (26–29 November) (§7).
+2. **Spend the national, non-seasonal one-shots now; hold the New England
+   seasonal ones.** At launch, use what works in any month: Northeastern's
+   channels, Apple's featuring nomination, the national scenery map, Show HN,
+   the OpenStreetMap community and the tech press. Hold what needs good
+   weather in New England (local press, the northern state subreddits, the
+   foliage groups) for **Memorial Day weekend 2027** and **foliage 2027**
+   (§7.2).
+3. **New England is the only region you market locally.** It's where you
+   live, where you drive, and the only place the score has been checked. The
+   rest of the country gets only the channels that cost the same for 48 states
+   as for one: App Store search, the national map, YouTube, Reddit's data subs,
+   Show HN (§4.2).
+4. **Measured claims stay where they were measured, permanently.** The "96%
+   liked at 7+" figure is one rater (you), 52 marks, all in New England. New
+   England's network figures (146,811 miles, 942,448 scored segments, six
+   states) are New England's. None of it travels. Nationally, say only what is
+   true everywhere: free, no account, a score for every road on one scale, an
+   open method (§3.4).
+5. **The plains are the launch's biggest risk, and copy can't fix it.** On one
+   national scale, a Kansas driver sees few 7+ roads, and the router currently
+   adds a mean 41 minutes to plains trips for almost nothing it can show.
+   "Beautiful roads wherever you are" earns one-star reviews. Say plainly that
+   flat country scores low, and get the app to say it too (§3.4, §5.10).
+6. **Before anything goes out:** renew `jameskouvlis.com` (it expires **28
+   October**, a week before L), and load-test the national build on the box
+   (§7.3).
 
-**If you only do five things:** renew the domain; film every drive this
-October; make one data post; post three times a week from one drive; and tag
-the location on every post.
+**If you only do five things:** renew the domain; file the featuring
+nomination this week; post the national map in November; answer every comment
+honestly, including "it's flat here"; and keep filming New England for spring.
 
 ### Terms used below
 
 | term | meaning |
 |---|---|
-| **L** | Launch day: the day the app goes live on the App Store. §7 dates everything relative to it (L-14 is two weeks before) |
+| **L** | Launch day: the day the app goes live on the App Store. L−7 is a week before, L+30 a month after |
+| **Mark** | One rating of a stretch of road, made by a driver during a test drive. The scenery score has only ever been checked against your own New England marks |
+| **The national scale** | Scores mean the same everywhere: a 7 in Kansas is as good as a 7 in Vermont |
 | **ASO** | App Store Optimization: the name, subtitle, keywords, screenshots and video that decide whether people find you in App Store search and install |
-| **One-shot channel** | Somewhere you can realistically announce once: a press story, the "I built this" post in a subreddit, Show HN |
+| **One-shot channel** | Somewhere you can realistically announce once: a press story, the "I built this" post in a subreddit, Show HN, the featuring nomination |
 | **Repeatable channel** | Somewhere you can post every week indefinitely: your video accounts, answers in "where should I drive?" threads |
-| **Campaign link** | An App Store link with a tag (`ct=tiktok`) that lets App Store Connect tell you which channel an install came from |
-| **CPP** | Custom product page: an alternative version of your App Store page, with different screenshots and text, that you can point one channel at |
+| **Campaign link** | An App Store link with a tag (`ct=reddit`) that lets App Store Connect tell you which channel an install came from |
+| **CPP** | Custom product page: an alternative version of your App Store page, with different screenshots and text, that one channel can point at |
 
 ---
 
@@ -84,59 +89,71 @@ the location on every post.
 
 | constraint | what it forces |
 |---|---|
-| $0 budget | Your time is the budget. Everything has to compound (be findable by search: YouTube, TikTok search, App Store search, Pinterest) or be a one-shot worth spending |
-| The app is free | There is no launch discount, referral credit or "premium" tier to promote. In exchange, the install costs nothing, and a free, ad-free, open-source tool is welcome in places that ban commercial promotion (§3.3) |
-| New England only (about 4.5% of the US) | Every post has to be anchored somewhere real: a town, a road, a landmark, a location tag. That is exactly what TikTok's Local feed and Instagram's Map reward. Say **"New England only"** in every caption, or people elsewhere will install it and leave one-star "doesn't work" reviews |
-| iPhone only (about 58% of US users) | Roughly four in ten people who see a post can't install it. Say **"iPhone"** in the caption. Count Android requests as a signal; don't promise anything |
-| One server: one process, 4 threads, 2 cores (`server/serve.py:44`) | A route takes about 0.8 s and a loop about 3.9 s on its first call. Stagger launch posts across days, and load-test before L (§10) |
-| One person, a student | Budget 4–6 hours a week, in batches. A plan that needs daily posting will be dead by November |
-| Seasonal demand | Foliage is the peak, and it is happening now. Winter is the trough, spring and summer are a second season, and foliage 2027 is the main event |
+| $0 budget | Your time is the budget. Favor what compounds (search on YouTube, TikTok and the App Store) and one-shots worth spending |
+| A side project, a freshman | About 3 hours a week. Launch week about 10. Winter can drop to 1–2. A plan that needs daily posting is dead by December |
+| The app is free | No discount or premium tier to promote. In exchange, a free, ad-free, open-source tool is welcome where commercial promotion isn't (§3.3) |
+| National from day one | "Doesn't work here" reviews disappear. "Works here and it's boring" replaces them. Never promise scenery the score can't find (§3.4) |
+| No drives outside New England | Nothing Western is validated by you, ever. Western content is desk work (maps, lists) labelled as unchecked, or other people's checking (§6.3, §12) |
+| Launching in November | New England's off-season: color is over, and the northern roads close from mid-October. So launch on the national, data and builder story, and hold the scenic New England story for spring |
+| iPhone only (about 58% of US users *(re-check)*) | Say **"iPhone"** in every caption. Count Android requests; promise nothing |
+| One server | The box's capacity was measured on the New England build (about 1.5 mixed requests a second, [`load-test-oracle.md`](load-test-oracle.md)). Re-measure on the build you ship (§7.3) |
+
+**Verdict:** the plan gets smaller, not just wider. The national app widens
+the audience. The time budget and the November date shrink what you can do for
+it. So the launch leans on a few national one-shots, and the weekly content
+routine waits for spring.
 
 ---
 
-## 2. The market, measured
+## 2. The market, re-measured
 
-Counted with Apple's App Store search API (US store) on 2026-09-29. The search
-is ranked by relevance rather than exhaustive, so these are **"at least"**
-figures. Ratings stand in for use; they are not download counts.
+Counted with Apple's App Store search API (US store) on 2026-10-18, for nine
+scenic-driving search terms (§14). Search is ranked by relevance, so these are
+**"at least"** figures. Ratings stand in for use.
 
-**Scenic-driving apps launched in 2026:**
+**Scenic-driving apps launched in 2026, as of 2026-10-18:**
 
-| app | launched | ratings |
-|---|---|---|
-| Vibe Drive | 2026-01-30 | 0 |
-| RevRoutes Find Scenic Drives | 2026-05-14 | 0 |
-| Routes – Best Driving Roads | 2026-06-06 | 0 |
-| Scenra: Scenic Road Trips | 2026-07-02 | 0 |
-| Pleasant Routes | 2026-07-10 | 14 |
-| Scenic Way | 2026-07-18 | 0 |
-| Joyride: Roads & Drives | 2026-07-28 | 0 |
-| **Aimless Drives** (loops of 30/60/90/120 min) | **2026-09-02** | **2** |
+| app | launched | ratings | notes |
+|---|---|---|---|
+| Vibe Drive | 2026-01-30 | 1 | |
+| DriveGo: Scenic Route Planner | 2026-02-20 | 5 | subscription, CarPlay, curvy roads |
+| RevRoutes Find Scenic Drives | 2026-05-14 | 0 | |
+| Routes – Best Driving Roads | 2026-06-06 | 0 | |
+| DriveLoop: Go For A Drive | 2026-06-11 | 1 | time-budget drives, hands off to Google Maps |
+| Scenra: Scenic Road Trips | 2026-07-02 | 0 | |
+| Pleasant Routes | 2026-07-10 | 14 | |
+| Scenic Way | 2026-07-18 | 0 | |
+| Joyride: Roads & Drives | 2026-07-28 | 0 | |
+| Aimless Drives | 2026-09-02 | 3 | free, no in-app purchase listed, no account, no tracking, hands off to Google Maps |
+| **WanderWay Navigation** | **2026-09-16** | **5** | **"generate a Sunday Drive"**, loops of 30 min to 5 h, CarPlay, no account; 14-day trial, then a $4.99 unlock |
+| Carve: Scenic Drive Planner | 2026-10-05 | 1 | yearly subscription, loops, CarPlay |
+| MotoRidez: Scenic Routes | 2026-10-08 | 0 | |
+| DriveLoop | 2026-10-14 | 0 | unrelated app, same name |
 
-**The apps that have users are old:** Roadtrippers (2014) has 61,501 ratings,
-Scenic Motorcycle Navigation (2016) 7,450, and ROADS by Porsche (2018) 261.
-**This season's foliage apps are empty too:** Fallcast (launched 2026-09-17)
-has 0, Explore Fall 7, and FoliageBeat 5.
+**The apps with users are old:** Roadtrippers (2014) has 61,536 ratings,
+Scenic Motorcycle Navigation (2016) 7,482, calimoto 979, ROADS by Porsche
+(2018) 261. **Detour – Scenic Navigation** has 3. It is free to download, with
+in-app purchases at $9.99 and $49.99, and a "Scenic Heatmap US". **Google's
+Ask Maps** (US, since 12 March 2026) can be asked for scenic stops along a
+route. No dedicated scenic-route mode was found *(re-check)*.
 
 **What it means:**
 
-- A scenic-route app was apparently a common idea this year, and shipping one
-  has bought nobody anything yet. **Fifteen ratings would make you the most-used
-  new entrant.**
-- Aimless Drives is your loop mode, shipped a month before you, and it has two
-  ratings. The loop space is not taken. It is empty.
-- The differentiator, per [`branding-brainstorm.md`](branding-brainstorm.md)
-  §2: **every road measured, not submitted**, and **the dial plus the loop**.
-  The established competitors either sell community-submitted routes to
-  motorcyclists or just avoid highways. The 2026 entrants' listings were not
-  read for this plan, so read the three nearest before claiming to be "the
-  only" anything.
-- **Searching for the name is noisy.** Today, `sunday drive` in the App Store
-  returns Google Drive, Garmin Drive and driving games, and `sundaydrive.com`
-  is a Florida car dealership
-  ([`sunday-drive-naming.md`](sunday-drive-naming.md) §3). On L, check where
-  you rank for "sunday drive". Until you rank first, every post needs a direct
-  link, or the words "Sunday Drive scenic routes".
+- **Fifteen ratings still makes you the most-used new entrant.** The best of
+  fourteen 2026 entrants has 14.
+- **Not novel:** loops, a time budget, the compass, the slider. Don't claim
+  "the only".
+- **Not unique on its own:** "free, no account, no tracking". Aimless says all
+  three.
+- **Yours, in combination:** free, no account, *its own* turn-by-turn
+  navigation (Aimless and DriveLoop hand off to Google Maps), open source, and
+  scenery for cars rather than curvature for bikes.
+- **The name is contested.** WanderWay uses "Sunday Drive" as a feature name,
+  and App Store search for "sunday drive" returns other apps first. Every post
+  needs a direct link.
+
+**Verdict:** a crowded, empty field. Whoever gets honest ratings first wins,
+and distribution decides that.
 
 ---
 
@@ -144,54 +161,52 @@ has 0, Explore Fall 7, and FoliageBeat 5.
 
 ### 3.1 Adopted, not reinvented
 
-[`branding-brainstorm.md`](branding-brainstorm.md) §2 and §5 settled this, and
-they hold:
+From [`branding-brainstorm.md`](branding-brainstorm.md) §2 and §5:
 
-- **The thesis:** every navigation app optimizes for less time, and this is the
-  only one that asks you to spend more. **Proudly anti-efficiency.**
-- **The voice:** unhurried, dry, quietly confident. No exclamation marks, no
-  "supercharge". That happens to suit the slow content that does well on every
-  platform: cozy fall, slow living, the drive with no destination.
+- **The thesis:** every navigation app optimizes for less time; this one asks
+  you to spend more. **Proudly anti-efficiency.**
+- **The voice:** unhurried, dry, quietly confident. No exclamation marks.
 - **The subtitle (decided):** *The scenic route, on purpose*
-  ([`app-store-submission.md`](app-store-submission.md)).
-- **The one-liner:** Every road in New England, scored for beauty. Move one
-  slider to trade minutes for the view.
+  ([`app-store-submission.md`](app-store-submission.md)). It makes no regional
+  claim, so it stands.
+- **The one-liner:** Every road in the contiguous US, scored for scenery on one
+  scale. Move one slider to trade minutes for the view.
 - **The loop hook:** Ninety minutes, nowhere to be. We'll bring you home the
   pretty way.
 - **The credibility line:** Built on open data. Every road measured, not
-  crowdsourced.
+  crowdsourced. The method is public.
+- **The honesty line (new):** One scale everywhere, so some places have more
+  7s than others. It says so.
+
+Check the coverage wording against the build you ship. If the shipped build
+covers less than every road in the 48 states and DC, say what it does cover.
+
+**Verdict:** keep it. Only the line that named New England changes.
 
 ### 3.2 Say what's on the screen
 
-Captions should use the app's own words, so the video and the app agree. The
-results card says **"Scenic adds 49 min"** (`ios/Sources/RouteResults.swift`),
-and the loop is labelled **"Loop"**, with a duration. The branding doc's
-"Nowhere" and "good miles" never shipped to the UI. Ship them first, or leave
-them out of the videos.
+Captions use the app's own words. The results card says **"Scenic adds 49
+min"** (`ios/Sources/RouteResults.swift`), and the loop is labelled **"Loop"**.
+"Nowhere" and "good miles" never shipped to the UI, so leave them out of
+videos.
 
-### 3.3 The free-app message, and why it's worth more than it looks
+### 3.3 The free-app message
 
 - **Say it plainly:** *Free. No account, no ads, no tracking. Open source.*
-  Every word is true today and is on the live
+  True today, and on the live
   [privacy page](https://jamesk1281.github.io/SundayDrive/privacy/).
-- **Answer the catch before anyone asks.** Free apps get "what's the catch?"
-  The honest answer is the story. A Northeastern student built it, the code is
-  public, the server runs on a free tier, and the app itself lists what it
-  cannot do (the "What it does not do" section of
-  `ios/Sources/BeforeYouDriveView.swift`).
-- **It opens doors.** Local subreddits and Facebook groups that remove
-  commercial promotion will often allow a free, ad-free local tool from a real
-  community member, especially if you ask the moderators first. A startup can't
-  make that request, and you can.
-- **Keep it true.** Any analytics SDK, account system, ad or price breaks the
-  message and reopens the privacy decision (`release-plan.md` §8, Decision 3).
-  That is why every measurement in §9 uses numbers that Apple, Cloudflare and
-  the platforms already give you. It is also why the landing page follows the
-  rule that `tests/test_privacy_page.py` enforces on the privacy page: it loads
-  nothing from anyone else's server.
+- **Answer the catch first.** A Northeastern freshman built it as a side
+  project, the code is public, the server runs on a free tier, and the app
+  lists what it can't do (`ios/Sources/BeforeYouDriveView.swift`).
+- **Lead with the combination.** Aimless also says "no account" (§2). What's
+  yours is *free, no account, its own turn-by-turn, open source.*
+- **Keep it true.** Any analytics SDK, account, ad, price or email list breaks
+  the message and reopens the privacy decision (`release-plan.md` §8, Decision
+  3). That's why §9 uses only numbers Apple, Cloudflare and the platforms
+  already give you.
 - **Where not to say it:** Apple rejects in-app event metadata that mentions
-  price, "free" included (§5.7). The listing already shows the price, so don't
-  spend keyword bytes on it either.
+  price, "free" included. The listing shows the price already, so don't spend
+  keyword bytes on it (§5.7).
 
 ### 3.4 What not to claim
 
@@ -201,578 +216,535 @@ From [`branding-brainstorm.md`](branding-brainstorm.md) §5: no "best route", no
 our score", never as fact. Compare only against **the app's own fastest
 route**. Never compare against Apple's routes (ADPLA Attachment 6 §2.3, see
 [`legal-and-ip-audit.md`](legal-and-ip-audit.md)), and don't name other apps in
-the listing (App Store guideline 2.3.7).
+the listing (guideline 2.3.7).
+
+**New: every measured claim carries its scope.**
+
+| claim | true where | how to say it |
+|---|---|---|
+| Free, no account, no ads, no tracking, open source | everywhere | plainly, anywhere |
+| Every road has a scenery score, on one scale | wherever the shipped build covers | "every road in the contiguous US is scored", if that's what ships |
+| The method is public | everywhere | link the repo and the method doc |
+| The trade against the app's own fastest route | everywhere | "Scenic adds 12 min", in the app's words |
+| **"96% liked at 7+"** | **New England only**: 52 marks, one rater (you) | Only as "on my own New England test drives", in builder posts and Show HN. Never in the listing, captions or press. Anyone will ask who rated it, and the honest answer is "me" |
+| The 74%-against-63% separation over 79 ratings | New England only, one rater | The featuring nomination's private notes only, as [`app-store-listing.md`](app-store-listing.md) §6 already does |
+| 146,811 miles, 942,448 segments, six states | New England's network | New England posts and press only. State the national mileage from the shipped build, measured, not estimated |
+| Western scores agree with a driver | **nowhere** | Never. No one has checked them. Western lists are "by our score, unchecked" (§6.3) |
+| "Scenic roads near you", "beautiful wherever you are" | **false** on the plains | **Never** |
+| "In flat country it tells you so" | only if the app does | Only after the low-scenery message ships (§5.10, item 2) |
+
+**Verdict:** the review to fear is no longer "doesn't work in Ohio". It is
+"promised scenery, gave me 40 extra minutes of cornfield". Every national
+sentence has to survive a reader in Kansas.
 
 ---
 
-## 4. Who it is for
+## 4. Who it is for, and where the marketing goes
 
-| audience | when | where they are | what to show them | priority |
-|---|---|---|---|---|
-| **New England weekend drivers**: suburban, 25–65, with a car and a free Sunday | all year, peaking spring to fall | Facebook town and state groups, state subreddits, Instagram, local news | The loop: an hour, nowhere to be, home the pretty way | **1, the core** |
-| **Leaf-peepers and visitors**, many from New York, New Jersey and further | mid-September to early November | Facebook foliage groups, Instagram, Pinterest, TikTok (a national audience is *useful* here), travel press | The trade: "Scenic adds 20 min", and you skip I-93 between foliage spots | **2, seasonal and national** |
-| **Car enthusiasts**: Miata, Porsche, BMW, Subaru, classic cars | April to November | clubs, Cars & Coffee meets, model subreddits, Instagram | Measured curvy roads, and routing a club drive | **3, amplifiers** |
-| **Map and data people** | any time, especially November | r/MapPorn, r/dataisbeautiful, Hacker News, the OpenStreetMap community | The instrument: the heatmap, the method, the open repo | **4, credibility rather than users** |
-| **Motorcyclists** | April to October | New England Riders, ADVrider, motorcycle Facebook groups | "Every road measured", as a complement to their curated routes | **5, incumbents own this**: Scenic Motorcycle, calimoto, Kurviger, REVER, and NER's own BONE routes. Don't lead with it |
+### 4.1 Audiences
+
+| audience | where they are | what to show them | priority |
+|---|---|---|---|
+| **New England weekend drivers** | state subreddits, town Facebook groups, local news | The loop: an hour, nowhere to be, home the pretty way | **1, but mostly from spring 2027** |
+| **Map, data and open-source people**, national | r/dataisbeautiful, r/MapPorn, Hacker News, OpenStreetMap, #30DayMapChallenge | The national map on one scale, the method, the repo | **2, and the launch's engine**: November is their month |
+| **Road-trippers and people driving for Thanksgiving**, national | YouTube and TikTok search, r/roadtrip | The trade on a real drive; "the pretty way home for the holiday" | **3, seasonal (Thanksgiving)** |
+| **Builders and Apple people** | r/SideProject, r/iOSProgramming, MacStories, 9to5Mac | A freshman's native, privacy-respecting app | **4, credibility** |
+| **Car enthusiasts** | clubs, Cars & Coffee, model subreddits | Routing a club drive | **5, spring** |
+| **Plains drivers** | everywhere | Nothing, as a target. Don't mislead them when they find you | not a target |
+
+### 4.2 One home region, and a national layer
+
+The New England plan's engine (location-tagged video, state subreddits, local
+press, Facebook groups) works because it is local. Copied across 48 states it
+is about 48 × 3 × 1 h = **144 hours a year of posting alone**, for states you
+can't film. You can't do that, and nobody could on a side-project budget.
+
+| | what | why | hours a week |
+|---|---|---|---|
+| **Home: New England** | Your drives, your footage, state subs, local press, clubs | The only region you can film, drive and check. The score is strongest where it has been validated | **~1.5** in winter, from footage you already have; **~2.5** from spring |
+| **National layer** | App Store search and listing, the national map, YouTube, Reddit's data subs, Show HN, tech press, answering "does it work in X?" | These cost the same for 48 states as for one | **~1**, with spikes at launch |
+| **Everywhere else** | Desk-only per-state lists, labelled "by our score, unchecked; locals, what did it miss?" (§6.3) | The only honest way to talk to a state you haven't driven: ask the people who have | **optional, ~1 h a post**, at most one a fortnight |
+
+**Verdict:** one home region, plus a national layer that's mostly one-shots.
+That fits in about 3 hours a week. If people in some other state show up in
+the campaign links (§9), give that state a desk-only list, and nothing more.
 
 ---
 
 ## 5. Channels: the playbooks
 
-Ranked by what each returns per hour for a free, New England-only app. Each one
-has *what*, *how*, *cadence* and *the trap*.
+Each one is tagged **national** or **home** (New England), with *what*, *how*,
+*cadence*, *the trap* and a verdict.
 
-### 5.1 Short video: TikTok, Instagram Reels, YouTube Shorts (the engine)
+### 5.1 Short video: TikTok, Instagram Reels, YouTube Shorts (home)
 
-**Setup, once, about an hour:**
+**Setup (an hour, before L):** one handle on all three, checked the same day
+(`sundaydrive.app`, `sundaydriveapp`, `takethesundaydrive`). Use a TikTok
+Business account, for the clickable link at any follower count. Use an
+Instagram Professional account, for Insights. One YouTube channel serves both
+Shorts and long-form *(re-check)*.
 
-- **One handle on all three.** The bare name is probably taken. Pick one that
-  is free everywhere (`sundaydrive.app`, `sundaydriveapp`,
-  `takethesundaydrive`), and check all three on the same day.
-- **TikTok: a Business account.** It can show a clickable website link at any
-  follower count, while personal accounts need 1,000 followers first. The cost
-  is that you only get TikTok's Commercial Music Library. That costs you less
-  than it sounds: TikTok's general music licences don't cover promotional
-  videos from either kind of account.
-- **Instagram: a Professional (Creator or Business) account.** It gives you
-  Insights, and once you pass 200 followers it unlocks *Trial Reels*
-  (described below).
-- **YouTube: one channel**, for both Shorts and the long-form drives (§5.2).
-- **Where the links point:** the landing page (§5.7) until L, then an App Store
-  campaign link.
+**The levers** *(carried from 2026-09-29; re-check)*:
 
-**The levers, and what each one costs:**
+- **Tag the location on every post.** TikTok's US Local feed and Instagram's
+  Map surface location-tagged posts to nearby viewers. This is what keeps a
+  national platform local.
+- **Put the keyword in the first on-screen text, and say it aloud.** TikTok
+  search reads both. Use 3–5 hashtags.
+- **Use carousels for lists.** "Top 5 drives in Connecticut, by our score."
+- **Ask for the send:** "Send this to whoever's driving Sunday."
+- **Export clean, then post the same file to all three.** Instagram demotes
+  other apps' watermarks.
+- **Music:** original audio or the platforms' commercial libraries, never a
+  trending track. **Editing:** iMovie or DaVinci Resolve, free. Avoid CapCut
+  for footage you want to own.
 
-| lever | where | cost | why it works |
-|---|---|---|---|
-| **Tag the location on every post** | TikTok, Instagram | 5 s | TikTok's US Local feed (live since February 2026) picks posts by location, topic and recency, and a creator who tags a location becomes eligible for it. Instagram's Map (US, since August 2025) collects location-tagged posts. This is how a national platform finds New Englanders. *(Re-check: viewers have to opt in to both, and TikTok publishes no audience size, so don't build the strategy around it.)* |
-| **Put the keyword in the first on-screen text, and say it out loud** | TikTok above all | 0 | TikTok search reads on-screen text, speech, captions and hashtags. Foliage searches spike every fall, and a video that matches a search keeps collecting views long after its first run. Use 3–5 hashtags, not 30 |
-| **Carousels for lists** | TikTok, Instagram | 20 min | Photo carousels get about the same reach as video but many more likes, comments and saves. Five or six slides is the reported sweet spot. "Top 5 drives in Connecticut" should be a carousel, not a video |
-| **"Send this to whoever's driving Sunday"** | Instagram | 0 | The head of Instagram says sends (shares by DM) are the strongest signal for reaching people who don't follow you. Ask for the send, not the like |
-| **Trial Reels** | Instagram | 0 | Once you have 200 followers, a Reel can go to non-followers first, and a flop doesn't count against your account. Test two hooks for the same drive |
-| **Reply to comments with a video** | TikTok, Instagram | 10 min each | "Comment your town", then reply with a video of a loop from that town. Every reply is a demo, it's personal, and it turns into a series your audience directs |
-| **One file on three platforms, exported clean** | all | +10 min | Export from your editor, not from TikTok. Instagram's recommendation guidelines demote Reels that visibly carry another app's watermark |
-| **Collab posts and tags** | Instagram, TikTok | 1 min | Tag the orchard, the cider mill, the general store or the club. They reshare to a local audience that is already in the market |
-| **Link each Short to its long-form drive** | YouTube | 1 min | A Short can link one related video, so point Shorts viewers at the full ambient drive |
+**Cadence:** winter, 1–2 posts a week from this October's footage. From
+spring, 3 a week cut from one drive (§6.1).
 
-**Cadence:** at least 3 posts a week, cut from one drive (§6). For a one-person
-account, consistency beats volume.
+**The trap:** a clip of a 9-rated road going viral nationally, then the
+viewers meeting a plains score. Caption the place, never "roads like this near
+you".
 
-**Music:** original audio (road noise, voice-over), TikTok's Commercial Music
-Library, Meta's Sound Collection or YouTube's Audio Library. Never put a
-trending commercial track on a post that promotes the app.
+**Verdict:** still the engine, but a spring engine. In November, bank footage
+and post lightly.
 
-**Editing:** iMovie or DaVinci Resolve, both free. **Skip CapCut for footage
-you want to own.** Its terms of service changed on 12 June 2025 to take a
-perpetual, irrevocable licence to whatever you upload. Canva's free tier covers
-the carousels, and the GitHub Student Developer Pack lists 12 months of Canva
-Pro *(re-check at education.github.com)*.
+### 5.2 YouTube long-form: the ambient drive (national, evergreen)
 
-**The trap:** chasing views. A video with 200,000 views from Texas is worth
-less than one with 2,000 views from Worcester. Watch installs per campaign link
-(§9), not views.
+30 to 90 minutes of one drive, camera mounted, no talking, chapters by town.
+YouTube search is national and keeps sending viewers for years, so one New
+England drive reaches a viewer in Ohio planning a trip. The description carries
+the route, the app link and the credits ("Route data © OpenStreetMap
+contributors").
 
-### 5.2 YouTube long-form: the ambient drive (the easiest evergreen)
+**Cadence:** whenever footage is good. This October's late color is the first
+batch. **The trap:** a shaky mount. Test it on a short drive.
 
-**What:** 30 to 90 minutes of a single drive. Mount the camera, don't talk,
-edit gently, and add chapters by town. It is an established genre: channels
-such as World Driving Tours and the 4K Relaxation Channel post multi-hour
-silent drives, some with millions of views, that people watch as background.
+**Verdict:** the best repeatable national channel you can feed without
+travelling.
 
-**Why it's efficient:** you already shot the footage for the shorts, YouTube
-search keeps sending viewers for years, and the description can carry the
-route, the app link and the credits:
+### 5.3 Reddit (national data subs now; home subs mostly in spring)
 
-```
-A 72-minute loop from Concord, MA through Carlisle and Harvard, picked by
-Sunday Drive — a free iPhone app that scored every road in New England for
-scenery. New England only. [campaign link]
+**Three formats:**
 
-0:00 Concord · 12:40 Carlisle · …
-Route data © OpenStreetMap contributors. Music: [library credit].
-```
+1. **The national map, one post per sub:** "Every road in the contiguous US,
+   scored for scenery on one scale". It's honest by construction: the plains
+   are visibly pale, and saying why is the post. r/dataisbeautiful and
+   r/MapPorn, days apart, in November (§7.2). **This is the post nobody else
+   can make.**
+2. **The launch post, once per sub:** "I'm a freshman at Northeastern, and I
+   built a free, open-source iPhone app that finds the scenic way. No ads, no
+   account." At launch in r/SideProject, r/iOSProgramming, r/boston and
+   r/massachusetts. Those posts sell the builder, not the season. Hold
+   r/vermont, r/newhampshire and r/maine for Memorial Day: their scenic roads
+   are closed in winter.
+3. **The per-state data post, repeatable:** "These are the 10 best-scoring
+   drives in Connecticut" (§6.3). New England states first. Other states only
+   as desk-only "unchecked" lists.
 
-**Cadence:** one every week or two, whenever the footage is good.
-**The trap:** a shaky or badly exposed mount. Test it on a short drive first.
+**How:** read each sub's rules and message the moderators before a launch
+post. Post in the morning and answer every comment for two hours. Answer "does
+it work in Iowa?" honestly: yes, and Iowa's roads score lower on one national
+scale.
 
-### 5.3 Reddit (the best free geography there is)
+**The trap:** the same post in eight subs in one day. Space them days apart.
 
-**Where:** r/newengland, r/boston, r/massachusetts, r/vermont,
-r/newhampshire, r/maine, r/Connecticut, r/RhodeIsland, and city subs like
-r/worcester. For hobbyists: r/Miata, r/subaru, r/cars. For data: r/MapPorn and
-r/dataisbeautiful. For builders: r/SideProject and r/iOSProgramming.
+**Verdict:** the national map is the launch's best single post. Everything
+else on Reddit is small and steady.
 
-**Two formats:**
+### 5.4 Facebook groups (home, spring and fall)
 
-1. **The data post, which you can repeat:** "I scored every road in Vermont for
-   scenery using open data. These are the 10 best-scoring drives." A map, the
-   list, the method in one paragraph, and the credits. Do one per state per
-   season: six states times three seasons is 18 posts a year, and no two are
-   alike. Put the app in a comment, and only where the sub allows it (§6.3).
-2. **The launch post, one per sub:** "I'm a Northeastern student, and I built a
-   free, open-source iPhone app that finds the scenic way. No ads, no account."
-   Post it on L or L+1, in the one or two subs where the data post did best.
+New England foliage groups (the *New England Fall Foliage* community linked to
+Jeff Folger), town groups and car-club groups. Contribute before you promote,
+and ask the admins. **Hold until spring 2027.** A November post in a foliage
+group is a post about nothing.
 
-**How:** read every sub's rules. **Message the moderators before the launch
-post**: say who you are and that the app is free, open source and ad-free, then
-ask. Post in the morning, US Eastern time, and answer every comment for the
-next two hours. Answer "scenic drive from X?" threads with a real route,
-whether or not you mention the app.
+**Verdict:** not part of the launch.
 
-**The trap:** posting the same thing to eight subs in one day, which is how
-accounts get flagged. Space posts days apart.
+### 5.5 Press and newsletters (one story each)
 
-### 5.4 Facebook groups (where the leaf-peepers actually are)
-
-**Where:** the New England foliage groups; the obvious one is the *New England
-Fall Foliage* community linked to Jeff Folger, whose jeff-foliage.com publishes
-the season's forecasts. Also state and town groups, and car-club and motorcycle
-groups.
-
-**How:** join as yourself, contribute before you promote, ask the admins, then
-share the weekly drive with a photo and the route. This audience skews older
-and will search the App Store by name, which is why the name check in §2
-matters.
-
-**Cadence:** one or two groups a week, rotating.
-**The trap:** a post that is only a link. Lead with the photo and the drive.
-
-### 5.5 Press and newsletters (one story each, tied to a season)
-
-**The hook calendar:**
-
-| when | the hook |
-|---|---|
-| October 2026 | "Local student's free app finds the prettiest way to see the leaves" |
-| November 2026 (off-season) | "We scored every official scenic byway in New England. Here's how they rank." Vermont has 1 national and 9 state byways, New Hampshire 20, and Massachusetts 3 national ones. **Rank them with `c_scenic_tag` left out.** That component *is* the byway designation (`pipeline/score.py:12`, from OSM route relations), so with it included the designation grades itself, and "this byway scores below the road next to it" would be understated |
-| Memorial Day 2027 | "The summer drives an algorithm picked" |
-| September 2027 | Foliage, now with a year of data and users behind it |
-
-**Places you can publish yourself, no pitch needed:**
-
-- **Patch:** anyone can post an announcement or a press release to a town's
-  Patch site for free. Do one for every town you've featured.
-- **Northeastern:** Northeastern Global News (the university's newsroom), *The
-  Huntington News* (the student paper; tips go to huntnewsnu.com/tips) and
-  NUMedia. Your own university is the easiest pitch you will ever make.
-
-**Pitch targets:** Boston.com, Universal Hub, Axios Boston and *The Boston
-Globe*; on TV, WCVB (its *Chronicle* covers New England travel), NBC10 Boston,
-WBZ and NECN; on radio, WBUR and GBH. Regional magazines: *Yankee* / New
-England Today (which runs a peak-foliage map and scenic-drive lists every
-year). Vermont: *Seven Days*, VTDigger. New Hampshire: NHPR, *New Hampshire
-Magazine*. Maine: *Down East*, *Portland Press Herald*, *Bangor Daily News*.
-Connecticut: CT Insider, CT Public. Rhode Island: *The Providence Journal*,
-The Public's Radio. Tech press: MacStories and 9to5Mac (both take tips), which
-like native, privacy-respecting apps.
+| when | the hook | to whom |
+|---|---|---|
+| L (November 2026) | "A Northeastern freshman scored every road in America for scenery" | Northeastern Global News, *The Huntington News* (tips at huntnewsnu.com/tips), NUMedia |
+| L to L+14 | The national map, and a free, private, native app | MacStories and 9to5Mac (tips) *(re-check)* |
+| Thanksgiving week (23–25 Nov) | "The scenic way home for Thanksgiving, by an algorithm" | Boston.com, Universal Hub, Axios Boston: one pitch, Boston-angled |
+| Winter | "We scored every official scenic byway in New England. Here's how they rank." Rank them with `c_scenic_tag` left out, since that component *is* the byway designation (`pipeline/score.py`) | New England press, byway organizations |
+| Memorial Day 2027 (29–31 May) | "The summer drives an algorithm picked" | New England press: WCVB's *Chronicle*, WBUR, GBH, *Yankee*, *Seven Days*, VTDigger, NHPR, *Down East*, CT Public, *The Providence Journal* *(re-check)* |
+| September 2027 | Foliage, with a season of users behind it | the same list |
 
 **The pitch, under 150 words:**
 
 ```
-Subject: A student scored every road in New England for scenery
+Subject: A Northeastern freshman scored every road in America for scenery
 
-Hi [name] — I'm a [year] at Northeastern. I built Sunday Drive, a free
-iPhone app that scores all 146,811 miles of road in New England for scenery
-from open map data, then routes you the pretty way instead of the fast
-way. Give it an hour and it plans a loop home.
+Hi [name] — I'm a first-year at Northeastern. As a side project I built
+Sunday Drive, a free iPhone app that scores every road in the contiguous US
+for scenery from open map data, then routes you the pretty way instead of
+the fast way. Give it an hour and it plans a loop home.
 
-It's free, with no ads and no accounts, and the code is public. With peak
-color in [region] this weekend, your readers might like the five
-best-scoring drives near [city] — the list and a map are attached.
+It's free, with no ads and no accounts, and the code is public. [One line
+for the outlet: the map attached / five drives near Boston for the holiday.]
 
 On the App Store now: [link]. Press kit: [link]. Happy to talk, or to take
 you on the drive.
 ```
 
-**The press kit (a section of the landing page):** the icon, 5 screenshots,
-the 30-second preview video, a photo of you, the one-paragraph story, the
-numbers (146,811 miles; 942,448 scored road segments; six states), the credits,
-and contact details.
+**The press kit (a section of the landing page):** the icon, five screenshots,
+the national map, a photo of you, a one-paragraph story, the numbers with
+their scope, credits and contact.
 
-**The trap:** pitching before anyone can download it. A story that ends
-"coming soon" converts nobody, and it spends your one shot.
+**The trap:** pitching before it's downloadable. Every pitch goes out on or
+after L.
 
-### 5.6 Clubs, events, destinations and tourism (other people's audiences)
+**Verdict:** Northeastern and the tech press at launch, one Boston pitch for
+Thanksgiving, and the rest of the New England list in spring.
 
-- **Car clubs:** offer to route a club's next drive, then ask to film it and
-  post it as a Collab. Try BMW CCA Boston, PCA Northeast Region, Audi Club
-  Northeast (it ran a "Skyline Drive" through the mountains in June), Miata and
-  Subaru groups, and the vintage clubs (VSCCA, AACA regions). Classic-car
-  owners literally go on Sunday drives.
-- **Events:** the Larz Anderson Auto Museum in Brookline, a short trip from
-  campus, runs cars-and-coffee meets and scenic cruises in season. **Southern
-  New Hampshire Cars and Coffee meets on Sunday 18 October 2026** in
-  Manchester, NH, inside the beta window (§7) *(re-check)*. Bring the TestFlight
-  QR code on your phone; you don't need printed flyers.
-- **Motorcycles:** New England Riders (newenglandriders.org) publishes its own
-  curated BONE routes. Approach it as a complement, not a competitor.
-- **Destinations:** orchards, cider mills, farm stands and general stores. End
-  a drive at one and tag it, and it will usually reshare.
-- **Tourism and byways:** state tourism offices publish foliage reports, so tag
-  them on posts from their state. Give byway organizations (the Mohawk Trail,
-  the Kancamagus, the Connecticut River Byway, Vermont's Route 100) the
-  byway-ranking piece first.
-- **Foliage forecasters:** Jeff Folger and New England Today's foliage map.
-  "Their forecast, our routes" is a natural collaboration.
+### 5.6 Clubs, events and destinations (home, spring)
 
-### 5.7 The App Store itself (free tools most indie apps never touch)
+Offer to route a club's drive and film it: BMW CCA Boston, PCA Northeast,
+Miata and Subaru groups, the vintage clubs, and the Larz Anderson Auto
+Museum's meets in Brookline. End drives at orchards and general stores and tag
+them. **Most of this is a spring 2027 activity** *(re-check the 2027
+calendars)*.
+
+### 5.7 The App Store itself (national by nature)
 
 | tool | what to do | when |
 |---|---|---|
-| **Landing page** | Replace the redirect in `site/index.html` with a real page: what the app is, 3 screenshots, "New England · iPhone · free", the App Store badge (the TestFlight link before L), the press kit, credits and contact. **It doubles as the Support URL that App Store Connect requires.** It loads nothing external, by the same rule the privacy page's test enforces | before B |
-| **Keywords** | **100 bytes**, no competitor names, and nothing already in the name ("sunday", "drive") or the subtitle ("scenic", "route"), since both are indexed. One candidate at 95 bytes: `foliage,fall,leaf,peeping,loop,backroads,byway,autumn,curvy,road,trip,new,england,vermont,maine`. Apple combines separate terms into phrases, so "new,england" reaches "new england". Re-measure the bytes before pasting | before S |
-| **Screenshots and preview video** | The first three screenshots decide most installs. Show the trade ("Scenic adds 12 min"), a loop, and the road itself. The preview video can run up to 30 s, cut from your footage | before S |
-| **Featuring nomination** | App Store Connect → Featuring Nominations → *App Launch*. **At least 2 weeks before L**, and Apple suggests up to 3 months ahead for wider consideration. Tell the story: a student, open data, New England, the season | L-14 at the latest |
-| **Manual release** | Choose "Manually release this version", so that approval doesn't mean launch and you pick the moment | at S |
-| **Pre-orders** (only if there's a gap) | Only if approval lands two or more weeks before L. A pre-order works as a waitlist that collects no data and installs automatically on release day. It needs App Review first and can run 2–180 days | if the gap exists |
-| **Promotional text** | 170 characters above the description, **editable any time without review**. Change it with the season: "Peak color in the Berkshires this weekend. Try a 90-minute loop" | weekly in season |
-| **Custom product pages** | Up to 70 of them, and since July 2025 they can carry keywords and show up in organic search. Build three (*foliage*, *loops*, *curvy roads*) and point each channel at the one that matches. Keywords assigned to a page come out of your 100 bytes; they don't add to them | L+7 |
-| **Campaign links** | One per channel: `https://apps.apple.com/app/apple-store/id<APPID>?pt=<PROVIDER_ID>&ct=tiktok&mt=8` | before L |
-| **In-app events** | Free cards that show up in search and editorial, lasting up to 31 days. **They need real in-app content**, and metadata that mentions "free" gets rejected. They become possible once the app has something seasonal, such as a "peak foliage" loop collection filed as a *New Season* | foliage 2027 |
+| **Landing page** | Replace the redirect in `site/index.html`: what it is, 3 screenshots, "iPhone · free", the national map, the App Store badge, the press kit, credits and contact. **It is also the Support URL App Store Connect requires.** It loads nothing external | before S |
+| **Keywords** | **100 bytes**, nothing from the name ("sunday", "drive") or subtitle ("scenic", "route"), no competitor names. State names no longer earn their bytes. A national candidate, 96 bytes: `backroads,loop,byway,curvy,road,trip,foliage,fall,leaf,peeping,canyon,mountain,pass,country,park`. Re-measure before pasting. The New England draft in [`app-store-listing.md`](app-store-listing.md) §3 grew from the 2026-09-29 candidate and needs this national version | before S |
+| **Screenshots and preview video** | The trade ("Scenic adds 12 min"), a loop, the road. Caption the place, from New England footage | before S |
+| **Featuring nomination** | App Store Connect → Featuring Nominations → *App Launch*, **at least 2 weeks before L**. For L = 5 November, that's **by Thursday 22 October**. The story: a freshman, open data, one scale for a whole country *(re-check that the form accepts it before the build is submitted)* | this week |
+| **Manual release** | "Manually release this version", so approval doesn't mean launch | at S |
+| **Promotional text** | 170 characters, **editable any time without review**, so it's the seasonal field. November: maps and the holiday. Spring: the back roads reopening. Fall: color | at L, then seasonally |
+| **Custom product pages** | Up to 70, and they can carry keywords *(re-check)*. Later: a *loops* page and a *New England foliage* page. Their keywords come out of the same 100 bytes | spring 2027 |
+| **Campaign links** | One per channel: `https://apps.apple.com/app/apple-store/id<APPID>?pt=<PROVIDER_ID>&ct=reddit&mt=8` | before L |
+| **In-app events** | Free cards in search, up to 31 days. They need real in-app content, and "free" in the metadata is rejected | foliage 2027 at the earliest |
 
-### 5.8 Tech and open-source communities (credibility, not installs)
+**Verdict:** the listing is where "national" costs nothing extra. Get it right
+once.
 
-- **Show HN** (Hacker News): "Show HN: Sunday Drive – I scored every road in
-  New England for scenery". Link the repo and a short write-up of the method.
-  It's a one-shot, but it isn't seasonal, so it can wait for the off-season.
-- **The OpenStreetMap community** (weeklyOSM, OSM US): a project built on their
-  data, and routing by it, is news to them. It even closes a loop: green areas
-  are mapped 3.3× more thinly in Maine than in Rhode Island, so better mapping
-  there directly improves Maine's scores.
-- **#30DayMapChallenge** runs every November, one map a day on a set theme. The
-  heatmap and the route maps fit several of the days.
-- **r/MapPorn and r/dataisbeautiful:** the per-state maps, with credits (§6.4).
+### 5.8 Tech and open-source communities (national, non-seasonal)
 
-### 5.9 Pinterest (optional, evergreen)
+- **Show HN:** "Show HN: Sunday Drive – I scored every road in the US for
+  scenery on one scale". Include why one scale, and what it costs the plains.
+  HN rewards that honesty. A weekday morning, US time, after launch week.
+- **The OpenStreetMap community** (weeklyOSM, OSM US): routing by their data,
+  plus measured findings on uneven mapping, is news to them.
+- **#30DayMapChallenge** runs every November *(re-check the 2026 themes)*.
+  Post the national map on whichever day's theme fits, and a state map on
+  another.
 
-Trip planners use it as a search engine, and fall trips get planned in August
-and September. Pin the same carousels and maps, linked to the landing page.
-Once the carousels exist, it takes little effort. Start before foliage 2027,
-not now.
+**Verdict:** these are your launch, more than any New England channel is in
+November.
+
+### 5.9 Pinterest (optional)
+
+Pin the maps and carousels in spring, before summer trip planning. Not part of
+the launch.
 
 ### 5.10 The product as a channel (engineering asks, ranked by leverage)
 
-This is code, so it sits outside the marketing budget. Adopt items into
-[`roadmap.md`](roadmap.md) one at a time; this list doesn't schedule them.
+Code, outside the marketing budget. Adopt into [`roadmap.md`](roadmap.md) one
+at a time.
 
-1. **A rating prompt at the right moment.** Call SwiftUI's `requestReview`
-   after a completed drive, **once parked**, never during navigation. The
-   system shows it at most three times a year. Ratings drive both ranking and
-   conversion, and the bar in §2 is 15. A few hours of work.
-2. **A friendlier out-of-region message.** Today the server says "point is
-   outside the covered road network (currently New England)"
-   (`server/app.py:262`), and the app shows that text word for word
-   (`RouteService.swift`, `ServiceError.server`). Something like "Sunday Drive
-   only covers New England for now" would do. It's server copy, so it ships
-   with a deploy and no App Review. Minutes.
-3. **Share this drive.** A `ShareLink` with an image of the map and the card
-   ("72 min · Scenic adds 18 min · Sunday Drive, free on the App Store").
-   **Trim the first and last kilometre, because a loop starts "From here",
-   which is usually home.** Nothing like it exists today: there is no
-   `ShareLink` in `ios/Sources`.
-4. **"Hey Siri, take me on a Sunday drive"**, through App Intents, starting a
-   loop. It's on-brand and easy to demo, and adopting Apple's own frameworks is
-   the kind of thing App Store editors look for.
-5. **An opt-in weekly reminder:** "It's Sunday. Ninety minutes, nowhere to be?"
-   It's a local notification, so no server and no data.
-6. **A web preview**, so Android users, desktop readers and journalists can try
-   routes. The API already allows cross-origin requests (`CORS(app)`), but a
-   website that sends coordinates is a new privacy surface to document before
-   anything else. Later.
-7. **CarPlay.** Expect people to ask for it. It is blocked rather than
-   expensive ([`driving-app-features-cost.md`](driving-app-features-cost.md),
-   sentence 6).
+1. **The rating prompt. Built** (2026-10-08, [`rating-prompt.md`](rating-prompt.md)):
+   the second arrived drive of 10 minutes or more, once per version. Confirm it
+   works on the national build.
+2. **An honest low-scenery message.** When a route or loop finds little 7+
+   road, say so ("Not much high-scoring road near here; the fast way is nearly
+   as pretty") instead of selling the scenic arm. **The plains defense.**
+   Mostly copy. If it can't make L, add one line to the listing's and the
+   app's "what it doesn't do" lists: flat country scores low, and the scenic
+   setting may add time for little to show.
+3. **Stop paying minutes for nothing on the plains.** On six eastern-Colorado
+   trips at the top of the slider, the router adds a mean 41 minutes for
+   2.8 km of 7+ road in total (`national-scenery-scoring-verdict.md`, `usa`
+   branch). The verdict recommends the convex-cost experiment before a
+   national launch. It is a release question, but marketing inherits its
+   reviews.
+4. **Share this drive.** A `ShareLink` with the map and the card. **Trim the
+   first and last kilometre, since a loop starts "From here", which is usually
+   home.** There is no `ShareLink` in `ios/Sources` today.
+5. **"Hey Siri, take me on a Sunday drive"**, through App Intents.
+6. **An opt-in weekly reminder:** "It's Sunday. Ninety minutes, nowhere to
+   be?" A local notification: no server, no data.
+7. **CarPlay.** WanderWay, Carve and DriveGo have it. The entitlement is held
+   (2026-10-08). Expect road-trippers to ask.
 
 ---
 
-## 6. The content system: one drive makes a week
+## 6. The content system
 
-### 6.1 The weekly loop (about 4–6 hours)
+### 6.1 The weekly loop (spring onward, about 2.5 hours)
 
 | when | what | time |
 |---|---|---|
-| Thursday | Pick the drive: a loop or route from a **public starting point**. Check the forecast and the state foliage report | 15 min |
-| Saturday or Sunday | Drive it. The phone sits in its mount, screen-recording the app. A second camera films the road (a passenger, an old phone, a second mount). Take five stills at stops | the drive |
-| Sunday | Edit 1 long-form video, 3 shorts (15–35 s each) and 1 carousel (5–6 slides). Export clean vertical files | 2 h |
-| Monday | Schedule everything in TikTok Studio, Meta Business Suite (Instagram and Facebook) and YouTube Studio, which are all free. Write captions and add location tags | 30 min |
-| Every day | Reply to comments, especially in the first hour after each post | 15 min |
-| Monday | Review last week's numbers (§9) | 20 min |
+| Weekend | Drive a loop from a **public starting point**, phone mounted and screen-recording, a second camera on the road, five stills at stops | the drive you'd take anyway |
+| Sunday | Cut 3 shorts and 1 carousel; long-form if the footage is good | 1.5 h |
+| Monday | Schedule in TikTok Studio, Meta Business Suite and YouTube Studio; captions, location tags | 20 min |
+| Daily | Reply to comments | 5–10 min |
+| Monday | The numbers (§9) | 10 min |
 
-**What one drive yields:** 1 long-form YouTube video, 3 shorts posted on three
-platforms each, 1 carousel posted on two, 1 Facebook post, and stills for
-Reddit, press and the App Store. That is about 13 posts.
+**In winter,** post 1–2 a week from footage you already have, and drive when
+you'd drive anyway. Skipping a week is allowed.
 
-### 6.2 Twelve formats, with hooks
+### 6.2 Formats, with hooks
 
-| # | format | the first two seconds | where |
-|---|---|---|---|
-| 1 | **The Sunday Drive**, the weekly episode | the best frame, over "This week's drive, picked by an algorithm" | everywhere |
-| 2 | **The trade** | the card, "Scenic adds 12 min", then "Worth it?" | TikTok, Reels |
-| 3 | **The top 5 in a state** | "The 5 best-scoring drives in Connecticut" | carousel |
-| 4 | **Comment your town** | "You said Nashua. Here's an hour, the pretty way" | reply videos |
-| 5 | **The algorithm's worst pick** | "My app thought this was scenic" (an industrial park) | TikTok |
-| 6 | **Building in public** | "I scored 146,811 miles of road. Here's how" | TikTok, Shorts |
-| 7 | **The map** | every road in Vermont animating in, colored by score | everywhere, plus Reddit |
-| 8 | **The ambient drive** | no hook: it's 45 minutes of drive | YouTube |
-| 9 | **Stitching a foliage video** | their Vermont clip, then "here's the pretty way there from Boston" | TikTok |
-| 10 | **A club or destination drive** | "We routed the Miata club's fall drive" | Collab |
-| 11 | **The honest ETA** | "Is the scenic route really slower? Here's the math" | TikTok, Shorts |
-| 12 | **Peak this weekend** | "Peak color in the Monadnocks this weekend. Here's a loop through it" | everywhere, in season |
-
-**The mix:** about 40% drives (formats 1, 8 and 12), 25% data (3 and 7), 20%
-building in public (5, 6 and 11) and 15% community (4, 9 and 10).
+| # | format | the first two seconds |
+|---|---|---|
+| 1 | **The Sunday Drive** | the best frame, over "This week's drive, picked by an algorithm" |
+| 2 | **The trade** | "Scenic adds 12 min. Worth it?" |
+| 3 | **The top 5 in a state** | "The 5 best-scoring drives in Connecticut" (carousel) |
+| 4 | **Comment your town** | "You said Nashua. Here's an hour, the pretty way". New England only, where you can drive it |
+| 5 | **The algorithm's worst pick** | "My app thought this was scenic" |
+| 6 | **Building in public** | "I'm a freshman, and I scored every road in America. Here's how" |
+| 7 | **The map** | the contiguous US animating in, on one scale |
+| 8 | **One scale, honestly** | "On a national scale, Kansas's best road scores a [n]. Here's why that's the point" (check the number on the shipped build) |
+| 9 | **Is my algorithm wrong about your state?** | a state's unchecked top 5, "locals, what did it miss?" |
+| 10 | **The ambient drive** | no hook; 45 minutes of drive (YouTube) |
 
 **The caption template:**
 
 ```
 Scenic drive from Worcester, MA — a 60-minute loop through the Quabbin hills.
-Picked by Sunday Drive, a free app that scored every road in New England.
-iPhone · New England only · link in bio
-#newengland #scenicdrive #fallfoliage #massachusetts #sundaydrive
+Picked by Sunday Drive, a free iPhone app that scores every road in the US
+for scenery. iPhone · free · link in bio
+#newengland #scenicdrive #massachusetts #sundaydrive
 ```
-
-**On every post:** a location tag, the keyword in the first on-screen text,
-"New England only" and "iPhone" in the caption, and one call to action (send,
-comment or save).
 
 ### 6.3 The flagship: a per-state top 10 from your own data
 
-The data supports it. `scored_chunks.parquet` in `data/processed-ne` has
-`name`, `ref`, `highway`, `length_m`, every beauty component and the final
-`score` for all 942,448 segments. The method, in outline:
+`scored_chunks.parquet` has `name`, `ref`, `highway`, `length_m`, every
+component and the final `score` for each segment. The national build has the
+same columns.
 
-1. Group segments into named stretches (by `name`, or by `ref` where there is
-   no name), and keep stretches with at least about 8 km of drivable road.
-2. Rank them by length-weighted mean `score`.
-3. Assign each stretch to a state using the Census cartographic state
-   boundaries, which are public domain.
-4. **Rank within each state, never across states.** The app's own "What it
-   does not do" section says the terrain component saturates north of
-   Massachusetts, and green areas are mapped 3.3× more thinly in Maine. A
-   New England-wide top 10 would be quietly biased.
-5. Check each state's top 10 against your own driving marks. Cut anything
-   that's obviously wrong, and say so in the post ("#7 surprised me"). If the
-   list is mostly official byways, re-rank without `c_scenic_tag` to see
-   whether those roads earn their place on their own, and say which ranking
-   you used.
+1. Group segments into named stretches (by `name`, else `ref`), and keep
+   stretches with at least about 8 km of drivable road.
+2. Rank by length-weighted mean `score`.
+3. Assign states with the Census cartographic boundaries (public domain).
+4. **Rank within a state, never across states.** Mapping density and terrain
+   saturation differ by region.
+5. **Check the list.** In New England, against your own driving and marks: cut
+   what's obviously wrong and say so ("#7 surprised me"). If it's mostly
+   byways, re-rank without `c_scenic_tag` and say which ranking you used.
+   **Outside New England you can't check it**, so the post says "by our score,
+   unchecked" and asks locals to correct it. Their corrections are the content.
+6. **Print the scores.** On one scale a state's #1 can be a 5. Let that be the
+   honesty, and sometimes the joke.
+7. **Desk-check every listed road outside New England** before posting:
+   seasonal closure, 4WD-only, private or gated. The national data-safety work
+   is still in progress (`us-map-data-findings.md` §7), so look each road up
+   with its operator (park, forest, state DOT). About 5 minutes a road. A
+   closed road in a top 10 is the worst post you can make.
 
-Miles per state, for the posts: MA 42,116 · ME 37,263 · CT 24,668 · NH 19,967
-· VT 17,730 · RI 6,762. They come from the network census in
-[`driving-app-features-cost.md`](driving-app-features-cost.md), converted from
-kilometres.
+New England miles per state, for home posts: MA 42,116 · ME 37,263 · CT
+24,668 · NH 19,967 · VT 17,730 · RI 6,762
+([`driving-app-features-cost.md`](driving-app-features-cost.md)).
 
 ### 6.4 Rules for every piece of content
 
-- **Never film while driving.** All six New England states ban holding a phone
-  while driving. A passenger films, or the camera is mounted and started before
-  the car moves. You need a mount to use a navigation app legally anyway.
-- **Never show home.** Loops start "From here". Start demo loops from a town
-  green or a parking lot, and check the first and last seconds of every screen
-  recording.
-- **Credit the map.** Anything drawn from the data is an ODbL *Produced Work*,
-  so "© OpenStreetMap contributors" has to be visible in the image itself, not
-  just in the caption. Add the ESA WorldCover and elevation credits whenever
-  those layers show. The exact wording is in
-  [`data-sources.md`](data-sources.md) and `ios/Sources/AboutView.swift`.
-- **Leave Apple's corner alone.** Don't crop or put captions over the Apple
-  Maps logo and the Legal link in screen recordings.
-- **Use your own footage.** No Street View, no Google imagery, and no other
-  creators' clips outside TikTok's own stitch and duet.
+- **Never film while driving.** A passenger films, or the camera is mounted and
+  started before the car moves.
+- **Never show home.** Start demo loops from a town green or a parking lot.
+  Check the first and last seconds of every recording.
+- **Credit the map.** "© OpenStreetMap contributors" visible in the image
+  itself; land-cover and elevation credits when those layers show
+  ([`data-sources.md`](data-sources.md), `ios/Sources/AboutView.swift`).
+- **Leave Apple's corner alone.** Don't crop or caption over the Apple Maps
+  logo and Legal link.
+- **Use your own footage.** No Street View, no other creators' clips outside
+  TikTok's stitch and duet.
+- **Name the place, scope the claim.** No clip implies the whole country looks
+  like it.
+
+**Verdict:** one drive still makes a week, from spring. Until then the map and
+the lists carry the account, and they need no travel.
 
 ---
 
-## 7. The timeline, relative to deployment
+## 7. The timeline, relative to L
 
 ### 7.1 The milestones
 
-| code | milestone | what it depends on |
+| code | milestone | depends on | target |
+|---|---|---|---|
+| **M** | Apple Developer Program membership | **done**, 2026-10-03; renews about 3 October 2027 | — |
+| **S** | App Store submission, manual release | the national build, the release plan's checklist (`app-store-submission.md` §8) | by Thu 29 Oct |
+| **A** | Approved | App Review, usually a day or two *(re-check)* | about Mon 2 Nov |
+| **L** | **Launch: a manual release, on a Thursday** | A, plus the go/no-go (§7.3) | **Thu 5 Nov 2026** |
+
+**Why Thursday:** the app is for weekends. The first weekend after L is when
+people use it.
+
+### 7.2 Where each one-shot goes
+
+| one-shot | seasonal? | spend it |
 |---|---|---|
-| **M** | Apple Developer Program membership active | $99; usually the same day (`release-plan.md` §11) |
-| **B** | TestFlight public link live (up to 10,000 testers) | a build and Beta App Review |
-| **S** | App Store submission | the §10 artifacts in `release-plan.md` |
-| **A** | Approved | App Review |
-| **L** | **Launch: a manual release, on a Thursday** | A, plus the go/no-go check in §7.3 |
+| Apple featuring nomination (*App Launch*) | no | for L; file by Thu 22 Oct |
+| Northeastern's channels | no | L |
+| r/SideProject, r/iOSProgramming, r/boston, r/massachusetts launch posts | no | L to L+3, days apart |
+| Tech press tips | no | L+1 |
+| The national map on r/dataisbeautiful and r/MapPorn | no, but November has #30DayMapChallenge | L+3 to L+20, days apart |
+| Show HN | no | a weekday in L+5 to L+14 |
+| OSM community (weeklyOSM, OSM US) | no | L+7 to L+21 |
+| Boston press, Thanksgiving angle | yes: Thanksgiving, 26–29 Nov | pitch Mon 23 – Tue 24 Nov |
+| r/vermont, r/newhampshire, r/maine, r/Connecticut, r/RhodeIsland launch posts | yes: their roads close in winter | Memorial Day 2027 |
+| New England foliage Facebook groups | yes | foliage 2027 |
+| New England regional press (TV, radio, magazines) | yes | Memorial Day 2027, then foliage 2027 |
+| *App Enhancements* nomination | — | the first real update, filed 2 weeks ahead |
 
-**Why Thursday:** the app is for weekends. Launch on a Thursday, and the first
-weekend is when people use it.
+### 7.3 The go/no-go check at L−7 (Thursday 29 October)
 
-### 7.2 Phase by phase
+Launch on the planned Thursday only if **all six** hold:
 
-**Phase 0: foundations (M to B, about L-28 to L-15)**
+1. The app is submitted, early enough that a normal review lands before L−1.
+2. **The load test passed on the national build**, and the rate limit is on.
+   The New England numbers in [`load-test-oracle.md`](load-test-oracle.md)
+   don't carry over: the graph is bigger.
+3. **The domain is renewed.** It expires Wednesday 28 October, the day before
+   this check.
+4. No known crash on TestFlight.
+5. The landing page and campaign links are live.
+6. **No national copy carries a New England number** (listing, screenshots,
+   press kit, drafted posts, checked against §3.4), and flat country is
+   covered by the low-scenery message or the "what it doesn't do" line (§5.10,
+   item 2).
 
-- [ ] **Renew `jameskouvlis.com`. It expires 28 October.** The API hostname,
-      the privacy contact (`privacy@jameskouvlis.com`) and every build depend
-      on it.
-- [ ] Buy the membership, and reserve the name in App Store Connect.
-- [ ] Claim the handle on TikTok (Business), Instagram (Professional) and
-      YouTube.
-- [ ] Build the landing page (§5.7), with the TestFlight link and a press-kit
-      section.
-- [ ] Get a mount, and film the first two drives.
-- [ ] **Start posting before launch**: drives, building in public, the map. The
-      account needs a few weeks of history by L.
-- [ ] Make the first data post, for one state (§6.3). It doesn't need the app,
-      and it tests whether anyone cares.
+**If one fails:** move L a week, to Thursday 12 November. Nothing in the
+launch is seasonal except #30DayMapChallenge (all November) and Thanksgiving.
+**If L slips past Thanksgiving:** launch when ready, spend the non-seasonal
+one-shots (the map, Show HN, OSM, Northeastern), and drop the Thanksgiving
+pitch. The spring and fall plans don't move.
 
-**Phase 1: beta (B to L-1, about L-14 to L-1)**
+### 7.4 Phase by phase
 
-- [ ] Share the TestFlight public link with about 50–200 people: Northeastern,
-      one or two subreddits ("free beta for foliage season"), one car club.
-- [ ] Show the QR code on your phone at a Cars & Coffee meet.
-- [ ] Watch the server and fix what breaks. Ask testers for one-line quotes you
-      can use, with their permission.
-- [ ] **Submit the featuring nomination by L-14.**
-- [ ] Run the load test and set the Cloudflare rate limit
-      (`server/DEPLOY-oracle.md`, Part 11). Decide whether the laptop runs as a
-      warm, gated second connector during launch week
-      ([`hosting-independent-review.md`](hosting-independent-review.md)).
-- [ ] Prepare the screenshots, preview video, keywords and campaign links, and
-      ship the out-of-region copy (§5.10, item 2).
-- [ ] Submit (S) with manual release selected. Draft the press list and the
-      pitch.
-- [ ] **L-7: the go/no-go check (§7.3).**
-- [ ] The day approval (A) lands, send the pitches ("available Thursday").
-- [ ] L-1, pre-flight: `api/health`, the box's memory, the rate limit, the
-      domain, the listing, every link, and all drafts ready.
+**Phase 0: this week and next (now to S)**
 
-**Phase 2: launch week (L to L+7)**
+- [ ] **Renew `jameskouvlis.com` before 28 October.**
+- [ ] **File the featuring nomination by 22 October** (§5.7).
+- [ ] Claim the handles on all three platforms (§12, item 3).
+- [ ] Build the landing page, with the press kit and the national map.
+- [ ] Make the national map image (credits in the image).
+- [ ] Draft the listing against §3.4: national keywords, screenshots and the
+      flat-country line.
+- [ ] Film the last color in southern New England, from public starting
+      points.
 
-| day | what | notes |
-|---|---|---|
-| **L (Thursday)**, 8 am | Release in App Store Connect. Wait until the listing is actually live in the US store, then search "sunday drive" and note your rank | this can take hours |
-| L, 11 am | Your own accounts, then Northeastern's channels, then **Reddit launch post #1** (in the sub where the data post did best), then Patch announcements | stagger them, and reply to everything until 2 pm |
-| L, all day | Check Cloudflare's request graph and the box every hour | stop posting if errors climb (§8) |
-| L+1 (Friday) | Reddit launch post #2 (a second state), the Facebook groups. Tell testers it's live and ask for an honest rating. **Never** offer anything in return, and never ask for five stars | |
-| L+2 to L+3 (the weekend) | The launch-weekend Sunday Drive, while people are actually out driving | |
-| L+4 (Monday) | Show HN, on a weekday morning US time | it isn't seasonal, so it can move to the off-season if the week is full |
-| L+7 | First numbers (§9): which link converted and which post worked. Set the download target from this week's rate | |
+**Phase 1: submission to launch (S to L−1)**
 
-**Phase 3: the first month (L+8 to L+30)**
+- [ ] TestFlight: invited friends, or the public link if §12 item 1 says it
+      isn't "public".
+- [ ] **Run the load test on the national build** and set the Cloudflare rate
+      limit (`server/DEPLOY-oracle.md`, Part 11; method in
+      [`load-test-oracle.md`](load-test-oracle.md)).
+- [ ] Campaign links, one per channel.
+- [ ] Draft every launch post and the two pitches. Message the subreddit
+      moderators.
+- [ ] **L−7: the go/no-go check (§7.3).**
+- [ ] L−1, pre-flight: `api/health`, the box's memory, the rate limit, the
+      domain, the listing, every link.
 
-- [ ] Keep the weekly loop going (§6.1): 3 or more posts a week, every week.
-- [ ] Do the data posts for the other states, one a week.
-- [ ] Ship the first update (fixes and the rating prompt, plus the share card
-      if it's ready), then file a featuring nomination for *App Enhancements*,
-      two weeks ahead.
-- [ ] Build custom product pages for the three audiences and point the links at
-      them.
-- [ ] Do two club or destination collaborations.
+**Phase 2: launch week (L to L+7, about 10 hours)**
 
-**Phase 4: compounding (L+31 to L+90)**
+| day | what |
+|---|---|
+| **L (Thu 5 Nov)**, 8 am Eastern | Release. Wait for the listing to go live in the US store. Search "sunday drive" and note the rank |
+| L, 11 am | Your accounts, Northeastern's channels, r/SideProject. Reply to everything for two hours. Check Cloudflare and the box hourly |
+| L+1 (Fri) | r/boston; tech-press tips. Tell testers it's live and ask for an honest rating, never five stars, never with anything in return |
+| L+2 to L+3 (weekend) | One drive, filmed |
+| L+4 (Mon) | r/massachusetts or r/iOSProgramming |
+| L+7 | First numbers (§9) |
 
-- [ ] Build the YouTube library from the season's footage.
-- [ ] Publish the byway-ranking piece (§5.5).
-- [ ] Spend the off-season one-shots: Show HN, #30DayMapChallenge, the OSM
-      community.
-- [ ] Cut the weakest channel, using the decision rules in §9.
-- [ ] Plan the spring opener: the feature, a list of footage to shoot, the
+**Phase 3: November (L+8 to L+30)**
+
+- [ ] The national map on r/dataisbeautiful, then r/MapPorn days later, and in
+      #30DayMapChallenge.
+- [ ] Show HN, on a weekday morning.
+- [ ] The OSM community.
+- [ ] Thanksgiving: the Boston pitch on 23–24 November, promotional text for
+      the holiday, and a "scenic way home" short.
+- [ ] 1–2 posts a week from footage.
+
+**Phase 4: winter (December to March)**
+
+- [ ] 1–2 posts a week, or fewer. The YouTube backlog from October footage.
+- [ ] The New England byway ranking (§5.5).
+- [ ] Optional: a desk-only "unchecked" state list once a fortnight, for states
+      that show up in the numbers.
+- [ ] Plan the spring opener: the update, a list of footage to shoot, the
       press list.
 
-**Seasonal beats after L+90:**
+**Seasonal beats after that:**
 
 | when | beat |
 |---|---|
-| mid-February 2027 | Featuring nomination for the spring update, 3 months ahead of Memorial Day |
-| **29–31 May 2027** | **The spring opener** (Memorial Day weekend): a second press moment, "summer drives", an update |
-| mid-June 2027 | Featuring nomination for foliage 2027, 3 months ahead |
-| **mid-September to early November 2027** | **Foliage 2027, the main event.** A year of footage and ratings behind you, plus a seasonal in-app event if the app has seasonal content by then |
+| mid-February 2027 | Featuring nomination (*App Enhancements*) for a spring update |
+| **29–31 May 2027** | **The spring opener** (Memorial Day): northern state-sub launch posts, New England press, the weekly loop resumes |
+| mid-June 2027 | Featuring nomination for foliage, 3 months ahead |
+| **mid-September to early November 2027** | **Foliage 2027:** foliage groups, regional press, an in-app event if seasonal content exists |
 
-### 7.3 The go/no-go check at L-7
-
-Launch on the planned Thursday only if **all five** hold:
-
-1. The app is approved, or submitted early enough that a normal review lands
-   before L-1.
-2. The load test passed, and the rate limit is on.
-3. The domain is renewed.
-4. The beta has no known crash.
-5. The landing page and the campaign links are live.
-
-**If any one fails:** release quietly once approved (the listing, your own
-channels, the beta testers), and this year **spend only the one-shots that
-aren't seasonal**: Show HN, the OSM community, #30DayMapChallenge. Hold the
-seasonal ones (local press, the state-subreddit launch posts, the foliage
-groups) for the spring opener. That fallback is a good plan in its own right,
-not a failure. Most of what this document builds pays off in 2027.
-
-### 7.4 A worked example on real dates
-
-This assumes the membership is bought on 30 September 2026.
-
-| milestone | date | why |
-|---|---|---|
-| M | Wed 30 Sep | |
-| First drives filmed | Sat 3 – Sun 4 Oct | northern New England at or near peak |
-| B | around Wed 7 Oct | beta review usually takes about a day |
-| Featuring nomination | by Thu 8 Oct | 14 days before L |
-| First data post | around Sat 10 Oct | before the southern peak |
-| S | around Tue 13 Oct | |
-| Go/no-go | Thu 15 Oct | |
-| A | around Thu 15 – Mon 19 Oct | |
-| Southern NH Cars and Coffee | Sun 18 Oct | show the beta QR code |
-| **L** | **Thu 22 Oct** | MA peaks around 14 Oct and CT around 18 Oct, with coastal CT and RI in late October to early November, so launch weekend (24–25 Oct) is the last good peak weekend in the south |
-| **Domain expiry** | **Wed 28 Oct** | renewed back in Phase 0, not on this date |
-| L+30 | Sat 21 Nov | off-season; #30DayMapChallenge runs through November |
-
-This is tight. The week of engineering in the release plan has to fit into the
-first two weeks of October. If it doesn't, the fallback in §7.3 takes over.
+**Verdict:** a short, national launch built on the map and the builder's
+story; a quiet winter; and the New England plan, mostly intact, from Memorial
+Day.
 
 ---
 
 ## 8. The launch-day runbook (L)
 
-1. **7:30.** Hit `https://api.jameskouvlis.com/api/health`, check the box's
-   memory, and confirm the Cloudflare rate-limit rule is on. Bring the laptop
-   connector up if you decided to use it.
-2. **8:00.** Release. Refresh the US App Store until the listing is live, then
-   search "sunday drive" and note your rank.
-3. **Open three tabs and leave them open:** App Store Connect's analytics,
-   Cloudflare's analytics, and your post queue.
-4. **11:00.** Post in the order given in §7.2, **one channel at a time**, so
-   each one's replies get your full attention and the load arrives in waves.
-5. **Reply to everything** for three hours. Thank everyone who tries it. Answer
-   every "does it work in X?" with "New England only for now. Which state
-   should be next?"
-6. **If the server struggles** (5xx errors, slow loops): stop posting new
-   things, bring the second connector up, and post one line wherever people
-   are asking ("busy, try again in a few minutes"). Don't delete anything.
-7. **In the evening,** write down the numbers: installs, ratings, requests, and
-   what surprised you.
+1. **7:30 Eastern.** `https://api.jameskouvlis.com/api/health`, the box's
+   memory, the Cloudflare rate-limit rule.
+2. **8:00.** Release. Refresh until the listing is live, then search "sunday
+   drive" and note the rank.
+3. **Keep three tabs open:** App Store Connect analytics, Cloudflare
+   analytics, your post queue.
+4. **11:00.** Post one channel at a time, so each one's replies get your
+   attention and the load arrives in waves. National posts bring requests from
+   every time zone, into the Pacific evening.
+5. **Reply to everything** for two hours. Answer "does it work in X?" with:
+   "Yes, anywhere in the contiguous US. It scores every road on one scale, so
+   flat country scores lower."
+6. **If the server struggles** (5xx errors, slow loops): stop posting, and post
+   one line where people are asking ("busy, try again in a few minutes").
+   Don't delete anything.
+7. **Evening:** write down installs, ratings, requests and what surprised you.
 
 ---
 
 ## 9. Measuring without adding tracking
 
-The privacy page promises no analytics in the app, and you don't need any:
+No analytics in the app, and App Store builds don't record drives (the
+`RECORD_DRIVES` flag; [`privacy-policy.md`](privacy-policy.md)). You don't
+need either:
 
-| source | what it tells you | cost |
-|---|---|---|
-| **App Store Connect → Analytics** | Impressions, product page views, conversion, and installs **by source** (search, browse, web referrer, app referrer, and each **campaign link**). Sessions and retention for users who opted in to share data with developers | free |
-| **TestFlight** | testers, sessions, crash reports, feedback with screenshots | free |
-| **Xcode Organizer** | crashes and hangs from the App Store build | free |
-| **Cloudflare analytics** | requests per day through the tunnel, a proxy for drives planned, with no new logging | free |
-| **TikTok Studio, Instagram Insights, YouTube Studio** | per-post views, watch time, sends and shares, saves, follows, traffic sources | free |
+| source | what it tells you |
+|---|---|
+| **App Store Connect → Analytics** | impressions, page views, conversion, and installs by source, including each **campaign link** |
+| **TestFlight, Xcode Organizer** | crashes, hangs, tester feedback |
+| **Cloudflare analytics** | requests per day, a proxy for drives planned |
+| **TikTok Studio, Instagram Insights, YouTube Studio** | per-post views, sends, saves, follows, and viewer geography |
+| **The reviews and comments** | where people are, and whether anyone says "nothing scenic here" or "added an hour" |
 
-**Every Monday, 20 minutes:** which three posts beat your median, and why;
-which campaign link converted; the ratings count; any crashes.
+**Every Monday, 10 minutes:** the best post and why; which campaign link
+converted; the ratings count; any review about boredom or detours.
 
-**Targets (these are goals, not forecasts):**
+**Targets (goals, not forecasts):**
 
-- **L+30: 15 ratings**, more than any scenic-driving app launched this year
-  (§2).
+- **L+30: 15 ratings**, more than any 2026 scenic-driving entrant had on
+  2026-10-18.
 - **L+90: 50 ratings.**
-- **Downloads:** set a target at L+7, from launch week's rate. Before then there
-  is no honest basis for a number.
+- **No review that quotes a claim back at you.**
 
-**Decision rules (starting thresholds, to adjust as you learn):**
+**Decision rules:**
 
-1. If a channel brings under 10% of campaign-attributed installs after four
-   weeks of effort, cut the time you give it in half.
-2. If a format scores below the account's median views four posts in a row,
-   drop it.
-3. If short-video installs are still negligible after six weeks of three posts
-   a week, move half that time to Reddit data posts and YouTube.
-4. Never judge a channel on a single post.
+1. If a channel brings under 10% of attributed installs after four weeks,
+   halve its time.
+2. If short video brings negligible installs after six weeks of real posting,
+   move that time to Reddit data posts and YouTube.
+3. **If two reviews in a month report a pointless detour or "nothing
+   scenic"**, stop national-reach posting until the app answers it (§5.10,
+   items 2–3).
+4. Never judge a channel on one post.
 
 ---
 
@@ -780,128 +752,143 @@ which campaign link converted; the ratings count; any crashes.
 
 | risk | likelihood | mitigation |
 |---|---|---|
-| **The domain lapses on 28 October**, taking the API and the privacy contact with it | certain if ignored | Renew in Phase 0 (about $23 a year at GoDaddy's list price) |
-| **A post takes off and requests pile up at the server** | low, but it's the moment that counts | The load test, the Cloudflare rate limit, the laptop as a gated second connector, staggered posts, and the stop-posting rule (§8) |
-| **Out-of-region installs lead to one-star reviews** | high, given national reach | "New England only" in every caption and the first line of the description; the friendlier server message (§5.10, item 2) |
-| **Android users can't install** | about 40% of viewers | "iPhone" in every caption; count the requests |
-| **Your home address shows up in a video** | high by default | Public starting points, and check every recording (§6.4) |
-| **Filming while driving** | — | Never (§6.4) |
-| **A subreddit bans or shadowbans the account** | medium | Read the rules, get moderator permission, post once per sub, space posts days apart |
-| **Overclaiming leads to bad reviews** | medium | "Scored" and "measured", never "best"; point to the app's own limits screen (§3.4) |
-| **Music or imagery copyright** | medium | Original audio or platform libraries, your own footage, credits |
-| **Obscuring Apple's logo, or comparing against Apple's routes** | low, now that you know | §6.4 and §3.4 |
-| **Confusion over the name** (Google Drive, the dealership) | high | Direct links everywhere, check the rank on L, use "Sunday Drive scenic routes" |
-| **Burnout** | high by November | The weekly loop is the floor, and skipping a week is allowed |
-| **A trademark complaint** | low | Per [`sunday-drive-naming.md`](sunday-drive-naming.md) §4, get clearance before spending money on the brand |
-| **Marketing breaks the privacy promise** | medium | No email waitlist (use TestFlight or a pre-order instead), no tracking pixels on the landing page, no SDKs. Update the policy before adding any new data flow |
+| **The domain lapses on 28 October**, a week before L, taking the API and the privacy contact with it | certain if ignored | Renew this week |
+| **Plains users get detours that buy nothing, and say so** | high | Go/no-go item 6; decision rule 3; never "near you" copy |
+| **A New England number leaks into national copy** | medium | §3.4; go/no-go item 6 |
+| **The server meets national traffic untested** | medium | Go/no-go item 2; staggered posts; the stop-posting rule (§8) |
+| **A listed road is closed, 4WD-only or private** | medium outside New England | §6.3 step 7 |
+| **A November launch meets an off-season audience** | certain | Launch on the map and the builder's story; hold New England's seasonal one-shots for May |
+| **Name confusion** (WanderWay's "Sunday Drive" feature, Google Drive) | high | Direct links everywhere; check the rank on L. Trademark questions are [`sunday-drive-naming.md`](sunday-drive-naming.md) §4's |
+| **Android users can't install** | about 40% of viewers | "iPhone" in captions; count requests |
+| **Your home shows up in a video** | high by default | Public starting points; check every recording (§6.4) |
+| **A subreddit bans the account** | medium | Read the rules, ask the moderators, one post per sub, days apart |
+| **Burnout, or the semester wins** | high | The plan works at 1–2 hours a week in winter. Skipping weeks is allowed |
+| **Marketing breaks the privacy promise** | medium | No email list, no pixels, no SDKs without a policy update (§12) |
 
 ---
 
 ## 11. What it costs
 
-| item | cost | needed? |
-|---|---|---|
-| Apple Developer Program | $99/yr | yes, for any release |
-| `jameskouvlis.com` renewal | about $23/yr (GoDaddy list) | yes: the API hostname is baked into every build |
-| Hosting | $0 (Oracle Always Free) | yes |
-| Landing page and press kit | $0 (GitHub Pages, already live) | yes |
-| Editing, scheduling, design | $0 (iMovie or DaVinci Resolve; the platforms' own schedulers; Canva's free tier) | yes |
-| A phone mount | about $15–25, if you don't own one | you need one to navigate legally anyway |
-| Gas | your weekly drive | the drive you'd take anyway |
-| A brand domain (`sundaydrive.co`, `sundaydrives.app`) | optional | not now. The GitHub Student Developer Pack lists free `.me` and `.tech` domains for a year *(re-check)* |
-| **Time** | about 4–6 h a week, and 15–20 h in launch week | the real budget |
+| item | cost |
+|---|---|
+| Apple Developer Program | $99/yr, paid 2026-10-03; next due about 3 October 2027 |
+| `jameskouvlis.com` | about $23/yr at GoDaddy's list renewal price (third-party snapshot, May 2026; confirm at checkout). **Due by 28 October 2026** |
+| Hosting | $0 (Oracle Always Free) *(re-check against the national build's memory)* |
+| Landing page, press kit | $0 (GitHub Pages) |
+| Editing, scheduling, design | $0 (iMovie or DaVinci Resolve, the platforms' schedulers, Canva's free tier) |
+| A phone mount | about $15–25 if you don't have one; you need one to navigate legally |
+| Gas | the drives you'd take anyway |
+| **Time** | about 3 h/week; about 10 h in launch week; 1–2 h/week in winter |
 
-**There is no paid line in the plan, and nothing in it needs one.**
+**There is no paid marketing line, and nothing here needs one.**
 
 ---
 
 ## 12. Decisions for the owner
 
-1. **Target L = Thursday 22 October 2026, or a quiet release and the spring
-   opener?** (§7.3)
-2. **On camera or not?** A face and a voice help the building-in-public posts,
-   though voice-over and on-screen text work too.
-3. **The handle.** Check it on all three platforms on the same day.
-4. **Ship the "Nowhere" / "good miles" copy in the app before launch, or
-   not?** Captions follow the UI (§3.2).
-5. **Build the rating prompt before L?** Recommended: it's small, and ratings
-   are the target.
-6. **Build the share card before or after L?** After is recommended. Launch
-   first.
-7. **A newsletter, later?** A free weekly "this weekend's drive" email is a
-   strong idea, but it adds a data flow to the privacy page. Not before spring.
+1. **Does a public TestFlight link count as "public"?** It matters only for
+   the week before L. Leaning: it doesn't matter enough to use; invited
+   testers are enough.
+2. **L = Thursday 5 November, or 12 November?** 5 November needs the featuring
+   nomination filed by 22 October and submission by 29 October.
+3. **Claim the handles now?** An hour, and it protects the name. Recommended.
+   You create the accounts; this plan creates none.
+4. **On camera or not?** A face helps building-in-public posts. Voice-over and
+   on-screen text also work.
+5. **A waitlist or newsletter?** An email list adds a data flow the privacy
+   policy doesn't cover. **Recommended: no.** Use GitHub's Watch → Releases
+   for people who want to follow along.
+6. **Other people's ratings outside New England?** TestFlight builds record
+   drives (`privacy-policy.md`). A friend on TestFlight who drives elsewhere is
+   the only way anyone will ever check a Western score. It's optional, and
+   nothing in this plan depends on it.
 
 ---
 
 ## 13. The target list
 
-These are starting points, not endorsements. Read every group's rules before
-posting. Subscriber counts weren't retrieved, because Reddit blocks automated
-reads.
+Read every group's rules before posting.
 
-- **Reddit:** r/newengland · r/boston · r/massachusetts · r/vermont ·
-  r/newhampshire · r/maine · r/Connecticut · r/RhodeIsland · city subs ·
-  r/Miata · r/subaru · r/cars · r/MapPorn · r/dataisbeautiful · r/SideProject ·
-  r/iOSProgramming · r/openstreetmap
-- **Facebook:** New England Fall Foliage (Jeff Folger) · state and town groups ·
-  club groups
-- **Clubs and events:** Larz Anderson Auto Museum (Brookline) · Southern NH
-  Cars and Coffee (Manchester, 18 October) · BMW CCA Boston · PCA Northeast
-  Region · Audi Club Northeast · Miata and Subaru groups · VSCCA · AACA regions
-  · New England Riders
-- **Tourism and byways:** state tourism offices and their foliage reports ·
-  Mohawk Trail · Kancamagus Scenic Byway · Connecticut River Byway · Vermont
-  Byways (Route 100) · NH Scenic and Cultural Byways · Maine Scenic Byways ·
-  FHWA America's Byways
-- **Press:** see §5.5
+- **National Reddit:** r/dataisbeautiful · r/MapPorn · r/SideProject ·
+  r/iOSProgramming · r/roadtrip · r/openstreetmap
+- **Home Reddit:** r/boston · r/massachusetts at launch; r/newengland ·
+  r/vermont · r/newhampshire · r/maine · r/Connecticut · r/RhodeIsland from
+  Memorial Day
 - **Northeastern:** Northeastern Global News · *The Huntington News* · NUMedia
 - **Tech:** Hacker News (Show HN) · weeklyOSM · OSM US · #30DayMapChallenge ·
   MacStories · 9to5Mac
+- **Boston press (Thanksgiving):** Boston.com · Universal Hub · Axios Boston
+- **New England press (spring, fall):** see §5.5
+- **Spring:** New England Fall Foliage (Jeff Folger) and town groups on
+  Facebook · Larz Anderson Auto Museum · BMW CCA Boston · PCA Northeast ·
+  Miata and Subaru groups · state byway organizations
 
 ---
 
-## 14. Sources (all read 2026-09-29)
+## 14. Sources
 
 **From this repo:** [`release-plan.md`](release-plan.md) ·
 [`branding-brainstorm.md`](branding-brainstorm.md) ·
 [`sunday-drive-naming.md`](sunday-drive-naming.md) ·
 [`app-store-submission.md`](app-store-submission.md) ·
-[`privacy-policy.md`](privacy-policy.md) and the live
-[privacy page](https://jamesk1281.github.io/SundayDrive/privacy/) ·
-[`privacy-policy-page-brief.md`](briefs.md) ·
+[`app-store-listing.md`](app-store-listing.md) ·
+[`privacy-policy.md`](privacy-policy.md) ·
+[`rating-prompt.md`](rating-prompt.md) ·
+[`load-test-oracle.md`](load-test-oracle.md) ·
+[`us-map-data-findings.md`](us-map-data-findings.md) §7 ·
 [`driving-app-features-cost.md`](driving-app-features-cost.md) ·
-[`data-sources.md`](data-sources.md) ·
-[`hosting-independent-review.md`](hosting-independent-review.md) ·
-`server/serve.py:44` · `server/app.py:262` · `server/DEPLOY-oracle.md` Part 11
-· `ios/Sources/BeforeYouDriveView.swift`, `RouteResults.swift`,
-`RouteService.swift` · `site/index.html` · `tests/test_privacy_page.py` ·
-`data/processed-ne/scored_chunks.parquet` (schema, in the main checkout only).
+[`data-sources.md`](data-sources.md) · `server/DEPLOY-oracle.md` Part 11 ·
+`pipeline/score.py` · `ios/Sources/BeforeYouDriveView.swift`,
+`RouteResults.swift`, `AboutView.swift` · `site/index.html` ·
+`data/processed-ne/scored_chunks.parquet` (schema).
 
-**The App Store census:** Apple's search API
+**On the local `usa` branch only** (`git show usa:docs/<file>`):
+`national-scenery-scoring-verdict.md` §7 (the share of km at 7+ by
+landscape), §10, §11, and its plains-detour finding.
+
+**Owner decisions, not in a document:** the 2026-10-18 decisions (no public
+New England app; one national scale; release within weeks; no cross-country
+drives); the "96% liked at 7+" figure and its basis (52 marks, one rater, New
+England); the CarPlay entitlement (2026-10-08).
+
+**The App Store census, 2026-10-18:** Apple's search API
 (`itunes.apple.com/search?entity=software&country=us`) for "scenic drive",
-"aimless drives", "sunday drive" and "fall foliage".
+"scenic route", "scenic loop", "sunday drive", "aimless drives", "wanderway",
+"driveloop", "roads by porsche" and "detour scenic navigation". Plus the App
+Store pages of WanderWay Navigation (id6807600062), Detour (id6496858927),
+Aimless Drives (id6799342576) and ROADS by Porsche (id1438225964), for
+in-app purchases, privacy labels and wording.
 
-**Web:**
+**Web, re-checked 2026-10-18:**
 
-- TikTok's US joint venture closed in January 2026 — [The Hacker News](https://thehackernews.com/2026/01/tiktok-forms-us-joint-venture-to.html)
-- TikTok's US Local feed, February 2026 — [MacRumors](https://www.macrumors.com/2026/02/11/tiktok-us-local-feed); how posts qualify — [Storrito](https://storrito.com/resources/how-tiktoks-local-feeds-work-and-what-location-based-discovery-changes-for-content-teams/)
-- TikTok Business vs personal accounts, links and music — [unil.ink](https://unil.ink/blog/tiktok-link-in-bio-without-1000-followers), [Soundstripe](https://www.soundstripe.com/blogs/why-can-i-only-use-commercial-sounds-on-tiktok)
-- Carousels vs video — [Fanpage Karma](https://www.fanpagekarma.com/insights/carousel-vs-video-performance-tiktok-instagram/)
-- TikTok search — [Metricool](https://metricool.com/tiktok-seo/)
-- Instagram's sends-per-reach signal — [Search Engine Journal](https://searchenginejournal.com/instagram-algorithm-shift-why-sends-matter-more-than-ever/521389)
-- Instagram Trial Reels — [inro](https://www.inro.social/blog/what-is-a-reel-trial)
-- Instagram Map — [TechCrunch](https://techcrunch.com/2025/08/06/instagram-takes-on-snapchat-with-new-instagram-map)
-- Apple pre-orders — [developer.apple.com](https://developer.apple.com/app-store/pre-orders/)
-- Featuring nominations — [TechCrunch](https://techcrunch.com/2024/11/13/apple-now-lets-app-developers-apply-to-be-featured-on-the-app-store); lead time — [aso.dev](https://aso.dev/metadata/nominations/)
-- Custom product pages in organic search — [Phiture](https://phiture.com/blog/keyword-based-custom-product-pages-cpps-arrive-in-app-store-connect/), [Adapty](https://adapty.io/blog/custom-product-pages-app-store/)
-- In-app events — [MobileAction](https://www.mobileaction.co/guide/in-app-events-promotional-content-guide)
-- US iPhone share — [Digital Silk](https://www.digitalsilk.com/digital-trends/iphone-vs-android-user-stats/)
-- 2026 foliage timing — More Than Just Parks trackers for [Massachusetts](https://morethanjustparks.com/foliage-tracker/massachusetts) and [Connecticut](https://morethanjustparks.com/foliage-tracker/connecticut)
-- Patch announcements — [patch.com](https://patch.com/info/posting-instructions)
-- *The Huntington News* tips — [huntnewsnu.com](https://huntnewsnu.com/tips/)
-- Car events — [Larz Anderson Auto Museum](https://www.larzanderson.org/rally), [Southern NH Cars and Coffee](https://americancollectors.com/event/southern-new-hampshire-cars-and-coffee/)
-- New England Riders — [Rider Magazine](https://ridermagazine.com/2023/06/01/ed-conde-ep-62-rider-magazine-insider-podcast/)
-- Scenic byways — [Scenic America (NH)](https://www.scenic.org/state/new-hampshire/), [FHWA (MA)](https://fhwaapps.fhwa.dot.gov/bywaysp/States/Show/MA)
-- CapCut's terms — [Larry Jordan](https://larryjordan.com/articles/caution-capcut-changed-their-license-and-may-own-your-content/)
-- GitHub Student Developer Pack — [Capital & Compute](https://capitalandcompute.net/blog/github-student-developer-pack-2026/)
-- The ambient-drive genre — a web search on 2026-09-29 (channel listings for World Driving Tours and the 4K Relaxation Channel)
+- Google's Ask Maps, US, 12 March 2026 — [Google](https://blog.google/products-and-platforms/products/maps/ask-maps-immersive-navigation/), [Droid Life](https://www.droid-life.com/2026/03/12/google-gets-new-ai-powered-ask-maps-feature/)
+- TestFlight: up to 10,000 external testers, by email or public link, after Beta App Review — [App Store Connect Help](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers)
+- GoDaddy .com renewal, $22.99/yr (third-party, May 2026) — [DomainOffer](https://domainoffer.net/tld/com/godaddy)
+
+**Carried from 2026-09-29, not re-read** *(re-check)*: TikTok's Local feed and
+Business accounts; Instagram's Map, sends signal and Trial Reels; carousels;
+TikTok search; Apple's featuring-nomination lead times, pre-orders, custom
+product pages and in-app events; the US iPhone share; *The Huntington News*
+tips; CapCut's terms. The links are in the New England plan's §14
+(`git show 0fca74f:docs/marketing-plan.md`).
+
+**Not checked at all** *(re-check)*: #30DayMapChallenge's 2026 dates and
+themes; App Review's current turnaround; whether a featuring nomination can be
+filed before the build is submitted; the 2027 club calendars.
+
+---
+
+## 15. This week (18–25 October 2026)
+
+1. **Renew `jameskouvlis.com`** before Wednesday 28 October. About $23. The
+   API and every installed build depend on it. (10 minutes)
+2. **File the featuring nomination** for Thursday 5 November, by Thursday 22
+   October (§5.7). (30 minutes)
+3. **Claim the handles** on TikTok, Instagram and YouTube, the same day
+   (§12, item 3). (30 minutes)
+4. **Make the national map image**, with the OpenStreetMap credit in the
+   image. It is the launch's best post. (1–2 hours)
+5. **Film one late-color drive** in southern New England, from a public
+   starting point, if you're driving anyway.
+
+About 3 hours. Nothing gets posted until L.

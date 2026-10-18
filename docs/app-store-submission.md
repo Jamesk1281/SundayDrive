@@ -1,5 +1,13 @@
 # App Store Connect answers
 
+> **2026-10-18: the New England build will not be submitted.** The owner
+> decided that the first App Store release is the national app (the 48
+> contiguous states and DC), due within weeks. Most answers here
+> (the EULA, the privacy label, export compliance) do not depend on region
+> and carry over; anything that names New England is to be re-answered for
+> the national build. The timeline is [`marketing-plan.md`](marketing-plan.md)
+> §7. The national version of this document is later work.
+
 **Status, 2026-10-04: nothing has been submitted or uploaded.** The Developer
 Program membership was accepted on 2026-10-03. The owner decided on 2026-09-19
 that the privacy policy and the EULA go out **without a lawyer**
