@@ -21,7 +21,7 @@ import pytest
 import shapely
 from pyproj import Transformer
 
-from closures import WINTER, conditional_windows, way_windows
+from closures import WINTER, conditional_windows, gate_windows, way_windows
 from common import CRS_METERS, in_window
 from conftest import DATA, ROOT, ROUTER_DATA
 from looper import LoopPlanner
@@ -182,6 +182,122 @@ class TestWhatCountsAsClosed:
                                   "winter_service=no"]}
 
 
+class TestDatesWrittenOtherWays:
+    """The spellings `_RANGE` alone rejected as "unrecognized", leaving the
+    road open all year (docs/safety-quick-fixes.md, "Dates"). Each string is
+    the one the US survey found (docs/us-map-data-findings.md, section 4),
+    plus New England's one gate written day first."""
+
+    @pytest.mark.parametrize("value,windows", [
+        ("no @ Oct 14th - May 31st", [(10, 14, 5, 31)]),      # Trail Ridge Road, CO
+        ("no @ Nov 19th - May 30th", [(11, 19, 5, 30)]),      # CO
+        ("no@(Dec 1 - Mai 1)", [(12, 1, 5, 1)]),              # German month
+        ("no @ (8 Dec - 1 May)", [(12, 8, 5, 1)]),            # WA, day first
+        ("no @ (15 Dec-30 Apr)", [(12, 15, 4, 30)]),          # Natural Turnpike's gate, VT
+        ("no @ (Nov 1st-Apr 30th)", [WINTER]),
+        ("no @ (Oct 22nd - May 3rd)", [(10, 22, 5, 3)]),
+    ])
+    def test_each_spelling_closes_its_own_dates(self, value, windows):
+        assert conditional_windows(value) == (windows, [])
+
+    def test_an_ordinal_in_an_open_only_window(self):
+        assert conditional_windows("yes @ (May 31st - Oct 14th)") == (
+            [(10, 15, 5, 30)], [])
+
+    @pytest.mark.parametrize("value,reason", [
+        # The refusals stay, each added to keep a New England road from being
+        # closed for good: a year, a weekday or time, a vehicle condition.
+        ("no @ (2024 Oct 14th-2025 May 31st)", "dated"),
+        ("no @ (Oct 14th-May 31st Mo-Fr)", "part-time"),
+        ("no @ (Oct 14th-May 31st 18:00-06:00)", "part-time"),
+        ("no @ (Oct 14th - May 31st AND weight>5)", "vehicle"),
+        # `th` standing alone is Thursday, not an ordinal.
+        ("no @ (Th 10:00-12:00)", "time of day"),
+        ("no @ Th", "time of day"),
+        # A day that does not exist, and a word that only begins like "Mai".
+        ("no @ (Oct 32nd - May 1)", "unrecognized"),
+        ("no @ maintenance", "unrecognized"),
+        ("no @ (1st)", "unrecognized"),
+        # Day first at one end only is not a form anyone was seen writing.
+        ("no @ (8 Dec - May 1)", "unrecognized"),
+    ])
+    def test_the_refusals_still_hold(self, value, reason):
+        assert conditional_windows(value) == ([], [reason])
+
+
+class TestGatesClosedForTheSeason:
+    """A barrier node's own car conditionals, through the grammar a way's go
+    through (docs/safety-quick-fixes.md, "Gates")."""
+
+    @pytest.mark.parametrize("tags,windows", [
+        ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Apr)"}, [WINTER]),
+        ({"barrier": "gate", "motor_vehicle:conditional": "no @ winter"}, [WINTER]),
+        ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Mar)"},
+         [(11, 1, 3, 31)]),
+        ({"barrier": "swing_gate", "access": "yes",
+          "motor_vehicle:conditional": "no @ (15 Dec-30 Apr)"}, [(12, 15, 4, 30)]),
+        # Open only in summer, so closed the rest of the year, as on a way.
+        ({"barrier": "gate", "access:conditional": "yes@(Jun-Aug)"}, [(9, 1, 5, 31)]),
+        ({"barrier": "swing_gate", "motor_vehicle": "permissive",
+          "motor_vehicle:conditional": "yes @ (Jun-Aug 08:00-20:00)"}, [(9, 1, 5, 31)]),
+    ])
+    def test_a_seasonal_gate_closes_in_its_window(self, tags, windows):
+        found = gate_windows(tags)
+        assert list(found) == windows
+        key = next(k for k in tags if k.endswith(":conditional"))
+        assert found[windows[0]] == [f"barrier={tags['barrier']}, {key}={tags[key]}"]
+
+    @pytest.mark.parametrize("value", [
+        # Times of day. Read by their months, or by nothing, these would shut
+        # a park gate all summer, or all year, for its evenings.
+        "no @ (Mo-Fr 17:00-07:00; Sa-Su)",
+        "no @ 20:00-07:00",
+        "no @ (sunset-sunrise)",
+        "no @ (Dec-Mar Mo-Fr; Dec-Mar Sa-Su dusk-dawn; PH dusk-dawn; "
+        "Apr-Nov Mo-Su dusk-dawn)",
+        "no @ (2022 Apr 04-2022 Oct 28)",
+        "no @ (weight>5)",
+        "no @ crossing", "no @ flooding",
+        "yes @ (sunrise-sunset)",
+        "customers @ Mo-Fr 08:00-16:30",
+        "permissive @ (winter)",
+    ])
+    def test_the_refusals_close_nothing_on_a_gate_either(self, value):
+        assert gate_windows({"barrier": "gate", "access:conditional": value}) == {}
+
+    def test_a_conditional_never_opens_a_barrier_closed_all_year(self):
+        """The chain is private all year and `permissive` in winter; the
+        conditional must not open it, and nothing seasonal is added either,
+        because closed_to_cars already closes it every day."""
+        from common import barrier_closes
+        for tags in (
+                {"barrier": "chain", "access": "private",
+                 "access:conditional": "permissive @ (winter)"},
+                {"barrier": "gate", "motor_vehicle": "no",
+                 "motor_vehicle:conditional": "yes @ (May-Oct: Mo-Su,PH 10:00-17:30)"},
+                {"barrier": "gate", "motor_vehicle": "no",
+                 "access:conditional": "yes @ (sunrise-sunset)"},
+                {"barrier": "gate", "locked": "yes",
+                 "motor_vehicle:conditional": "yes @ (Jun-Aug)"},
+                {"barrier": "toll_booth", "operator": "North Maine Woods",
+                 "motor_vehicle:conditional": "no @ (Dec-Apr)"}):
+            assert barrier_closes(tags)
+            assert gate_windows(tags) == {}
+
+    def test_only_a_car_key_on_a_barrier_counts(self):
+        assert gate_windows({"barrier": "gate", "hgv:conditional": "no @ (Nov-Apr)"}) == {}
+        assert gate_windows({"barrier": "gate", "winter_service": "no"}) == {}
+        assert gate_windows({"highway": "residential",
+                             "motor_vehicle:conditional": "no @ (Nov-Apr)"}) == {}
+
+    def test_a_gate_and_its_way_agree_on_the_rule(self):
+        for value in ("no @ (Nov-Apr)", "yes @ (May 20-Oct 29, sunrise-sunset)",
+                      "no @ (Mo-Fr 17:00-07:00; Sa-Su)"):
+            gate = gate_windows({"barrier": "gate", "motor_vehicle:conditional": value})
+            way = way_windows({"motor_vehicle:conditional": value})
+            assert list(gate) == list(way)
+
+
 # -------------------------------------------------------------------- the join
 
 class TestTheJoin:
@@ -221,6 +337,88 @@ class TestTheJoin:
         assert list(table["edge"]) == [0, 0]
         assert set(map(tuple, table[["start_month", "start_day", "end_month",
                                      "end_day"]].to_numpy())) == {(10, 15, 5, 15), WINTER}
+
+
+class TestTheGateJoin:
+    """Seasonal gates are placed as barriers closed all year are
+    (`_place_barriers`), and each placement gets a row per window."""
+
+    #   1 ---- 98 ---- 2 ---- 3      a straight road, 98 a quarter of the way
+    #                  |             to 2; 2 continues north to 3, and 4
+    #                  4             branches off 2.
+    N = {1: (-72.0, 44.0), 98: (-72.0, 44.0025), 2: (-72.0, 44.01),
+         3: (-72.0, 44.02), 4: (-71.99, 44.01)}
+
+    def _edges(self, *spec):
+        import geopandas as gpd
+        return gpd.GeoDataFrame(
+            {"u": [u for u, _ in spec], "v": [v for _, v in spec],
+             "length_m": [1112.0] * len(spec),
+             "name": [f"road {i}" for i in range(len(spec))]},
+            geometry=[shapely.LineString([self.N[n] for n in (
+                (u, 98, v) if (u, v) == (1, 2) else (u, v))]) for u, v in spec],
+            crs=4326)
+
+    def _way(self, way_id, refs):
+        return {"way_id": way_id, "name": "", "closes": "", "kind": "",
+                "refs": refs, "coords": [self.N[r] for r in refs]}
+
+    def _gate(self, node, owners, windows=None):
+        windows = windows or {WINTER: ["barrier=gate, motor_vehicle:conditional=no @ (Nov-Apr)"]}
+        return {node: (*self.N[node], windows, owners)}
+
+    def test_a_gate_inside_an_edge_closes_it_for_the_season(self):
+        from closures import join_gates
+        edges = self._edges((1, 2))
+        table, left = join_gates([self._way(7, [1, 98, 2])], self._gate(98, [0]), edges)
+        assert list(table["edge"]) == [0]
+        row = table.iloc[0]
+        assert (row["rule"], row["node_id"], row["way_id"]) == ("edge", 98, 7)
+        assert tuple(row[["start_month", "start_day", "end_month", "end_day"]]) == WINTER
+        assert row["at_m"] == pytest.approx(1112.0 / 4, rel=0.01)
+        assert not any(left.values())
+
+    def test_a_gate_between_two_edges_closes_neither(self):
+        """VT-108's gate at Smugglers' Notch stands where two edges meet:
+        closing both would close the open road below it too."""
+        from closures import join_gates
+        edges = self._edges((1, 2), (2, 3))
+        table, _ = join_gates([self._way(7, [1, 98, 2]), self._way(8, [2, 3])],
+                              self._gate(2, [0, 1]), edges)
+        assert set(table["rule"]) == {"through"}
+        assert sorted(table["edge"]) == [0, 1]
+        assert set(table["node_id"]) == {2}
+
+    def test_a_gate_at_a_dead_end_or_a_junction_closes_nothing(self):
+        from closures import join_gates
+        edges = self._edges((1, 2), (2, 3), (2, 4))
+        ways = [self._way(7, [1, 98, 2]), self._way(8, [2, 3]), self._way(9, [2, 4])]
+        table, left = join_gates(ways, {**self._gate(3, [1]), **self._gate(2, [0, 1, 2])},
+                                 edges)
+        assert table.empty
+        assert (left["dead end"], left["junction"]) == ([3], [2])
+
+    def test_a_row_for_each_window(self):
+        from closures import join_gates
+        edges = self._edges((1, 2))
+        windows = {(9, 1, 5, 31): ["barrier=gate, access:conditional=yes@(Jun-Aug)"],
+                   WINTER: ["barrier=gate, motor_vehicle:conditional=no @ winter"]}
+        table, _ = join_gates([self._way(7, [1, 98, 2])],
+                              self._gate(98, [0], windows), edges)
+        assert len(table) == 2 and set(table["edge"]) == {0}
+
+    def test_a_way_and_a_gate_on_one_edge_keep_both_rows(self):
+        """A gate between two edges keeps its "through" row even where its
+        way closes the edge in the same window, or the router would find one
+        side of the gate missing."""
+        from closures import _seasonal_table, join, join_gates
+        edges = self._edges((1, 2), (2, 3))
+        ways = [self._way(7, [1, 98, 2]), self._way(8, [2, 3])]
+        closed = [{**ways[0], "windows": {WINTER: ["winter_service=no"]}}]
+        gates, _ = join_gates(ways, self._gate(2, [0, 1]), edges)
+        table = _seasonal_table(pd.concat([join(closed, edges), gates], ignore_index=True))
+        assert sorted(zip(table["edge"], table["rule"])) == [
+            (0, "edge"), (0, "through"), (1, "through")]
 
 
 # ---------------------------------------------------------------- the calendar
@@ -275,6 +473,30 @@ class TestTheCalendar:
         assert c.version(JULY) == c.version(GAP_OPEN) == ()
         assert (c.n_edges, c.n_ways, c.km) == (3, 2, 0.6)
 
+    def test_a_gate_between_two_edges_closes_no_edge(self):
+        """Its rows name the two edges it stands between, and close neither:
+        `through_nodes` says when driving through it is closed instead."""
+        table = _table([[0, 10, 11, 1, 10, 15, 5, 15, 100.0],
+                        [1, 11, 12, 1, 11, 1, 4, 30, 200.0],
+                        [2, 12, 13, 2, 11, 1, 4, 30, 300.0]])
+        table["rule"] = ["edge", "through", "through"]
+        table["node_id"] = [-1, 12, 12]
+        c = SeasonalClosures(table, np.array([10, 11, 12]), np.array([11, 12, 13]))
+        assert c.through == {12: (1, 2)}
+        assert list(c.edges(c.version(JANUARY))) == [0]
+        assert c.through_nodes(c.version(JANUARY)) == {12}
+        assert c.through_nodes(c.version(GAP_CLOSED)) == set()
+        assert c.through_nodes(c.version(JULY)) == set()
+        assert (c.n_edges, c.n_ways, c.n_gates, c.km) == (1, 1, 1, 0.1)
+
+    def test_a_gate_whose_rows_do_not_meet_at_it_is_refused(self):
+        table = _table([[1, 11, 12, 1, 11, 1, 4, 30, 200.0],
+                        [2, 12, 13, 2, 11, 1, 4, 30, 300.0]])
+        table["rule"] = "through"
+        table["node_id"] = 11
+        with pytest.raises(RuntimeError, match="closures.py"):
+            SeasonalClosures(table, np.array([10, 11, 12]), np.array([11, 12, 13]))
+
     def test_a_table_built_against_another_graph_is_refused(self):
         """Its rows would close whichever roads now sit at those numbers."""
         table = _table([[1, 10, 11, 1, 11, 1, 4, 30, 100.0]])
@@ -312,7 +534,8 @@ class TestTheCalendar:
             tmp_path / "seasonal_closures.parquet")
         Router._read_closures(stub, tmp_path)
         assert stub.closures.n_edges == 1
-        assert ("seasonal closures: 1 edges (1.5 km, 1 ways) in 1 windows"
+        assert ("seasonal closures: 1 edges (1.5 km, 1 ways) in 1 windows; "
+                "0 gates, no driving through 0 of them in season"
                 in capsys.readouterr().out)
 
 
@@ -369,8 +592,10 @@ class TestTheTable:
         assert windows("Rockwell Road") == windows("Notch Road") == {(10, 30, 5, 19)}
 
     def test_the_router_loaded_all_of_it(self, closed_router, table):
-        assert closed_router.closures.n_edges == table["edge"].nunique()
-        assert len(_closed_rows(closed_router, JANUARY)) == table["edge"].nunique()
+        # A gate between two edges closes neither (docs/safety-quick-fixes.md).
+        shut = table[table["rule"] == "edge"] if "rule" in table.columns else table
+        assert closed_router.closures.n_edges == shut["edge"].nunique()
+        assert len(_closed_rows(closed_router, JANUARY)) == shut["edge"].nunique()
 
 
 # ------------------------------------------------------------------ the routes
@@ -438,11 +663,15 @@ class TestRoutes:
         assert cost == pytest.approx(shortest, rel=1e-9)
 
     def test_closed_edges_cost_infinity_and_nothing_else_moves(self, closed_router):
+        """Nothing but the closed edges, and driving through the gates closed
+        between two edges (docs/safety-quick-fixes.md, "Gates")."""
         r = closed_router
         scores = r._edge_scores({})
         open_w = r._weights(0.5, scores, 1.0)
         shut_w = r._weights(0.5, scores, 1.0, JANUARY)
         closed = np.isin(r.eidx, list(_closed_rows(r, JANUARY)))
+        for node in r.closures.through_nodes(r.closure_version(JANUARY)):
+            closed[r._through_exits.get(node, [])] = True
         assert np.isinf(shut_w[closed]).all()
         assert np.array_equal(shut_w[~closed], open_w[~closed])
 
@@ -459,6 +688,85 @@ class TestRoutes:
         after = planner.resume(s, w, t, 0.0, {}, 1.0, on=GAP_CLOSED)
         assert _km_on(before, gap) > 3.0
         assert after is not None and _km_on(after, gap) == 0.0
+
+
+# ------------------------------------------------------------------- the gates
+
+# Two of New England's gates closed for the season on the gate and nowhere
+# else (docs/safety-quick-fixes.md, "Gates"): New River Road's, `no @ (Nov-Apr)`,
+# stands where two edges meet; Natural Turnpike's, `no @ (15 Dec-30 Apr)`,
+# written day first, stands inside one.
+NEW_RIVER_GATE = 10297054235
+NATURAL_TURNPIKE_GATE = 7660919426
+
+
+def _node_ll(router, i):
+    return float(router.nodes["lat"].iat[i]), float(router.nodes["lon"].iat[i])
+
+
+def _drives_through(route, pair):
+    rows = list(route.edges.index)
+    return any({a, b} == set(pair) for a, b in zip(rows, rows[1:]))
+
+
+class TestGates:
+    def test_the_gates_are_in_the_table(self, table):
+        if "node_id" not in table.columns:
+            pytest.skip("seasonal_closures.parquet predates gate rows; rerun closures.py")
+        new_river = table[table["node_id"] == NEW_RIVER_GATE]
+        assert sorted(new_river["rule"]) == ["through", "through"]
+        assert {tuple(w) for w in new_river[["start_month", "start_day", "end_month",
+                                             "end_day"]].to_numpy()} == {WINTER}
+        turnpike = table[table["node_id"] == NATURAL_TURNPIKE_GATE]
+        assert list(turnpike["rule"]) == ["edge"]
+        assert tuple(turnpike[["start_month", "start_day", "end_month",
+                               "end_day"]].iloc[0]) == (12, 15, 4, 30)
+
+    def test_the_router_split_every_gate_between_two_edges(self, closed_router, table):
+        c = closed_router.closures
+        if "node_id" not in table.columns:
+            pytest.skip("seasonal_closures.parquet predates gate rows; rerun closures.py")
+        assert set(c.through) == set(table.loc[table["rule"] == "through", "node_id"])
+        assert set(closed_router._through_exits) == set(c.through)
+
+    def _new_river(self, r):
+        a, b = r.closures.through[NEW_RIVER_GATE]
+        gate = r.idx[NEW_RIVER_GATE]
+        far = [int(r.edge_v_idx[e]) if int(r.edge_u_idx[e]) == gate
+               else int(r.edge_u_idx[e]) for e in (a, b)]
+        return (a, b), [_node_ll(r, i) for i in far]
+
+    @pytest.mark.parametrize("pref", [0.0, 0.5])
+    def test_nobody_drives_through_new_river_roads_gate_in_winter(self, closed_router, pref):
+        r = closed_router
+        if NEW_RIVER_GATE not in getattr(r.closures, "through", {}):
+            pytest.skip("no gate rows in seasonal_closures.parquet; rerun closures.py")
+        pair, (a, b) = self._new_river(r)
+        s, t = r.snap(*a)[0], r.snap_destination(*b)[0]
+        summer = r.route(s, t, pref, {}, on=JULY)
+        assert summer is not None and _drives_through(summer, pair), \
+            "the July route no longer drives through the gate"
+        winter = r.route(s, t, pref, {}, on=JANUARY)
+        assert winter is None or not _drives_through(winter, pair)
+        # Both roads stay open up to the gate: only driving through it closes.
+        assert r.route(s, r.snap_destination(*_node_ll(r, r.idx[NEW_RIVER_GATE]))[0],
+                       pref, {}, on=JANUARY) is not None
+
+    def test_natural_turnpikes_gate_shuts_on_december_15(self, closed_router, table):
+        """Written day first, `15 Dec-30 Apr`, which `_RANGE` alone rejected,
+        leaving the road open all winter."""
+        r = closed_router
+        if "node_id" not in table.columns:
+            pytest.skip("seasonal_closures.parquet predates gate rows; rerun closures.py")
+        e = int(table.loc[table["node_id"] == NATURAL_TURNPIKE_GATE, "edge"].iat[0])
+        a, b = _node_ll(r, int(r.edge_u_idx[e])), _node_ll(r, int(r.edge_v_idx[e]))
+        s, t = r.snap(*a)[0], r.snap_destination(*b)[0]
+        before = r.route(s, t, 0.0, {}, on=date(2026, 12, 14))
+        assert before is not None and e in set(before.edges.index)
+        after = r.route(s, t, 0.0, {}, on=date(2026, 12, 15))
+        assert after is None or e not in set(after.edges.index)
+        assert e in _closed_rows(r, date(2027, 4, 30))
+        assert e not in _closed_rows(r, date(2027, 5, 1))
 
 
 # ------------------------------------------------------------------- the loops

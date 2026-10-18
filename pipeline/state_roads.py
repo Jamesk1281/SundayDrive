@@ -70,6 +70,8 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
+from common import SEALED
+
 # The rules, by state: a list of layers each, every layer an ArcGIS feature
 # layer fetched whole. `classify` maps a feature's attributes to a (rule, cls)
 # pair, `cls` being a short label for the record, or None for a road a car may
@@ -255,10 +257,6 @@ OPEN_TO_ALL = [
 # gravel; OSM has 10.8 km of it as asphalt. Not VT Class 4, which is a legal
 # class the user decided counts as dirt (decision 3).
 SURFACE_CLASSES = {"MA earth", "MA gravel"}
-# The OSM surfaces that are sealed: everything score.py's UNPAVED leaves out
-# that a road is actually laid with.
-SEALED = {"asphalt", "paved", "concrete", "concrete:plates", "concrete:lanes",
-          "paving_stones", "chipseal", "sett", "cobblestone"}
 # How near an edge's midpoint must lie to an OSM way to be one of its edges, in
 # metres, as closures.py matches them.
 WAY_MATCH_M = 1.0

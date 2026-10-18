@@ -128,6 +128,14 @@ def barrier_closes(tags):
         return None
     return f"barrier={barrier}" + (f", {says}" if says else "")
 
+# The OSM surfaces that are sealed: everything score.py's UNPAVED leaves out
+# that a road is actually laid with. Where OSM says one of these, it wins over
+# an import's or a state inventory's code saying the road is dirt: a road gets
+# paved and the code goes stale (state_roads.py's SURFACE_CLASSES, and
+# closures.py's TIGER 4WD class, docs/safety-quick-fixes.md).
+SEALED = frozenset({"asphalt", "paved", "concrete", "concrete:plates", "concrete:lanes",
+                    "paving_stones", "chipseal", "sett", "cobblestone"})
+
 # The traffic controls a car has to stop at, mapped to the three kinds worth
 # telling apart. Massachusetts has 29,772 of them — 11,348 signals, 17,567 stop
 # signs, 839 give-ways and 18 mini-roundabouts — and the graph charged nothing

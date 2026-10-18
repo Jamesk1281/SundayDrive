@@ -21,10 +21,12 @@ exactly reproduces the precomputed composite from score.py. The same graph
 answers fastest vs scenic, so we return them side by side with a breakdown.
 
 Given the date (`on`), the roads OSM marks closed for the season that day are
-priced at +inf, from seasonal_closures.parquet (pipeline/closures.py). The roads,
-barriers and fords it closes to cars all year are priced at +inf for every
-request, from closed_to_cars.parquet, and `snap` keeps a driver on their own
-side of them (docs/closed-roads.md).
+priced at +inf, and so is driving through a gate closed for the season, from
+seasonal_closures.parquet (pipeline/closures.py). The roads, barriers and fords
+it closes to cars all year are priced at +inf for every request, from
+closed_to_cars.parquet, and `snap` keeps a driver on their own side of them
+(docs/closed-roads.md). TIGER's 4WD-trail class counts as unpaved, from
+osm_unpaved.parquet (docs/safety-quick-fixes.md).
 
 CLI:
     python router.py <processed_dir> "lat,lon" "lat,lon" [pref]
@@ -481,7 +483,8 @@ def region_today() -> date:
 
 
 class SeasonalClosures:
-    """Which graph edges are closed for the season on a given day.
+    """Which graph edges are closed for the season on a given day, and which
+    gates between two edges may not be driven through.
 
     Held as the table's distinct windows, each with the edges it closes,
     because the windows in force on a day name the closed set exactly. That
@@ -490,6 +493,12 @@ class SeasonalClosures:
     answer for another. Seven windows cover New England on the 2026-08-25
     extract, so the version changes on a handful of dates a year and a cache
     survives every other midnight.
+
+    A row's `rule` is "edge", which closes the edge, or "through", a gate
+    standing where two edges meet: each road stays open up to it and only
+    driving through is closed, as `ClosedToCars.through` is all year
+    (docs/safety-quick-fixes.md, "Gates"). A table written before the column
+    existed is all "edge".
     """
 
     def __init__(self, table: pd.DataFrame, edge_u: np.ndarray,
@@ -506,12 +515,34 @@ class SeasonalClosures:
                 "against another graph and would close whichever roads sit there "
                 "now. Rerun pipeline/closures.py against this graph.")
         keys = table[list(CLOSURE_WINDOW)].to_numpy()
+        rule = (table["rule"].to_numpy() if "rule" in table.columns
+                else np.full(len(table), "edge"))
+        node = (table["node_id"].to_numpy() if "node_id" in table.columns
+                else np.full(len(table), -1))
+        shut = rule == "edge"
         self.windows = sorted({tuple(int(x) for x in k) for k in keys})
-        self._edges = {w: np.unique(rows[(keys == w).all(axis=1)])
+        self._edges = {w: np.unique(rows[shut & (keys == w).all(axis=1)])
                        for w in self.windows}
-        self.n_edges = len(np.unique(rows))
-        self.n_ways = int(table["way_id"].nunique())
-        self.km = float(table.drop_duplicates("edge")["length_m"].sum() / 1000.0)
+        # {OSM node id: (edge row, edge row)}, checked as ClosedToCars checks
+        # its own, and the gates closed in each window.
+        self.through = {}
+        self._through = {w: set() for w in self.windows}
+        gates = table[rule == "through"]
+        for osm_id, group in (gates.groupby("node_id") if len(gates) else ()):
+            ends = group[["u", "v"]].to_numpy()
+            pair = sorted(set(group["edge"].tolist()))
+            if len(pair) != 2 or not (ends == osm_id).any(axis=1).all():
+                raise RuntimeError(
+                    f"seasonal_closures.parquet has node {osm_id} as a gate between "
+                    "two edges, but its rows do not name two edges that end there. "
+                    "Rerun pipeline/closures.py against this graph.")
+            self.through[int(osm_id)] = tuple(pair)
+            for k in group[list(CLOSURE_WINDOW)].to_numpy():
+                self._through[tuple(int(x) for x in k)].add(int(osm_id))
+        self.n_edges = len(np.unique(rows[shut]))
+        self.n_ways = int(table.loc[shut & (node < 0), "way_id"].nunique())
+        self.n_gates = int(pd.unique(node[node >= 0]).size)
+        self.km = float(table[shut].drop_duplicates("edge")["length_m"].sum() / 1000.0)
 
     def version(self, day: date) -> tuple:
         """The windows in force on `day`; empty when nothing is closed."""
@@ -523,6 +554,11 @@ class SeasonalClosures:
         if not version:
             return np.empty(0, np.int64)
         return np.unique(np.concatenate([self._edges[w] for w in version]))
+
+    def through_nodes(self, version: tuple) -> set:
+        """The OSM node ids of the gates between two edges closed under
+        `version`."""
+        return set().union(*(self._through[w] for w in version))
 
 
 class ClosedToCars:
@@ -664,6 +700,35 @@ class StateRoadClass:
                          ignore_index=True)
 
 
+class OsmUnpaved:
+    """The roads OSM's own tags make unpaved where its `surface` tag does not
+    say so: TIGER's 4WD-trail class, with no sealed surface (closures.py,
+    `tiger_unpaved`).
+
+    From osm_unpaved.parquet, which closures.py writes beside
+    closed_to_cars.parquet. Counted as dirt by `avoid_unpaved`
+    (`_load_unpaved`), as a state's unpaved roads are, and never closed
+    (docs/safety-quick-fixes.md, "Unpaved").
+    """
+
+    def __init__(self, table: pd.DataFrame, edge_u: np.ndarray,
+                 edge_v: np.ndarray):
+        rows = table["edge"].to_numpy()
+        inside = (rows >= 0) & (rows < len(edge_u))
+        same = np.zeros(len(rows), bool)
+        same[inside] = ((edge_u[rows[inside]] == table["u"].to_numpy()[inside])
+                        & (edge_v[rows[inside]] == table["v"].to_numpy()[inside]))
+        if not same.all():
+            raise RuntimeError(
+                f"osm_unpaved.parquet names {(~same).sum():,} edges that "
+                "graph_edges.parquet does not hold at those rows, so it was built "
+                "against another graph and would call whichever roads sit there "
+                "now unpaved. Rerun pipeline/closures.py against this graph.")
+        self.edges = np.unique(rows)
+        self.n_ways = int(table["way_id"].nunique())
+        self.km = float(table.drop_duplicates("edge")["length_m"].sum() / 1000.0)
+
+
 class Router:
     # Columns the maneuver generator needs, and the graph build that writes
     # them. Checked at load and refused loudly, rather than degraded silently:
@@ -694,12 +759,13 @@ class Router:
         self._edge_geom_m = self.edges.geometry.to_crs(CRS_METERS).values
         self._edge_tree = STRtree(self._edge_geom_m)
 
-        # Read before the graph is built, because its barriers between two
-        # edges split junctions the way turn restrictions do.
+        # Read before the graph is built, because their barriers between two
+        # edges split junctions the way turn restrictions do, and the unpaved
+        # share is settled while it is built.
         self._read_closed_to_cars(d)
+        self._read_closures(d)
         self._build_directed()
         self._read_access(d)
-        self._read_closures(d)
         self._close_to_cars()
         self._mark_private()
 
@@ -793,7 +859,9 @@ class Router:
                                          self.edges["v"].to_numpy())
         c = self.closures
         print(f"seasonal closures: {c.n_edges:,} edges ({c.km:.1f} km, "
-              f"{c.n_ways:,} ways) in {len(c.windows)} windows", flush=True)
+              f"{c.n_ways:,} ways) in {len(c.windows)} windows; "
+              f"{c.n_gates:,} gates, no driving through {len(c.through):,} of them "
+              "in season", flush=True)
 
     def _read_closed_to_cars(self, d: Path):
         """What OSM closes to cars all year, if the table is there.
@@ -827,6 +895,20 @@ class Router:
             self.closed_to_cars = ClosedToCars(
                 pd.concat(tables, ignore_index=True) if len(tables) > 1 else tables[0],
                 u, v)
+
+        # Optional too, and never silent, for the reason `_read_closures`
+        # gives: without it a 4WD trail is as paved as OSM's surface says.
+        path = d / "osm_unpaved.parquet"
+        self.osm_unpaved = None
+        if path.exists():
+            self.osm_unpaved = OsmUnpaved(pd.read_parquet(path), u, v)
+            o = self.osm_unpaved
+            print(f"unpaved by TIGER's 4WD class: {len(o.edges):,} edges "
+                  f"({o.km:.1f} km, {o.n_ways:,} ways)", flush=True)
+        else:
+            print(f"unpaved by TIGER's 4WD class: none, {path.name} is missing, so "
+                  "OSM's surface and the state road classes alone say what is "
+                  "unpaved", flush=True)
 
     def _close_to_cars(self):
         """Close what OSM closes to cars, for every request, and find the way
@@ -864,7 +946,7 @@ class Router:
         print(f"closed to cars: {len(c.edges):,} edges ({c.km:.1f} km, "
               f"{c.n_ways:,} ways, {c.n_barriers:,} barriers and fords, "
               f"{c.n_state:,} by state road class), "
-              f"and no driving through {len(self._through_split):,} more barriers; "
+              f"and no driving through {len(self._through_all_year):,} more barriers; "
               f"{len(self._way_in):,} junctions cut off behind them", flush=True)
 
     def _ways_round(self):
@@ -954,6 +1036,10 @@ class Router:
             closed = np.zeros(len(self.edges), bool)
             closed[self.closures.edges(version)] = True
             slots = np.flatnonzero(closed[self.eidx])
+            exits = getattr(self, "_through_exits", {})
+            gates = [exits[n] for n in self.closures.through_nodes(version) if n in exits]
+            if gates:
+                slots = np.union1d(slots, np.concatenate(gates))
             self._closed_slots_by_version[version] = slots
         return slots
 
@@ -1247,20 +1333,31 @@ class Router:
         redirected before any copy is given its exits, so that a copy's exit
         into a neighbouring barrier arrives at that barrier's copy for it.
 
+        A gate closed between two edges for the season only
+        (`SeasonalClosures.through`) is split the same way, all year, and its
+        exits onto the far side are closed in `_closed_slots` on the days it
+        is shut. On the other days they cost what driving on costs, so the
+        split changes no route then (docs/safety-quick-fixes.md, "Gates").
+
         Sets `through_copy` {(edge row, junction): the copy a point on that
         edge's side starts from or ends at}, which `snap` hands out in place of
-        the junction, and `_through_slots`, the closed exits.
+        the junction; `_through_slots`, the exits closed all year; and
+        `_through_exits` {OSM node id: its exits onto the far side}.
         """
         self.through_copy = {}
         self._through_split = set()
+        self._through_all_year = set()
         self._through_slots = np.empty(0, np.int64)
+        self._through_exits = {}
         c = self.closed_to_cars
-        if c is None or not c.through:
+        all_year = set(c.through) if c is not None else set()
+        seasonal = set(self.closures.through) if getattr(self, "closures", None) else set()
+        if not all_year and not seasonal:
             return
         by_head = self._group(self.head, self.n)
         by_tail = self._group(self.tail, self.n)
         plan, next_idx = [], self.n
-        for node_id in sorted(c.through):
+        for node_id in sorted(all_year | seasonal):
             b = self.idx.get(node_id)
             # Already split for a turn restriction: none are, on this extract,
             # and splitting twice would need the copies of copies.
@@ -1270,6 +1367,8 @@ class Router:
             if not len(arriving):
                 continue
             self._through_split.add(b)
+            if node_id in all_year:
+                self._through_all_year.add(b)
             for s in arriving:
                 plan.append((int(s), next_idx, b, self._members(by_tail, b)))
                 next_idx += 1
@@ -1278,11 +1377,12 @@ class Router:
 
         for s, copy, _, _ in plan:
             self.head[s] = copy
-        tails, heads, eidx, flip, origin, closed = [], [], [], [], [], []
+        tails, heads, eidx, flip, origin, closed, at = [], [], [], [], [], [], []
         for s, copy, b, exits in plan:
             self.through_copy[(int(self.eidx[s]), b)] = copy
             for o in exits:
                 closed.append(self.eidx[o] != self.eidx[s])
+                at.append(b)
                 tails.append(copy)
                 heads.append(self.head[o])      # already redirected if it had to be
                 eidx.append(self.eidx[o])
@@ -1295,7 +1395,14 @@ class Router:
         self.flip = np.concatenate([self.flip, np.array(flip, dtype=bool)])
         self.d_minutes = np.concatenate([self.d_minutes,
                                          self.d_minutes[np.array(origin)]])
-        self._through_slots = first + np.flatnonzero(closed)
+        closed, at = np.array(closed, bool), np.array(at)
+        ids = self.nodes["node_id"].to_numpy()
+        for b in self._through_split:
+            exits = first + np.flatnonzero(closed & (at == b))
+            if b in self._through_all_year:
+                self._through_slots = np.union1d(self._through_slots, exits)
+            else:
+                self._through_exits[int(ids[b])] = exits
         self.real_node = np.concatenate(
             [self.real_node, np.array([b for _, _, b, _ in plan],
                                       dtype=self.real_node.dtype)])
@@ -1781,21 +1888,26 @@ class Router:
 
     def _state_unpaved(self, e, frac: np.ndarray) -> np.ndarray:
         """`frac`, for the edges `e`, with the roads a state DOT calls unpaved
-        set to all dirt.
+        set to all dirt, and the ones OSM's TIGER 4WD class does.
 
         VT Class 4 (docs/state-road-class.md, decision 3), whatever OSM says
-        of its surface. Applied after `score` is settled in either vintage,
+        of its surface; and TIGER's A5x without a sealed surface
+        (`OsmUnpaved`). Applied after `score` is settled in either vintage,
         because this is a fact for `avoid_unpaved` and not for the scenery
-        score (Trap 3). A router with no state table, or a stub without the
-        attribute, gets `frac` back untouched.
+        score (Trap 3). A router with neither table, or a stub without the
+        attributes, gets `frac` back untouched.
         """
         state = getattr(self, "state_roads", None)
-        if state is None or not len(state.edges["unpaved"]):
+        osm = getattr(self, "osm_unpaved", None)
+        dirt = [t for t in (state.edges["unpaved"] if state is not None else None,
+                            osm.edges if osm is not None else None)
+                if t is not None and len(t)]
+        if not dirt:
             return frac
         frac = np.array(frac, dtype=float)
-        # By row label, which is what the table's `edge` is, so a slice of
+        # By row label, which is what the tables' `edge` is, so a slice of
         # the edges gets its own rows and no others.
-        at = e.index.get_indexer(state.edges["unpaved"])
+        at = e.index.get_indexer(np.concatenate(dirt))
         frac[at[at >= 0]] = 1.0
         return frac
 
