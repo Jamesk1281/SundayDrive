@@ -1,9 +1,11 @@
 # Routing safety: the quick fixes, as built
 
 **Status:** built 2026-10-18 on `claude/safety-quick-fixes`, off `main` at
-`0fca74f`. Not merged, not deployed. The dispatch brief,
-`docs/safety-quick-fixes-brief.md`, is committed with this work and deleted
-when it merges. This document is what outlives it. Code comments and tests cite
+`0fca74f`, and merged into `main` the same day. Not yet deployed. The rough-road
+and TIGER rules were decided by the dispatching session before the build. The
+brief that recorded them was deleted in the merge:
+`git show 93cf704:docs/safety-quick-fixes-brief.md`. This document is what
+outlives it. Code comments and tests cite
 this file, and its section names.
 
 The US map-data inventory (docs/us-map-data-findings.md, §4, §6.4–6.5, gaps
@@ -386,8 +388,8 @@ rewriting, and `_RANGE` allows at most two digits for a day.
 
 Nothing here has been deployed. The return leg is the master session's:
 
-1. **Merge to `main`**, deleting `docs/safety-quick-fixes-brief.md` in the
-   merge. Push with `git -c http.version=HTTP/1.1 push origin main`. Then merge
+1. **Merge to `main`** (done 2026-10-18; the brief was deleted in the
+   merge). Push with `git -c http.version=HTTP/1.1 push origin main`. Then merge
    `main` into `usa`.
 2. **Rebuild the tables in the main checkout**, against the graph the box
    serves:
