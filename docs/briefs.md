@@ -78,6 +78,8 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/rating-prompt-brief.md` | `git show e5b2be8:docs/rating-prompt-brief.md` | [rating-prompt.md](rating-prompt.md) |
 | `docs/route-options-brief.md` | `git show e26766a:docs/route-options-brief.md` | [route-options.md](route-options.md), with the study in `route-options-study/` |
 | `docs/wrong-way-timeout-brief.md` | `git show 1be0691:docs/wrong-way-timeout-brief.md` | [mid-drive-recovery.md](mid-drive-recovery.md), "The wrong-way time-out"; D9 in [mid-drive-recovery-plan.md](mid-drive-recovery-plan.md) §8.3 |
+| `docs/safety-quick-fixes-brief.md` | `git show 93cf704:docs/safety-quick-fixes-brief.md` | [safety-quick-fixes.md](safety-quick-fixes.md) |
+| `docs/national-marketing-brief.md` | `git show 426c2e5:docs/national-marketing-brief.md` | [marketing-plan.md](marketing-plan.md), rewritten for a national first launch |
 
 ## Briefs kept out of history
 
