@@ -1,7 +1,8 @@
 """Build regions with the unmodified pipeline, re-runnably, a few at a time.
 
 Usage:
-  build.py <config.json> [region ...]          every region not yet built, or those named
+  build.py <config.json> [region ...]          those named, or every region not yet
+                                               built, each as soon as cut.py writes its PBF
   build.py <config.json> --one <region>        one region, in this process
 
 config.json names the inputs and outputs (paths absolute or relative to the file):
@@ -87,9 +88,31 @@ def run_stage(d: Path, name: str, cmd: list[str], done: Path, record: dict):
     print(f"  {d.name}: {name} {wall:.0f}s, {record[name]['peak_rss_gb']} GB", flush=True)
 
 
+def building(d: Path) -> bool:
+    """Whether a live process holds this region's lock."""
+    lock = d / ".building"
+    if not lock.exists():
+        return False
+    try:
+        os.kill(int(lock.read_text()), 0)
+        return True
+    except (ValueError, ProcessLookupError):
+        return False
+
+
 def build_one(c: dict, region: regions.Region):
     d = Path(c["work"]) / region.name
     (d / "logs").mkdir(parents=True, exist_ok=True)
+    if building(d):
+        raise SystemExit(f"{region.name} is already being built")
+    (d / ".building").write_text(str(os.getpid()))
+    try:
+        _build_one(c, region, d)
+    finally:
+        (d / ".building").unlink(missing_ok=True)
+
+
+def _build_one(c: dict, region: regions.Region, d: Path):
     pbf = Path(c["pbf_dir"]) / f"{region.name}.osm.pbf"
     record = json.loads((d / "stages.json").read_text()) if (d / "stages.json").exists() else {}
     crs = str(region.crs)
@@ -124,13 +147,33 @@ def main():
     if sys.argv[2:3] == ["--one"]:
         build_one(c, regions.load(c["states"], [sys.argv[3]])[0])
         return
-    todo = [r for r in regions.load(c["states"], sys.argv[2:] or None)
-            if not (Path(c["work"]) / r.name / "part_edges.parquet").exists()]
-    need = {r.name: need_gb(r, Path(c["pbf_dir"]) / f"{r.name}.osm.pbf") for r in todo}
-    todo.sort(key=lambda r: -need[r.name])
+    named = sys.argv[2:]
+    pbf_dir, work = Path(c["pbf_dir"]), Path(c["work"])
+    all_regions = regions.load(c["states"])
+    pending = [r for r in regions.load(c["states"], named or None)
+               if not (work / r.name / "part_edges.parquet").exists()]
+    todo, need = [], {}
+
+    def admit():
+        """Queue each pending region once its PBF exists. With no regions named,
+        that is every region, picked up as cut.py writes them."""
+        for r in list(pending):
+            pbf = pbf_dir / f"{r.name}.osm.pbf"
+            if (work / r.name / "part_edges.parquet").exists():
+                pending.remove(r)
+            elif pbf.exists() and not building(work / r.name):
+                pending.remove(r)
+                need[r.name] = need_gb(r, pbf)
+                todo.append(r)
+        todo.sort(key=lambda r: -need[r.name])
+
+    admit()
+    if named and pending:
+        raise SystemExit(f"no PBF for {', '.join(r.name for r in pending)}")
     running, failed = {}, []
     t0 = time.time()
-    while todo or running:
+    while todo or running or pending:
+        admit()
         for name, (p, _) in list(running.items()):
             if p.poll() is not None:
                 del running[name]
@@ -138,17 +181,23 @@ def main():
                     failed.append(name)
                 print(f"[{time.time() - t0:6.0f}s] {name} {'FAILED' if p.returncode else 'done'}; "
                       f"{len(todo)} waiting", flush=True)
-        used = sum(g for _, g in running.values())
+        # Builds this scheduler did not start (another scheduler, or one stopped
+        # and restarted) count against the same budget while their lock is live.
+        others = [r for r in all_regions if r.name not in running and building(work / r.name)]
+        used = (sum(g for _, g in running.values())
+                + sum(need_gb(r, pbf_dir / f"{r.name}.osm.pbf") for r in others))
+        busy = len(running) + len(others)
         for r in list(todo):
-            if len(running) >= c["jobs"]:
+            if busy >= c["jobs"]:
                 break
-            if running and used + need[r.name] > c["mem_gb"]:
+            if busy and used + need[r.name] > c["mem_gb"]:
                 continue
             todo.remove(r)
             print(f"[{time.time() - t0:6.0f}s] start {r.name} (~{need[r.name]:.1f} GB)", flush=True)
             running[r.name] = (subprocess.Popen([PY, __file__, sys.argv[1], "--one", r.name]),
                                need[r.name])
             used += need[r.name]
+            busy += 1
         time.sleep(5)
     if failed:
         raise SystemExit(f"failed: {', '.join(failed)}")

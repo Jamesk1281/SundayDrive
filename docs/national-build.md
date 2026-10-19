@@ -213,3 +213,31 @@ geometries, with none missing on either side. The reference's other 729
 components are lots in its New York, Quebec and New Brunswick strips.
 
 The proof's files are in `tools/national_build/results/proof_*`.
+
+## 4. New England must not move (trap 2)
+
+Two questions with different answers, kept apart:
+
+1. **Does the method move New England?** Answered on the 2026-08-25 data, where the
+   only difference between the two builds is the method.
+2. **How far does the national build's New England sit from `processed-ne` built
+   with E1?** That adds seven weeks of OSM edits (2026-08-25 to 2026-10-17) and the
+   loss of the Canadian strips, which the method has nothing to do with.
+
+### 4.1 The method, on the same data
+
+The reference and the stitch of §3, compared on 100 town-to-town trips across New
+England. They are drawn by `tools/route_census.py`'s own sampler (OSM place nodes,
+25 in each of the 10-25, 25-50, 50-100 and 100-200 km bands, seed 20261019,
+`tools/national_build/ne_trip_pairs.json`), and routed at pref 0, 0.5 and 1 with the
+shipped Router and every sidecar table:
+
+- **All 300 routes succeed on both. 298 take the identical path**, with identical
+  km and minutes.
+- The other 2 are pref-1 routes (one 50-100 km trip, one 100-200 km) that differ
+  by 0.17 and 0.16 km and 0.5 and 0.1 min. Their mean scores agree to 0.003. A tied
+  chunk moved a score by enough to change a near-equal scenic choice.
+- The largest mean-score difference on any of the 300 is 0.012.
+
+So stitching moves New England's routing only through the nearest-chunk ties of §3,
+which are arbitrary in any build.
