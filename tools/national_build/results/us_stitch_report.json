@@ -1,0 +1,97 @@
+{
+ "regions": [
+  "al",
+  "ar",
+  "az",
+  "ca-north",
+  "ca-south",
+  "co",
+  "ct",
+  "dc",
+  "de",
+  "fl",
+  "ga",
+  "ia",
+  "id",
+  "il",
+  "in",
+  "ks",
+  "ky",
+  "la",
+  "ma",
+  "md",
+  "me",
+  "mi",
+  "mn",
+  "mo",
+  "ms",
+  "mt",
+  "nc",
+  "nd",
+  "ne",
+  "nh",
+  "nj",
+  "nm",
+  "nv",
+  "ny",
+  "oh",
+  "ok",
+  "or",
+  "pa",
+  "ri",
+  "sc",
+  "sd",
+  "tn",
+  "tx-east",
+  "tx-west",
+  "ut",
+  "va",
+  "vt",
+  "wa",
+  "wi",
+  "wv",
+  "wy"
+ ],
+ "borders": {
+  "ways_in_two_or_more_regions": 2159473,
+  "of_them_split_differently": 0,
+  "split_differently_examples": [],
+  "edges_built_by_a_region_that_does_not_own_them": 4566737,
+  "of_them_matched_to_the_owners_copy": 4566722,
+  "score_abs_diff": {
+   "p50": 4.087120206719419e-06,
+   "p99": 0.7199999999999998,
+   "max": 6.120012563320481,
+   "share_over_0.25": 0.012943857760555602
+  },
+  "length_rel_diff": {
+   "p99": 0.0014046093901062995,
+   "max": 0.00625851336351646
+  }
+ },
+ "outside_the_48_states_and_dc": {
+  "edges": 24543,
+  "km": 8901.814634760574
+ },
+ "component": {
+  "edges_owned": 26041120,
+  "edges_kept": 25849861,
+  "km_owned": 7859934.596536562,
+  "km_kept": 7796105.906784679
+ },
+ "graph": {
+  "edges": 25849861,
+  "nodes": 20023955,
+  "exit_numbers": 47779,
+  "restrictions_read": 407138,
+  "unresolved": 113750,
+  "forbidden_turns": 192179
+ },
+ "access": {
+  "components_built": 14605811,
+  "components_kept": 12379487,
+  "ways": 23780477,
+  "entries": 16693454
+ },
+ "seconds": 1729
+}

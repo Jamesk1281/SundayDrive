@@ -1,7 +1,21 @@
 # The national road graph build
 
-**Status:** in progress, started 2026-10-18 on `claude/national-build` (off `usa`).
-Output: `data/processed-us` in the main checkout, in `data/processed-ne`'s schema.
+**Status:** delivered at 02:00 on Monday 19 October 2026, three days ahead of the
+committed Thursday 22. `data/processed-us` is in the main checkout, in
+`data/processed-ne`'s schema: 25,849,861 edges, 20,023,955 nodes and 7,796,108 km
+for the 48 states and DC, built from Geofabrik's US extract of 2026-10-17 and scored
+with E1. Built on `claude/national-build` (off `usa`), not deployed, not pushed.
+
+- **Border proof (§3):** stitched state by state, New England matches its joint
+  build edge for edge, sidecar row for row, and on 54 of 54 Connecticut River routes.
+  Nationally, 2,159,473 ways cross a region border and every one is split alike.
+- **New England (§4):** on the same data the method changes 2 of 300 trips, by
+  0.17 km at most. Against `processed-ne` built with E1, the national build's New
+  England keeps 97.9% of edges unchanged, and 245 of 300 trips are the same on the
+  ground. The rest is seven weeks of OSM edits.
+- **For units B, C and D (§8):** the Router's own `CRS_METERS` is still Massachusetts
+  State Plane; `closures.py` crashes on a region with no seasonal road; the files'
+  sizes.
 
 ## 1. The earliest honest date
 
@@ -111,24 +125,6 @@ degrees of latitude. New England's six states keep EPSG:26986, which is what
 with `flex_mem` and hold every way in Python. At the measured 6.7 GB of RAM per GB
 of PBF, the 12.2 GB US file needs about 82 GB. `closures.py` has the same shape,
 which is why it runs per region too.
-
-## 6. Region-specific constants in the pipeline (trap 3)
-
-Grepped in `pipeline/` for New England bounds, state lists and fitted constants on
-2026-10-18. `server/app.py`, `router.py`, `looper.py` and `options.py` hold no
-bounds; the graph's own extent decides what is in region.
-
-| constant | where | what it assumes | what the national build does |
-|---|---|---|---|
-| `CRS_METERS = 26986` | `common.py`, used by every stage and by `router.py`, `options.py`, `closures.py`, `state_roads.py` | Massachusetts Mainland: 4.5% long at Key West, grid north 30-35 degrees off in the West | **changed, per region**, for the stages (§2). Not changed in `router.py` or `options.py`: unit B's. Their snap distances and bearings are in 26986 at runtime, and `closures.py` (run unmodified) measures a barrier's `at_m` in 26986 too, which is consistent with the router's own snap until B changes it |
-| `BBOX = (-73.76, 40.93, -66.87, 47.47)` | `elevation.py` | New England | **set per region** to the ring's box (`stage.py`) |
-| `RELIEF_REF_LAT = 42.05` | `elevation.py`, `terrain.py` | windows sized in ground metres at Massachusetts' latitude; on Web Mercator pixels the 13-pixel relief window is 738 m of ground there, 860 m at 30 N and 652 m at 49 N | **kept**. E1 was measured with it in Utah and Colorado (`docs/national-scenery-components.md`), and the absolute scale keeps the score constants. A latitude-true window is a score change for its own decision |
-| `ELEV_MAX_M`, `ELEV_MIN_M` | `elevation.py` | a physical band, global | kept. The in-band coastal spikes (`docs/us-map-data-findings.md` §6.1) stay in `relief.tif`: `terrain.py` despikes only `range3k.tif`, and despiking relief moves New England's scores, which is a separate decision |
-| `BYWAY_NETWORKS` | `extract.py` | five networks, three of them New England's | **kept**. It admits 48 of the 310 relations filed in state byway networks, and `scenic=yes` admits 210 more; 168 are missed (Ohio 26, Oregon 23, California 22: `docs/us-map-data-findings.md` §5). Widening it raises `c_scenic_tag` outside New England only, but it is a scoring change the E1 measurements did not include |
-| `SPEED_KMH` | `graph.py` | posted-limit defaults fitted on Massachusetts' tagged roads | **kept**. Tagged rural primary speeds run 42-66% above it in Kansas, Montana, Wyoming, South Dakota and Utah (findings §3.1), so untagged Western roads get Massachusetts' limits. That is an ETA defect, not a topology one, and refitting it per region moves New England's times |
-| `RAW_BASE`, `STRETCH`, `RELIEF_FULL`, `WEIGHTS`, `CLASS_ADJ` | `score.py` | calibrated on New England | kept: the decided absolute scale (E1) |
-| `SOURCES` (NH, VT, MA, ME) | `state_roads.py` | four states' DOT layers | run on New England only; every other state gets an empty table (the contract) |
-| calibration benchmarks (Greylock, Mohawk Trail, I-90) | `score.py`'s report | Massachusetts names | cosmetic: the report prints "no match" outside Massachusetts |
 
 ## 3. The border proof (trap 1)
 
@@ -263,6 +259,47 @@ shipped Router and every sidecar table:
 So stitching moves New England's routing only through the nearest-chunk ties of §3,
 which are arbitrary in any build.
 
+### 4.2 The national build against `processed-ne` with E1
+
+`slice.py` cuts the six states' regions out of `data/processed-us` (997,415 edges;
+193 more drop out because they reach the rest of New England only through New York
+or Canada). That slice is compared with the reference of §3, which is the
+2026-08-25 extract built as one region with E1: what `processed-ne` becomes when
+rebuilt with E1.
+
+**Graph** (`compare.py graph`, `results/ne_national_vs_reference_graph.json`):
+
+| | |
+|---|---:|
+| reference edges in the six states | 997,253 |
+| national edges in the six states | 997,415 |
+| matched on (u, v, geometry) | 975,979 (97.9%) |
+| reference only / national only | 21,274 (7,431 km) / 21,436 (7,381 km) |
+
+The unmatched edges are roads re-split between 2026-08-25 and 2026-10-17: a new
+junction, a moved node or a re-drawn way. 4,479 and 4,455 km of each side are
+residential, and the two sides are nearly the same size by class. On the matched
+edges, length differs on 0. The score differs by more than 0.25 on 1.07% of km.
+That combines the 0.12% from ties (§3) with seven weeks of edits around the roads:
+`c_forest` (565 km over 0.25), `c_urban` (375 km), `c_water` (308 km). Tags differ
+where they were edited: `highway` on 2,405 edges, `name` on 518, `oneway` on 170.
+
+**Routes** (`compare.py routes` on §4.1's 100 trips, at pref 0, 0.5 and 1,
+`results/ne_national_vs_reference_routes.csv`):
+
+| pref | same on the ground (within 50 m and 6 s) | length changed by over 1% | largest change |
+|---|---:|---:|---|
+| 0 | 93 of 100 | 2 | 12.2 km on a 266 km trip, +0.1 min |
+| 0.5 | 76 of 100 | 6 | 4.1 km on a 76 km trip, +1.8 min |
+| 1 | 76 of 100 | 4 | 14.0 km shorter and 19.6 min faster on a 243 km trip |
+
+All 300 route on both. The mean score of the route moves by +0.008, +0.019 and
++0.005 on average at the three prefs, and by at most 0.36.
+
+**So, measured:** the method moves New England by the ties alone, 2 trips in 300 on
+the same data (§4.1). Everything else in this table is OSM between August and
+October, which any rebuild of `processed-ne` would pick up too.
+
 ## 5. What scale forced in the pipeline
 
 The contract is the server's file list, in `processed-ne`'s schema: `graph_edges`,
@@ -286,3 +323,158 @@ moving a New England number:
 `common.CRS_METERS` and `elevation.BBOX` are set per region from outside, by
 `tools/national_build/stage.py`, without editing either file. `closures.py`,
 `state_roads.py` and `router.py` are run or read unmodified.
+
+## 6. Region-specific constants in the pipeline (trap 3)
+
+Grepped in `pipeline/` for New England bounds, state lists and fitted constants on
+2026-10-18. `server/app.py`, `router.py`, `looper.py` and `options.py` hold no
+bounds; the graph's own extent decides what is in region.
+
+| constant | where | what it assumes | what the national build does |
+|---|---|---|---|
+| `CRS_METERS = 26986` | `common.py`, used by every stage and by `router.py`, `options.py`, `closures.py`, `state_roads.py` | Massachusetts Mainland: 4.5% long at Key West, grid north 30-35 degrees off in the West | **changed, per region**, for the stages (§2). Not changed in `router.py` or `options.py`: unit B's. Their snap distances and bearings are in 26986 at runtime, and `closures.py` (run unmodified) measures a barrier's `at_m` in 26986 too, which is consistent with the router's own snap until B changes it |
+| `BBOX = (-73.76, 40.93, -66.87, 47.47)` | `elevation.py` | New England | **set per region** to the ring's box (`stage.py`) |
+| `RELIEF_REF_LAT = 42.05` | `elevation.py`, `terrain.py` | windows sized in ground metres at Massachusetts' latitude; on Web Mercator pixels the 13-pixel relief window is 738 m of ground there, 860 m at 30 N and 652 m at 49 N | **kept**. E1 was measured with it in Utah and Colorado (`docs/national-scenery-components.md`), and the absolute scale keeps the score constants. A latitude-true window is a score change for its own decision |
+| `ELEV_MAX_M`, `ELEV_MIN_M` | `elevation.py` | a physical band, global | kept. The in-band coastal spikes (`docs/us-map-data-findings.md` §6.1) stay in `relief.tif`: `terrain.py` despikes only `range3k.tif`, and despiking relief moves New England's scores, which is a separate decision |
+| `BYWAY_NETWORKS` | `extract.py` | five networks, three of them New England's | **kept**. It admits 48 of the 310 relations filed in state byway networks, and `scenic=yes` admits 210 more; 168 are missed (Ohio 26, Oregon 23, California 22: `docs/us-map-data-findings.md` §5). Widening it raises `c_scenic_tag` outside New England only, but it is a scoring change the E1 measurements did not include |
+| `SPEED_KMH` | `graph.py` | posted-limit defaults fitted on Massachusetts' tagged roads | **kept**. Tagged rural primary speeds run 42-66% above it in Kansas, Montana, Wyoming, South Dakota and Utah (findings §3.1), so untagged Western roads get Massachusetts' limits. That is an ETA defect, not a topology one, and refitting it per region moves New England's times |
+| `RAW_BASE`, `STRETCH`, `RELIEF_FULL`, `WEIGHTS`, `CLASS_ADJ` | `score.py` | calibrated on New England | kept: the decided absolute scale (E1) |
+| `SOURCES` (NH, VT, MA, ME) | `state_roads.py` | four states' DOT layers | run on New England only; every other state gets an empty table (the contract) |
+| calibration benchmarks (Greylock, Mohawk Trail, I-90) | `score.py`'s report | Massachusetts names | cosmetic: the report prints "no match" outside Massachusetts |
+
+## 7. Delivered
+
+`data/processed-us`, 7.3 GB:
+
+| file | rows | size |
+|---|---:|---:|
+| `graph_edges.parquet` | 25,849,861 | 4.2 GB |
+| `graph_nodes.parquet` | 20,023,955 | 420 MB |
+| `turn_restrictions.parquet` | 192,179 | 4 MB |
+| `access_ways.parquet` | 23,780,477 | 2.6 GB |
+| `access_entries.parquet` | 16,693,454 | 642 MB |
+| `closed_to_cars.parquet` | 71,617 | 3 MB |
+| `seasonal_closures.parquet` | 3,850 | 0.2 MB |
+| `osm_unpaved.parquet` | 19,237 | 0.7 MB |
+| `state_road_class.parquet` | 49,697 (NH, VT, MA, ME) | 2.7 MB |
+
+Beside them are `per_region.csv` and `access_per_region.csv`, the row ranges each
+region wrote (`slice.py` reads them), plus `stitch_report.json` and
+`sidecars_report.json`.
+
+Checked against `processed-ne`'s schema: no column is missing from any file and no
+type differs. The extras are what today's code writes: `c_grand`, `c_protected` and
+`unpaved_frac` on the edges, and `rule`, `node_id` and `at_m` on
+`seasonal_closures`. `osm_unpaved` is new since `processed-ne` was built.
+
+The 192,179 forbidden turns come from 407,138 via-node restrictions; 113,750 name
+a road the graph does not carry. The component keeps 25,849,861 of 26,041,120 owned
+edges (99.3%). Edges whose midpoint lies outside the 48 states and DC are dropped:
+Canada and Mexico, in the strips the US extract carries.
+
+**Per state** (`results/per_state.csv`; Texas's and California's halves added
+together; a node where two states' edges meet counts in both, so the states sum to
+20,034,769 nodes against 20,023,955):
+
+| state | nodes | edges | km |
+|---|---:|---:|---:|
+| TX | 1,886,996 | 2,505,407 | 720,118 |
+| CA | 1,526,366 | 1,940,853 | 376,922 |
+| FL | 1,147,548 | 1,530,865 | 262,615 |
+| IL | 699,922 | 941,114 | 255,162 |
+| MO | 581,761 | 748,094 | 252,418 |
+| GA | 678,810 | 847,382 | 238,062 |
+| KS | 336,237 | 465,810 | 237,787 |
+| PA | 692,979 | 901,483 | 231,683 |
+| NC | 756,220 | 916,728 | 231,111 |
+| MN | 396,961 | 532,973 | 231,017 |
+| MI | 555,908 | 737,717 | 221,650 |
+| OK | 460,582 | 591,769 | 216,597 |
+| OH | 609,223 | 791,834 | 215,656 |
+| NY | 621,967 | 818,680 | 209,974 |
+| WI | 440,078 | 580,764 | 202,354 |
+| IA | 296,424 | 409,829 | 193,798 |
+| AL | 477,227 | 597,088 | 182,141 |
+| TN | 468,635 | 582,659 | 179,098 |
+| IN | 458,541 | 606,255 | 176,425 |
+| CO | 398,522 | 514,959 | 168,196 |
+| VA | 514,656 | 631,734 | 164,689 |
+| NM | 239,111 | 308,715 | 163,428 |
+| AR | 321,071 | 403,048 | 161,141 |
+| NE | 200,356 | 285,963 | 160,863 |
+| MS | 298,582 | 375,204 | 149,037 |
+| WA | 449,380 | 551,667 | 148,694 |
+| KY | 355,708 | 428,979 | 146,411 |
+| MT | 151,301 | 188,835 | 140,854 |
+| SC | 402,603 | 510,410 | 140,743 |
+| LA | 363,256 | 468,073 | 139,005 |
+| AZ | 474,743 | 602,729 | 138,755 |
+| SD | 122,277 | 166,307 | 127,915 |
+| OR | 268,473 | 333,652 | 117,254 |
+| ND | 90,425 | 128,223 | 113,952 |
+| ID | 187,151 | 235,766 | 110,593 |
+| WV | 177,653 | 207,455 | 78,153 |
+| UT | 191,294 | 242,541 | 75,094 |
+| NJ | 351,545 | 467,800 | 73,334 |
+| WY | 77,145 | 96,874 | 68,767 |
+| MA | 309,730 | 400,257 | 65,562 |
+| MD | 279,955 | 352,958 | 65,449 |
+| NV | 158,374 | 203,678 | 60,837 |
+| ME | 128,817 | 150,991 | 58,008 |
+| CT | 147,758 | 188,001 | 39,232 |
+| NH | 93,057 | 115,906 | 31,241 |
+| VT | 61,760 | 71,898 | 27,589 |
+| DE | 59,499 | 78,458 | 14,146 |
+| RI | 53,619 | 70,555 | 10,592 |
+| DC | 14,563 | 20,921 | 1,986 |
+| **total** | 20,034,769 | 25,849,861 | 7,796,108 |
+
+The findings estimated 19.1M nodes ±20% (`docs/us-map-data-findings.md` §2); the
+build has 20.0M.
+
+**Cost, measured on this Mac** (`results/per_region_cost.csv`):
+
+| | |
+|---|---|
+| region builds, 51 regions | 10.7 process-hours, 13.9 GB of ring PBFs; about 4 h of wall time at two, then three, regions at once, 20:50 to 00:55 |
+| slowest region | east Texas, 36 min |
+| peak RSS, any stage | 10.8 GB (South Dakota's `landcover.py`); `landcover.py` is the peak stage in 48 of 51 regions, at 8-11 GB. It reads a WorldCover tile window at a time, and a rural state's sample boxes cover whole tiles |
+| a region's processed directory before clean-up | at most 1.96 GB (east Texas) |
+| stitch | 1,729 s, 9.0 GB peak |
+| sidecars | 1,302 s, 7.0 GB peak (`closures.py` 3-54 s a region; `state_roads.py` 104 s) |
+| disk kept | `processed-us` 7.3 GB; `data/national` 40 GB (the parts 10 GB, WorldCover 8.8 GB, Terrarium 4.1 GB, ring PBFs 13 GB, the proof 3.2 GB) |
+
+**Re-running one state** (`tools/national_build/README.md`): delete
+`data/national/build/<region>/part_edges.parquet` and the stage outputs to redo, run
+`build.py config.json <region>`, then `stitch.py` and `sidecars.py` for the whole
+country, about 50 minutes for the two. National row numbers change on every stitch,
+so the sidecars are always rerun with it.
+
+## 8. For the other units, and what is still open
+
+- **Unit B, the router.** `router.py` and `options.py` still measure in
+  `common.CRS_METERS`, EPSG:26986. Snap distances are 4.5% long at Key West, and
+  grid bearings in the West are 30-35 degrees off true north (§2). The graph's own
+  `length_m` is right: each region measured it in its own conic. `closures.py`'s
+  `at_m`, written in 26986, agrees with today's snap. If B moves the router off
+  26986, `at_m` must move with it (re-run `sidecars.py`). The files are large to
+  load whole: 25.8M edges in 4.2 GB, 23.8M parking-lot ways in 2.6 GB. Today's
+  `Router` cannot load them on this Mac, which is why §4.2 routes on a slice.
+- **Unit D, closures.** `closures.py` raises `ZeroDivisionError` in its report on a
+  region whose graph holds no seasonally closed road (Rhode Island), after
+  `seasonal_closures.parquet` and before `closed_to_cars.parquet` and
+  `osm_unpaved.parquet`. Its `np.average` over an empty selection is at
+  `closures.py:927`. The national build runs it through
+  `tools/national_build/closures_run.py` until D fixes it. After any change to
+  `closures.py`, re-run `sidecars.py` (about 22 minutes).
+- **Ties in `attach_scores`.** Where ways overlap, the nearest chunk is a tie and
+  the choice is arbitrary (§3). It moves 0.12% of New England's km by more than
+  0.25 between any two builds. A deterministic tie-break would end that, at the
+  cost of moving the same km once against the deployed graph. Not done: it is a
+  scoring change.
+- **The constants in §6.** `SPEED_KMH`, `BYWAY_NETWORKS`, `RELIEF_REF_LAT` and the
+  unpatched relief spikes are national-scale defects that this build carries
+  unchanged. Each is a decision for the master session, not a build problem.
+- **Not done here:** the test suite against `processed-us` itself. The Router
+  cannot load it, so the data tests ran on `processed-ne`: 944 passed, 12 skipped,
+  on this branch. The six new tests are `tests/test_national_build.py`.
