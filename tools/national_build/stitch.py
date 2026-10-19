@@ -124,7 +124,8 @@ def check_borders(light: pd.DataFrame) -> dict:
 
 def access_tables(c: dict, regs: list, owner: regions.Owner, out: Path, report: dict):
     """Step 6."""
-    names = [r.name for r in regs]
+    # Owner indexes every region, not just the ones being stitched.
+    names = [r.name for r in owner.regions]
     work = Path(c["work"])
     ways_w = entries_w = None
     offset, kept_c, total_c, kept_e = 0, 0, 0, 0
@@ -158,6 +159,15 @@ def access_tables(c: dict, regs: list, owner: regions.Owner, out: Path, report: 
 
 
 def main(config: str, out_dir: str, only: list[str]):
+    if only[:1] == ["--access-only"]:
+        c = load_config(config)
+        regs = regions.load(c["states"], only[1:] or None)
+        out = Path(out_dir)
+        report = json.loads((out / "stitch_report.json").read_text())
+        access_tables(c, regs, regions.Owner(regions.load(c["states"])), out, report)
+        (out / "stitch_report.json").write_text(json.dumps(report, indent=1))
+        print(json.dumps(report["access"]))
+        return
     c = load_config(config)
     regs = regions.load(c["states"], only or None)
     out = Path(out_dir)

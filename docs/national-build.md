@@ -194,3 +194,22 @@ road in its graph (Rhode Island) raises `ZeroDivisionError` in the report's
 tables are. `closures.py` is unit D's, so it is not edited here.
 `tools/national_build/closures_run.py` runs it with that one call returning NaN on
 empty weights, which changes a printed number and nothing written.
+
+**Routes across the Connecticut River** (`compare.py routes`,
+`tools/national_build/cross_river_pairs.json`). There are 18 New Hampshire to Vermont
+trips, from bridge towns a few km apart (Hanover-Norwich, Woodsville-Wells River)
+to Portsmouth-Burlington, plus two near the Canadian line (Colebrook-Canaan,
+Pittsburg-Island Pond). Each is routed by the shipped Router at pref 0, 0.5 and 1
+on the reference and on the stitch, with every sidecar table present:
+
+- **54 of 54 take the identical edge sequence**, with identical km and minutes.
+- Mean scores differ by at most 0.005, on 14 of the 54, from the tied chunks above.
+
+**Parking-lot entrances.** `access_ways` and `access_entries` are kept per
+component, from the region that owns the component's south-westernmost first
+vertex. On the reference's components, with that same rule applied, the stitch
+holds the same 703,359 components and the same 1,190,420 distinct way
+geometries, with none missing on either side. The reference's other 729
+components are lots in its New York, Quebec and New Brunswick strips.
+
+The proof's files are in `tools/national_build/results/proof_*`.
