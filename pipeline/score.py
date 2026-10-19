@@ -545,7 +545,13 @@ def split_large(geoms: np.ndarray) -> np.ndarray:
         xs = np.arange(x0, x1, SPLIT_CELL_M)
         ys = np.arange(y0, y1, SPLIT_CELL_M)
         cells = shapely.box(*np.meshgrid(xs, ys), *np.meshgrid(xs + SPLIT_CELL_M, ys + SPLIT_CELL_M))
-        cut = shapely.intersection(g, cells.ravel())
+        try:
+            cut = shapely.intersection(g, cells.ravel())
+        except shapely.errors.GEOSException:
+            # An invalid polygon GEOS will not cut (one in Colorado's 2026-10-17
+            # extract) stays whole, which is how every polygon was queried before.
+            pieces.append(np.array([g], dtype=object))
+            continue
         pieces.append(cut[~shapely.is_empty(cut)])
     return np.concatenate(pieces)
 
