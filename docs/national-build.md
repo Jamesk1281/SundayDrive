@@ -262,3 +262,27 @@ shipped Router and every sidecar table:
 
 So stitching moves New England's routing only through the nearest-chunk ties of §3,
 which are arbitrary in any build.
+
+## 5. What scale forced in the pipeline
+
+The contract is the server's file list, in `processed-ne`'s schema: `graph_edges`,
+`graph_nodes`, `turn_restrictions`, `access_ways`, `access_entries`,
+`closed_to_cars`, `seasonal_closures`, `osm_unpaved` and `state_road_class` (New
+Hampshire, Vermont, Massachusetts and Maine rows only; every other state has none,
+and the table keeps its columns). `graph_edges` also carries `unpaved_frac`,
+`c_grand` and `c_protected`, which a post-2026-08-29 E1 build writes and the Router
+reads as optional.
+
+Four changes to owned pipeline files, each forced by the national scale, and none
+moving a New England number:
+
+| file | change | why | checked |
+|---|---|---|---|
+| `graph.py` | `build_scored_edges` split out of `main`, with an optional national junction set (`global_junctions`) | a region must split its roads at junctions it cannot see (§3) | `main` unchanged in behaviour: the joint build reproduces `processed-ne`'s 998,252 edges and 794,685 nodes |
+| `graph.py` | `largest_component_mask` on bare arrays, `largest_component` now calls it | the national component is cut over ~24M edges without their geometry | `tests/test_national_build.py`; the joint build above |
+| `score.py` | `split_large`: polygons over 2,000 vertices cut into 5 km squares before any `dwithin` tree | Casco Bay's water polygon cost 54 s per 20,000 nearby chunks, its pieces 0.22 s; the Great Lakes are larger | **bit-identical**: re-scoring all 942,448 New England chunks gives 0 differences in every component, `raw` and `score`. New England's water queries went 582 s to 19 s and 616 s to 13 s |
+| `protected.py` | reads PAD-US landmarks from a GeoParquet as well as the geodatabase | ScienceBase put the geodatabase behind a sign-in on 2026-10-18 | same filter (`FEATURE_CLASSES`, `LANDMARK`) on the same PAD-US 4.1 layer, from USGS's public feature service (`tools/national_build/padus_landmarks.py`, 9,048 polygons) |
+
+`common.CRS_METERS` and `elevation.BBOX` are set per region from outside, by
+`tools/national_build/stage.py`, without editing either file. `closures.py`,
+`state_roads.py` and `router.py` are run or read unmodified.
