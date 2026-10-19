@@ -94,6 +94,40 @@ class Strings:
                    arrays[f"{name}.offsets"])
 
 
+class Coded:
+    """A float64 column as small integer codes into a table of its distinct
+    values: exact, and a quarter or an eighth of the size where the values
+    repeat. The scenery components water, coast, farm and urban have under
+    65,536 distinct values on the US graph, and the surface share has two.
+    """
+
+    def __init__(self, codes, values):
+        self.codes, self.values = codes, values
+
+    @classmethod
+    def of(cls, column):
+        values, codes = np.unique(np.asarray(column, np.float64), return_inverse=True)
+        dtype = (np.uint8 if len(values) <= 256 else
+                 np.uint16 if len(values) <= 65536 else np.int32)
+        return cls(codes.ravel().astype(dtype), values)
+
+    def __len__(self):
+        return len(self.codes)
+
+    def take(self, rows):
+        return self.values[self.codes[rows]]
+
+    def all(self):
+        return self.values[self.codes]
+
+    def arrays(self, name):
+        return {f"{name}.codes": self.codes, f"{name}.values": self.values}
+
+    @classmethod
+    def load(cls, arrays, name):
+        return cls(arrays[f"{name}.codes"], arrays[f"{name}.values"])
+
+
 class Lines:
     """Polylines as int32 lon/lat (1e-7 degrees), one run of vertices per row.
 

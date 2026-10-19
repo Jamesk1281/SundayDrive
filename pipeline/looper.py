@@ -213,6 +213,11 @@ DISC_MAX_SHARE = 0.6
 # of those would be most of the box (docs/router-at-us-scale.md, "Memory").
 FIELD_CACHE_NODES = 6_000_000
 
+# A build's search home runs over the part of the disc between the turnaround
+# and the start (`_home_near`) unless that part is more than this share of the
+# disc, when the disc itself is searched.
+HOME_REGION_SHARE = 0.5
+
 # How many times `_fields` doubles a disc it cannot prove before keeping it.
 # On New England the first doubling is nearly always the whole graph (see
 # DISC_MAX_SHARE), so this only bites on a continent, where a whole-graph pass
@@ -817,15 +822,25 @@ class LoopPlanner:
                                   limit=limit)
             nodes = None
         else:
-            found = self._home_in_disc(fields, cost, pair_w, turnaround,
-                                       homes, limit)
+            # The part of the disc between the turnaround and the start first,
+            # which is all a way home needs and a fraction of a long loop's
+            # disc; the whole disc when that cannot prove its answer.
+            found = self._home_near(fields, cost, pair_w, turnaround, homes, limit)
+            if found is None or not found[3]:
+                # Unproved, the way home it found is still a legal one, so
+                # what it costs bounds the disc's search: exact, and it stops
+                # the search about where the cheapest way home is.
+                if found is not None and np.isfinite(found[4]):
+                    limit = min(limit, found[4] * (1.0 + 1e-9) + 1e-9)
+                found = self._home_in_disc(fields, cost, pair_w, turnaround,
+                                           homes, limit)
             if found[3] is False and widened < DISC_WIDENINGS:
                 # Not provably the whole graph's way home: the penalised way
                 # home could leave the disc. Searched again wider, as the
                 # passes are (`_wider`), and kept as found after that.
                 return self._build(self._wider(fields), turnaround, penalty,
                                    widened + 1)
-            dist, pred, nodes, _ = found
+            dist, pred, nodes = found[:3]
             homes = homes[np.isin(homes, nodes)]
 
         # Closing the loop means *arriving* at the start, and a junction split for
@@ -903,6 +918,78 @@ class LoopPlanner:
         pair_w[at] = np.minimum.reduceat(w, np.cumsum(count) - count)
         return pair_w
 
+    def _home_near(self, fields, cost, pair_w, turnaround, homes, limit):
+        """`_home_in_disc` over the part of the disc inside an ellipse about
+        the turnaround and the start, the corridor a route between them would
+        search (router.CORRIDOR_SHARE): (dist, pred, nodes, proved, best), or
+        None when that is most of the disc anyway.
+
+        Proved the same way: a way home that leaves this region must come
+        back into it, at no less than an arc in plus the back field's bound on
+        the rest. Measured on a 400 km loop from Philadelphia, the disc holds
+        2.9M nodes and each build searched all of them.
+        """
+        r, disc, back = self.router, fields.disc, fields.back
+        trip = r._trip(int(turnaround), int(fields.start))
+        budget = trip.km + CORRIDOR_SHARE * trip.km + CORRIDOR_KM
+        loc = disc.local(r._ellipse_nodes(trip, budget))
+        loc = np.sort(loc[loc >= 0])
+        if len(loc) > HOME_REGION_SHARE * len(disc.nodes):
+            return None
+        m = len(loc)
+        mark = np.full(len(disc.nodes), -1, np.int64)
+        mark[loc] = np.arange(m)
+        _, f_indices, f_indptr = disc.fwd
+        starts = f_indptr[loc]
+        counts = f_indptr[loc + 1] - starts
+        arcs = _ranges(starts, starts + counts)
+        heads = mark[f_indices[arcs]]
+        rows = np.repeat(np.arange(m), counts)
+        inside = heads >= 0
+        w_at = disc.position(cost, "fwd")[arcs]
+        indptr = np.zeros(m + 1, np.int64)
+        np.cumsum(np.bincount(rows[inside], minlength=m), out=indptr[1:])
+        g = csr_matrix((pair_w[w_at[inside]], heads[inside].astype(np.int32), indptr),
+                       shape=(m, m))
+        src = int(mark[disc.local(turnaround)[0]])
+        if src < 0:
+            return None
+        dist, pred = dijkstra(g, directed=True, indices=src,
+                              return_predecessors=True, limit=limit)
+        at = mark[disc.local(homes)]
+        at = at[at >= 0]
+        best = dist[at].min() if len(at) else np.inf
+        # Leaving: to a disc node outside the region, or out of the disc.
+        leave = (dist[rows[~inside]] + pair_w[w_at[~inside]]).min() if (~inside).any() \
+            else np.inf
+        ex = disc.exit_fwd
+        if len(ex):
+            tail = mark[disc.local(r.u_tail[ex])]
+            ok = tail >= 0
+            if ok.any():
+                leave = min(leave, (dist[tail[ok]] + pair_w[
+                    disc.position(cost, "exit_fwd")[ok]]).min())
+        # Coming back in: from a disc node outside the region, or from
+        # outside the disc, then the back field's bound to the start.
+        to_start = np.minimum(back.lcost, back.leave)
+        _, r_indices, r_indptr = disc.rev
+        rstarts = r_indptr[loc]
+        rarcs = _ranges(rstarts, r_indptr[loc + 1])
+        rheads = np.repeat(loc, r_indptr[loc + 1] - rstarts)
+        from_out = mark[r_indices[rarcs]] < 0
+        come_back = ((cost.pair_w[disc.position(cost, "rev")[rarcs[from_out]]]
+                      + to_start[rheads[from_out]]).min() if from_out.any() else np.inf)
+        ex = disc.exit_rev
+        if len(ex):
+            head = disc.local(r.u_head[ex])
+            ok = mark[head] >= 0
+            if ok.any():
+                come_back = min(come_back, (cost.pair_w[disc.position(cost, "exit_rev")[ok]]
+                                            + to_start[head[ok]]).min())
+        bound = leave + come_back
+        proved = bool(best < bound or (not np.isfinite(best) and not bound <= limit))
+        return dist, pred, disc.nodes[loc], proved, best
+
     def _home_in_disc(self, fields, cost, pair_w, turnaround, homes, limit):
         """`_build`'s search home over the fields' disc: (dist, pred, nodes,
         proved), `proved` False when the disc cannot show its way home is the
@@ -940,7 +1027,7 @@ class LoopPlanner:
         # Proved when the way home found is cheaper than any that leaves, or
         # when there is none and nothing that leaves is within the limit.
         proved = bool(best < bound or (not np.isfinite(best) and not bound <= limit))
-        return dist, pred, disc.nodes, proved
+        return dist, pred, disc.nodes, proved, best
 
     def _path_edges(self, cost, path):
         """Undirected edge ids for the hops of a node path."""
@@ -1174,26 +1261,28 @@ class LoopPlanner:
             fwd = _ranges(starts, starts + counts)
             head = scratch[r.u_head[fwd]]
             frow = np.repeat(np.arange(m), counts)
-            # Reverse: each inside node's incoming pairs, ordered by head and
-            # then by pair, which is the stable sort on head scipy's
-            # transpose gives.
+            # The pairs arriving from outside: each inside node's incoming
+            # pairs whose tail is not inside.
             rstarts = r._rev_indptr[nodes]
             rcounts = r._rev_indptr[nodes + 1] - rstarts
-            rev = r._rev_pairs[_ranges(rstarts, rstarts + rcounts)].astype(np.int64)
-            tail = scratch[r.u_tail[rev]]
-            rrow = np.repeat(np.arange(m), rcounts)
+            arriving = r._rev_pairs[_ranges(rstarts, rstarts + rcounts)].astype(np.int64)
+            exit_rev = arriving[scratch[r.u_tail[arriving]] < 0]
         finally:
             scratch[nodes] = -1
             r._scratch.give(scratch)
-        fin, rin = head >= 0, tail >= 0
-        exit_fwd, exit_rev = fwd[~fin], rev[~rin]
+        fin = head >= 0
+        exit_fwd = fwd[~fin]
         fwd, frow, head = fwd[fin], frow[fin], head[fin]
-        rev, rrow, tail = rev[rin], rrow[rin], tail[rin]
+        # Reverse: the inside pairs ordered by head and then by tail, which is
+        # the stable sort on head scipy's transpose gives; on int32 numpy
+        # sorts it by radix.
+        order = np.argsort(head, kind="stable")
+        rev, rrow, tail = fwd[order], head[order], frow[order]
         pairs, inverse = np.unique(np.concatenate([fwd, exit_fwd, exit_rev]),
                                    return_inverse=True)
         a, b = len(fwd), len(fwd) + len(exit_fwd)
-        at = {"fwd": inverse[:a], "exit_fwd": inverse[a:b], "exit_rev": inverse[b:],
-              "rev": np.searchsorted(pairs, rev)}
+        at = {"fwd": inverse[:a], "exit_fwd": inverse[a:b], "exit_rev": inverse[b:]}
+        at["rev"] = at["fwd"][order]
         return _Disc(nodes=nodes,
                      fwd=_csr_parts(fwd, frow, head, m),
                      rev=_csr_parts(rev, rrow, tail, m),

@@ -57,7 +57,7 @@ from pyproj import Transformer
 
 from common import (CLOSURE_WINDOW, CONTROL_COLUMNS, CRS_METERS, ONEWAY_FWD,
                     ONEWAY_REV, in_window)
-from compact import Grid, Lines, Strings, _ranges
+from compact import Coded, Grid, Lines, Strings, _ranges
 from score import (CLASS_ADJ, LEGACY_UNPAVED_ADJ, WEIGHTS, blend, components,
                    composite)
 
@@ -375,6 +375,12 @@ CORRIDOR_SHARE = 0.5
 CORRIDOR_KM = 20.0
 CORRIDOR_TOUCH = 0.9
 CORRIDOR_WIDENINGS = 2
+# How many times `_keep_network_reachable` thins the turn-restriction splits
+# before it gives them all up. Eight was enough for New England (two rounds);
+# the US, whose strandings are found a few roads out (`_near_strandings`), can
+# take more.
+KEEP_REACHABLE_ROUNDS = 30
+
 # Corridors kept for the next search of the same trip (`Router.corridor`).
 CORRIDOR_CACHE = 4
 # A corridor holding more than this share of the graph is the whole graph:
@@ -1175,11 +1181,14 @@ class Router:
     # since node ids are OSM's, so a long trip touches nearly every page of
     # the search arrays and paging them would make the first long trip read
     # them all from disk. docs/router-at-us-scale.md, "The pack".
-    PACK_VERSION = 1
+    PACK_VERSION = 2
     PACK_HOT = ("node_lat", "node_lon", "real_node", "private_inside",
                 "_pair_indptr", "u_head", "_pair_start", "_pair_slots",
-                "eidx", "flip", "d_minutes", "km", "unpaved_frac", "score_adj",
-                "base_score", "pref_matrix", "_rev_indptr", "_rev_pairs",
+                "eidx", "flip", "d_minutes", "km", "base_score",
+                "unpaved.codes", "unpaved.values", "adj.codes", "adj.values",
+                *(f"comp.{k}.{part}" for k in range(len(BEAUTY_TYPES))
+                  for part in ("codes", "values")),
+                "_rev_indptr", "_rev_pairs",
                 "_slot_flags",
                 "node_grid.order", "node_grid.start")
     PACK_ARRAYS = ("node_id", "node_lat", "node_lon", "real_node",
@@ -1188,8 +1197,7 @@ class Router:
                    "_pair_indptr", "_pair_slots", "_pair_start", "_rev_pairs",
                    "_rev_indptr", "_tail_order", "_tail_start", "_edge_order",
                    "_edge_start", "edge_u_idx", "edge_v_idx", "km", "length_m",
-                   "unpaved_frac", "score_adj", "base_score", "pref_matrix",
-                   "free_minutes", "_score", "_breakdown", "_roundabout", "_snap_closed",
+                   "base_score", "free_minutes", "_score", "_breakdown", "_roundabout", "_snap_closed",
                    "_slot_flags",
                    "_private_slots", "_private_cost", "_car_closed_slots",
                    "_through_slots")
@@ -1211,6 +1219,10 @@ class Router:
                   if getattr(self, name) is not None}
         absent = [name for name in self.PACK_ARRAYS if getattr(self, name) is None]
         arrays.update(self.exit_ref.arrays("exit_ref"))
+        arrays.update(self._unpaved.arrays("unpaved"))
+        arrays.update(self._adj.arrays("adj"))
+        for k, c in enumerate(self._comp):
+            arrays.update(c.arrays(f"comp.{k}"))
         for col, strings in self.text.items():
             arrays.update(strings.arrays(f"text.{col}"))
         arrays.update({"lines.xy": self.lines.xy, "lines.start": self.lines.start})
@@ -1263,6 +1275,9 @@ class Router:
             for k, v in pickle.load(f).items():
                 setattr(self, k, v)
         self.exit_ref = Strings.load(a, "exit_ref")
+        self._unpaved = Coded.load(a, "unpaved")
+        self._adj = Coded.load(a, "adj")
+        self._comp = [Coded.load(a, f"comp.{k}") for k in range(len(BEAUTY_TYPES))]
         self.text = {c: Strings.load(a, f"text.{c}") for c in self.EDGE_TEXT
                      if f"text.{c}.codes" in a}
         self.lines = Lines(a["lines.xy"], a["lines.start"])
@@ -1789,12 +1804,15 @@ class Router:
     @cached_property
     def maneuver_context(self):
         # Only the junctions that carry a signed exit number, which are few.
-        exit_refs = {}
-        codes = self.exit_ref.codes
-        for i in np.flatnonzero(codes >= 0):
-            ref = self.exit_ref.text(int(codes[i]))
-            if ref and ref != "nan":
-                exit_refs[int(i)] = ref
+        # Decided per distinct value, then per node by its code: a graph can
+        # write "no exit" as an empty string on every node rather than a null,
+        # and asking each of 20M nodes in turn took 11 s on the US graph.
+        refs = self.exit_ref
+        table = [refs.text(c) for c in range(len(refs.offsets) - 1)]
+        real = np.array([bool(t) and t != "nan" for t in table] + [False])
+        codes = np.asarray(refs.codes)
+        exit_refs = {int(i): table[int(codes[i])]
+                     for i in np.flatnonzero(real[codes])}
         return ManeuverContext(exit_refs, self.exits_at_node,
                                self.departure_bearings)
 
@@ -2036,6 +2054,31 @@ class Router:
         return any(int(self.head[o]) in stranded
                    for o in self._members(by_tail, v) if o not in kept)
 
+    def _near_strandings(self, plan, stranded):
+        """`plan` without the splits at junctions within a few roads of a
+        stranded one: one road away, then two, four and so on, until some
+        split is near enough to drop. Said out loud, since it gives up
+        restrictions."""
+        near = np.zeros(self.n, bool)
+        near[list(stranded)] = True
+        junctions = np.array([int(self.head[arriving]) for arriving, _, _ in plan])
+        tail, head = self.tail, self.head
+        hops, reach = 0, near
+        for limit in (1, 2, 4, 8, 16, 32, 64):
+            while hops < limit:
+                grow = reach.copy()
+                grow[head[reach[tail]]] = True
+                grow[tail[reach[head]]] = True
+                reach, hops = grow, hops + 1
+            drop = reach[junctions]
+            if drop.any():
+                print(f"turn restrictions: {int(drop.sum())} of {len(plan):,} "
+                      f"splits within {hops} road(s) of {len(stranded)} stranded "
+                      "junction(s) given up so every road stays reachable",
+                      flush=True)
+                return [p for p, d in zip(plan, drop) if not d]
+        return plan
+
     def _keep_network_reachable(self, plan, by_tail):
         """Drop the splits that would cut part of the network off.
 
@@ -2066,7 +2109,7 @@ class Router:
         renumber = lambda p: [(arriving, self.n + i, legal)
                               for i, (arriving, _, legal) in enumerate(p)]
         plan = renumber(plan)
-        for _ in range(8):
+        for _ in range(KEEP_REACHABLE_ROUNDS):
             tail, head = self._candidate_ends(plan)
             size = self.n + len(plan)
             g = csr_matrix((np.ones(len(tail)), (tail, head)), shape=(size, size))
@@ -2091,6 +2134,15 @@ class Router:
                 break
             kept = [p for p in plan if not self._strands(p, by_tail, stranded)]
             if len(kept) == len(plan):
+                # Nothing blamed one hop out. `_strands` only blames a split
+                # whose removed exit points *directly* at a stranded node, and
+                # on the US graph (2026-10-19) 33 junctions were stranded two
+                # or more hops out: the old answer, enforcing none of the
+                # 159,431 splits, would have let every route in the country
+                # take turns OSM forbids. So the splits at junctions near the
+                # stranded ones go instead, the nearest first.
+                kept = self._near_strandings(plan, stranded)
+            if len(kept) == len(plan):
                 # Nothing in the plan explains the strandings, so there is no
                 # subset to fall back to. Enforce none of them rather than
                 # serve a graph with roads no route can reach.
@@ -2098,11 +2150,7 @@ class Router:
                 # Said out loud, because the consequence is invisible: every
                 # restriction in the state goes unenforced and routes go back to
                 # instructing turns the map forbids, while the graph still loads
-                # and every test still passes. `_strands` only blames a split
-                # whose removed exit points *directly* at a stranded node, so a
-                # pocket stranded two hops out lands here rather than being
-                # thinned. If this ever prints, that one-hop attribution is the
-                # thing to widen.
+                # and every test still passes.
                 warnings.warn(
                     f"turn restrictions disabled entirely: {len(stranded)} "
                     "junction(s) lost their last way in and no split in the "
@@ -2124,7 +2172,7 @@ class Router:
                 warnings.warn(
                     "turn restrictions disabled entirely: the split plan still "
                     "cuts the network into more than one strongly connected "
-                    "piece after 8 thinning rounds.", RuntimeWarning,
+                    f"piece after {KEEP_REACHABLE_ROUNDS} thinning rounds.", RuntimeWarning,
                     stacklevel=2)
                 return []
         return plan
@@ -2306,14 +2354,17 @@ class Router:
         #   pref_matrix  : column k = default_weight_k * component_k, so scaling
         #                  column k by the user's weight leans into that type
         #   score_adj    : the road-class penalty, re-added after stretch
-        self.unpaved_frac, self.score_adj = self._load_unpaved(e)
+        unpaved_frac, score_adj = self._load_unpaved(e)
         self.base_score = sum(
             w * (e[col].to_numpy() if col in e.columns or col not in OPTIONAL_BASELINE
                  else np.zeros(len(e)))
             for col, w in BASELINE)
-        self.pref_matrix = np.column_stack(
-            [w * e[col].to_numpy() for _, _, col, w in BEAUTY_TYPES]
-        )
+        # Held as codes into each column's distinct values (compact.Coded),
+        # which is exact: `pref_matrix` is rebuilt from them a corridor at a
+        # time (`_pref_rows`). 1.5 GB less of the US graph in memory.
+        self._comp = [Coded.of(e[col].to_numpy()) for _, _, col, _ in BEAUTY_TYPES]
+        self._unpaved = Coded.of(unpaved_frac)
+        self._adj = Coded.of(score_adj)
 
         self._pair_up()
         e_score = e["score"].to_numpy() if "score" in e.columns else None
@@ -2398,7 +2449,8 @@ class Router:
         self._slot_flags = self._flag_slots()
         for name in ("tail", "head", "eidx", "u_tail", "u_head", "slot_pair",
                      "_pair_slots", "_tail_order", "_edge_order", "_rev_pairs",
-                     "real_node", "edge_u_idx", "edge_v_idx"):
+                     "real_node", "edge_u_idx", "edge_v_idx", "_pair_start",
+                     "_pair_indptr", "_rev_indptr", "_tail_start", "_edge_start"):
             setattr(self, name, getattr(self, name).astype(np.int32))
 
     def _flag_slots(self) -> np.ndarray:
@@ -2541,6 +2593,28 @@ class Router:
         """
         return self._scores_of(None, self._beauty_vector(weights))
 
+    def _pref_rows(self, rows) -> np.ndarray:
+        """Rows of `pref_matrix` (all of it for None): column k is the
+        default weight of type k times its component, the products the old
+        router stored."""
+        return np.column_stack(
+            [w * (c.all() if rows is None else c.take(rows))
+             for (_, _, _, w), c in zip(BEAUTY_TYPES, self._comp)])
+
+    # The whole graph's columns, decoded when asked for: by the tests, the
+    # tools, and the whole-graph corridor of a small graph.
+    @cached_property
+    def pref_matrix(self):
+        return self._pref_rows(None)
+
+    @cached_property
+    def unpaved_frac(self):
+        return self._unpaved.all()
+
+    @cached_property
+    def score_adj(self):
+        return self._adj.all()
+
     @staticmethod
     def _beauty_vector(weights: dict) -> np.ndarray:
         """The user's weights as `_edge_scores` applies them: in BEAUTY_TYPES
@@ -2561,8 +2635,8 @@ class Router:
         """
         if rows is None:
             return composite(self.base_score + self.pref_matrix @ w, self.score_adj)
-        return composite(self.base_score[rows] + self.pref_matrix[rows] @ w,
-                         self.score_adj[rows])
+        return composite(self.base_score[rows] + self._pref_rows(rows) @ w,
+                         self._adj.take(rows))
 
     def _weights(self, pref: float, scores: np.ndarray,
                  avoid_unpaved: float = 1.0,
@@ -2626,7 +2700,7 @@ class Router:
                 dirt_km = self.km * self.unpaved_frac
                 w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km[self.eidx]
             else:
-                dirt_km = km * self.unpaved_frac[e]
+                dirt_km = km * self._unpaved.take(e)
                 w = w + avoid * UNPAVED_AVOID_MIN_PER_KM * dirt_km
 
         # In place, which is safe: both lines above build `w` afresh, so it is

@@ -62,6 +62,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--out", required=True)
     p.add_argument("--trips", type=int, default=8)
+    p.add_argument("--loops", type=int, default=6)
     p.add_argument("--copy", type=int, default=8,
                    help="which New England copy to draw trips in (synthetic)")
     args = p.parse_args()
@@ -117,7 +118,7 @@ def main():
                 ask("reroute", d, {**base, "from": f"{c[k][1]:.6f},{c[k][0]:.6f}",
                                    "heading": f"{h:.1f}"})
     for km in LOOP_KM:
-        for _ in range(max(2, args.trips // 2)):
+        for _ in range(args.loops):
             i = int(rng.integers(lo, hi))
             ask("loop", km, {"from": f"{lat[i]:.6f},{lon[i]:.6f}", "km": f"{km:g}"},
                 path="/api/loop")

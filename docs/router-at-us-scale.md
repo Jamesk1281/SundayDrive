@@ -234,3 +234,157 @@ The coverage refusals are sentences now ("Sunday Drive covers the contiguous
 United States, and that point is outside it."), with the region taken from
 `SUNDAYDRIVE_REGION`, else the pack's own region, else "New England". Unit C's
 app passes `error` through verbatim (`RouteService.failure`).
+
+## New England parity
+
+`tools/us_scale_router/parity_run.py` replays one fixed request set through a
+checkout's own server (Flask's test client), and `parity_diff.py` compares two
+runs answer by answer. The oracle is the `usa` code at `6fdf137`, on
+`data/processed-ne`.
+
+**The set: 726 requests.** Forty-six trips, random junctions moved up to 30 m
+off the road, in bands of 2–20, 20–60, 60–150, 150–300, 300–500 and 500–650 km.
+Each one is asked:
+
+- at pref 0, 0.5 and 1, with other beauty weights, with dirt roads avoided and
+  ignored, and in winter;
+- as an options plan, and each option's fetch by its switch points;
+- as a reroute with a heading and as a declined U-turn, both 30% along the
+  route, and as a reroute along an option.
+
+Fifteen starts each ask for loops of 15, 40 and 120 km, a winter loop, a loop by
+compass sector and a loop rejoin; two ask for 300 km. Separately, 3,000 snaps
+are compared: nearer end, with a heading, and as a destination.
+
+| | requests |
+|---|---:|
+| identical, every byte of the JSON | **677** |
+| over 500 km, answered by the oracle, refused with `TRIP_TOO_LONG` | 44 |
+| a different route | 5 |
+
+Every loop, loop rejoin, options plan and option fetch is identical. The five
+that differ are all reroutes with a heading:
+
+- **Three (#37, #603, #604) come from the heading correction.** The driver's
+  heading is now turned from true north to the projection's grid before it is
+  compared with a road, and in New England that turn is 0.3–2.3 degrees. With
+  the correction switched off, all three are identical to the oracle's.
+- **Two (#519, #520, one trip) are a tie.** The reroute's origin lies exactly
+  on a vertex three roads share, at distance 0 from all of them. STRtree's
+  choice among equidistant geometries is undefined; the new index takes the
+  lowest edge. Both edges pass the same alignment test.
+
+Of the 3,000 snaps, 2,973 are identical. All 27 differences are in the snap
+with a heading. 24 are the heading correction (identical with it switched off),
+and 3 are the same kind of tie, a point equidistant to several roads at a
+junction vertex.
+
+**Latency against the oracle**, CPU seconds per request, same requests, same
+machine, load about 3 (this Mac is shared; `cpu` beside wall in every answer):
+
+| kind | oracle p50 / p90 | this branch p50 / p90 |
+|---|---:|---:|
+| route, pref 0 | 0.15 / 0.47 | 0.21 / 0.62 |
+| route, pref 0.5 | 0.62 / 0.90 | 0.31 / 1.00 |
+| route, pref 1 | 0.63 / 0.90 | 0.35 / 1.01 |
+| options plan | 1.35 / 1.60 | 0.66 / 1.86 |
+| option fetch | 0.71 / 1.31 | 0.31 / 1.10 |
+| reroute | 0.58 / 0.85 | 0.23 / 0.94 |
+| declined U-turn | 1.06 / 1.72 | 0.59 / 1.61 |
+| loop | 0.41 / 2.23 | 0.31 / 2.51 |
+| loop by sector | 0.78 / 1.28 | 0.88 / 1.41 |
+| loop rejoin | 1.73 / 1.95 | 0.14 / 0.36 |
+
+- **Medians halve.** A typical New England trip's corridor is a fraction of the
+  region.
+- **The p90s are within 15%.** The longest trips' ellipses hold most of New
+  England, so they are searched as the whole graph, as before.
+- **The fastest arm alone is a little slower** (0.15 to 0.21 s): it lost its A*.
+  A plan now searches its scenic arm first and bounds the fastest arm's search
+  by the scenic route's pref-0 cost, which is exact and wins most of that back.
+- **Rejoins are 12 times faster.** They searched the whole graph twice.
+
+## Measured on the US
+
+`data/processed-us` (unit A, delivered 2026-10-19): 20,023,955 nodes,
+25,849,861 edges, 20,186,995 routing nodes after the splits.
+
+**Packing it** (`tools/us_scale_router/pack.py`, on this Mac) took 326 s to
+build and 26 s to write, at a peak RSS of 14.4 GB. The pack is **13.5 GB** on
+disk. It has to be built on a machine with more than 16 GB, not on the box.
+
+**Fixed while packing: turn restrictions were about to be switched off for the
+whole country.** `_keep_network_reachable` thins the turn-restriction splits
+that would leave a junction unreachable, and blames a split only when its
+removed exit points straight at the stranded junction. On the US graph, 33
+junctions were stranded two or more roads out, so nothing was blamed, and the
+old fallback enforced none of the 159,431 splits. Every route in the country
+could then have taken turns OSM forbids, with nothing but a warning in the
+log. Now the splits at junctions near the stranded ones go instead, nearest
+first (`_near_strandings`). On the US it gives up **20 of 159,431**.
+
+| | US pack |
+|---|---:|
+| load, start to ready | **2.7–2.9 s** |
+| resident after load | 4.7 GB RSS, 4.6 GB footprint |
+| one request at a time, end of a run | 5.1–5.2 GB footprint; 10.8–11.3 GB peak RSS, most of it pages of the pack read from disk |
+
+**Latency by straight-line trip length**, CPU seconds on this Mac, one request
+at a time, eight trips per band drawn from the whole country. The box's cores
+are about 1.4 times slower (`server/DEPLOY-oracle.md`, Part 13):
+
+| trip | route p50 / p90 | options p50 / p90 | reroute p50 / p90 |
+|---|---:|---:|---:|
+| ≤ 25 km | 0.12 / 0.24 | 0.14 / 0.24 | 0.06 / 0.11 |
+| ≤ 50 km | 0.23 / 0.36 | 0.38 / 0.64 | 0.14 / 0.23 |
+| ≤ 100 km | 0.23 / 0.67 | 0.39 / 1.39 | 0.12 / 0.49 |
+| ≤ 200 km | 0.54 / 0.71 | 0.91 / 1.29 | 0.27 / 0.48 |
+| ≤ 300 km | 1.07 / 1.40 | 2.08 / 2.61 | 0.67 / 0.99 |
+| ≤ 400 km | 1.60 / 2.13 | 3.06 / 3.96 | 0.95 / 1.61 |
+| ≤ 500 km | 2.14 / 3.44 | 3.83 / 6.48 | 1.12 / 2.06 |
+
+Trips up to 300 km stay near New England's latency, and everything the cap
+allows stays well under the app's 20 s, at about 9 s on the box at worst for an
+options plan. The first request after a load paid 7 s for a one-off table of
+exit numbers. That table is now built from the distinct values (0.07 s).
+
+### Loops: 400 km does not fit in the densest metros
+
+| loop | p50 | p90 | worst seen |
+|---|---:|---:|---:|
+| 40 km | 0.22 | 0.46 | |
+| 150 km | 1.61 | 3.23 | |
+| 300 km | 3.09 | 7.74 | |
+| 400 km | 8.79 | 11.22 | 17.7 (Philadelphia) |
+
+CPU seconds, a first loop from a new start, ten random starts per length. A
+400 km loop searches a disc 444 km in radius, which from Philadelphia holds
+2.9M nodes. Its two passes and five builds then take 18 s on this Mac, about
+25 s on the box, past the app's 20 s. New York measured 14.0 s (about 20 s on
+the box), Chicago 11.8, Los Angeles 6.1 and Minneapolis 4.8. A second sector
+from the same start reuses the passes and costs half or less.
+
+Two things were done and did not close it:
+
+- each build first searches home in the ellipse between the turnaround and the
+  start (`_home_near`);
+- each build is bounded by what that way home costs.
+
+The proof that lets the small ellipse stand alone usually fails at 400 km,
+because the retrace penalty makes the real way home dearer than the
+unpenalised back field it is bounded by.
+
+The brief says loops keep their limits, so the limit is unchanged. The ways to
+close the gap, in the order I would take them:
+
+1. **Cap loops at 300 km.** p90 7.7 s on the Mac, about 11 s on the box,
+   everywhere. One constant (`looper.MAX_TARGET_KM`) and the app's slider.
+2. **Cap the loop by what its disc holds** (for example 2M nodes), so the top
+   of the slider is 400 km in Montana and less around New York. More honest
+   about distance, harder to explain on a slider.
+3. **Three builds instead of five above 300 km** (`SPAN_PICKS`). From the
+   loop-speed table, that trades +5% against -7% worst distance error, and it
+   saves about 40% of a long loop's time. It does not close New York alone.
+4. **A compiled kernel** (numba). It would speed the searches by a constant,
+   not change their size, and it adds a dependency to the box. Not enough on
+   its own either.
