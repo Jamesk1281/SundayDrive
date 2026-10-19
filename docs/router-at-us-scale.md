@@ -1,28 +1,29 @@
 # The router at US scale
 
-**Status:** day one, 2026-10-18, on branch `claude/us-scale-router` off `usa`.
-Nothing has been built yet. This section is the dated plan. Measurements
-replace the estimates below as they land, and each section says which it is.
+**Status, 2026-10-19:** built and measured on `data/processed-us`, on branch
+`claude/us-scale-router` off `usa`. Not merged, not deployed, not pushed. The
+suite is green on `processed-ne` (939 passed, 13 skipped). New England parity:
+677 of 726 requests identical to today's router, 44 correctly refused by the
+cap, and 5 different, every one explained.
 
 The design is path C of [usa-extension-feasibility.md](usa-extension-feasibility.md)
 §8: one compact graph in memory, and each route searched only inside an ellipse
 around the trip. Point-to-point trips are capped at 500 km straight line.
 
-## The earliest honest date
+## The date
 
-**The router, options, loops and reroutes on the compact graph and corridor
-search, with New England parity proven and US-scale numbers from a synthetic
-graph: Friday 23 October.** Thursday 22 is possible if parity turns up nothing
-that needs explaining. It probably will turn something up, so plan on the 23rd.
+**Ready now, four days ahead of the day-one date (Friday 23 October).** The
+data came early (unit A delivered `processed-us` at 02:00 on the 19th) and was
+packed and measured the same day.
 
-**Measured on `data/processed-us`: one day after it exists.** Most of that day
-is building the compact pack from it (the pack is described below), plus one
-measurement pass.
+What stands between this branch and a submission on Thursday 29 October:
 
-For a submission on Thursday 29 October, the server has to be on the box with
-the US data by about Monday 26 October, so the app can be tested against it.
-That works only if the US data arrives by about Saturday 24 October, and if the
-box has been resized (next section).
+1. **Two decisions, below:** the 400 km loop, and the box's memory.
+2. **The master session:** merge into `usa`, copy the pack to the box, set
+   `SUNDAYDRIVE_PACK`, restart (see "Deploying").
+3. **A measurement on the box itself.** Every number here is from this Mac;
+   the box's two cores were measured at about 1.4 times slower on today's
+   router, and memory bandwidth on Ampere is unmeasured for this workload.
 
 ### A correction to the premise: the box has 8 GB, and the ceiling is 12 GB
 
@@ -41,27 +42,26 @@ box. The box in the repo's own measured records is smaller:
 RAM and two A1 cores, each about three quarters the speed of the Mac's M2
 cores (`DEPLOY-oracle.md`, Part 13).
 
-What this changes:
+What this changed, measured on the US pack (details under "Memory"):
 
-- **The design still holds, but the margin is gone.** The review put a compact
-  US graph at 4.4–5.5 GB. Add the access layer (parking lots, used to place
-  destinations), each request's working set, the loop and options caches and
-  Python itself, and an all-in-RAM US router would sit at or over 12 GB.
-- **So the bulk of the graph will be memory-mapped from disk, not loaded.** A
-  one-time *pack* step turns a processed directory into flat arrays. The server
-  maps them read-only, so geometry, names and the search arrays are
-  file-backed pages. The kernel can drop those pages under pressure; they do
-  not count against the box the way built Python objects do. What stays truly
-  in RAM is small: each request's corridor, the caches, a few dicts. The
-  target is **peak anonymous memory (what the kernel cannot drop) under 6 GB
-  under concurrent load**, reported beside total RSS. That works on today's
-  8 GB box. The 12 GB resize then becomes headroom rather than a
-  requirement. That target is a goal, not a measurement yet.
-- **Someone has to decide about the resize.** It isn't mine to do, since
-  deploying is the master session's job. If the 6 GB target holds, the resize
-  is optional.
+- **The arrays every search reads stay in memory: 3.2 GB.** Score columns are
+  held as exact codes and index arrays as int32 (they were 4.5 GB).
+- **The rest of the pack is paged from disk as requests touch it:** geometry,
+  names and the parking-lot layer, 8.7 GB of a 11.9 GB pack. The kernel can drop
+  those pages again.
+- **Under four clients saturating the server, peak footprint was 4.1–4.8 GB**
+  over three replicates. Footprint is the memory the process holds that the
+  kernel cannot simply drop; RSS, which counts pack pages too, peaked at
+  9.5–10.5 GB.
 
-### What could move the date
+**Decision 1, the box's memory (not mine; deploying is the master session's
+job).** On today's 8 GB box, 4.8 GB at peak plus the OS leaves about 2.5 GB to
+cache the pack's cold pages. That should work, with little room. Resizing to
+the 12 GB Always Free ceiling doubles that room, and is what I would do before
+launch. It costs a stop/start, and Ashburn capacity is not guaranteed at that
+moment, so it is worth doing early or not at all.
+
+### What could have moved the date (day one)
 
 1. **New England parity takes longer than a day to explain.** The corridor is
    empirical (the review found it exact on 80 of 80 trips, not on all trips).
@@ -81,7 +81,7 @@ What this changes:
    toward closed.
 4. **The US data's date.** That date belongs to unit A.
 
-## Plan, by day
+## The day-one plan (2026-10-18), for the record
 
 | Day | Work | Done when |
 |---|---|---|
@@ -120,7 +120,10 @@ arrays (`pipeline/compact.py`):
   round trip is exact (checked on all 9,390,733 New England vertices);
 - **grids** in degrees: nodes by 0.1-degree cell, for corridors and loop discs;
   road bounding boxes by 0.01-degree cell, for snapping. New England's roads
-  sit in 1.37 cells each on average.
+  sit in 1.37 cells each on average;
+- **score columns** (the six tunable components, the surface share, the class
+  adjustment) as codes into each column's distinct values, which is exact:
+  under 65,536 values for most, two for the surface share.
 
 Snapping keeps its code. `_edge_tree` and `_edge_geom_m` are now objects that
 answer the same two questions STRtree answered (nearest line, lines whose box
@@ -142,7 +145,9 @@ names its region, which is where the server's coverage messages get it from.
 |---|---:|---:|---:|
 | load | 35 s on 2026-10-18, 53 s in the review | 27–44 s | **1.6–1.8 s** |
 | peak memory while loading | 4.4 GB (`docs/hosting-status-2026-09.md`) | 2.1–2.3 GB | pack mapped |
-| on disk | 382 MB of parquets | — | 0.58 GB |
+| on disk | 382 MB of parquets | — | 0.51 GB |
+
+On the US the pack loads in 2.5–3.0 s and holds 3.2 GB (see "Memory").
 
 ### Corridor search
 
@@ -309,9 +314,10 @@ machine, load about 3 (this Mac is shared; `cpu` beside wall in every answer):
 `data/processed-us` (unit A, delivered 2026-10-19): 20,023,955 nodes,
 25,849,861 edges, 20,186,995 routing nodes after the splits.
 
-**Packing it** (`tools/us_scale_router/pack.py`, on this Mac) took 326 s to
-build and 26 s to write, at a peak RSS of 14.4 GB. The pack is **13.5 GB** on
-disk. It has to be built on a machine with more than 16 GB, not on the box.
+**Packing it** (`tools/us_scale_router/pack.py`, on this Mac) took 326–427 s
+to build and 27 s to write. Peak RSS was 9.3–14.4 GB over two builds; this Mac
+compresses memory, so build it on a machine with 24 GB, not on the box. The
+pack is **11.9 GB** on disk, at `data/pack-us` in the main checkout.
 
 **Fixed while packing: turn restrictions were about to be switched off for the
 whole country.** `_keep_network_reachable` thins the turn-restriction splits
@@ -323,11 +329,33 @@ could then have taken turns OSM forbids, with nothing but a warning in the
 log. Now the splits at junctions near the stranded ones go instead, nearest
 first (`_near_strandings`). On the US it gives up **20 of 159,431**.
 
-| | US pack |
-|---|---:|
-| load, start to ready | **2.7–2.9 s** |
-| resident after load | 4.7 GB RSS, 4.6 GB footprint |
-| one request at a time, end of a run | 5.1–5.2 GB footprint; 10.8–11.3 GB peak RSS, most of it pages of the pack read from disk |
+### Memory
+
+`tools/us_scale_router/load_probe.py` starts the real server (`serve.py`, four
+waitress threads) on the pack, on a free port. It runs four clients posting
+plans, plans with options, reroutes and loops of every length, drawn across the
+country, for 180 s. It samples the server every half second and stops it by its
+own PID. Three replicates, each a fresh server:
+
+| | replicate 1 | 2 | 3 |
+|---|---:|---:|---:|
+| start to ready | 3.0 s | 2.5 s | 2.5 s |
+| footprint after load | 3.16 GB | 3.16 GB | 3.16 GB |
+| **peak footprint under load** | **4.21 GB** | **4.05 GB** | **4.78 GB** |
+| peak RSS under load, pack pages included | 10.45 GB | 9.81 GB | 9.53 GB |
+| requests answered | 234 | 242 | 222 |
+| routes, plans, reroutes failed | 0 | 0 | 0 |
+| loops refused as busy (503, by design) | 14 | 14 | 16 |
+
+Footprint is macOS's count of what the process holds that the kernel cannot
+drop: its own memory, not clean pages mapped from the pack. Linux's anonymous
+memory is the nearer equivalent on the box. With four clients firing back to
+back, every request queues for the GIL: routes waited 2.1–2.5 s at the median
+and 5.0 s at p90, wall time. That is a saturation test, not a forecast of
+latency.
+
+Before the score columns were encoded the same probe peaked at 6.2–6.5 GB, from
+4.6 GB after load.
 
 **Latency by straight-line trip length**, CPU seconds on this Mac, one request
 at a time, eight trips per band drawn from the whole country. The box's cores
@@ -348,7 +376,7 @@ allows stays well under the app's 20 s, at about 9 s on the box at worst for an
 options plan. The first request after a load paid 7 s for a one-off table of
 exit numbers. That table is now built from the distinct values (0.07 s).
 
-### Loops: 400 km does not fit in the densest metros
+### Decision 2: a 400 km loop does not fit in the densest metros
 
 | loop | p50 | p90 | worst seen |
 |---|---:|---:|---:|
@@ -388,3 +416,43 @@ close the gap, in the order I would take them:
 4. **A compiled kernel** (numba). It would speed the searches by a constant,
    not change their size, and it adds a dependency to the box. Not enough on
    its own either.
+
+## Deploying (the master session's job)
+
+The box needs the pack, built on the Mac:
+
+```bash
+/Users/james./Desktop/myapps/SundayDrive/.venv/bin/python tools/us_scale_router/pack.py data/processed-us data/pack-us --region "the contiguous United States"
+```
+
+Then:
+
+- **Copy** `data/pack-us` (11.9 GB) to the box beside `processed-us`.
+  `server/deploy-oracle.sh` copies parquets only today, so it has to learn the
+  pack, and verify it by checksum as it verifies the parquets.
+- **Set `SUNDAYDRIVE_PACK`** to the pack's directory and `SUNDAYDRIVE_DATA` to
+  `processed-us` in the unit. Without the parquets beside it the pack still
+  loads, but nothing then checks it against them.
+- **Rebuild the pack whenever any file the router reads changes:** the graph,
+  the restrictions, the access layer, or any table `closures.py` writes. The
+  server refuses a pack whose fingerprints no longer match the parquets beside
+  it.
+- **The New England server needs nothing new.** Without `SUNDAYDRIVE_PACK` it
+  builds from the parquets as before, now in about half the memory.
+- **Box disk.** The pack needs 12 GB on the 50 GB boot volume. This Mac had
+  13 GB free on 2026-10-19 with `processed-us` and the pack both on it.
+
+## Tests and tools
+
+- `tests/test_routing.py::TestCorridorSearch` replaces the A* tests:
+  - a subset is priced to the bit;
+  - a corridor's matrix is the whole matrix cut down;
+  - copies of a junction are in or out together;
+  - the cheapest copy of a split destination wins;
+  - corridor and whole-graph costs are equal over random trips at prefs 0,
+    0.5 and 1;
+  - the unpaved term holds at pref 0;
+  - widening happens when a route touches.
+- `tests/test_loop_speed.py`: the fallback test now checks the doubled disc.
+- `tools/us_scale_router/`: `pack.py`, `parity_run.py`, `parity_diff.py`,
+  `bench_us.py` (latency by trip length on a pack) and `load_probe.py`.
