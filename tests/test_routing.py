@@ -6,6 +6,8 @@ the fastest route is genuinely faster, and the slider actually does something
 across its whole travel.
 """
 
+from datetime import date
+
 import numpy as np
 import pytest
 import shapely
@@ -20,6 +22,7 @@ ALL_TYPES = [name for name, *_ in BEAUTY_TYPES]
 BOSTON = (42.3551, -71.0657)
 WORCESTER = (42.2626, -71.8023)
 CONCORD = (42.4604, -71.3489)
+JULY = date(2026, 7, 1)
 
 
 class TestClientContract:
@@ -444,17 +447,18 @@ class TestStaleGraphIsRefused:
             router._require_columns()
 
 
-class TestFastestArm:
-    """`route(pref=0)` is an A* over ALT landmark bounds; every other pref is
-    still the whole-graph Dijkstra. The A* has to return what the Dijkstra
-    would have, and the bound has to be a bound. See
-    docs/astar-fastest-arm.md."""
+class TestCorridorSearch:
+    """Every route is searched in an ellipse around the trip, not over the
+    whole graph (router.CORRIDOR_SHARE, docs/router-at-us-scale.md). It has to
+    return what the whole-graph Dijkstra would have, price the corridor
+    exactly as the whole graph is priced, and cut it out without a pass over
+    the graph."""
 
     def _od(self, router, a, b):
         return router.snap(*a)[0], router.snap(*b)[0]
 
-    def _pair_w(self, router, avoid=1.0):
-        w = router._weights(0.0, router._edge_scores({}), avoid)
+    def _pair_w(self, router, pref=0.0, avoid=1.0, weights=None):
+        w = router._weights(pref, router._edge_scores(weights or {}), avoid)
         pair_w = np.full(router.n_pairs, np.inf)
         np.minimum.at(pair_w, router.slot_pair, w)
         return pair_w
@@ -464,167 +468,141 @@ class TestFastestArm:
         keys = hops[:-1] * router.n + hops[1:]
         return float(pair_w[np.searchsorted(router._pair_key, keys)].sum())
 
-    def test_the_tables_are_indexed_after_the_junction_split(self, router):
-        """Trap 2. `_apply_turn_restrictions` grows `n` by about 1%, and tables
-        built before it would be the wrong length *and* the wrong indexing —
-        they would load, run, and hand back plausible wrong routes. The length
-        is the only cheap way to catch that, so it is asserted rather than
-        assumed."""
-        assert router.n > len(router.nodes), "no junctions were split"
-        assert router._alt_bwd.shape == (16, router.n)
-        assert router._alt_fwd.shape == (16, router.n)
-        assert router._alt_bwd.dtype == np.float32
-
-    def test_the_bound_never_exceeds_the_true_cost_to_go(self, router):
-        """Admissibility, over every node at once, against a backward Dijkstra
-        on the weights the search actually runs on.
-
-        An inadmissible bound is the failure with no symptom: the route comes
-        back wrong and looks entirely right. Checked on the real `w` rather
-        than on `d_minutes`, because `w` is what A* searches — the unpaved
-        term is still in it at pref 0 (Trap 3)."""
+    def _truth(self, router, src, pair_w):
         from scipy.sparse import csr_matrix
         from scipy.sparse.csgraph import dijkstra
-
-        pair_w = self._pair_w(router)
-        back = csr_matrix((pair_w, (router.u_head, router.u_tail)),
-                          shape=(router.n, router.n))
-        _, dst = self._od(router, BOSTON, WORCESTER)
-        targets = router.node_copies.get(dst, np.array([dst]))
-        true_cost = dijkstra(back, directed=True, indices=targets).min(axis=0)
-        h = router._alt_bound(targets).astype(np.float64)
-
-        reachable = np.isfinite(true_cost)
-        over = h[reachable] - true_cost[reachable]
-        assert over.max() <= 0.0, \
-            f"bound exceeds the truth on {int((over > 0).sum())} nodes by up to {over.max()}"
-
-    def test_the_bound_is_exactly_zero_at_every_target(self, router):
-        """The invariant that makes "stop at the first target popped" correct,
-        and a regression test for a bug that shipped in the first draft.
-
-        A split junction is several node indices and any of them is a
-        legitimate arrival, so A* stops at whichever it reaches first. It
-        orders by `g + h`, so that is the *cheapest* arrival only if every
-        target has the same `h` — and the raw ALT bound is slightly negative
-        at a target, by a different amount at each one. Measured before
-        `_alt_bound` clamped at zero: junction 669074 of the New England build
-        returned the copy costing 111.1124 min ahead of the one costing
-        111.0289, because their bounds were -0.0846 and -0.0010 and the
-        difference bought a 3e-5 min lead on `f`."""
-        splits = sorted(router.node_copies, key=lambda v: -len(router.node_copies[v]))
-        assert len(router.node_copies[splits[0]]) > 2, \
-            "no junction has more than one copy — this tests nothing"
-        for v in splits[:50]:
-            targets = router.node_copies[v]
-            h = router._alt_bound(targets)
-            assert set(h[targets].tolist()) == {0.0}, \
-                f"junction {v} bounds its own copies at {h[targets]}"
-
-    def test_a_destination_that_is_several_nodes_gets_the_cheapest_one(self, router):
-        """Trap 1, end to end. The full Dijkstra settles every copy of a split
-        junction and picks the cheapest afterwards; A* has to get there
-        directly. Compared against one Dijkstra from the source rather than one
-        per junction, so this stays affordable on the New England graph."""
-        from scipy.sparse import csr_matrix
-        from scipy.sparse.csgraph import dijkstra
-
-        pair_w = self._pair_w(router)
         g = csr_matrix((pair_w, (router.u_tail, router.u_head)),
                        shape=(router.n, router.n))
-        src, _ = self._od(router, BOSTON, WORCESTER)
-        dist = dijkstra(g, directed=True, indices=src)
+        return dijkstra(g, directed=True, indices=src)
 
+    @pytest.mark.parametrize("weights", [{}, {"coast": 2.0, "farm": 0.0, "town": 3.0}])
+    def test_a_subset_is_priced_to_the_bit(self, router, weights):
+        """The corridor's whole claim to parity: its scores and weights are the
+        whole graph's, not close to them. Near-equal routes are common, and a
+        last-bit difference would pick between them."""
+        rng = np.random.default_rng(3)
+        rows = np.sort(rng.choice(router.m, 20_000, replace=False))
+        slots = np.sort(rng.choice(len(router.eidx), 20_000, replace=False))
+        for pref, avoid in ((0.0, 1.0), (0.5, 0.0), (1.0, 2.0)):
+            scores = router._edge_scores(weights)
+            whole = router._weights(pref, scores, avoid, JULY)
+            metric = router.metric(pref, weights, avoid, JULY)
+            assert np.array_equal(metric.scores(rows), scores[rows])
+            assert np.array_equal(metric(slots), whole[slots])
+
+    def test_a_corridor_is_the_whole_matrix_cut_down(self, router):
+        """Neighbour order decides which of two equal-cost paths Dijkstra
+        keeps, so the corridor's matrix must be the same matrix, not an equal
+        one."""
+        from scipy.sparse import csr_matrix
+        s, t = self._od(router, BOSTON, WORCESTER)
+        trip = router._trip(s, t)
+        c = router.corridor(trip, trip.km * 1.5 + 20.0)
+        pair_w = self._pair_w(router, 0.5)
+        full = csr_matrix((pair_w, (router.u_tail, router.u_head)),
+                          shape=(router.n, router.n))
+        want = full[c.nodes][:, c.nodes]
+        got = c.matrix(router.metric(0.5).pair_weights(c.pairs))
+        assert np.array_equal(got.indptr, want.indptr)
+        assert np.array_equal(got.indices, want.indices)
+        assert np.array_equal(got.data, want.data)
+        assert len(c) < 0.5 * router.n, "a 60 km trip searched most of the region"
+
+    def test_every_copy_of_a_junction_is_in_or_out_together(self, router):
+        s, t = self._od(router, BOSTON, CONCORD)
+        trip = router._trip(s, t)
+        inside = np.zeros(router.n, bool)
+        inside[router.corridor(trip, trip.km * 1.5 + 20.0).nodes] = True
+        for v, copies in router.node_copies.items():
+            assert inside[copies].all() or not inside[copies].any()
+
+    def test_a_destination_that_is_several_nodes_gets_the_cheapest_one(self, router):
+        """A split junction is several node indices and any of them is a
+        legitimate arrival; the search must take the cheapest."""
+        pair_w = self._pair_w(router)
+        src, _ = self._od(router, BOSTON, WORCESTER)
+        dist = self._truth(router, src, pair_w)
+        metric = router.metric(0.0)
         splits = sorted(router.node_copies, key=lambda v: -len(router.node_copies[v]))
         checked = 0
-        for v in splits[:100]:
+        for v in splits[:60]:
             targets = router.node_copies[v]
             truth = float(dist[targets].min())
             if not np.isfinite(truth):
                 continue
-            path = router._astar(src, targets, pair_w)
-            assert path is not None, f"A* found no route to split junction {v}"
+            path = router._cheapest(src, targets, metric)
+            assert path is not None, f"no route to split junction {v}"
             checked += 1
             assert self._cost(router, path, pair_w) == pytest.approx(truth, abs=1e-9), \
-                f"junction {v}: A* took a costlier copy"
+                f"junction {v}: took a costlier copy"
         assert checked > 20, "not enough reachable split junctions to check"
 
-    def test_it_matches_the_whole_graph_dijkstra_over_a_spread_of_routes(self, router):
+    @pytest.mark.parametrize("pref", [0.0, 0.5, 1.0])
+    def test_it_matches_the_whole_graph_dijkstra_over_a_spread_of_routes(
+            self, router, pref):
         """The headline claim: same answer, less work. Cost equality is the
-        assertion; the *edge list* is only reported, because road networks have
-        genuine ties and two equal-cost routes are both correct answers.
-
-        Uniformly random node pairs, which is the unfriendly sample — two
-        indices drawn from the whole region are usually a cross-country drive,
-        so a few of these are the queries A* hands back (see
-        ALT_SETTLE_FRACTION) rather than the ones it wins."""
-        import router as router_module
-
+        assertion; the edge list is not, because road networks have genuine
+        ties and two equal-cost routes are both correct answers. Uniformly
+        random junctions, which are usually a long drive across the region."""
         rng = np.random.default_rng(4)
-        pair_w = self._pair_w(router)
-        compared = gave_up = 0
-        for _ in range(25):
-            s, t = int(rng.integers(router.n)), int(rng.integers(router.n))
+        pair_w = self._pair_w(router, pref)
+        metric = router.metric(pref)
+        compared = 0
+        for _ in range(12):
+            s, t = int(rng.integers(router.n_real)), int(rng.integers(router.n_real))
             targets = router.node_copies.get(t, np.array([t]))
-            slow = router._dijkstra_path(s, targets, pair_w)
-            fast = router._astar(s, targets, pair_w)
-            if fast is router_module._ASTAR_GAVE_UP:
-                gave_up += 1
-                continue
-            assert (slow is None) == (fast is None), f"{s} -> {t}: one found a route"
-            if slow is None:
+            truth = float(self._truth(router, s, pair_w)[targets].min())
+            got = router._cheapest(s, targets, metric)
+            assert (got is None) == (not np.isfinite(truth)), f"{s} -> {t}"
+            if got is None:
                 continue
             compared += 1
-            assert self._cost(router, fast, pair_w) == \
-                pytest.approx(self._cost(router, slow, pair_w), abs=1e-9)
-        assert compared > 15, \
-            f"only {compared} pairs compared ({gave_up} over budget) — tested nothing"
+            assert self._cost(router, got, pair_w) == pytest.approx(truth, abs=1e-9)
+        assert compared > 8, f"only {compared} pairs compared"
 
     def test_the_unpaved_term_is_still_in_the_weight_at_pref_zero(self, router):
-        """Trap 3. At pref 0 the scenery term drops out but the surface one does
-        not, and `avoid_unpaved` defaults to 1.0 — so an A* that searched
-        `d_minutes` because "pref 0 means fastest" would return a different
-        road on every dirt route. The bound stays admissible either way, which
-        is exactly why this would not show up as a crash."""
+        """At pref 0 the scenery term drops out but the surface one does not,
+        and `avoid_unpaved` defaults to 1.0."""
         s, t = self._od(router, BOSTON, CONCORD)
+        targets = router.node_copies.get(t, np.array([t]))
         for avoid in (0.0, 1.0, MAX_AVOID_UNPAVED):
-            pair_w = self._pair_w(router, avoid)
-            targets = router.node_copies.get(t, np.array([t]))
-            fast = router._astar(s, targets, pair_w)
-            slow = router._dijkstra_path(s, targets, pair_w)
-            assert self._cost(router, fast, pair_w) == \
-                pytest.approx(self._cost(router, slow, pair_w), abs=1e-9), \
+            pair_w = self._pair_w(router, 0.0, avoid)
+            truth = float(self._truth(router, s, pair_w)[targets].min())
+            got = router._cheapest(s, targets, router.metric(0.0, None, avoid))
+            assert self._cost(router, got, pair_w) == pytest.approx(truth, abs=1e-9), \
                 f"avoid_unpaved={avoid}"
 
-    def test_giving_up_hands_the_query_over_rather_than_losing_it(self, router,
-                                                                  monkeypatch):
-        """A* is a bet that the search is small. When it loses — a destination
-        in the far corner, or one no road reaches — it stops and lets the
-        Dijkstra have the query, and `route` must not read that as "no route".
-        Forced here by setting the budget to nothing, because the real one
-        fires on well under 1% of requests."""
+    def test_a_route_that_touches_the_corridor_is_searched_wider(self, router,
+                                                                monkeypatch):
+        """The corridor is empirical, so a route that runs along its edge is
+        one the edge may have bent: searched again with twice the room, until
+        it no longer touches. Forced here by an allowance far too small for
+        the trip.
+
+        What the rule does not promise is the whole graph's route from a
+        corridor this narrow: squeezed to a few km, the Mass Pike fits without
+        touching and is kept, where the scenic route strays further. The
+        allowance itself is what makes the answer exact
+        (`test_it_matches_the_whole_graph_dijkstra_over_a_spread_of_routes`).
+        """
         import router as router_module
-
         s, t = self._od(router, BOSTON, WORCESTER)
-        expected = router.route(s, t, 0.0)
-        monkeypatch.setattr(router_module, "ALT_SETTLE_FRACTION", 0.0)
-        assert router._astar(s, np.array([t]), self._pair_w(router)) \
-            is router_module._ASTAR_GAVE_UP
-        got = router.route(s, t, 0.0)
-        assert got is not None, "gave up and reported no route"
-        assert got.minutes == pytest.approx(expected.minutes, abs=1e-9)
-
-    def test_only_the_fastest_arm_takes_the_a_star(self, router, monkeypatch):
-        """Trap 4: at pref 1 even a perfect bound still settles most of the
-        graph, where a Python heap is several times slower than scipy's C. The
-        gate is strict equality with 0.0, so this pins it."""
-        called = []
-        monkeypatch.setattr(Router, "_astar",
-                            lambda self, *a: called.append(1) or None)
-        s, t = self._od(router, BOSTON, WORCESTER)
-        assert router.route(s, t, 0.5) is not None
-        assert router.route(s, t, 1.0) is not None
-        assert not called, "a scenic route went through the A*"
+        monkeypatch.setattr(router_module, "CORRIDOR_SHARE", 0.0)
+        monkeypatch.setattr(router_module, "CORRIDOR_KM", 0.3)
+        monkeypatch.setattr(router_module, "CORRIDOR_WIDENINGS", 8)
+        seen = []
+        real = router_module.Router.corridor
+        monkeypatch.setattr(router_module.Router, "corridor",
+                            lambda self, trip, budget: seen.append(budget)
+                            or real(self, trip, budget))
+        got = router.route(s, t, 1.0)
+        assert len(seen) > 1, "a squeezed corridor was not widened"
+        assert seen == sorted(seen)
+        assert got is not None
+        trip = router._trip(s, t)
+        allowance = seen[-1] - trip.km
+        path = [router.idx[n] for n in router.node_id[got.nodes]]
+        assert trip.excess(path) <= router_module.CORRIDOR_TOUCH * allowance + 1e-9
 
 
 class TestTurnRestrictions:

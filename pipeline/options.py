@@ -30,17 +30,16 @@ tests hold every menu option to that.
 Measurements, the decisions and the traps: docs/route-options.md.
 """
 
-import threading
 import time
 
 import numpy as np
 import shapely
 from pyproj import Transformer
-from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
 
 from common import CRS_METERS
-from router import (_TO_M, BEAUTIFUL_SCORE, TURN_BACK_CAP_MIN, _behind_strip,
+from router import (_TO_M, BEAUTIFUL_SCORE, CORRIDOR_KM, CORRIDOR_SHARE,
+                    CORRIDOR_TOUCH, CORRIDOR_WIDENINGS, TURN_BACK_CAP_MIN,
                     _tangent_at, _turn_delta)
 
 # Switch points along S: every this many km, or len(S)/SWITCH_POINTS, whichever
@@ -89,65 +88,26 @@ class SwitchPointNotFound(ValueError):
     """A switch point that names no road on this graph."""
 
 
-# --- The pref-0 graph, cached ---------------------------------------------
-
-# The fastest weights do not depend on beauty weights (pref 0 zeroes the
-# scenery term), only on the day's closures and the dirt-road avoidance, so
-# the matrix and its transpose are kept per (closure version, avoid_unpaved).
-# ~80 MB each; two cover the default avoidance across a closure change.
-_GRAPHS = {}
-_GRAPHS_MAX = 2
-_GRAPHS_LOCK = threading.Lock()
-
-
-def _pair_min(router, w):
-    pw = np.full(router.n_pairs, np.inf)
-    np.minimum.at(pw, router.slot_pair, w)
-    return pw
-
-
-def _fastest_graphs(router, avoid_unpaved, on):
-    key = (id(router), router.closure_version(on), round(float(avoid_unpaved), 4))
-    with _GRAPHS_LOCK:
-        hit = _GRAPHS.pop(key, None)
-        if hit is None:
-            w0 = router._weights(0.0, np.zeros(len(router.km)), avoid_unpaved, on)
-            pw0 = _pair_min(router, w0)
-            g0 = csr_matrix((pw0, (router.u_tail, router.u_head)),
-                            shape=(router.n, router.n))
-            hit = (w0, pw0, g0, g0.T.tocsr())
-        _GRAPHS[key] = hit
-        while len(_GRAPHS) > _GRAPHS_MAX:
-            _GRAPHS.pop(next(iter(_GRAPHS)))
-        return hit
-
-
 # --- Small helpers over the directed graph -----------------------------------
 
 def _pairs(router, path):
     path = np.asarray(path, dtype=np.int64)
-    return np.searchsorted(router._pair_key, path[:-1] * router.n + path[1:])
+    return router._hop_pairs(path[:-1], path[1:])
 
 
 def _best_slots(router, pairs, w):
-    """The directed slot each hop takes under `w`: the cheapest of any
-    parallel roads, which is the one the search priced."""
-    start = router._pair_start[pairs]
-    count = router._pair_start[pairs + 1] - start
-    out = router._pair_slots[start].copy()
-    for k in np.flatnonzero(count > 1):
-        sl = router._pair_slots[start[k]:start[k] + count[k]]
-        out[k] = sl[np.argmin(w[sl])]
-    return out
+    """The directed slot each hop takes under `w` (a `router.Metric`): the
+    cheapest of any parallel roads, which is the one the search priced."""
+    return router._best_slots(pairs, w)
 
 
 def _hop_stats(router, slots, beautiful):
     """Minutes, km and beautiful km per slot. Minutes are `d_minutes`, never
     the search's weights: pref-0 weights carry the dirt-road avoidance, which
-    is not time."""
-    e = router.eidx[slots]
+    is not time. `beautiful` answers for edge rows."""
+    e = router.eidx[slots].astype(np.int64)
     km = router.km[e]
-    return np.column_stack([router.d_minutes[slots], km, km * beautiful[e]])
+    return np.column_stack([router.d_minutes[slots], km, km * beautiful(e)])
 
 
 def _tree_path(pred, v, roots):
@@ -162,10 +122,11 @@ def _tree_path(pred, v, roots):
     return out
 
 
-def _tree_stats(router, pred, nodes, roots, w, beautiful, forward):
+def _tree_stats(router, pred, nodes, roots, w, beautiful, forward, glob):
     """Cumulative (minutes, km, beautiful km) from the tree's root to each of
     `nodes`, sharing work through a memo: the paths to consecutive switch
-    points share almost everything."""
+    points share almost everything. `pred`, `nodes` and `roots` are corridor
+    indices; `glob` turns them into the graph's."""
     memo = {int(r): np.zeros(3) for r in roots}
     out = np.full((len(nodes), 3), np.inf)
     for k, v in enumerate(nodes):
@@ -179,8 +140,8 @@ def _tree_stats(router, pred, nodes, roots, w, beautiful, forward):
             continue
         if chain:
             seq = np.array([cur] + chain[::-1], dtype=np.int64)
-            hops = (_pairs(router, seq) if forward
-                    else _pairs(router, seq[::-1])[::-1])
+            hops = (_pairs(router, glob[seq]) if forward
+                    else _pairs(router, glob[seq[::-1]])[::-1])
             stats = np.cumsum(_hop_stats(router, _best_slots(router, hops, w),
                                          beautiful), axis=0) + memo[cur]
             for node, row in zip(seq[1:], stats):
@@ -192,7 +153,7 @@ def _tree_stats(router, pred, nodes, roots, w, beautiful, forward):
 def _line(router, slots):
     """The drawn line of a run of slots, in travel order, as one array."""
     e = router.eidx[slots]
-    coords, idx = shapely.get_coordinates(router._geom[e], return_index=True)
+    coords, idx = router.lines.many(e)
     starts = np.searchsorted(idx, np.arange(len(e)))
     pos = np.arange(len(idx)) - starts[idx]
     flip = router.flip[slots][idx]
@@ -213,10 +174,9 @@ def _label(router, e):
     """A road's name for a caption: its ref where it has one ("VT 100"),
     which is what the signs say on the roads this is about, else its name."""
     for col in ("ref", "name"):
-        if col in router.edges.columns:
-            v = router.edges[col].iat[int(e)]
-            if isinstance(v, str) and v.strip():
-                return v.split(";")[0].strip()
+        v = router.edge_text(col, int(e))
+        if isinstance(v, str) and v.strip():
+            return v.split(";")[0].strip()
     return ""
 
 
@@ -235,8 +195,11 @@ def _roads(router, slots, most=3):
 def _collect(router, path, slots, scores, heading, origin):
     """`Router._collect` over a path whose hops were chosen under different
     weights per leg: a selector that makes each chosen slot the cheapest."""
-    pick = np.ones(len(router.eidx))
-    pick[slots] = 0.0
+    chosen = np.unique(np.asarray(slots, np.int64))
+
+    def pick(q):
+        return np.where(np.isin(q, chosen), 0.0, 1.0)
+
     aiming = (heading if heading is not None and 0.0 <= heading < 360.0
               else None)
     return router._collect(path, pick, scores, aiming,
@@ -287,11 +250,11 @@ def switch_slots(router, lat, lon, heading):
     if not found:
         raise SwitchPointNotFound(f"no road at {lat},{lon} heading {heading}")
     nearest = min(d for d, _, _ in found)
-    keep = np.zeros(len(router.eidx), bool)
-    for d, e, flip in found:
-        if d <= nearest + 0.25:
-            keep |= (router.eidx == e) & (router.flip == flip)
-    slots = np.flatnonzero(keep)
+    slots = sorted({int(k) for d, e, flip in found if d <= nearest + 0.25
+                    for k in router._members((router._edge_order,
+                                              router._edge_start), e)
+                    if bool(router.flip[k]) == flip})
+    slots = np.array(slots, dtype=np.int64)
     if not len(slots):
         raise SwitchPointNotFound(f"no way along the road at {lat},{lon}")
     return slots
@@ -339,26 +302,43 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
             timings[name] = now - tick
             tick = now
 
-    scores = router._edge_scores(weights or {})
-    beautiful = scores >= BEAUTIFUL_SCORE
-    w0, pw0, g0, g0T = _fastest_graphs(router, avoid_unpaved, on)
-    w1 = router._weights(1.0, scores, avoid_unpaved, on)
+    # Priced only where the searches go (router.Metric). Pref 0 zeroes the
+    # scenery term, so `w0` is the same whatever the beauty weights.
+    w0 = router.metric(0.0, weights, avoid_unpaved, on)
+    w1 = router.metric(1.0, weights, avoid_unpaved, on)
+    scores = w1.scores
+
+    def beautiful(rows):
+        return scores(rows) >= BEAUTIFUL_SCORE
+
     targets = router.node_copies.get(t)
     if targets is None:
         targets = np.array([t])
-    roots_t = {int(x) for x in targets}
 
-    # S, the scenic base: the route at pref 1, as an expanded node path.
-    g1 = csr_matrix((_pair_min(router, w1), (router.u_tail, router.u_head)),
-                    shape=(router.n, router.n))
-    d1, p1 = dijkstra(g1, directed=True, indices=s, return_predecessors=True)
-    dst = int(targets[np.argmin(d1[targets])])
-    if not np.isfinite(d1[dst]):
-        return None
-    S = _tree_path(p1, dst, {int(s)})
+    # S, the scenic base: the route at pref 1, as an expanded node path. All
+    # three searches run in one corridor about the trip, the one S needed
+    # (router.CORRIDOR_SHARE), and work in its indices: `G` turns them back
+    # into the graph's.
+    trip = router._trip(int(s), int(targets[0]))
+    allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
+    for attempt in range(CORRIDOR_WIDENINGS + 1):
+        c = router.corridor(trip, trip.km + allowance)
+        G = c.nodes
+        ls = int(c.local(s)[0])
+        lt = c.local(targets)
+        lt = lt[lt >= 0]
+        d1, p1 = dijkstra(c.matrix(c.price(w1, remember=True)),
+                          directed=True, indices=ls, return_predecessors=True)
+        dst = int(lt[np.argmin(d1[lt])])
+        S = _tree_path(p1, dst, {ls}) if np.isfinite(d1[dst]) else None
+        if S is not None and trip.excess(G[S]) <= CORRIDOR_TOUCH * allowance:
+            break
+        allowance *= 2.0
     if S is None:
         return None
-    S = np.array(S[::-1], dtype=np.int64)
+    S_local = np.array(S[::-1], dtype=np.int64)
+    S = G[S_local]
+    roots_t = {int(x) for x in lt}
     lap("scenic")
     if abort():
         return None
@@ -366,20 +346,21 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
     # The two trees, capped at S's pref-0 cost. Exact: every prefix and suffix
     # of S is a path, so no tree distance a candidate uses can exceed it.
     pairs_s = _pairs(router, S)
-    limit = float(pw0[pairs_s].sum()) * (1 + 1e-9) + 1e-6
-    df, pf = dijkstra(g0, directed=True, indices=s, limit=limit,
+    limit = float(w0.pair_weights(pairs_s).sum()) * (1 + 1e-9) + 1e-6
+    pw0 = c.price(w0)
+    df, pf = dijkstra(c.matrix(pw0), directed=True, indices=ls, limit=limit,
                       return_predecessors=True)
     if abort():
         return None
-    db, pb, _ = dijkstra(g0T, directed=True, indices=targets, min_only=True,
-                         limit=limit, return_predecessors=True)
+    db, pb, _ = dijkstra(c.reverse_matrix(pw0), directed=True, indices=lt,
+                         min_only=True, limit=limit, return_predecessors=True)
     lap("trees")
     if abort():
         return None
 
     # The fastest route falls out of the forward tree; no A* arm needed.
-    fdst = int(targets[np.argmin(df[targets])])
-    F = np.array(_tree_path(pf, fdst, {int(s)})[::-1], dtype=np.int64)
+    fdst = int(lt[np.argmin(df[lt])])
+    F = G[np.array(_tree_path(pf, fdst, {ls})[::-1], dtype=np.int64)]
     slots_f = (_best_slots(router, _pairs(router, F), w0) if len(F) > 1
                else np.array([], dtype=np.int64))
     fastest = _collect(router, F, slots_f, scores, heading, origin)
@@ -410,8 +391,8 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
     if keep[-1] != len(S) - 1:
         keep.append(len(S) - 1)
     keep = np.array(keep)
-    FP = _tree_stats(router, pf, S[keep], {int(s)}, w0, beautiful, True)
-    FS = _tree_stats(router, pb, S[keep], roots_t, w0, beautiful, False)
+    FP = _tree_stats(router, pf, S_local[keep], {ls}, w0, beautiful, True, G)
+    FS = _tree_stats(router, pb, S_local[keep], roots_t, w0, beautiful, False, G)
 
     I, J = np.triu_indices(len(keep), k=1)
     qi, qj = keep[I], keep[J]
@@ -427,12 +408,14 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
 
     def pre(q):
         if q not in pre_memo:
-            pre_memo[q] = np.array(_tree_path(pf, S[q], {int(s)})[::-1], dtype=np.int64)
+            pre_memo[q] = G[np.array(_tree_path(pf, S_local[q], {ls})[::-1],
+                                     dtype=np.int64)]
         return pre_memo[q]
 
     def suf(q):
         if q not in suf_memo:
-            suf_memo[q] = np.array(_tree_path(pb, S[q], roots_t), dtype=np.int64)
+            suf_memo[q] = G[np.array(_tree_path(pb, S_local[q], roots_t),
+                                     dtype=np.int64)]
         return suf_memo[q]
 
     def full_path(k):
@@ -540,9 +523,9 @@ def spliced_route(router, s, t, leave=None, rejoin=None, weights=None,
     the route that goes on ahead unless that costs more than
     TURN_BACK_CAP_MIN. docs/reroute-uturn.md.
     """
-    scores = router._edge_scores(weights or {})
-    w0 = _fastest_graphs(router, avoid_unpaved, on)[0]
-    w1 = router._weights(1.0, scores, avoid_unpaved, on)
+    w0 = router.metric(0.0, weights, avoid_unpaved, on)
+    w1 = router.metric(1.0, weights, avoid_unpaved, on)
+    scores = w1.scores
     leave_slots = None if leave is None else switch_slots(router, *leave)
     rejoin_slots = None if rejoin is None else switch_slots(router, *rejoin)
 
@@ -550,13 +533,9 @@ def spliced_route(router, s, t, leave=None, rejoin=None, weights=None,
                    heading, origin)
     if result is None or not (keep_ahead and result.turns_around):
         return result
-    x, y = _TO_M.transform(origin[1], origin[0])
-    blocked = router._turn_back_slots(_behind_strip(x, y, heading), heading)
-    w0b, w1b = w0.copy(), w1.copy()
-    w0b[blocked] = np.inf
-    w1b[blocked] = np.inf
-    ahead = _legs(router, s, t, leave_slots, rejoin_slots, w0b, w1b, scores,
-                  heading, origin)
+    blocked = router._turn_back_block(origin, heading)
+    ahead = _legs(router, s, t, leave_slots, rejoin_slots, w0.blocking(blocked),
+                  w1.blocking(blocked), scores, heading, origin)
     if ahead is None or ahead.minutes - result.minutes > TURN_BACK_CAP_MIN:
         return result
     return ahead
@@ -579,25 +558,14 @@ def _legs(router, s, t, leave_slots, rejoin_slots, w0, w1, scores,
     targets = router.node_copies.get(t)
     if targets is None:
         targets = np.array([t])
-    trees = {}
 
     def searched(src, to, pref, w, each):
         """(cost, path, slots) from `src`: to each of `to` if `each`, else to
-        the cheapest of them."""
+        the cheapest of them. Every search is the router's corridor search."""
         if not each:
-            found = [router._cheapest(src, np.unique(to), pref, w)]
-        elif pref == 0.0:
-            found = [router._cheapest(src, np.array([x]), 0.0, w) for x in np.unique(to)]
+            found = [router._cheapest(src, np.unique(to), w)]
         else:
-            key = (src, id(w))
-            if key not in trees:
-                g = csr_matrix((_pair_min(router, w), (router.u_tail, router.u_head)),
-                               shape=(router.n, router.n))
-                trees[key] = dijkstra(g, directed=True, indices=src,
-                                      return_predecessors=True)
-            dist, pred = trees[key]
-            found = [_tree_path(pred, x, {src})[::-1] for x in np.unique(to)
-                     if np.isfinite(dist[x])]
+            found = [router._cheapest(src, np.array([x]), w) for x in np.unique(to)]
         out = []
         for p in found:
             if p is None:
@@ -605,7 +573,7 @@ def _legs(router, s, t, leave_slots, rejoin_slots, w0, w1, scores,
             p = [int(v) for v in p]
             sl = (_best_slots(router, _pairs(router, p), w).tolist() if len(p) > 1
                   else [])
-            out.append((float(w[sl].sum()) if sl else 0.0, p, sl))
+            out.append((float(w(np.array(sl, np.int64)).sum()) if sl else 0.0, p, sl))
         return out
 
     def extend(ways, to, pref, w, each=False):
@@ -620,8 +588,10 @@ def _legs(router, s, t, leave_slots, rejoin_slots, w0, w1, scores,
         for way in ways:
             here = [int(k) for k in candidates if router.tail[k] == way["path"][-1]]
             if here:
-                k = min(here, key=lambda k: w1[k])
-                out.append(dict(way, cost=way["cost"] + float(w1[k]),
+                priced = w1(np.array(here, np.int64))
+                at = min(range(len(here)), key=lambda i: priced[i])
+                k = here[at]
+                out.append(dict(way, cost=way["cost"] + float(priced[at]),
                                 path=way["path"] + [int(router.head[k])],
                                 slots=way["slots"] + [k]))
         return out

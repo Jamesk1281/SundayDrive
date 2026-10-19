@@ -6,8 +6,9 @@ Two caps, both in `looper.py` and both measured in docs/loop-speed.md:
   costs under the penalised weights, which cannot cut off the cheapest way
   home because that path is one way home;
 - `_fields` runs its two passes over a disc around the start, proves which
-  nodes the disc got right (`_Field.exact`, `_refine`), and falls back to the
-  whole graph when a candidate is left unproved.
+  nodes the disc got right (`_Field.exact`, `_refine`), and cuts a disc twice
+  as wide when a candidate is left unproved, which on New England is nearly
+  always the whole graph.
 
 Neither may change a loop. So every test here compares against the same
 planner made to search the whole graph, node for node, rather than against a
@@ -196,14 +197,19 @@ class TestTheProof:
         full = whole._fields(f.start, 1.0, {}, 1.0, ON)
         assert np.array_equal(whole.candidates(full, km), idx)
 
-    def test_a_disc_it_cannot_prove_falls_back_to_the_whole_graph(
+    def test_a_disc_it_cannot_prove_is_cut_again_wider(
             self, router, capped, whole):
+        """Unproved, a disc is cut again twice as wide, and becomes the whole
+        graph once that would hold most of it (DISC_MAX_SHARE). Either way the
+        loop is the whole graph's. Never a whole-graph pass where the graph is
+        a continent (docs/router-at-us-scale.md, "Loops")."""
         capped._refine = lambda cost, field, disc, reverse: None
         start = router.snap(*STOWE)[0]
         f = capped._fields(start, 1.0, {}, 1.0, ON, target_km=10.0)
         if capped.disc_fallbacks == 0:
             pytest.skip("Stowe at 10 km no longer needs the refinement")
-        assert not np.isfinite(f.reach_km)
+        assert (not np.isfinite(f.reach_km)
+                or f.reach_km >= 2 * 10.0 * (1.0 + CANDIDATE_TOLERANCE))
         assert _sig(capped.plan(start, 10.0, on=ON)) == \
             _sig(whole.plan(start, 10.0, on=ON))
 
