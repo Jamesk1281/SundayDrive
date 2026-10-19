@@ -2,14 +2,17 @@
 
 Usage: slice.py <stitched_dir> <states.parquet> <out_dir> <region> [region ...]
 
+Reads only the row groups that hold the regions' rows: the country's edges and
+parking lots do not fit in memory at once.
+
 Today's Router holds its whole graph in memory and cannot load the country's, so
 the New England check (docs/national-build.md §4) routes on the national graph's
 New England part. That is every edge the six states' regions own, in the national
 rows' order, cut again to the strongly connected component (a few roads that
 reach the rest of New England only through New York drop out), with every table
 that names an edge renumbered to match: turn restrictions, closures, unpaved,
-state road classes. Nodes are those the edges end at; parking-lot components are
-those whose first vertex lies in the regions.
+state road classes. Nodes are those the edges end at; parking lots are the ones
+stitch.py kept from these regions.
 """
 import sys
 from pathlib import Path
@@ -17,25 +20,42 @@ from pathlib import Path
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import shapely
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "pipeline"))
 sys.path.insert(0, str(HERE))
 import graph  # noqa: E402
-import regions  # noqa: E402
 
 EDGE_TABLES = ["closed_to_cars", "seasonal_closures", "osm_unpaved", "state_road_class"]
+
+
+def rows_of(path: Path, rows: np.ndarray) -> gpd.GeoDataFrame:
+    """Just these rows of a GeoParquet, reading only the row groups that hold them."""
+    pf = pq.ParquetFile(path)
+    sizes = [pf.metadata.row_group(i).num_rows for i in range(pf.num_row_groups)]
+    start = np.r_[0, np.cumsum(sizes)]
+    groups = np.unique(np.searchsorted(start, rows, side="right") - 1)
+    table = pa.concat_tables([pf.read_row_group(int(g)) for g in groups])
+    base = np.concatenate([np.arange(start[g], start[g + 1]) for g in groups])
+    df = table.take(np.searchsorted(base, rows)).to_pandas()
+    order = list(df.columns)
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_wkb(df.pop("geometry"), crs=4326))
+    return gdf[order]
+
+
+def ranges(table: pd.DataFrame, column: str, names: list[str]) -> np.ndarray:
+    starts = np.r_[0, np.cumsum(table[column].to_numpy())]
+    at = {n: (a, b) for n, a, b in zip(table["region"], starts[:-1], starts[1:])}
+    return np.concatenate([np.arange(*at[n]) for n in sorted(names)])
 
 
 def main(src: str, states: str, out_dir: str, names: list[str]):
     s, out = Path(src), Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    pr = pd.read_csv(s / "per_region.csv")
-    starts = np.r_[0, np.cumsum(pr["edges"].to_numpy())]
-    ranges = {n: (a, b) for n, a, b in zip(pr["region"], starts[:-1], starts[1:])}
-    rows = np.concatenate([np.arange(*ranges[n]) for n in sorted(names)])
-    edges = gpd.read_parquet(s / "graph_edges.parquet").iloc[rows].reset_index(drop=True)
+    rows = ranges(pd.read_csv(s / "per_region.csv"), "edges", names)
+    edges = rows_of(s / "graph_edges.parquet", rows)
     keep = graph.largest_component_mask(edges["u"].to_numpy(), edges["v"].to_numpy(), edges["oneway"])
     rows, edges = rows[keep], edges[keep].reset_index(drop=True)
     new = pd.Series(np.arange(len(rows)), index=rows)
@@ -57,16 +77,10 @@ def main(src: str, states: str, out_dir: str, names: list[str]):
             tab["edge"] = new[tab["edge"].to_numpy()].to_numpy()
             tab.reset_index(drop=True).to_parquet(out / f"{t}.parquet", index=False)
 
-    all_regions = regions.load(states)
-    owner = regions.Owner(all_regions)
-    wanted = [i for i, r in enumerate(all_regions) if r.name in names]
-    ways = gpd.read_parquet(s / "access_ways.parquet")
-    first = shapely.get_point(ways.geometry.values, 0)
-    inside = np.isin(owner.of_lonlat(shapely.get_x(first), shapely.get_y(first)), wanted)
-    comps = set(ways["component"].to_numpy()[inside].tolist())
-    ways[ways["component"].isin(comps)].reset_index(drop=True).to_parquet(out / "access_ways.parquet")
-    entries = gpd.read_parquet(s / "access_entries.parquet")
-    entries[entries["component"].isin(comps)].reset_index(drop=True).to_parquet(out / "access_entries.parquet")
+    # Parking lots: the regions' own rows, which stitch.py wrote contiguously.
+    access = pd.read_csv(s / "access_per_region.csv")
+    for table, column in (("access_ways", "ways"), ("access_entries", "entries")):
+        rows_of(s / f"{table}.parquet", ranges(access, column, names)).to_parquet(out / f"{table}.parquet")
     print(f"wrote {out}")
 
 

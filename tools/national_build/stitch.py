@@ -129,6 +129,7 @@ def access_tables(c: dict, regs: list, owner: regions.Owner, out: Path, report: 
     work = Path(c["work"])
     ways_w = entries_w = None
     offset, kept_c, total_c, kept_e = 0, 0, 0, 0
+    rows = []
     for r in regs:
         ways = gpd.read_parquet(work / r.name / "access_ways.parquet")
         entries = gpd.read_parquet(work / r.name / "access_entries.parquet")
@@ -151,9 +152,13 @@ def access_tables(c: dict, regs: list, owner: regions.Owner, out: Path, report: 
         ways_w.write(w)
         entries_w.write(e)
         kept_e += len(e)
+        rows.append({"region": r.name, "ways": len(w), "entries": len(e)})
         offset += int(ways["component"].max()) + 1 if len(ways) else 0
     ways_w.close()
     entries_w.close()
+    # Each region's rows are contiguous, in this order, so a reader can take one
+    # region's lots without reading the country's (slice.py).
+    pd.DataFrame(rows).to_csv(out / "access_per_region.csv", index=False)
     report["access"] = {"components_built": total_c, "components_kept": kept_c,
                         "ways": ways_w.rows, "entries": kept_e}
 
