@@ -212,6 +212,24 @@ build's search home. Now:
 The loop rejoin (`via`) searches each leg in its corridor, and the K-1
 rejoiner's whole-graph cost models are gone with the rest.
 
+### The projection
+
+Snapping and the turn-back strip still measure in `CRS_METERS`, Massachusetts
+State Plane, which unit A flagged (`docs/national-build.md` §6). Two things
+change far from Massachusetts:
+
+- **Bearings turn.** The grid's north is 31 degrees off true north in Los
+  Angeles and 34 in Seattle. A phone's heading is true, so every heading is now
+  turned onto the grid before it is compared with a road (`_grid_heading`). In
+  New England the turn is 0.3–2.3 degrees, and it is the cause of three of the
+  five parity differences.
+- **Lengths stretch.** By up to 4.5% at Key West (feasibility §5), on
+  thresholds of 2–50 m and a 5 km coverage check. Left alone: no threshold is
+  that sharp, and the metres stay bit-identical to today's in New England.
+
+Routes and corridors never use the projection: they run on the graph's own
+lengths and great-circle distances.
+
 ### Closure dates
 
 Seasonal closures were dated in New York time. A road is now closed if it is
