@@ -36,6 +36,27 @@ other sessions on this Mac forcing the regions to run one at a time (half a day)
 Disk is the other limit. 84 GB was free on 2026-10-18, not the 116 GB
 expected, so region intermediates are deleted as each region is harvested.
 
+**Update, end of 2026-10-18.** The proof is done (§3, §4.1). All 51 regions are cut,
+and the national regions are building. Measured today, on a Mac shared with three
+other units' jobs (an iOS simulator, unit B's parity runs, unit D's closures):
+
+| step | measured |
+|---|---|
+| download, `us-latest.osm.pbf` of 2026-10-17 | 12,212,909,513 B, md5 `bab88d207efbcba7aa2998e2076045a3` (Geofabrik's own); stalled once at 10.0 GB and resumed |
+| `junctions.py`, national | 13,891,641 drivable ways, 176,221,570 references, **16,371,824 junctions**; 1,494 s, 3.7 GB peak |
+| `cut.py`, 51 rings | 13 GB of region PBFs. 5 rings per pass, 133-2,611 s and 3.9-10.0 GB a pass: the slow passes ran while the Mac was swapping |
+| the six New England rings (0.99 GB), every stage | 2.7 process-hours, two at a time, so ~2.7 h per GB of PBF under that load, against Colorado's ~1.1 h alone |
+
+At those rates the 13 GB of rings take roughly 15-35 process-hours. That is about
+half a day to a day and a half of wall time at two regions at once, which is what
+the 14 GB memory budget allows with the other units' jobs running. **Thursday 22
+October stands as the committed date. Wednesday is now unlikely.**
+
+Disk ran short. 30 GB was free with all 51 rings cut. The US PBF is deleted, since
+the junctions and rings are made from it and the md5 above identifies it.
+Geofabrik will not serve that exact snapshot again, so a different cut needs a new
+download, and new junctions to match.
+
 ## 2. Method
 
 The code is `tools/national_build/` (its README has the order and how to re-run
