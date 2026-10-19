@@ -377,6 +377,11 @@ CORRIDOR_TOUCH = 0.9
 CORRIDOR_WIDENINGS = 2
 # Corridors kept for the next search of the same trip (`Router.corridor`).
 CORRIDOR_CACHE = 4
+# A corridor holding more than this share of the graph is the whole graph:
+# cutting it out would cost more than it saves, as for a loop's disc
+# (looper.DISC_MAX_SHARE). Only long trips on a regional graph reach it; on
+# New England a 420 km trip's ellipse holds 97% of the graph.
+CORRIDOR_MAX_SHARE = 0.6
 
 # The longest point-to-point trip the server plans, in straight-line km between
 # the snapped ends: the range over which corridor search was measured to stay
@@ -1008,12 +1013,37 @@ class Corridor:
                   out=self.indptr[1:])
         self._rev = None
 
+    @classmethod
+    def whole(cls, router):
+        """The whole graph as a corridor: for a trip whose ellipse would hold
+        most of it anyway (CORRIDOR_MAX_SHARE), where cutting it out costs more
+        than it saves. Never on a graph the size of the US."""
+        c = cls.__new__(cls)
+        c.router = router
+        c.nodes = np.arange(router.n, dtype=np.int64)
+        c.pairs = np.arange(router.n_pairs, dtype=np.int64)
+        c.indices, c.indptr = router.u_head, router._pair_indptr
+        c.exits = c.exit_tails = np.zeros(0, np.int64)
+        c._rev = None
+        c.is_whole = True
+        return c
+
+    is_whole = False
+
+    def price(self, metric, remember: bool = False) -> np.ndarray:
+        """Per pair of this corridor, its weight under `metric`."""
+        if self.is_whole:
+            return metric.pair_weights_all(remember)
+        return metric.pair_weights(self.pairs, remember)
+
     def __len__(self):
         return len(self.nodes)
 
     def local(self, idx):
         """Corridor indices of graph indices, -1 for any outside."""
         idx = np.atleast_1d(np.asarray(idx, np.int64))
+        if self.is_whole:
+            return idx
         at = np.minimum(np.searchsorted(self.nodes, idx), len(self.nodes) - 1)
         return np.where(self.nodes[at] == idx, at, -1)
 
@@ -1025,24 +1055,16 @@ class Corridor:
     def reverse(self):
         """(order, tails, indptr): the transpose's arcs, as positions into
         `pairs`, with each head's arcs in the forward order, which is the
-        order scipy's own transpose gives. Read off the graph's own
-        transpose rows (`_rev_pairs`), so no sort."""
+        order scipy's own transpose gives."""
         if self._rev is None:
-            r = self.router
             m = len(self.nodes)
-            starts = r._rev_indptr[self.nodes]
-            counts = r._rev_indptr[self.nodes + 1] - starts
-            rev = r._rev_pairs[_ranges(starts, starts + counts)].astype(np.int64)
-            row = np.repeat(np.arange(m), counts)
-            # `pairs` is ascending, being each node's row in turn, so a pair
-            # inside the corridor is found in it by bisection.
-            at = np.minimum(np.searchsorted(self.pairs, rev), len(self.pairs) - 1)
-            inside = self.pairs[at] == rev if len(self.pairs) else np.zeros(len(rev), bool)
-            order = at[inside]
+            tails = np.repeat(np.arange(m, dtype=np.int32), np.diff(self.indptr))
+            # Stable, so each head's arcs stay in forward order; on int32 numpy
+            # sorts this by radix, in time linear in the corridor.
+            order = np.argsort(self.indices, kind="stable")
             indptr = np.zeros(m + 1, np.int64)
-            np.cumsum(np.bincount(row[inside], minlength=m), out=indptr[1:])
-            self._rev = (order, self.local(r.u_tail[rev[inside]]).astype(np.int32),
-                         indptr)
+            np.cumsum(np.bincount(self.indices, minlength=m), out=indptr[1:])
+            self._rev = (order, tails[order], indptr)
         return self._rev
 
     def reverse_matrix(self, pair_w):
@@ -1230,7 +1252,11 @@ class Router:
         a = {}
         for name in manifest["arrays"]:
             hot = name in self.PACK_HOT
-            a[name] = np.load(path / f"{name}.npy", mmap_mode=None if hot else "r")
+            a[name] = (np.load(path / f"{name}.npy") if hot else
+                       # A plain array over the mapping: np.memmap's own
+                       # indexing costs a Python call per lookup, and steps
+                       # generation makes tens of thousands.
+                       np.load(path / f"{name}.npy", mmap_mode="r").view(np.ndarray))
         for name in self.PACK_ARRAYS:
             setattr(self, name, a.get(name))
         with open(path / "objects.pickle", "rb") as f:
@@ -2882,7 +2908,7 @@ class Router:
     def route(self, src_idx: int, dst_idx: int, pref: float, weights: dict = None,
               heading: float | None = None, avoid_unpaved: float = 1.0,
               on: date | None = None, origin: tuple[float, float] | None = None,
-              keep_ahead: bool = False):
+              keep_ahead: bool = False, bound: float | None = None):
         """The cheapest route from `src_idx` to `dst_idx`.
 
         `origin` is where the driver is, as (lat, lon), and `heading` which way
@@ -2890,7 +2916,8 @@ class Router:
         around (`RouteResult.turns_around`). `keep_ahead` asks for a route that
         does not, for a driver who has already declined one; it applies only
         when the cheapest route turns around, so any other request is untouched.
-        See `_keep_ahead`.
+        See `_keep_ahead`. `bound` is `_cheapest`'s: the cost, under this
+        request's prices, of a legal route the caller already has (`cost_of`).
         """
         # Scored once, then used for both jobs: choosing the route and reporting
         # it. They used to disagree — the router optimized the live re-blend
@@ -2913,7 +2940,7 @@ class Router:
         targets = self.node_copies.get(dst_idx)
         if targets is None:
             targets = np.array([dst_idx])
-        path = self._cheapest(src_idx, targets, metric)
+        path = self._cheapest(src_idx, targets, metric, bound)
         if path is None:
             return None
         aiming = (heading if heading is not None and 0.0 <= heading < 360.0
@@ -2924,6 +2951,15 @@ class Router:
             return self._keep_ahead(result, src_idx, targets, metric,
                                     aiming, origin)
         return result
+
+    def cost_of(self, result, pref: float, weights: dict = None,
+                avoid_unpaved: float = 1.0, on=None) -> float:
+        """What a route this router returned costs under another setting's
+        prices: a bound for searching that setting (`route(bound=)`)."""
+        slots = getattr(result, "slots", None)
+        if slots is None or not len(slots):
+            return np.inf
+        return float(self.metric(pref, weights, avoid_unpaved, on)(slots).sum())
 
     def metric(self, pref: float, weights: dict = None, avoid_unpaved: float = 1.0,
                on=None) -> "Metric":
@@ -2983,7 +3019,7 @@ class Router:
         x, y = _TO_M.transform(origin[1], origin[0])
         return self._turn_back_slots(_behind_strip(x, y, grid), grid)
 
-    def _cheapest(self, src_idx, targets, metric, corridor=None):
+    def _cheapest(self, src_idx, targets, metric, bound=None):
         """The cheapest node path from `src_idx` to any of `targets` under
         `metric`, searched in the trip's corridor; None when there is none.
 
@@ -2991,30 +3027,41 @@ class Router:
         and when it holds no route at all, since a way round can lie outside
         it. Every pref takes this path: the fastest arm's A* is gone (see
         CORRIDOR_SHARE).
+
+        `bound` is the cost under `metric` of some legal path between the
+        two, when the caller has one: the search stops there (scipy's
+        `limit`), which is exact, because the cheapest path costs no more.
+        A plan's fastest arm is bounded by its scenic route.
         """
         targets = np.asarray(targets, np.int64)
         trip = self._trip(src_idx, int(targets[0]))
+        limit = (np.inf if bound is None or not np.isfinite(bound)
+                 else bound * (1.0 + 1e-9) + 1e-6)
         allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
         path = None
         for attempt in range(CORRIDOR_WIDENINGS + 1):
             c = self.corridor(trip, trip.km + allowance)
-            path = self._search(c, src_idx, targets, metric)
+            path = self._search(c, src_idx, targets, metric, limit)
             if path is not None and trip.excess(path) <= CORRIDOR_TOUCH * allowance:
                 return path
             allowance *= 2.0
+        if path is None and np.isfinite(limit):
+            # The bounding path ran outside every corridor tried: unbounded,
+            # rather than a "no route" the bound alone made.
+            return self._cheapest(src_idx, targets, metric)
         return path
 
-    def _search(self, c: Corridor, src_idx, targets, metric):
+    def _search(self, c: Corridor, src_idx, targets, metric, limit=np.inf):
         """One Dijkstra over corridor `c`: the cheapest path to any of
         `targets` inside it, as graph indices, or None.
 
         scipy's Dijkstra has no target early-exit, so this settles the whole
         corridor; the corridor is what keeps that small.
         """
-        g = c.matrix(metric.pair_weights(c.pairs))
+        g = c.matrix(c.price(metric))
         src = int(c.local(src_idx)[0])
         dist, pred = dijkstra(g, directed=True, indices=src,
-                              return_predecessors=True)
+                              return_predecessors=True, limit=limit)
         local = c.local(targets)
         local = local[local >= 0]
         if not len(local):
@@ -3060,7 +3107,9 @@ class Router:
             if hit is not None:
                 self._corridors[key] = hit          # move to the warm end
                 return hit
-        c = Corridor(self, self._ellipse_nodes(trip, budget_km))
+        nodes = self._ellipse_nodes(trip, budget_km)
+        c = (Corridor.whole(self) if len(nodes) > CORRIDOR_MAX_SHARE * self.n
+             else Corridor(self, nodes))
         with self._corridor_lock:
             self._corridors[key] = c
             while len(self._corridors) > CORRIDOR_CACHE:
@@ -3172,10 +3221,14 @@ class Router:
         # the junction itself.
         real = [int(self.real_node[p]) for p in path]
         route_scores = scores(edge_rows) if callable(scores) else scores[edge_rows]
-        return RouteResult(rows, stitch(coords), coords, route_scores,
-                           nodes=real, context=self.maneuver_context,
-                           edge_minutes=self.d_minutes[chosen],
-                           start_heading=heading, origin=origin)
+        result = RouteResult(rows, stitch(coords), coords, route_scores,
+                             nodes=real, context=self.maneuver_context,
+                             edge_minutes=self.d_minutes[chosen],
+                             start_heading=heading, origin=origin)
+        # The directed slots driven, so another search can be bounded by
+        # this route (`cost_of`).
+        result.slots = chosen
+        return result
 
     def _best_slots(self, pairs, w) -> np.ndarray:
         """The directed slot each pair's hop takes: the cheapest of any
@@ -3252,16 +3305,36 @@ class Metric:
         self.on = on
         self.blocked = blocked
         self._known = None
+        self._all = None
 
     def scores(self, rows) -> np.ndarray:
         """The 0-10 score of edges `rows` under the request's beauty weights."""
         rows = np.asarray(rows, np.int64)
+        if self._all is not None:
+            return self._all[rows]
         known = self._known
         if known is not None and len(rows):
             at = np.minimum(np.searchsorted(known[0], rows), len(known[0]) - 1)
             if (known[0][at] == rows).all():
                 return known[1][at]
         return self.router._scores_of(rows, self.w)
+
+    def pair_weights_all(self, remember: bool = False) -> np.ndarray:
+        """`pair_weights` for every pair, with the whole graph's own array
+        arithmetic: what the old router did per request, for a corridor that
+        is the whole graph (`Corridor.whole`)."""
+        r = self.router
+        if max(0.0, min(1.0, self.pref)) == 0.0:
+            scores = np.zeros(r.m)
+        else:
+            scores = r._scores_of(None, self.w)
+            if remember:
+                self._all = scores
+        w = r._slot_weights(None, scores, self.pref, self.avoid_unpaved, self.on,
+                            self.blocked)
+        pair_w = np.full(r.n_pairs, np.inf)
+        np.minimum.at(pair_w, r.slot_pair, w)
+        return pair_w
 
     def remember(self, rows):
         """Score `rows` once now and answer from that whenever asked again:

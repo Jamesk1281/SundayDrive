@@ -327,7 +327,7 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
         ls = int(c.local(s)[0])
         lt = c.local(targets)
         lt = lt[lt >= 0]
-        d1, p1 = dijkstra(c.matrix(w1.pair_weights(c.pairs, remember=True)),
+        d1, p1 = dijkstra(c.matrix(c.price(w1, remember=True)),
                           directed=True, indices=ls, return_predecessors=True)
         dst = int(lt[np.argmin(d1[lt])])
         S = _tree_path(p1, dst, {ls}) if np.isfinite(d1[dst]) else None
@@ -347,7 +347,7 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
     # of S is a path, so no tree distance a candidate uses can exceed it.
     pairs_s = _pairs(router, S)
     limit = float(w0.pair_weights(pairs_s).sum()) * (1 + 1e-9) + 1e-6
-    pw0 = w0.pair_weights(c.pairs)
+    pw0 = c.price(w0)
     df, pf = dijkstra(c.matrix(pw0), directed=True, indices=ls, limit=limit,
                       return_predecessors=True)
     if abort():

@@ -368,6 +368,13 @@ def _parse_switch(args, name):
     return lat, lon, heading % 360.0
 
 
+def _bound(route, weights, avoid_unpaved, day):
+    """What `route` costs at pref 0, for bounding the fastest arm, or None."""
+    if route is None:
+        return None
+    return ROUTER.cost_of(route, 0.0, weights, avoid_unpaved, day)
+
+
 def _no_worse_than_fastest(fastest, scenic):
     """The scenic route, or the fastest one when "scenic" came back scoring lower.
 
@@ -537,9 +544,6 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # One option of a menu, in full: fetched when the driver settles on it,
     # and asked again by legs when they leave it mid-drive.
     if leave is not None or rejoin is not None:
-        fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
-                               avoid_unpaved=avoid_unpaved, on=day, origin=a,
-                               keep_ahead=declined_uturn)
         try:
             scenic = route_options.spliced_route(
                 ROUTER, s, t, leave, rejoin, weights, avoid_unpaved, on=day,
@@ -551,6 +555,13 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
             scenic = ROUTER.route(s, t, pref, weights, heading=heading,
                                   avoid_unpaved=avoid_unpaved, on=day,
                                   origin=a, keep_ahead=declined_uturn)
+        # The scenic route is a legal drive, so what it costs at pref 0 bounds
+        # the fastest one's search (`Router.route(bound=)`): exact, and it
+        # stops the search well short of the corridor's far side.
+        fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
+                               avoid_unpaved=avoid_unpaved, on=day, origin=a,
+                               keep_ahead=declined_uturn,
+                               bound=_bound(scenic, weights, avoid_unpaved, day))
         if fastest is not None and scenic is not None:
             scenic = _no_worse_than_fastest(fastest, scenic)
             return jsonify(fastest=fastest.geojson(),
@@ -563,13 +574,17 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # `keep_ahead` asks for one that doesn't once they have declined one.
     # Both arms, so a driver who declined a U-turn and then tapped "fastest"
     # is not handed the same U-turn on the fast roads. docs/reroute-uturn.md.
-    fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
-                           avoid_unpaved=avoid_unpaved, on=day, origin=a,
-                           keep_ahead=declined_uturn)
-    scenic = (fastest if pref == 0.0
+    # Scenic first, so its route can bound the fastest arm's search.
+    scenic = (None if pref == 0.0
               else ROUTER.route(s, t, pref, weights, heading=heading,
                                 avoid_unpaved=avoid_unpaved, on=day, origin=a,
                                 keep_ahead=declined_uturn))
+    fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
+                           avoid_unpaved=avoid_unpaved, on=day, origin=a,
+                           keep_ahead=declined_uturn,
+                           bound=_bound(scenic, weights, avoid_unpaved, day))
+    if pref == 0.0:
+        scenic = fastest
     if fastest is None or scenic is None:
         # A route on the graph with nothing closed means the closures are what
         # cut it off: the destination is up a road shut for the season, or

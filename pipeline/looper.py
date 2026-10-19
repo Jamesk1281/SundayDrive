@@ -712,7 +712,7 @@ class LoopPlanner:
         for attempt in range(CORRIDOR_WIDENINGS + 1):
             c = r.corridor(trip, trip.km + allowance)
             local_src = int(c.local(src)[0])
-            dist, pred = dijkstra(c.matrix(metric.pair_weights(c.pairs)),
+            dist, pred = dijkstra(c.matrix(c.price(metric)),
                                   directed=True, indices=local_src,
                                   return_predecessors=True)
             local = c.local(ends)

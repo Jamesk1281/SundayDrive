@@ -104,3 +104,133 @@ What this changes:
   scipy is not enough, and it would have to install from a wheel on aarch64
   Linux under the box's Python 3.12.
 - No changes to the pipeline build files, `closures.py` or `ios/`.
+
+## What was built
+
+### The pack
+
+`Router(processed_dir)` used to read the graph into geopandas frames, a shapely
+object per road twice over (lon/lat and projected), an STRtree over them, and a
+Python dict from OSM node id to index. Today it reads the parquets into flat
+arrays (`pipeline/compact.py`):
+
+- **text** columns (name, ref, highway, junction, destinations, exit numbers)
+  as int32 codes into one UTF-8 blob of distinct values;
+- **geometry** as int32 lon/lat in 1e-7 degrees, OSM's own precision, so the
+  round trip is exact (checked on all 9,390,733 New England vertices);
+- **grids** in degrees: nodes by 0.1-degree cell, for corridors and loop discs;
+  road bounding boxes by 0.01-degree cell, for snapping. New England's roads
+  sit in 1.37 cells each on average.
+
+Snapping keeps its code. `_edge_tree` and `_edge_geom_m` are now objects that
+answer the same two questions STRtree answered (nearest line, lines whose box
+meets a box) and build a projected shapely line only for the roads asked
+about, through the same transformer geopandas used, so the metres are the same
+to the bit. `idx` is a binary search over the sorted node ids.
+
+`tools/us_scale_router/pack.py` writes those arrays to a directory, and
+`SUNDAYDRIVE_PACK` makes the server map them instead of building. The arrays
+every search reads are loaded into memory. The rest (geometry, names, the
+access layer) is paged from disk as requests touch it. Paging the search arrays
+too would gain nothing: OSM node ids are not spatially ordered, so a long
+corridor touches nearly every page of them. A pack records a fingerprint of
+each file it was built from, and the server refuses a pack that no longer
+matches the parquets beside it, as it refuses a stale closures table. It also
+names its region, which is where the server's coverage messages get it from.
+
+| New England | today's router (`usa`) | this branch, built | this branch, pack |
+|---|---:|---:|---:|
+| load | 35 s on 2026-10-18, 53 s in the review | 27–44 s | **1.6–1.8 s** |
+| peak memory while loading | 4.4 GB (`docs/hosting-status-2026-09.md`) | 2.1–2.3 GB | pack mapped |
+| on disk | 382 MB of parquets | — | 0.58 GB |
+
+### Corridor search
+
+Every route, every arm, reroutes, option legs and loop rejoins search an
+ellipse around the trip: nodes v with |s v| + |v t| <= d + 0.5 d + 20 km in
+great-circle km between junctions (feasibility §3). The cost of a request now
+follows the trip, not the map:
+
+- **The corridor's nodes** come off the node grid: whole cells inside the
+  ellipse are taken, whole cells outside are skipped, and only cells the edge
+  crosses are tested node by node.
+- **Its matrix** is each corridor node's own row of the pair CSR, kept where
+  the head is inside. It is the whole graph's matrix cut down, neighbour order
+  included (tested), so scipy breaks ties the same way.
+- **Its prices** come from a `Metric`, which applies `_edge_scores` and
+  `_weights` to the corridor's slots only, in the same arithmetic. A subset's
+  prices equal the whole graph's to the bit (tested). Private, closed and
+  seasonal slots are read from one flag byte per slot.
+- **The check.** A route whose worst point comes within 90% of the allowance
+  is searched again with twice the room, up to twice. This is what the review
+  asked for. It is evidence and not proof: squeezed to a few km, the Mass Pike
+  fits without touching, so a corridor that narrow keeps it where the scenic
+  route strays further. The allowance is what makes the answer exact; the
+  check catches the routes it bends.
+- **The fastest arm's A\*** is gone. Its landmark tables would be about 2.5 GB
+  for the US, sixteen landmarks bound a continent much worse than a region,
+  and the corridor already makes the fastest arm local.
+
+### Options
+
+`plan` runs its three searches (S at pref 1, the forward and backward fastest
+trees) in one corridor, chosen and widened for S. `spliced_route` searches each
+leg in that leg's own corridor. The whole-graph pref-0 matrices that
+`_fastest_graphs` cached, about 80 MB each on New England and 2 GB each on the
+US, are gone.
+
+### Loops
+
+A loop's two passes already ran over a disc around the start, with a proof
+that each candidate's paths are the whole graph's (`docs/loop-speed.md`). What
+was still whole-graph was everything around the disc: the cost model (82 MB on
+New England, about 2 GB each on the US, two per planner and two planners), the
+fields spread to the whole graph's size, the mask that cut the disc, and every
+build's search home. Now:
+
+- the disc is cut from the node grid and the graph's forward and transposed
+  rows;
+- its cost model prices only the pairs it touches;
+- the fields keep disc-local arrays, with whole-graph views built only when a
+  test asks for them;
+- a build re-prices only the pairs the drive out used. It searches home inside
+  the disc and proves the answer: any way home that leaves the disc must come
+  back in, and the back field already bounds that. A disc that cannot prove a
+  build is searched twice as wide.
+- A disc that cannot prove its candidates is cut again twice as wide instead of
+  being replaced by the whole graph. On New England the doubled disc is nearly
+  always most of the graph, so it becomes the whole graph as before. On the US
+  it never is, so after two doublings the last disc is kept and its unproved
+  candidates are left out.
+- The field cache is capped at 6M nodes searched as well as at four entries.
+
+The loop rejoin (`via`) searches each leg in its corridor, and the K-1
+rejoiner's whole-graph cost models are gone with the rest.
+
+### Closure dates
+
+Seasonal closures were dated in New York time. A road is now closed if it is
+closed on any date the contiguous US is on at that moment (`region_today`).
+That is one date except in the three hours after midnight Eastern. A window
+can therefore start up to three hours early in the West and end up to three
+hours late in the East, always overnight and always toward closed. No time-zone
+lookup and no new dependency.
+
+### The cap and the messages
+
+`/api/route` refuses a point-to-point trip longer than 500 km in a straight
+line between the snapped ends, before any search. The reply is a 400 with
+`code: "TRIP_TOO_LONG"`, `km` and `max_km`, and an `error` the app shows as
+written:
+
+> That trip is 412 miles in a straight line. Sunday Drive plans drives of up
+> to 311 miles, so pick a stop along the way and plan it in two parts.
+
+A reroute (it carries a heading or a declined U-turn) gets 650 km instead. A
+driver who has wandered past the cap mid-drive is better served slowly than
+refused. A loop's rejoin is bounded by the loop.
+
+The coverage refusals are sentences now ("Sunday Drive covers the contiguous
+United States, and that point is outside it."), with the region taken from
+`SUNDAYDRIVE_REGION`, else the pack's own region, else "New England". Unit C's
+app passes `error` through verbatim (`RouteService.failure`).
