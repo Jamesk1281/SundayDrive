@@ -521,6 +521,41 @@ def composite(raw, score_adj):
     return 10.0 * np.clip((raw + RAW_BASE) * STRETCH + score_adj, 0.0, 1.0)
 
 
+# Polygons with more vertices than this are cut into SPLIT_CELL_M grid squares
+# before they go into a query tree. A `dwithin` against one polygon costs time in
+# its vertex count, and the tree cannot help when the polygon's box covers a whole
+# coast: Casco Bay's water polygon (71,185 vertices) cost 54 s for 20,000 nearby
+# chunks, its pieces 0.22 s, with identical answers, and the Great Lakes are bigger.
+# The pieces cover exactly the polygon, so "within d of any piece" is "within d of
+# the polygon". The area filters are applied to the whole polygon first, so a lake
+# cut into small squares still counts as one big lake. docs/national-build.md §5.
+SPLIT_VERTICES = 2000
+SPLIT_CELL_M = 5000.0
+
+
+def split_large(geoms: np.ndarray) -> np.ndarray:
+    """`geoms` with every polygon over SPLIT_VERTICES cut into grid squares."""
+    big = (shapely.get_num_coordinates(geoms) > SPLIT_VERTICES) & np.isin(
+        shapely.get_type_id(geoms), (3, 6))  # Polygon, MultiPolygon
+    if not big.any():
+        return geoms
+    pieces = [geoms[~big]]
+    for g in geoms[big]:
+        x0, y0, x1, y1 = g.bounds
+        xs = np.arange(x0, x1, SPLIT_CELL_M)
+        ys = np.arange(y0, y1, SPLIT_CELL_M)
+        cells = shapely.box(*np.meshgrid(xs, ys), *np.meshgrid(xs + SPLIT_CELL_M, ys + SPLIT_CELL_M))
+        try:
+            cut = shapely.intersection(g, cells.ravel())
+        except shapely.errors.GEOSException:
+            # An invalid polygon GEOS will not cut (one in Colorado's 2026-10-17
+            # extract) stays whole, which is how every polygon was queried before.
+            pieces.append(np.array([g], dtype=object))
+            continue
+        pieces.append(cut[~shapely.is_empty(cut)])
+    return np.concatenate(pieces)
+
+
 def build_tree(gdf: gpd.GeoDataFrame, min_area: float | None = None) -> STRtree | None:
     if len(gdf) == 0:
         return None
@@ -529,7 +564,7 @@ def build_tree(gdf: gpd.GeoDataFrame, min_area: float | None = None) -> STRtree 
         geoms = geoms[shapely.area(geoms) >= min_area]
     if len(geoms) == 0:
         return None
-    return STRtree(geoms)
+    return STRtree(split_large(np.asarray(geoms)))
 
 
 def main(processed_dir: str, cache: bool = True):
@@ -565,7 +600,7 @@ def main(processed_dir: str, cache: bool = True):
             water_geoms.append(g[shapely.area(g) >= MIN_AREA["water"]])
         if len(wl):
             water_geoms.append(wl.geometry.values)
-        return STRtree(np.concatenate(water_geoms)) if water_geoms else None
+        return STRtree(split_large(np.concatenate(water_geoms))) if water_geoms else None
 
     directory = cache_dir(d) if cache else None
     if directory is not None:

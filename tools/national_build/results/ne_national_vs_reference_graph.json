@@ -1,0 +1,504 @@
+{
+ "reference_edges_in_regions": 997253,
+ "stitched_edges": 997415,
+ "matched": 975979,
+ "reference_only": 21274,
+ "stitched_only": 21436,
+ "reference_only_km": 7431.186624320759,
+ "stitched_only_km": 7380.7246014888715,
+ "columns": {
+  "length_m": {
+   "differ": 0
+  },
+  "minutes": {
+   "differ": 3778
+  },
+  "n_signal_fwd": {
+   "differ": 39
+  },
+  "n_signal_rev": {
+   "differ": 68
+  },
+  "n_stop_fwd": {
+   "differ": 35
+  },
+  "n_stop_rev": {
+   "differ": 28
+  },
+  "n_giveway_fwd": {
+   "differ": 1
+  },
+  "n_giveway_rev": {
+   "differ": 3
+  },
+  "oneway": {
+   "differ": 170
+  },
+  "name": {
+   "differ": 518
+  },
+  "ref": {
+   "differ": 7
+  },
+  "highway": {
+   "differ": 2405
+  },
+  "junction": {
+   "differ": 11
+  },
+  "dest_ref": {
+   "differ": 5
+  },
+  "dest_name": {
+   "differ": 7
+  },
+  "c_curves": {
+   "differ": 18353,
+   "max": 1.0,
+   "km_over_0.25": 41.46034009331839,
+   "km_share_over_0.25": 0.0001844388963396714
+  },
+  "c_water": {
+   "differ": 2601,
+   "max": 1.0,
+   "km_over_0.25": 307.6305498941545,
+   "km_share_over_0.25": 0.0013685135957673426
+  },
+  "c_coast": {
+   "differ": 211,
+   "max": 1.0,
+   "km_over_0.25": 22.575550867752483,
+   "km_share_over_0.25": 0.00010042873929486663
+  },
+  "c_forest": {
+   "differ": 10000,
+   "max": 0.699999988079071,
+   "km_over_0.25": 565.0331735846557,
+   "km_share_over_0.25": 0.0025135851441809728
+  },
+  "c_farm": {
+   "differ": 250,
+   "max": 1.0,
+   "km_over_0.25": 51.22704657863153,
+   "km_share_over_0.25": 0.00022788669635699367
+  },
+  "c_views": {
+   "differ": 97,
+   "max": 1.0,
+   "km_over_0.25": 20.95240422640971,
+   "km_share_over_0.25": 9.32080707124844e-05
+  },
+  "c_scenic_tag": {
+   "differ": 0,
+   "max": 0.0,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_relief": {
+   "differ": 5222,
+   "max": 0.2301171875,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_grand": {
+   "differ": 236,
+   "max": 0.06473307291666675,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_protected": {
+   "differ": 13,
+   "max": 1.0,
+   "km_over_0.25": 0.7846077024296196,
+   "km_share_over_0.25": 3.49037606469238e-06
+  },
+  "c_urban": {
+   "differ": 3249,
+   "max": 1.0,
+   "km_over_0.25": 374.88801825105264,
+   "km_share_over_0.25": 0.0016677126184098461
+  },
+  "score_adj": {
+   "differ": 2276,
+   "max": 0.4000000000000001,
+   "km_over_0.25": 4.849031661690497,
+   "km_share_over_0.25": 2.157121832540029e-05
+  },
+  "unpaved_frac": {
+   "differ": 259,
+   "max": 1.0,
+   "km_over_0.25": 65.32874033193819,
+   "km_share_over_0.25": 0.0002906189563077284
+  },
+  "score": {
+   "differ": 28425,
+   "max": 4.41612683104699,
+   "km_over_0.25": 2400.327691824158,
+   "km_share_over_0.25": 0.01067800672491215
+  }
+ },
+ "reference_only_by_highway_km": {
+  "living_street": 0.94,
+  "motorway": 376.35,
+  "motorway_link": 94.22,
+  "primary": 393.08,
+  "primary_link": 4.2,
+  "residential": 4478.78,
+  "secondary": 640.41,
+  "secondary_link": 1.23,
+  "tertiary": 747.45,
+  "tertiary_link": 0.43,
+  "trunk": 194.45,
+  "trunk_link": 7.7,
+  "unclassified": 491.94
+ },
+ "reference_only_examples": [
+  {
+   "u": 25324425,
+   "v": 25445647,
+   "name": "Height of Land Road",
+   "highway": "unclassified",
+   "length_m": 1971.0,
+   "lonlat": [
+    -71.97092,
+    43.61743
+   ]
+  },
+  {
+   "u": 25351851,
+   "v": 253046135,
+   "name": "Sargent Hill Road",
+   "highway": "unclassified",
+   "length_m": 431.9,
+   "lonlat": [
+    -71.93371,
+    43.54891
+   ]
+  },
+  {
+   "u": 25351851,
+   "v": 6555910702,
+   "name": "Gauthier Lane",
+   "highway": "residential",
+   "length_m": 145.5,
+   "lonlat": [
+    -71.93371,
+    43.54891
+   ]
+  },
+  {
+   "u": 25445647,
+   "v": 25445545,
+   "name": "Height of Land Road",
+   "highway": "unclassified",
+   "length_m": 1363.4,
+   "lonlat": [
+    -71.99156,
+    43.61552
+   ]
+  },
+  {
+   "u": 41255186,
+   "v": 1928721147,
+   "name": "Second Street",
+   "highway": "primary",
+   "length_m": 66.3,
+   "lonlat": [
+    -71.47563,
+    42.97447
+   ]
+  },
+  {
+   "u": 41300752,
+   "v": 41334476,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 663.9,
+   "lonlat": [
+    -71.44875,
+    42.72973
+   ]
+  },
+  {
+   "u": 41300752,
+   "v": 41536025,
+   "name": "Graham Drive",
+   "highway": "unclassified",
+   "length_m": 159.2,
+   "lonlat": [
+    -71.44875,
+    42.72973
+   ]
+  },
+  {
+   "u": 41300754,
+   "v": 41300752,
+   "name": "Graham Drive",
+   "highway": "unclassified",
+   "length_m": 12.0,
+   "lonlat": [
+    -71.44888,
+    42.72968
+   ]
+  },
+  {
+   "u": 41300754,
+   "v": 41486497,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 92.2,
+   "lonlat": [
+    -71.44888,
+    42.72968
+   ]
+  },
+  {
+   "u": 41323577,
+   "v": 41587855,
+   "name": "Coach Road",
+   "highway": "residential",
+   "length_m": 633.5,
+   "lonlat": [
+    -71.82685,
+    42.92864
+   ]
+  },
+  {
+   "u": 41333181,
+   "v": 41333184,
+   "name": "",
+   "highway": "residential",
+   "length_m": 129.4,
+   "lonlat": [
+    -72.01363,
+    43.11436
+   ]
+  },
+  {
+   "u": 41333181,
+   "v": 41659006,
+   "name": "Black Pond Road",
+   "highway": "residential",
+   "length_m": 120.4,
+   "lonlat": [
+    -72.01363,
+    43.11436
+   ]
+  },
+  {
+   "u": 41361534,
+   "v": 13459435343,
+   "name": "",
+   "highway": "tertiary",
+   "length_m": 76.0,
+   "lonlat": [
+    -71.35371,
+    42.7031
+   ]
+  },
+  {
+   "u": 41371608,
+   "v": 41300752,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 368.7,
+   "lonlat": [
+    -71.44671,
+    42.72677
+   ]
+  },
+  {
+   "u": 41374183,
+   "v": 41374169,
+   "name": "Lowell Road",
+   "highway": "secondary",
+   "length_m": 288.1,
+   "lonlat": [
+    -71.42243,
+    42.7235
+   ]
+  }
+ ],
+ "stitched_only_by_highway_km": {
+  "living_street": 0.55,
+  "motorway": 362.47,
+  "motorway_link": 89.81,
+  "primary": 415.29,
+  "primary_link": 4.18,
+  "residential": 4455.1,
+  "secondary": 617.4,
+  "secondary_link": 1.29,
+  "tertiary": 752.58,
+  "tertiary_link": 0.56,
+  "trunk": 195.14,
+  "trunk_link": 9.9,
+  "unclassified": 476.44
+ },
+ "stitched_only_examples": [
+  {
+   "u": 25324425,
+   "v": 25445647,
+   "name": "Height of Land Road",
+   "highway": "unclassified",
+   "length_m": 1978.8,
+   "lonlat": [
+    -71.97092,
+    43.61743
+   ]
+  },
+  {
+   "u": 25351851,
+   "v": 253046135,
+   "name": "Sargent Hill Road",
+   "highway": "unclassified",
+   "length_m": 426.8,
+   "lonlat": [
+    -71.93376,
+    43.54891
+   ]
+  },
+  {
+   "u": 25351851,
+   "v": 6555910702,
+   "name": "Gauthier Lane",
+   "highway": "residential",
+   "length_m": 143.8,
+   "lonlat": [
+    -71.93376,
+    43.54891
+   ]
+  },
+  {
+   "u": 25445647,
+   "v": 25445545,
+   "name": "Height of Land Road",
+   "highway": "unclassified",
+   "length_m": 1366.7,
+   "lonlat": [
+    -71.99156,
+    43.61552
+   ]
+  },
+  {
+   "u": 41255186,
+   "v": 1928721147,
+   "name": "Second Street",
+   "highway": "primary",
+   "length_m": 66.3,
+   "lonlat": [
+    -71.47563,
+    42.97447
+   ]
+  },
+  {
+   "u": 41300752,
+   "v": 41334476,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 665.2,
+   "lonlat": [
+    -71.44875,
+    42.72972
+   ]
+  },
+  {
+   "u": 41300752,
+   "v": 41536025,
+   "name": "Graham Drive",
+   "highway": "unclassified",
+   "length_m": 159.2,
+   "lonlat": [
+    -71.44875,
+    42.72972
+   ]
+  },
+  {
+   "u": 41300754,
+   "v": 41300752,
+   "name": "Graham Drive",
+   "highway": "unclassified",
+   "length_m": 12.1,
+   "lonlat": [
+    -71.44888,
+    42.72967
+   ]
+  },
+  {
+   "u": 41300754,
+   "v": 41486497,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 91.2,
+   "lonlat": [
+    -71.44888,
+    42.72967
+   ]
+  },
+  {
+   "u": 41317204,
+   "v": 41513134,
+   "name": "Silver Lake Road",
+   "highway": "secondary",
+   "length_m": 61.5,
+   "lonlat": [
+    -71.59289,
+    42.76991
+   ]
+  },
+  {
+   "u": 41317207,
+   "v": 41587046,
+   "name": "Wheat Lane",
+   "highway": "residential",
+   "length_m": 63.4,
+   "lonlat": [
+    -71.59257,
+    42.77005
+   ]
+  },
+  {
+   "u": 41323577,
+   "v": 41587855,
+   "name": "Coach Road",
+   "highway": "residential",
+   "length_m": 637.9,
+   "lonlat": [
+    -71.82696,
+    42.92863
+   ]
+  },
+  {
+   "u": 41361534,
+   "v": 13459435343,
+   "name": "",
+   "highway": "tertiary",
+   "length_m": 76.0,
+   "lonlat": [
+    -71.35371,
+    42.7031
+   ]
+  },
+  {
+   "u": 41371608,
+   "v": 41300752,
+   "name": "Daniel Webster Highway",
+   "highway": "secondary",
+   "length_m": 367.4,
+   "lonlat": [
+    -71.44671,
+    42.72677
+   ]
+  },
+  {
+   "u": 41374183,
+   "v": 41374169,
+   "name": "Lowell Road",
+   "highway": "secondary",
+   "length_m": 288.1,
+   "lonlat": [
+    -71.42243,
+    42.7235
+   ]
+  }
+ ]
+}

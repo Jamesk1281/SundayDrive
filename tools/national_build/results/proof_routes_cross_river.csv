@@ -1,0 +1,55 @@
+pair,pref,a_snap_m,a_km,a_min,a_score,b_snap_m,b_km,b_min,b_score,same_path
+Hanover NH - Norwich VT,0.0,20.7,2.562,4.78,6.753,20.7,2.562,4.78,6.753,True
+Hanover NH - Norwich VT,0.5,20.7,2.562,4.78,6.753,20.7,2.562,4.78,6.753,True
+Hanover NH - Norwich VT,1.0,20.7,2.562,4.78,6.753,20.7,2.562,4.78,6.753,True
+Lebanon NH - White River Jct VT,0.0,39.2,10.932,10.93,4.561,39.2,10.932,10.93,4.561,True
+Lebanon NH - White River Jct VT,0.5,39.2,7.231,11.12,6.906,39.2,7.231,11.12,6.906,True
+Lebanon NH - White River Jct VT,1.0,39.2,7.231,11.12,6.906,39.2,7.231,11.12,6.906,True
+Keene NH - Brattleboro VT,0.0,34.8,33.802,30.45,4.493,34.8,33.802,30.45,4.493,True
+Keene NH - Brattleboro VT,0.5,34.8,30.991,32.34,5.499,34.8,30.991,32.34,5.499,True
+Keene NH - Brattleboro VT,1.0,34.8,30.661,35.58,5.687,34.8,30.661,35.58,5.687,True
+Walpole NH - Bellows Falls VT,0.0,10.3,8.78,9.88,6.637,10.3,8.78,9.88,6.637,True
+Walpole NH - Bellows Falls VT,0.5,10.3,8.783,9.88,6.663,10.3,8.783,9.88,6.663,True
+Walpole NH - Bellows Falls VT,1.0,10.3,8.317,11.34,7.156,10.3,8.317,11.34,7.151,True
+Littleton NH - St Johnsbury VT,0.0,11.7,36.528,19.92,1.644,11.7,36.528,19.92,1.639,True
+Littleton NH - St Johnsbury VT,0.5,11.7,30.702,35.96,6.642,11.7,30.702,35.96,6.642,True
+Littleton NH - St Johnsbury VT,1.0,11.7,30.674,35.97,6.639,11.7,30.674,35.97,6.639,True
+Cornish NH - Windsor VT,0.0,42.7,8.109,9.72,7.133,42.7,8.109,9.72,7.133,True
+Cornish NH - Windsor VT,0.5,42.7,8.109,9.72,7.133,42.7,8.109,9.72,7.133,True
+Cornish NH - Windsor VT,1.0,42.7,8.109,9.72,7.133,42.7,8.109,9.72,7.133,True
+Woodsville NH - Wells River VT,0.0,255.3,2.409,3.56,8.914,255.3,2.409,3.56,8.914,True
+Woodsville NH - Wells River VT,0.5,255.3,2.409,3.56,8.914,255.3,2.409,3.56,8.914,True
+Woodsville NH - Wells River VT,1.0,255.3,2.409,3.56,8.914,255.3,2.409,3.56,8.914,True
+Lancaster NH - Guildhall VT,0.0,90.6,10.666,10.16,5.747,90.6,10.666,10.16,5.747,True
+Lancaster NH - Guildhall VT,0.5,90.6,10.666,10.16,5.747,90.6,10.666,10.16,5.747,True
+Lancaster NH - Guildhall VT,1.0,90.6,14.346,12.72,7.074,90.6,14.346,12.72,7.074,True
+Charlestown NH - Springfield VT,0.0,27.0,9.885,10.35,6.839,27.0,9.885,10.35,6.839,True
+Charlestown NH - Springfield VT,0.5,27.0,9.885,10.35,6.839,27.0,9.885,10.35,6.839,True
+Charlestown NH - Springfield VT,1.0,27.0,9.885,10.35,6.839,27.0,9.885,10.35,6.839,True
+Claremont NH - Ascutney VT,0.0,72.9,7.243,7.45,6.676,72.9,7.243,7.45,6.676,True
+Claremont NH - Ascutney VT,0.5,72.9,7.243,7.45,6.676,72.9,7.243,7.45,6.676,True
+Claremont NH - Ascutney VT,1.0,72.9,7.243,7.45,6.676,72.9,7.243,7.45,6.676,True
+Orford NH - Fairlee VT,0.0,87.7,0.908,1.23,7.896,87.7,0.908,1.23,7.896,True
+Orford NH - Fairlee VT,0.5,87.7,0.908,1.23,7.896,87.7,0.908,1.23,7.896,True
+Orford NH - Fairlee VT,1.0,87.7,0.908,1.23,7.896,87.7,0.908,1.23,7.896,True
+Hinsdale NH - Vernon VT,0.0,46.9,21.623,23.59,7.4,46.9,21.623,23.59,7.4,True
+Hinsdale NH - Vernon VT,0.5,46.9,21.623,23.59,7.4,46.9,21.623,23.59,7.4,True
+Hinsdale NH - Vernon VT,1.0,46.9,21.623,23.59,7.4,46.9,21.623,23.59,7.4,True
+Concord NH - Montpelier VT,0.0,26.4,190.622,98.34,0.786,26.4,190.622,98.34,0.783,True
+Concord NH - Montpelier VT,0.5,26.4,179.759,195.09,6.363,26.4,179.759,195.09,6.364,True
+Concord NH - Montpelier VT,1.0,26.4,191.726,223.08,7.032,26.4,191.726,223.08,7.033,True
+Manchester NH - Rutland VT,0.0,2.9,212.847,130.11,2.463,2.9,212.847,130.11,2.46,True
+Manchester NH - Rutland VT,0.5,2.9,172.504,183.82,5.834,2.9,172.504,183.82,5.834,True
+Manchester NH - Rutland VT,1.0,2.9,181.337,210.28,6.682,2.9,181.337,210.28,6.681,True
+Portsmouth NH - Burlington VT,0.0,8.4,333.492,175.64,0.853,8.4,333.492,175.64,0.851,True
+Portsmouth NH - Burlington VT,0.5,8.4,288.067,304.84,5.681,8.4,288.067,304.84,5.682,True
+Portsmouth NH - Burlington VT,1.0,8.4,295.187,346.69,6.205,8.4,295.187,346.69,6.205,True
+North Conway NH - Woodstock VT,0.0,46.0,225.071,148.6,3.341,46.0,225.071,148.6,3.34,True
+North Conway NH - Woodstock VT,0.5,46.0,180.081,191.34,7.319,46.0,180.081,191.34,7.32,True
+North Conway NH - Woodstock VT,1.0,46.0,178.588,194.02,7.518,46.0,178.588,194.02,7.518,True
+Colebrook NH - Canaan VT,0.0,40.7,14.02,15.12,6.88,40.7,14.02,15.12,6.88,True
+Colebrook NH - Canaan VT,0.5,40.7,14.02,15.12,6.88,40.7,14.02,15.12,6.88,True
+Colebrook NH - Canaan VT,1.0,40.7,14.243,17.06,7.151,40.7,14.243,17.06,7.151,True
+Pittsburg NH - Island Pond VT,0.0,48.9,64.83,74.99,7.31,48.9,64.83,74.99,7.311,True
+Pittsburg NH - Island Pond VT,0.5,48.9,64.788,75.33,7.348,48.9,64.788,75.33,7.349,True
+Pittsburg NH - Island Pond VT,1.0,48.9,65.063,76.29,7.387,48.9,65.063,76.29,7.388,True

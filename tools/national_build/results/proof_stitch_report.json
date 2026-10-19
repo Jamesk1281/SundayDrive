@@ -1,0 +1,52 @@
+{
+ "regions": [
+  "ct",
+  "ma",
+  "me",
+  "nh",
+  "ri",
+  "vt"
+ ],
+ "borders": {
+  "ways_in_two_or_more_regions": 144458,
+  "of_them_split_differently": 0,
+  "split_differently_examples": [],
+  "edges_built_by_a_region_that_does_not_own_them": 278666,
+  "of_them_matched_to_the_owners_copy": 278117,
+  "score_abs_diff": {
+   "p50": 0.0,
+   "p99": 0.839999999999999,
+   "max": 5.927250000000001,
+   "share_over_0.25": 0.012555866775493767
+  },
+  "length_rel_diff": {
+   "p99": 0.0,
+   "max": 0.0
+  }
+ },
+ "outside_the_48_states_and_dc": {
+  "edges": 1333,
+  "km": 821.1289531068845
+ },
+ "component": {
+  "edges_owned": 1011625,
+  "edges_kept": 997095,
+  "km_owned": 235401.96403243835,
+  "km_kept": 232197.56274116514
+ },
+ "graph": {
+  "edges": 997095,
+  "nodes": 793724,
+  "exit_numbers": 2615,
+  "restrictions_read": 15226,
+  "unresolved": 4164,
+  "forbidden_turns": 8577
+ },
+ "access": {
+  "components_built": 916070,
+  "components_kept": 703359,
+  "ways": 1190422,
+  "entries": 849997
+ },
+ "seconds": 209
+}

@@ -1,0 +1,319 @@
+{
+ "reference_edges_in_regions": 997253,
+ "stitched_edges": 997095,
+ "matched": 997095,
+ "reference_only": 158,
+ "stitched_only": 0,
+ "reference_only_km": 25.36204755601395,
+ "stitched_only_km": 0.0,
+ "columns": {
+  "length_m": {
+   "differ": 0
+  },
+  "minutes": {
+   "differ": 0
+  },
+  "n_signal_fwd": {
+   "differ": 0
+  },
+  "n_signal_rev": {
+   "differ": 0
+  },
+  "n_stop_fwd": {
+   "differ": 0
+  },
+  "n_stop_rev": {
+   "differ": 0
+  },
+  "n_giveway_fwd": {
+   "differ": 0
+  },
+  "n_giveway_rev": {
+   "differ": 0
+  },
+  "oneway": {
+   "differ": 0
+  },
+  "name": {
+   "differ": 0
+  },
+  "ref": {
+   "differ": 0
+  },
+  "highway": {
+   "differ": 0
+  },
+  "junction": {
+   "differ": 0
+  },
+  "dest_ref": {
+   "differ": 0
+  },
+  "dest_name": {
+   "differ": 0
+  },
+  "c_curves": {
+   "differ": 3029,
+   "max": 0.8753434876889955,
+   "km_over_0.25": 0.008969740777212418,
+   "km_share_over_0.25": 3.862978005161559e-08
+  },
+  "c_water": {
+   "differ": 696,
+   "max": 0.5499999999999999,
+   "km_over_0.25": 0.008969740777212418,
+   "km_share_over_0.25": 3.862978005161559e-08
+  },
+  "c_coast": {
+   "differ": 10,
+   "max": 0.20000000000000007,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_forest": {
+   "differ": 3168,
+   "max": 0.2393939346075058,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_farm": {
+   "differ": 62,
+   "max": 0.20000000000000007,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_views": {
+   "differ": 15,
+   "max": 0.20000000000000007,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_scenic_tag": {
+   "differ": 0,
+   "max": 0.0,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_relief": {
+   "differ": 3273,
+   "max": 0.13345424107142856,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_grand": {
+   "differ": 239,
+   "max": 0.03096912202380951,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_protected": {
+   "differ": 6,
+   "max": 0.20000000000000007,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "c_urban": {
+   "differ": 376,
+   "max": 0.20000000000000007,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "score_adj": {
+   "differ": 0,
+   "max": 0.0,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "unpaved_frac": {
+   "differ": 0,
+   "max": 0.0,
+   "km_over_0.25": 0.0,
+   "km_share_over_0.25": 0.0
+  },
+  "score": {
+   "differ": 3377,
+   "max": 2.1598199420426205,
+   "km_over_0.25": 271.61775259713556,
+   "km_share_over_0.25": 0.001169770041470732
+  }
+ },
+ "reference_only_by_highway_km": {
+  "motorway": 7.83,
+  "motorway_link": 1.48,
+  "primary": 3.84,
+  "primary_link": 0.17,
+  "residential": 10.1,
+  "secondary": 1.67,
+  "secondary_link": 0.16,
+  "trunk": 0.11
+ },
+ "reference_only_examples": [
+  {
+   "u": 66879493,
+   "v": 66886490,
+   "name": "Nicholson Road",
+   "highway": "residential",
+   "length_m": 92.9,
+   "lonlat": [
+    -73.47185,
+    42.17092
+   ]
+  },
+  {
+   "u": 66879493,
+   "v": 66900200,
+   "name": "Fisher Lane",
+   "highway": "residential",
+   "length_m": 291.1,
+   "lonlat": [
+    -73.47185,
+    42.17092
+   ]
+  },
+  {
+   "u": 66900200,
+   "v": 5825472603,
+   "name": "Jenssen Road",
+   "highway": "residential",
+   "length_m": 172.9,
+   "lonlat": [
+    -73.46958,
+    42.17004
+   ]
+  },
+  {
+   "u": 83923573,
+   "v": 83923575,
+   "name": "Bishop Drive",
+   "highway": "residential",
+   "length_m": 128.6,
+   "lonlat": [
+    -73.66894,
+    41.03033
+   ]
+  },
+  {
+   "u": 83923575,
+   "v": 83973086,
+   "name": "Cambridge Drive",
+   "highway": "residential",
+   "length_m": 10.8,
+   "lonlat": [
+    -73.66785,
+    41.03066
+   ]
+  },
+  {
+   "u": 83931861,
+   "v": 83931863,
+   "name": "Seton Lane",
+   "highway": "residential",
+   "length_m": 50.5,
+   "lonlat": [
+    -73.66658,
+    41.0298
+   ]
+  },
+  {
+   "u": 83931861,
+   "v": 84046467,
+   "name": "Guilford Lane",
+   "highway": "residential",
+   "length_m": 100.7,
+   "lonlat": [
+    -73.66658,
+    41.0298
+   ]
+  },
+  {
+   "u": 83931863,
+   "v": 13420395070,
+   "name": "Seton Lane",
+   "highway": "residential",
+   "length_m": 33.1,
+   "lonlat": [
+    -73.66614,
+    41.0301
+   ]
+  },
+  {
+   "u": 83940754,
+   "v": 83940829,
+   "name": "",
+   "highway": "primary_link",
+   "length_m": 55.3,
+   "lonlat": [
+    -73.65488,
+    41.01254
+   ]
+  },
+  {
+   "u": 83940829,
+   "v": 2377285311,
+   "name": "West Putnam Avenue",
+   "highway": "primary",
+   "length_m": 18.9,
+   "lonlat": [
+    -73.65541,
+    41.01275
+   ]
+  },
+  {
+   "u": 83955517,
+   "v": 83955519,
+   "name": "Mitchell Place",
+   "highway": "residential",
+   "length_m": 114.4,
+   "lonlat": [
+    -73.66418,
+    41.02313
+   ]
+  },
+  {
+   "u": 83955519,
+   "v": 84007159,
+   "name": "Burdsall Drive",
+   "highway": "residential",
+   "length_m": 77.7,
+   "lonlat": [
+    -73.66407,
+    41.02394
+   ]
+  },
+  {
+   "u": 83973086,
+   "v": 83973088,
+   "name": "Cambridge Drive",
+   "highway": "residential",
+   "length_m": 61.2,
+   "lonlat": [
+    -73.66775,
+    41.03059
+   ]
+  },
+  {
+   "u": 83973086,
+   "v": 84063944,
+   "name": "Lantern Lane",
+   "highway": "residential",
+   "length_m": 61.5,
+   "lonlat": [
+    -73.66775,
+    41.03059
+   ]
+  },
+  {
+   "u": 83973088,
+   "v": 83931861,
+   "name": "Guilford Lane",
+   "highway": "residential",
+   "length_m": 108.3,
+   "lonlat": [
+    -73.66777,
+    41.03004
+   ]
+  }
+ ],
+ "stitched_only_by_highway_km": {},
+ "stitched_only_examples": []
+}

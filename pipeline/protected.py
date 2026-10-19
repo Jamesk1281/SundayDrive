@@ -32,7 +32,12 @@ The layer is read by bounding box in its own CRS. A `where` clause is the obviou
 filter and the wrong one: GDAL's FileGDB driver returns no rows unless the
 filtered field is also among the columns read, and drops rows on `AND`.
 
-Usage: python protected.py <processed_dir> <PADUS4_1Geodatabase.gdb>
+ScienceBase has put the geodatabase behind a sign-in since 2026-10-18. The same
+layer is a public USGS feature service, and tools/national_build/padus_landmarks.py
+fetches its landmark rows for the 48 states and DC into a GeoParquet, which this
+stage reads in place of the geodatabase (docs/national-build.md).
+
+Usage: python protected.py <processed_dir> <PADUS4_1Geodatabase.gdb | landmarks.parquet>
 """
 
 import sys
@@ -79,13 +84,18 @@ def main(processed_dir: str, gdb: str):
     lon, lat = mids.x.to_numpy(), mids.y.to_numpy()
     print(f"{len(chunks):,} chunks in {time.time() - t0:.0f}s")
 
-    crs = pyogrio.read_info(gdb, layer=LAYER)["crs"]
-    corners = gpd.GeoSeries(gpd.points_from_xy([lon.min(), lon.max()], [lat.min(), lat.max()]),
-                            crs=4326).to_crs(crs)
-    # Albers bends lines of longitude, so pad the box rather than trust two corners.
-    pad = 50_000.0
-    bbox = (corners.x.min() - pad, corners.y.min() - pad, corners.x.max() + pad, corners.y.max() + pad)
-    polygons = pyogrio.read_dataframe(gdb, layer=LAYER, columns=["FeatClass", "Des_Tp"], bbox=bbox)
+    if str(gdb).endswith(".parquet"):
+        # Already in lon/lat, and small (9,048 polygons nationally), so read whole and cut.
+        polygons = gpd.read_parquet(gdb, columns=["FeatClass", "Des_Tp", "geometry"])
+        polygons = polygons.cx[lon.min():lon.max(), lat.min():lat.max()]
+    else:
+        crs = pyogrio.read_info(gdb, layer=LAYER)["crs"]
+        corners = gpd.GeoSeries(gpd.points_from_xy([lon.min(), lon.max()], [lat.min(), lat.max()]),
+                                crs=4326).to_crs(crs)
+        # Albers bends lines of longitude, so pad the box rather than trust two corners.
+        pad = 50_000.0
+        bbox = (corners.x.min() - pad, corners.y.min() - pad, corners.x.max() + pad, corners.y.max() + pad)
+        polygons = pyogrio.read_dataframe(gdb, layer=LAYER, columns=["FeatClass", "Des_Tp"], bbox=bbox)
     print(f"{len(polygons):,} PAD-US polygons in the region's box in {time.time() - t0:.0f}s")
 
     flags = landmark_flags(lon, lat, polygons)
