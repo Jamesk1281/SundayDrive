@@ -11,6 +11,7 @@ written, Lincoln Gap was open and VT-108 had four weeks to go, so a test of
 `git show a2ddddc:docs/seasonal-closures-brief.md`).
 """
 
+import re
 import sys
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
@@ -975,3 +976,375 @@ def test_the_deploy_script_ships_the_table():
     optional = next(line for line in script.splitlines()
                     if line.startswith("OPTIONAL="))
     assert "seasonal_closures" in optional.split("=", 1)[1].strip('"').split()
+
+
+# ------------------------------------------- the agencies' winter closures
+#
+# pipeline/winter_closures.py: MVUM and NPS Public Roads joined by geometry,
+# and the window table for the high passes and parks
+# (docs/winter-closures-national.md).
+
+def _line(*points):
+    return shapely.LineString(points)
+
+
+def _frame(geoms, **cols):
+    import geopandas as gpd
+    return gpd.GeoDataFrame(cols, geometry=list(geoms), crs=4326)
+
+
+# A kilometre of road running north near Gunnison, CO, as two graph edges
+# meeting at node 2, and a road crossing it at the junction.
+_SOUTH = _line((-107.0, 38.5), (-107.0, 38.5045))
+_NORTH = _line((-107.0, 38.5045), (-107.0, 38.509))
+_ACROSS = _line((-107.006, 38.5045), (-106.994, 38.5045))
+
+
+def _graph():
+    return _frame([_SOUTH, _NORTH, _ACROSS], u=[1, 2, 3], v=[2, 4, 5],
+                  length_m=[500.0, 500.0, 1046.0], name=["", "", ""])
+
+
+@pytest.fixture(scope="module")
+def windows_table():
+    """winter_windows.json, indexed as `federal_rows` indexes it."""
+    from winter_closures import _norm, load_table
+    t = load_table()
+    t["_parks"] = {p["unit"]: p for p in t["parks"]}
+    t["_descriptions"] = {_norm(d["text"]): d for d in t["nps_descriptions"]}
+    return t
+
+
+class TestMvumDates:
+    """MVUM's `*_datesopen` are the days a vehicle class may drive the road;
+    a car is closed out on every other day."""
+
+    def test_one_range_closes_outside_it(self):
+        from winter_closures import mvum_windows
+        windows, how = mvum_windows({"passengervehicle": "open",
+                                     "passengervehicle_datesopen": "04/01-11/30"})
+        assert windows == [(12, 1, 3, 31)]
+        assert how == "passengervehicle_datesopen"
+
+    def test_a_hunting_gap_is_its_own_window(self):
+        from winter_closures import mvum_windows
+        windows, _ = mvum_windows({"passengervehicle": "open",
+                                   "passengervehicle_datesopen": "01/01-10/11    10/22-12/31"})
+        assert windows == [(10, 12, 10, 21)]
+
+    def test_a_range_across_new_year_closes_in_spring(self):
+        from winter_closures import mvum_windows
+        windows, _ = mvum_windows({"passengervehicle": "open",
+                                   "passengervehicle_datesopen": "05/16-03/14"})
+        assert windows == [(3, 15, 5, 15)]
+
+    def test_all_year_passenger_dates_win_over_the_seasonal_flag(self):
+        """4,101 mi are `seasonal` with passenger dates 01/01-12/31: the
+        season is another vehicle class's."""
+        from winter_closures import mvum_windows
+        windows, _ = mvum_windows({"seasonal": "seasonal", "passengervehicle": "open",
+                                   "passengervehicle_datesopen": "01/01-12/31"})
+        assert windows == []
+
+    def test_no_passenger_designation_falls_back_to_high_clearance(self):
+        from winter_closures import mvum_windows
+        windows, how = mvum_windows({"seasonal": "seasonal", "passengervehicle": None,
+                                     "highclearancevehicle": "open",
+                                     "highclearancevehicle_datesopen": "05/16-11/30"})
+        assert windows == [(12, 1, 5, 15)]
+        assert how == "highclearancevehicle_datesopen"
+
+    @pytest.mark.parametrize("dates", ["", "open", "02/30-11/30", "13/01-11/30",
+                                       "04/01-11/30 and more"])
+    def test_seasonal_with_no_readable_dates_closes_for_the_long_season(self, dates):
+        """Trap 2: unreadable resolves toward closed."""
+        from winter_closures import UNKNOWN_SEASON, mvum_windows
+        windows, _ = mvum_windows({"seasonal": "Seasonal ", "passengervehicle": "open",
+                                   "passengervehicle_datesopen": dates})
+        assert windows == [UNKNOWN_SEASON]
+
+    def test_yearlong_with_no_dates_stays_open(self):
+        from winter_closures import mvum_windows
+        assert mvum_windows({"seasonal": "yearlong", "passengervehicle": "open",
+                             "passengervehicle_datesopen": None})[0] == []
+
+    def test_feb_29_is_a_day(self):
+        from winter_closures import mvum_open_ranges
+        assert mvum_open_ranges("09/01-02/29") == [(9, 1, 2, 29)]
+
+
+class TestNpsDescriptions:
+    """NPS Public Roads: dated prose read at its longer end, a park's window
+    where there are no dates, and the long season where there is no park."""
+
+    def test_teton_park_road(self, windows_table):
+        from winter_closures import nps_windows
+        windows, how = nps_windows({"UNITCODE": "GRTE", "SEASONAL": "Yes",
+                                    "SEASDESC": "Seasonal Closure Nov1 to May1.  "}, windows_table)
+        assert windows == [(11, 1, 5, 1)] and how == "description"
+
+    def test_a_holiday_is_read_at_its_earliest(self, windows_table):
+        from winter_closures import nps_windows
+        windows, _ = nps_windows({"UNITCODE": "ACAD", "SEASONAL": "Yes",
+                                  "SEASDESC": "winter closure Columbus Day to May 1"}, windows_table)
+        assert windows == [(10, 8, 5, 1)]
+
+    def test_no_dates_takes_the_parks_window(self, windows_table):
+        from winter_closures import nps_windows
+        park = windows_table["_parks"]["YOSE"]["window"]
+        assert nps_windows({"UNITCODE": "YOSE", "SEASONAL": "Yes",
+                            "SEASDESC": "Winter"}, windows_table)[0] == [park]
+
+    def test_yellowstone_unknown_is_seasonal(self, windows_table):
+        """1,979 of Yellowstone's 2,007 segments say Unknown."""
+        from winter_closures import nps_windows
+        park = windows_table["_parks"]["YELL"]["window"]
+        assert nps_windows({"UNITCODE": "YELL", "SEASONAL": "Unknown"}, windows_table)[0] == [park]
+
+    def test_unknown_elsewhere_closes_nothing(self, windows_table):
+        from winter_closures import nps_windows
+        assert nps_windows({"UNITCODE": "GOGA", "SEASONAL": "Unknown"}, windows_table)[0] == []
+
+    def test_seasonal_in_a_park_without_a_window_gets_the_long_season(self, windows_table):
+        from winter_closures import UNKNOWN_SEASON, nps_windows
+        assert nps_windows({"UNITCODE": "MORA", "SEASONAL": "Yes",
+                            "SEASDESC": None}, windows_table)[0] == [UNKNOWN_SEASON]
+
+    def test_a_park_without_winter_closes_nothing(self, windows_table):
+        """Golden Gate flags Lincoln Blvd seasonal with no dates."""
+        from winter_closures import nps_windows
+        assert nps_windows({"UNITCODE": "GOGA", "SEASONAL": "Yes",
+                            "SEASDESC": None}, windows_table)[0] == []
+
+    def test_an_unseen_description_resolves_toward_closed(self, windows_table):
+        from winter_closures import nps_windows
+        windows, _ = nps_windows({"UNITCODE": "GRTE", "SEASONAL": "Yes",
+                                  "SEASDESC": "Closed until the snow melts"}, windows_table)
+        assert windows == [windows_table["_parks"]["GRTE"]["window"]]
+
+    def test_the_permit_rule_is_left_alone(self, windows_table):
+        """The permit rule is the owner's open decision."""
+        from winter_closures import nps_windows
+        assert nps_windows({"UNITCODE": "REDW", "SEASONAL": "Yes",
+                            "SEASDESC": "Permit Required"}, windows_table)[0] == []
+
+
+class TestTheWindowTable:
+    """Trap 2: every window carries its operator source and access date."""
+
+    def test_every_road_and_park_is_sourced(self, windows_table):
+        for entry in windows_table["roads"] + windows_table["parks"]:
+            assert entry["source"].startswith("https://"), entry
+            assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", entry["accessed"]), entry
+            assert entry["basis"], entry
+
+    def test_every_window_is_real_days(self, windows_table):
+        from closures import _LAST_DAY
+        windows = [e["window"] for e in windows_table["roads"] + windows_table["parks"]
+                   if e["window"]]
+        windows += [w for d in windows_table["nps_descriptions"] for w in d["windows"]]
+        for sm, sd, em, ed in windows:
+            assert 1 <= sm <= 12 and 1 <= em <= 12
+            assert 1 <= sd <= _LAST_DAY[sm - 1] and 1 <= ed <= _LAST_DAY[em - 1]
+
+    def test_every_description_says_what_it_does(self, windows_table):
+        from winter_closures import _norm
+        texts = [_norm(d["text"]) for d in windows_table["nps_descriptions"]]
+        assert len(texts) == len(set(texts))
+        for d in windows_table["nps_descriptions"]:
+            assert d["closes"] in ("dates", "park", "no")
+            assert bool(d["windows"]) == (d["closes"] == "dates"), d["text"]
+
+    def test_road_waypoints_are_inside_the_lower_48(self, windows_table):
+        kept = [k for p in windows_table["parks"] for k in p.get("except", [])]
+        for entry in windows_table["roads"] + kept:
+            assert len(entry["waypoints"]) >= 2
+            for lon, lat in entry["waypoints"]:
+                assert -125 < lon < -66.9 and 24.4 < lat < 49.5
+
+    def test_the_kancamagus_is_in_no_window(self, windows_table):
+        """The year-round control (docs/us-map-data-findings.md §4)."""
+        for entry in windows_table["roads"]:
+            assert "kancamagus" not in entry["id"].lower()
+
+
+class TestTheGeometryJoin:
+    """Trap 1: joined by where the roads are, never by what they are called."""
+
+    def test_a_line_along_an_edge_matches_it_whole(self):
+        from winter_closures import match_lines
+        m = match_lines(_graph().geometry, _frame([_line((-107.00005, 38.4995),
+                                                         (-107.00005, 38.5050))]).geometry)
+        assert m.loc[m["edge"] == 0, "share"].item() == pytest.approx(1.0)
+        assert (m["edge"] == 2).sum() == 0
+
+    def test_a_crossing_road_picks_up_nothing(self):
+        """The crossing edge passes within 15 m of the seasonal road for 30 m
+        either side of the junction, at right angles."""
+        from winter_closures import closed_by_lines, match_lines
+        m = match_lines(_graph().geometry, _frame([_line((-107.0, 38.4995),
+                                                         (-107.0, 38.509))]).geometry)
+        assert set(closed_by_lines(m, [[(12, 1, 3, 31)]])) == {0, 1}
+
+    def test_a_road_30_m_away_does_not_match(self):
+        from winter_closures import match_lines
+        m = match_lines(_graph().geometry, _frame([_line((-107.00035, 38.5),
+                                                         (-107.00035, 38.509))]).geometry)
+        assert m.empty
+
+    def test_a_renamed_road_still_matches(self):
+        """Clingmans Dome Road became Kuwohi Road in 2024. The edge's name
+        and the line's play no part."""
+        from winter_closures import match_lines
+        g = _graph()
+        g["name"] = ["Kuwohi Road", "Kuwohi Road", "Other"]
+        lines = _frame([_SOUTH], RDNAME=["Clingmans Dome Road"])
+        assert 0 in set(match_lines(g.geometry, lines.geometry)["edge"])
+
+    def test_an_edge_mostly_off_the_closed_road_stays_open(self):
+        from winter_closures import closed_by_lines, match_lines
+        # 40% of the south edge.
+        m = match_lines(_graph().geometry, _frame([_line((-107.0, 38.5027),
+                                                         (-107.0, 38.5045))]).geometry)
+        assert closed_by_lines(m, [[(12, 1, 3, 31)]]) == {}
+
+    def test_two_seasons_on_one_edge_close_it_for_both(self):
+        from winter_closures import closed_by_lines, match_lines
+        lines = _frame([_line((-107.0, 38.5), (-107.0, 38.50225)),
+                        _line((-107.0, 38.50225), (-107.0, 38.5045))])
+        m = match_lines(_graph().geometry, lines.geometry)
+        closed = closed_by_lines(m, [[(12, 1, 3, 31)], [(11, 1, 4, 30)]])
+        assert set(closed[0]) == {(12, 1, 3, 31), (11, 1, 4, 30)}
+
+    def test_no_match_at_all_closes_nothing(self):
+        from winter_closures import closed_by_lines, match_lines
+        far = _frame([_line((-100.0, 30.0), (-100.0, 30.01))])
+        assert closed_by_lines(match_lines(_graph().geometry, far.geometry), [[]]) == {}
+
+    def test_an_open_line_closes_nothing(self):
+        from winter_closures import closed_by_lines, match_lines
+        m = match_lines(_graph().geometry, _frame([_SOUTH]).geometry)
+        assert closed_by_lines(m, [[]]) == {}
+
+
+class TestTheTableRoads:
+    """A table road is the graph's path through its waypoints."""
+
+    def test_the_path_through_the_waypoints(self):
+        from winter_closures import path_edges
+        rows, why = path_edges(_graph(), [(-107.0, 38.5), (-107.0, 38.509)])
+        assert why is None and sorted(rows) == [0, 1]
+
+    def test_a_waypoint_off_the_graph_places_nothing(self):
+        from winter_closures import path_edges
+        rows, why = path_edges(_graph(), [(-107.0, 38.5), (-107.1, 38.6)])
+        assert rows == [] and why.startswith("waypoint 2 is")
+
+    def test_a_road_replaces_its_parks_window_and_not_the_agencies(self):
+        """A table road's window beats its park's on the edges they share; an
+        MVUM or dated NPS window still stands beside it."""
+        from winter_closures import federal_rows, load_table
+        table = load_table()
+        # A window unlike ROMO's own, so the test can tell which one won.
+        table["parks"] = [dict(p, window=(11, 15, 4, 15)) if p["unit"] == "ROMO" else p
+                          for p in table["parks"]]
+        table["roads"] = [{"id": "test_road", "window": (10, 1, 7, 10),
+                           "source": "https://example.org", "accessed": "2026-10-18",
+                           "basis": "test", "waypoints": [(-107.0, 38.5), (-107.0, 38.5045)]}]
+        nps = _frame([_SOUTH, _NORTH], UNITCODE=["ROMO", "ROMO"], SEASONAL=["Yes", "Yes"],
+                     SEASDESC=["Closed in Winter", "Seasonal Closure Nov1 to May1"])
+        rows, _ = federal_rows(_graph(), None, nps, table)
+        by_edge = {}
+        for r in rows:
+            by_edge.setdefault(r["edge"], set()).add(
+                (r["start_month"], r["start_day"], r["end_month"], r["end_day"]))
+        assert by_edge[0] == {(10, 1, 7, 10)}           # the road's, not the park's
+        assert by_edge[1] == {(11, 1, 5, 1)}            # dated, untouched
+
+    def test_rows_are_in_the_seasonal_format(self):
+        from closures import SEASONAL_COLUMNS
+        from winter_closures import federal_rows
+        mvum = _frame([_SOUTH], passengervehicle=["open"],
+                      passengervehicle_datesopen=["04/01-11/30"], forestname=["GMUG"], id=["1"])
+        rows, report = federal_rows(_graph(), mvum, None)
+        assert [r["edge"] for r in rows] == [0]
+        assert list(rows[0]) == SEASONAL_COLUMNS
+        assert rows[0]["rule"] == "edge" and rows[0]["node_id"] == -1
+        assert report["mvum"] == (1, pytest.approx(0.5))
+
+
+# The New England graph against the agencies' layers. New England changes only
+# where a source says so (docs/winter-closures-national.md, "New England").
+_NE_BOXES = {
+    "kancamagus": (-71.70, 43.95, -71.15, 44.10),
+    "auto_road": (-71.32, 44.24, -71.20, 44.30),
+    "park_loop": (-68.30, 44.30, -68.17, 44.40),
+}
+
+
+@pytest.fixture(scope="module")
+def ne_winter():
+    """(edges, rows) for the graph's edges in _NE_BOXES, joined as
+    closures.py joins them."""
+    import geopandas as gpd
+    from winter_closures import federal_rows
+    federal = DATA.parent / "raw" / "federal"
+    missing = [str(p) for p in (DATA / "graph_edges.parquet", federal / "mvum_roads.parquet",
+                                federal / "nps_roads.parquet") if not p.exists()]
+    if missing:
+        pytest.skip(f"missing {', '.join(missing)}: build the graph and run "
+                    "pipeline/federal_layers.py")
+    edges = gpd.read_parquet(DATA / "graph_edges.parquet",
+                             columns=["u", "v", "length_m", "name", "ref", "geometry"])
+    keep = np.zeros(len(edges), bool)
+    for w, s, e, n in _NE_BOXES.values():
+        b = edges.geometry.bounds
+        keep |= ((b["minx"] >= w) & (b["maxx"] <= e) & (b["miny"] >= s)
+                 & (b["maxy"] <= n)).to_numpy()
+    edges = edges[keep].reset_index(drop=True)
+    w, s, e, n = (-71.8, 43.9, -68.1, 44.45)
+    mvum = gpd.read_parquet(federal / "mvum_roads.parquet").cx[w:e, s:n].reset_index(drop=True)
+    nps = gpd.read_parquet(federal / "nps_roads.parquet").cx[w:e, s:n].reset_index(drop=True)
+    rows, _ = federal_rows(edges, mvum, nps)
+    return edges, pd.DataFrame(rows)
+
+
+def _km_closed(ne_winter, pattern, box, day):
+    edges, rows = ne_winter
+    w, s, e, n = _NE_BOXES[box]
+    b = edges.geometry.bounds
+    road = edges[(b["minx"] >= w) & (b["maxx"] <= e) & (b["miny"] >= s) & (b["maxy"] <= n)
+                 & (edges["name"].fillna("").str.contains(pattern)
+                    | edges["ref"].fillna("").str.contains(pattern))]
+    assert len(road), f"no {pattern} in the graph"
+    on = rows[rows["edge"].isin(road.index)]
+    shut = {r.edge for r in on.itertuples()
+            if in_window((r.start_month, r.start_day, r.end_month, r.end_day),
+                         (day.month, day.day))}
+    return road.loc[sorted(shut), "length_m"].sum() / 1000.0, road["length_m"].sum() / 1000.0
+
+
+class TestNewEnglandWinter:
+    def test_the_kancamagus_stays_open(self, ne_winter):
+        """The year-round control (docs/us-map-data-findings.md §4)."""
+        for day in (JANUARY, JULY, date(2026, 11, 5)):
+            assert _km_closed(ne_winter, "Kancamagus|NH 112", "kancamagus", day)[0] == 0
+
+    def test_tripoli_road_closes_for_winter_by_mvum(self, ne_winter):
+        """White Mountain NF, untagged in OSM. 14.7 of the 16.7 km close on
+        the graph of 2026-08-25; the rest is road MVUM does not mark."""
+        closed, total = _km_closed(ne_winter, "Tripoli", "kancamagus", JANUARY)
+        assert closed > 0.8 * total
+        assert _km_closed(ne_winter, "Tripoli", "kancamagus", JULY)[0] == 0
+
+    def test_the_auto_road_closes_until_daily_driving_begins(self, ne_winter):
+        """Weekends only until May 22 in 2026; OSM's own tag ends Apr 30."""
+        closed, total = _km_closed(ne_winter, "Auto Road", "auto_road", date(2027, 5, 15))
+        assert closed > 0.9 * total
+        assert _km_closed(ne_winter, "Auto Road", "auto_road", JULY)[0] == 0
+
+    def test_acadias_park_loop_road_closes_by_nps(self, ne_winter):
+        """Paved roads open Apr 15 - Dec 1; OSM leaves Acadia untagged."""
+        closed, total = _km_closed(ne_winter, "Park Loop", "park_loop", JANUARY)
+        assert closed > 0.5 * total
+        assert _km_closed(ne_winter, "Park Loop", "park_loop", JULY)[0] == 0

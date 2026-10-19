@@ -1,0 +1,1181 @@
+{
+ "about": "Winter windows for roads OSM leaves open: read by pipeline/winter_closures.py. Each window is (start month, start day, end month, end day), both ends closed. docs/winter-closures-national.md has the rules for choosing them.",
+ "roads": [
+  {
+   "id": "beartooth_mt_north",
+   "road": "Beartooth Highway (US 212), Montana, north of the state line",
+   "state": "MT",
+   "window": [
+    10,
+    12,
+    5,
+    27
+   ],
+   "source": "https://www.nps.gov/yell/planyourvisit/parkroads.htm",
+   "accessed": "2026-10-18",
+   "section_source": "https://www.mdt.mt.gov/travinfo/seasonally-closed-roads.aspx",
+   "basis": "\"Typically open the Friday of Memorial Day weekend to mid-October\" (closed Oct 12 in 2026). The Friday falls on May 28 at the latest, so closed through May 27. MDT closes US 212 mileposts 45-56",
+   "waypoints": [
+    [
+     -109.38,
+     45.078
+    ],
+    [
+     -109.41937,
+     45.0
+    ]
+   ]
+  },
+  {
+   "id": "beartooth_wy",
+   "road": "Beartooth Highway (US 212), Wyoming",
+   "state": "WY",
+   "window": [
+    10,
+    12,
+    5,
+    27
+   ],
+   "source": "https://www.nps.gov/yell/planyourvisit/parkroads.htm",
+   "accessed": "2026-10-18",
+   "section_source": "https://wyoroad.info/pls/Browse/WRR.RoutesResults?SelectedRoute=US212",
+   "basis": "as the Montana part; WYDOT closes US 212 from WY 296 to Beartooth Pass, and from Cooke City to Pilot Creek 9 miles are closed to wheeled vehicles. Pilot Creek's position is not published, so the whole of US 212 from WY 296 to Cooke City is closed, the longer reading",
+   "waypoints": [
+    [
+     -109.41937,
+     45.0
+    ],
+    [
+     -109.47131,
+     44.96904
+    ],
+    [
+     -109.72615,
+     44.93003
+    ],
+    [
+     -109.85477,
+     45.0
+    ]
+   ]
+  },
+  {
+   "id": "beartooth_mt_cooke",
+   "road": "Beartooth Highway (US 212), Montana, east of Cooke City",
+   "state": "MT",
+   "window": [
+    10,
+    12,
+    5,
+    27
+   ],
+   "source": "https://www.nps.gov/yell/planyourvisit/parkroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "as the Wyoming part; the plowed road ends at the east edge of Cooke City",
+   "waypoints": [
+    [
+     -109.85477,
+     45.0
+    ],
+    [
+     -109.91,
+     45.026
+    ]
+   ]
+  },
+  {
+   "id": "dunraven_pass",
+   "road": "Grand Loop Road, Canyon Village to Tower Fall (Dunraven Pass), Yellowstone",
+   "state": "WY",
+   "window": [
+    10,
+    12,
+    5,
+    21
+   ],
+   "source": "https://www.nps.gov/yell/planyourvisit/parkroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "2026 schedule: closes Oct 12, opens May 22. The rest of the park's roads take its own row",
+   "waypoints": [
+    [
+     -110.49331,
+     44.73547
+    ],
+    [
+     -110.45404,
+     44.78478
+    ],
+    [
+     -110.38763,
+     44.89223
+    ]
+   ]
+  },
+  {
+   "id": "sonora_pass",
+   "road": "Sonora Pass (CA 108), Strawberry Sno-Park to US 395",
+   "state": "CA",
+   "window": [
+    11,
+    1,
+    6,
+    12
+   ],
+   "source": "https://dot.ca.gov/caltrans-near-me/district-9/district-9-news/2025_12_26-sonora-pass-winter-closure",
+   "accessed": "2026-10-18",
+   "history_sources": [
+    "https://www.uniondemocrat.com/news/article_f9cdb80a-3ba7-4081-8e45-b56d2969812c.html",
+    "https://sierrawave.net/state-route-108-sonora-pass-reopens-from-winter-closure/",
+    "https://dot.ca.gov/caltrans-near-me/district-10/district-10-news/traffic-advisory-tuolumne-county-sonorapass-5-16-24"
+   ],
+   "basis": "last ten seasons as Caltrans reported them: opened Jun 13 (2017) and Jun 9 (2023) at the latest; gates closed ahead of storms as early as Nov 1. dot.ca.gov refused connections from the build machine on 2026-10-18 (a bogus URL failed the same way), so these were read as Caltrans' releases quoted in search results and the local press",
+   "waypoints": [
+    [
+     -119.99792,
+     38.22179
+    ],
+    [
+     -119.82604,
+     38.34056
+    ],
+    [
+     -119.63729,
+     38.32822
+    ],
+    [
+     -119.45448,
+     38.34912
+    ]
+   ]
+  },
+  {
+   "id": "ebbetts_pass",
+   "road": "Ebbetts Pass (CA 4), Lake Alpine to the Raymond Meadows gate",
+   "state": "CA",
+   "window": [
+    11,
+    1,
+    6,
+    29
+   ],
+   "source": "https://dot.ca.gov/caltrans-near-me/district-10/district-10-news/winter-pass-traffic-advisory-ebbetts-05-05-2026",
+   "accessed": "2026-10-18",
+   "history_sources": [
+    "https://www.recordcourier.com/news/2023/jun/08/ebbetts-pass-scheduled-to-reopen-3-pm-today",
+    "https://m.washingtontimes.com/topics/caltran/"
+   ],
+   "basis": "last ten seasons: opened Jun 30 (2017, the latest in the road's history) at the latest, Jun 8 in 2023, May 6 in 2026. No closing record was found; Caltrans closes it with Sonora Pass at the first big storm, so Sonora's Nov 1. dot.ca.gov was unreachable, as for Sonora Pass",
+   "waypoints": [
+    [
+     -120.0195,
+     38.48255
+    ],
+    [
+     -119.8165,
+     38.5446
+    ],
+    [
+     -119.72615,
+     38.6597
+    ]
+   ]
+  },
+  {
+   "id": "mount_blue_sky",
+   "road": "Mount Blue Sky Road (CO 5), Echo Lake to the summit",
+   "state": "CO",
+   "window": [
+    9,
+    2,
+    5,
+    27
+   ],
+   "source": "https://www.codot.gov/travel/coloradobyways/north-central/mount-evans",
+   "accessed": "2026-10-18",
+   "basis": "\"Summit open Memorial Day through Labor Day only\". Closed from the day after Labor Day, Sep 2 at the earliest, to the Friday of Memorial Day weekend, May 28 at the latest. Echo Lake to Summit Lake stays open to about Sep 30, but the page gives that section no dates, so it takes the summit's",
+   "waypoints": [
+    [
+     -105.59906,
+     39.65126
+    ],
+    [
+     -105.64325,
+     39.58761
+    ]
+   ]
+  },
+  {
+   "id": "independence_pass",
+   "road": "Independence Pass (CO 82), Aspen to Twin Lakes gates",
+   "state": "CO",
+   "window": [
+    10,
+    25,
+    5,
+    27
+   ],
+   "source": "https://www.codot.gov/news/2025/november/co82-independence-pass-closed-nov17",
+   "accessed": "2026-10-18",
+   "basis": "closing dates 2015-2025, the earliest Oct 25 (2021); \"CDOT typically reopens the pass the week prior to the Memorial Day holiday weekend\", read as late as May 27",
+   "waypoints": [
+    [
+     -106.75566,
+     39.13372
+    ],
+    [
+     -106.56401,
+     39.10857
+    ],
+    [
+     -106.50591,
+     39.06813
+    ]
+   ]
+  },
+  {
+   "id": "north_cascades",
+   "road": "North Cascades Highway (WA 20), Ross Dam Trailhead (MP 134) to the Silver Star gate (MP 171)",
+   "state": "WA",
+   "window": [
+    11,
+    3,
+    5,
+    15
+   ],
+   "source": "https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates",
+   "accessed": "2026-10-18",
+   "basis": "WSDOT's table, 2016-2025: earliest closing Nov 3 (2022), latest opening May 16 (2017). 2026's full reopening on Jun 19 was storm-damage repair, not snow. The east end is the Silver Star Gate, which OSM also tags `access:conditional=no @ winter`",
+   "waypoints": [
+    [
+     -121.06111,
+     48.72807
+    ],
+    [
+     -120.7354,
+     48.5157
+    ],
+    [
+     -120.65424,
+     48.52358
+    ],
+    [
+     -120.58907,
+     48.59871
+    ]
+   ]
+  },
+  {
+   "id": "chinook_pass",
+   "road": "Chinook Pass (WA 410), Crystal Mountain Boulevard to Morse Creek",
+   "state": "WA",
+   "window": [
+    10,
+    24,
+    6,
+    10
+   ],
+   "source": "https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates",
+   "accessed": "2026-10-18",
+   "basis": "WSDOT's table, 2016-2025: earliest closing Oct 24 (2025), latest opening Jun 11 (2018)",
+   "waypoints": [
+    [
+     -121.53646,
+     46.97729
+    ],
+    [
+     -121.53496,
+     46.86993
+    ],
+    [
+     -121.51569,
+     46.87214
+    ],
+    [
+     -121.4319,
+     46.90346
+    ]
+   ]
+  },
+  {
+   "id": "kuwohi_road",
+   "road": "Kuwohi Road (formerly Clingmans Dome Road), Great Smoky Mountains",
+   "state": "NC",
+   "window": [
+    11,
+    30,
+    3,
+    31
+   ],
+   "source": "https://www.nps.gov/grsm/planyourvisit/seasonalroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "2026 season Apr 1 - Nov 29",
+   "waypoints": [
+    [
+     -83.46158,
+     35.59209
+    ],
+    [
+     -83.49366,
+     35.55761
+    ]
+   ]
+  },
+  {
+   "id": "mt_washington_auto_road",
+   "road": "Mt. Washington Auto Road, base to summit",
+   "state": "NH",
+   "window": [
+    10,
+    19,
+    5,
+    22
+   ],
+   "source": "https://mt-washington.com/hours-dates-of-operation",
+   "accessed": "2026-10-18",
+   "basis": "2026 drive-yourself calendar: weekends only Apr 25 - May 22, daily May 23 - Nov 1, and Oct 19 - Nov 1 marked late season to a lower cutoff. Read at the longer ends: closed Oct 19 to May 22, since a weekday or a summit drive is closed in both. OSM's seasonal=no_snow keeps it closed Nov 1 - Apr 30 besides",
+   "waypoints": [
+    [
+     -71.2259,
+     44.28925
+    ],
+    [
+     -71.26095,
+     44.28319
+    ],
+    [
+     -71.27318,
+     44.28979
+    ],
+    [
+     -71.28184,
+     44.28496
+    ],
+    [
+     -71.30242,
+     44.26978
+    ]
+   ]
+  }
+ ],
+ "parks": [
+  {
+   "unit": "YELL",
+   "park": "Yellowstone National Park",
+   "applies": [
+    "Yes",
+    "Unknown"
+   ],
+   "window": [
+    10,
+    31,
+    5,
+    21
+   ],
+   "source": "https://www.nps.gov/yell/planyourvisit/parkroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "2026 schedule: every road but North to Northeast Entrance closes to regular vehicles Oct 31 (Dunraven Pass, Beartooth and Chief Joseph Oct 12); the last to open, Dunraven Pass, opens May 22. The layer says Unknown on 1,979 of the park's 2,007 segments, so Unknown is read as seasonal here",
+   "except": [
+    {
+     "id": "yellowstone_north_to_northeast",
+     "road": "North Entrance to Northeast Entrance, Yellowstone",
+     "basis": "\"generally open year-round to regular vehicles\" from Gardiner to Cooke City (the same page); through Gardiner by the Temporary North Entrance Road, the only one in the graph since the 2022 flood",
+     "waypoints": [
+      [
+       -110.70477,
+       45.02744
+      ],
+      [
+       -110.70162,
+       44.98996
+      ],
+      [
+       -110.69779,
+       44.97829
+      ],
+      [
+       -110.61266,
+       44.94938
+      ],
+      [
+       -110.51869,
+       44.95443
+      ],
+      [
+       -110.44527,
+       44.92308
+      ],
+      [
+       -110.41281,
+       44.91588
+      ],
+      [
+       -110.22525,
+       44.88872
+      ],
+      [
+       -110.00596,
+       45.00415
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "unit": "GRTE",
+   "park": "Grand Teton National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    11,
+    1,
+    5,
+    20
+   ],
+   "source": "https://www.nps.gov/grte/planyourvisit/roads.htm",
+   "accessed": "2026-10-18",
+   "basis": "Teton Park Road closed Nov 1 - Apr 30; Moose-Wilson Road closed Nov 1 until mid-May, the longer; secondary roads close by conditions with no dates"
+  },
+  {
+   "unit": "YOSE",
+   "park": "Yosemite National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    11,
+    1,
+    6,
+    10
+   ],
+   "source": "https://www.nps.gov/yose/planyourvisit/wroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "Tioga Road and Glacier Point Road closed \"usually from sometime in November through late May or early June\": Nov 1 to Jun 10 at the longer ends"
+  },
+  {
+   "unit": "GRSM",
+   "park": "Great Smoky Mountains National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    11,
+    1,
+    5,
+    14
+   ],
+   "source": "https://www.nps.gov/grsm/planyourvisit/seasonalroads.htm",
+   "accessed": "2026-10-18",
+   "basis": "2026 seasons of the secondary roads; the longest closed is Heintooga Ridge Road, open 5/15-10/31. Kuwohi Road has its own row"
+  },
+  {
+   "unit": "LAVO",
+   "park": "Lassen Volcanic National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    10,
+    21,
+    7,
+    25
+   ],
+   "source": "https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm",
+   "accessed": "2026-10-18",
+   "basis": "the park highway's last ten seasons (2016-2026): earliest closing Oct 21 (2021), latest full opening Jul 26 (2017)"
+  },
+  {
+   "unit": "CRLA",
+   "park": "Crater Lake National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    10,
+    15,
+    7,
+    31
+   ],
+   "source": "https://www.nps.gov/crla/planyourvisit/conditions.htm",
+   "accessed": "2026-10-18",
+   "basis": "Rim Drive and the North Entrance Road close \"on November 1, or earlier\", read as two weeks earlier; East Rim Drive is \"often mid-July\" before it opens, and its reopening runs to late July"
+  },
+  {
+   "unit": "ROMO",
+   "park": "Rocky Mountain National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    10,
+    1,
+    7,
+    10
+   ],
+   "source": "https://www.nps.gov/romo/planyourvisit/road_status.htm",
+   "accessed": "2026-10-18",
+   "basis": "Old Fall River Road is open \"from early July to early October\"; Trail Ridge Road's segments carry their own dated description"
+  },
+  {
+   "unit": "ACAD",
+   "park": "Acadia National Park",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    11,
+    16,
+    5,
+    14
+   ],
+   "source": "https://www.nps.gov/acad/planyourvisit/hours.htm",
+   "accessed": "2026-10-18",
+   "basis": "unpaved roads open May 15 - Nov 15, the longer closure; Park Loop Road and paved roads open Apr 15 - Dec 1"
+  },
+  {
+   "unit": "KAWW",
+   "park": "Katahdin Woods and Waters National Monument",
+   "applies": [
+    "Yes"
+   ],
+   "window": [
+    10,
+    20,
+    5,
+    31
+   ],
+   "source": "https://www.nps.gov/kaww/planyourvisit/hours.htm",
+   "accessed": "2026-10-18",
+   "basis": "\"roads may be closed from mid-November to late May\"; the south entrance and Loop Road \"are typically open to wheeled vehicle traffic from late May-late October\". Late October read as the 20th, late May as the 31st. The gates are a timber company's"
+  },
+  {
+   "unit": "GOGA",
+   "park": "Golden Gate National Recreation Area",
+   "applies": [],
+   "window": null,
+   "source": "https://www.nps.gov/goga/learn/news/2010-1118.htm",
+   "accessed": "2026-10-18",
+   "basis": "The layer flags 57 km here seasonal with no description, among them Lincoln Blvd and Washington Blvd in the Presidio. No seasonal closure of these roads is published; the park's road closures are for construction, events and holidays, not winter. UNKNOWN_SEASON is a winter rule, so this park's flag closes nothing (a decision: docs/winter-closures-national.md)"
+  }
+ ],
+ "nps_descriptions": [
+  {
+   "text": "4WD or closed with bad weather/down trees",
+   "closes": "no",
+   "windows": [],
+   "basis": "a road's condition, not a season; closes nothing here"
+  },
+  {
+   "text": "CLOSED YEAR ROUND TO MOTOR VEHICLES",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     12,
+     31
+    ]
+   ],
+   "basis": "all year"
+  },
+  {
+   "text": "Closed Dec 15 - Mar 31",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     15,
+     3,
+     31
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan 1 - Mar 15",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     3,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan 1 - Mar 25",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     3,
+     25
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan 1 - Mar 31",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     3,
+     31
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan 1 - Mar 31 at Boundary Gate",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     3,
+     31
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan 1 - Mar 31; from Rising Sun, closed at Jackson Glacier Overlook",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     1,
+     3,
+     31
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Jan. 2 - Apr. 15",
+   "closes": "dates",
+   "windows": [
+    [
+     1,
+     2,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Closed Third Monday of Oct - Apr 15",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     15,
+     4,
+     15
+    ]
+   ],
+   "basis": "the third Monday of October falls on Oct 15 at the earliest"
+  },
+  {
+   "text": "Closed Third Monday of Oct - March 31; from Logan Pass, closed at Jackson Glacier Overlook",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     15,
+     3,
+     31
+    ]
+   ],
+   "basis": "the third Monday of October falls on Oct 15 at the earliest"
+  },
+  {
+   "text": "Closed Winters",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Closed Winters - Per State Forest",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Closed during summer off season",
+   "closes": "dates",
+   "windows": [
+    [
+     6,
+     1,
+     9,
+     30
+    ]
+   ],
+   "basis": "summer, read as June through September; no dates given"
+  },
+  {
+   "text": "Closed during the winter season",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Closed from Mid-October to Memorial Day",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     10,
+     5,
+     31
+    ]
+   ],
+   "basis": "mid-October from the 10th; Memorial Day falls on May 31 at the latest"
+  },
+  {
+   "text": "Closed in Winter",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates; matched without case, so ACAD's \"closed in winter\" too"
+  },
+  {
+   "text": "Closed in winter season",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Closed prior to storms in Winter",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Closed to unauthorized use in winter and Spring",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "For interpretive use only",
+   "closes": "no",
+   "windows": [],
+   "basis": "not a seasonal statement; closes nothing here"
+  },
+  {
+   "text": "From December to mid-February, only the first three loops of Upper Pines Campground are normally open (about 90 campsites)",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     2,
+     20
+    ]
+   ],
+   "basis": "December to mid-February, mid read as the 20th"
+  },
+  {
+   "text": "Housekeeping Camp is closed from early October to mid-April (exact dates vary)",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     1,
+     4,
+     20
+    ]
+   ],
+   "basis": "early read as the 1st, mid as the 20th"
+  },
+  {
+   "text": "Lower Pines Campground is closed seasonally from late October - early April (exact dates vary)",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     20,
+     4,
+     10
+    ]
+   ],
+   "basis": "late read as the 20th, early as the 10th"
+  },
+  {
+   "text": "North Pines Campground is closed seasonally from late October - early April (exact dates vary)",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     20,
+     4,
+     10
+    ]
+   ],
+   "basis": "late read as the 20th, early as the 10th"
+  },
+  {
+   "text": "Mid April to Mid December",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     10,
+     4,
+     20
+    ]
+   ],
+   "basis": "open mid-April to mid-December: closed from the 10th of December to the 20th of April"
+  },
+  {
+   "text": "No Winter Maintenance",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "One way during rush hour",
+   "closes": "no",
+   "windows": [],
+   "basis": "a time-of-day rule, which closures.py never closes"
+  },
+  {
+   "text": "Open March 1 to November 30",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     2,
+     29
+    ]
+   ],
+   "basis": "closed outside the open dates"
+  },
+  {
+   "text": "Open Year Round",
+   "closes": "no",
+   "windows": [],
+   "basis": "open all year"
+  },
+  {
+   "text": "Open during winter season",
+   "closes": "no",
+   "windows": [],
+   "basis": "open in winter"
+  },
+  {
+   "text": "Permit Required",
+   "closes": "no",
+   "windows": [],
+   "basis": "the permit rule is the owner's open decision; closes nothing here"
+  },
+  {
+   "text": "Seasonal Closure End of Winter Use Through May31",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     1,
+     5,
+     31
+    ]
+   ],
+   "basis": "through May 31; winter use is oversnow, so the road is shut to cars from Nov 1"
+  },
+  {
+   "text": "Seasonal Closure May15 to July15",
+   "closes": "dates",
+   "windows": [
+    [
+     5,
+     15,
+     7,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Seasonal Closure Nov1 to May1",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     1,
+     5,
+     1
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "Spring / Fall Closure Variable",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Winter",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Winter Closure",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Winter Closure Variable",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Winter seasonal closure",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Winter seasonal closure dependent on snowpack and current road conditions",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "Year-Round Roadside Closure. No Stopping, Parking, Standing",
+   "closes": "no",
+   "windows": [],
+   "basis": "a parking rule, not a closure"
+  },
+  {
+   "text": "seasonal closure December 1 - April 15 with road; closed when Island Explorer shuttle bus operating;",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written; the shuttle closure is part-time"
+  },
+  {
+   "text": "subject to variable date early spring closure during freeze/thaw cycle to preserve resource",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "subject to variable date early spring closure during freeze/thaw cycle to protect resource",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "unplowed in winter; can be used if conditions allow",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates; unplowed resolves toward closed"
+  },
+  {
+   "text": "winter closure - Columbus Day to the Wed. before Memorial Day weekend",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     8,
+     5,
+     26
+    ]
+   ],
+   "basis": "Columbus Day falls on Oct 8 at the earliest; the Wednesday before Memorial Day weekend on May 26 at the latest"
+  },
+  {
+   "text": "winter closure Columbus Day to May 1",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     8,
+     5,
+     1
+    ]
+   ],
+   "basis": "Columbus Day falls on Oct 8 at the earliest"
+  },
+  {
+   "text": "winter closure December 1 - April 15",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure December 1 to April 15",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure November 15 - April 17",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     15,
+     4,
+     17
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure November 15 to May 15",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     15,
+     5,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure October 15 to June 1",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     15,
+     6,
+     1
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure from Columbus Day to Wed. before Memorial Day weekend",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     8,
+     5,
+     26
+    ]
+   ],
+   "basis": "as the hyphenated form"
+  },
+  {
+   "text": "winter closure from Columbus Day to the Wed. before Memorial Day weekend",
+   "closes": "dates",
+   "windows": [
+    [
+     10,
+     8,
+     5,
+     26
+    ]
+   ],
+   "basis": "as the hyphenated form"
+  },
+  {
+   "text": "winter closure from December 1 to April 15",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure from December 1 to May 26",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     5,
+     26
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure from November 1 to May 15",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     1,
+     5,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure from November 15 to May 15",
+   "closes": "dates",
+   "windows": [
+    [
+     11,
+     15,
+     5,
+     15
+    ]
+   ],
+   "basis": "as written"
+  },
+  {
+   "text": "winter closure to vehicles",
+   "closes": "park",
+   "windows": [],
+   "basis": "no dates"
+  },
+  {
+   "text": "winter seasonal closure December 1 - April 15",
+   "closes": "dates",
+   "windows": [
+    [
+     12,
+     1,
+     4,
+     15
+    ]
+   ],
+   "basis": "as written"
+  }
+ ]
+}

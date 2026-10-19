@@ -1,0 +1,9 @@
+road,km_in_graph,date,operator,km_closed_osm_only,km_closed_now,km_closed_all_year,expected_closed_km
+mt_washington_auto_road,12.4,11-05,closed,12.2,12.4,0.0,
+mt_washington_auto_road,12.4,01-15,closed,12.2,12.4,0.0,
+mt_washington_auto_road,12.4,05-12,closed,0.0,12.2,0.0,
+mt_washington_auto_road,12.4,08-15,open,0.0,0.0,0.0,
+kancamagus,59.4,11-05,open,0.0,0.0,0.0,
+kancamagus,59.4,01-15,open,0.0,0.0,0.0,
+kancamagus,59.4,05-15,open,0.0,0.0,0.0,
+kancamagus,59.4,08-15,open,0.0,0.0,0.0,

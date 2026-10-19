@@ -69,7 +69,7 @@ is a ford (`ford=yes`), or it is too rough for a car (`too_rough`:
 `barrier_closes` says so. Where that node stands decides what is closed; see
 `join_closed_to_cars`.
 
-Usage: python closures.py <input.osm.pbf> <processed_dir> [<out_dir>]
+Usage: python closures.py <input.osm.pbf> <processed_dir> [<out_dir> [<federal_dir>]]
 """
 
 import re
@@ -726,11 +726,6 @@ def join_gates(ways, gates, edges: gpd.GeoDataFrame):
     return _seasonal_table(rows), left
 
 
-# seasonal_closures.parquet's columns, in order; see the module docstring.
-SEASONAL_COLUMNS = ["edge", "u", "v", "way_id", "name", "ref", "tag",
-                    *CLOSURE_WINDOW, "length_m", "rule", "node_id", "at_m"]
-
-
 def _seasonal_table(rows) -> pd.DataFrame:
     """Seasonal rows as the table, sorted, with each row once."""
     table = rows if isinstance(rows, pd.DataFrame) else pd.DataFrame(
@@ -891,10 +886,69 @@ def _window_label(window):
     return f"{_MONTHS[sm - 1].title()} {sd} - {_MONTHS[em - 1].title()} {ed}"
 
 
-def main(pbf_path: str, processed_dir: str, out_dir: str = None):
+# Where federal_layers.py writes the agencies' road layers by default.
+FEDERAL_DIR = Path(__file__).resolve().parent.parent / "data" / "raw" / "federal"
+
+
+def federal_dir_for(pbf_path: str, given: str = None) -> Path:
+    """Where to read the agencies' layers: `given`, else $SUNDAYDRIVE_FEDERAL,
+    else `federal/` beside the PBF (data/raw/federal for data/raw's
+    extracts, which also serves a worktree whose data/ is elsewhere), else
+    FEDERAL_DIR."""
+    import os
+    if given:
+        return Path(given)
+    if os.environ.get("SUNDAYDRIVE_FEDERAL"):
+        return Path(os.environ["SUNDAYDRIVE_FEDERAL"])
+    beside = Path(pbf_path).resolve().parent / "federal"
+    return beside if beside.exists() else FEDERAL_DIR
+
+
+def join_federal(edges: gpd.GeoDataFrame, federal_dir=None) -> pd.DataFrame:
+    """The seasonal rows from the agencies that run the roads, and the table
+    of windows for the high passes and parks (winter_closures.py).
+
+    Reads mvum_roads.parquet and nps_roads.parquet from `federal_dir`
+    (FEDERAL_DIR unless given; `main` passes `federal_dir_for`). A missing
+    file is said loudly, never silently: without them a national build
+    closes only what OSM tags, which leaves Yellowstone, Teton Park Road and
+    809 of 813 km of one Colorado forest's seasonal roads open
+    (docs/winter-closures-national.md).
+    """
+    from winter_closures import federal_rows
+
+    t0 = time.time()
+    d = Path(federal_dir or FEDERAL_DIR)
+    frames = {}
+    for name in ("mvum_roads", "nps_roads"):
+        path = d / f"{name}.parquet"
+        if path.exists():
+            frames[name] = gpd.read_parquet(path)
+        else:
+            frames[name] = None
+            print(f"WARNING: {path} is missing, so no {name.split('_')[0].upper()} "
+                  "closures: run pipeline/federal_layers.py first", flush=True)
+    rows, report = federal_rows(edges, frames["mvum_roads"], frames["nps_roads"])
+    print(f"agencies' layers joined in {time.time() - t0:.0f}s", flush=True)
+    for source in ("mvum", "nps"):
+        if report[source] is not None:
+            n, km = report[source]
+            print(f"{source.upper()} closes {n:,} edges ({km:.1f} km) for part of the year")
+    for kind, label in (("roads", "table road"), ("exceptions", "kept open")):
+        placed = {k: r for k, r in report[kind].items() if r[1] is None}
+        print(f"{label}s: {len(placed)} of {len(report[kind])} in this graph")
+        for key, (km, why) in sorted(report[kind].items()):
+            print(f"  {key:28s} {km:7.1f} km" if why is None
+                  else f"  {key:28s} not placed: {why}")
+    return _seasonal_table(pd.DataFrame(rows, columns=SEASONAL_COLUMNS))
+
+
+def main(pbf_path: str, processed_dir: str, out_dir: str = None,
+         federal_dir: str = None):
     """Read processed_dir's graph, and write both tables into `out_dir`
     (processed_dir unless given, which is how to try a rule change without
-    touching the tables a deploy ships)."""
+    touching the tables a deploy ships). The agencies' layers come from
+    `federal_dir_for`."""
     d = Path(processed_dir)
     out = Path(out_dir or processed_dir)
     t0 = time.time()
@@ -916,7 +970,8 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None):
     edges = gpd.read_parquet(d / "graph_edges.parquet", columns=columns)
     by_way = join(closed, edges)
     by_gate, gates_left = join_gates(found.ways, found.gates, edges)
-    table = _seasonal_table(pd.concat([by_way, by_gate], ignore_index=True))
+    by_agency = join_federal(edges, federal_dir_for(pbf_path, federal_dir))
+    table = _seasonal_table(pd.concat([by_way, by_gate, by_agency], ignore_index=True))
     table.to_parquet(out / "seasonal_closures.parquet", index=False)
 
     unique = by_way.drop_duplicates("edge")
@@ -1028,4 +1083,4 @@ def _report(found, cars, left):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:5])

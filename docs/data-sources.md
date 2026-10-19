@@ -25,6 +25,19 @@ in [Licensing: the open questions, answered](licensing-open-questions.md).
 PAD-US is the one source here with no attribution obligation, so adding it does
 not change the app's credit line.
 
+## Winter closures (the `usa` branch)
+
+Since 2026-10-18, `pipeline/closures.py` also reads two federal road layers to
+close park and forest roads for the season
+([`winter-closures-national.md`](winter-closures-national.md)). Only rows of
+`seasonal_closures.parquet` reach the server; nothing from either layer is drawn
+or shown in the app.
+
+| Source | Used for | Licence |
+| --- | --- | --- |
+| [USFS Motor Vehicle Use Map roads](https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_01/MapServer/1) | passenger-vehicle season of Forest Service roads | **to confirm.** `tools/us_map_data/results/README.md` records CC BY 4.0; the service itself states no licence (read 2026-10-18). If CC BY 4.0 holds, the app's credit line needs "U.S. Forest Service" (`ios/Sources/AboutView.swift`, not changed here) |
+| [NPS Public Roads](https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Roads/MapServer/0) | seasonal park roads | public domain (US federal government work) |
+
 The basemap the routes are drawn on is Apple's, via MapKit, which renders its own
 attribution.
 
