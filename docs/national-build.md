@@ -13,11 +13,14 @@ with E1. Built on `claude/national-build` (off `usa`), not deployed, not pushed.
   0.17 km at most. Against `processed-ne` built with E1, the national build's New
   England keeps 97.9% of edges unchanged, and 245 of 300 trips are the same on the
   ground. The rest is seven weeks of OSM edits.
-- **For units B, C and D (§8):** the Router's own `CRS_METERS` is still Massachusetts
-  State Plane; `closures.py` crashes on a region with no seasonal road; the files'
-  sizes.
+- **For units B and D (§8):** the Router's own `CRS_METERS` is still Massachusetts
+  State Plane, and the files are large to load whole; `closures.py` crashes on a
+  region with no seasonal road.
 
 ## 1. The earliest honest date
+
+*As committed on day one (a669b5b) and updated that night; the build finished
+early, see the status above.*
 
 **`data/processed-us` complete and checked: Wednesday 21 October 2026, end of day.
 Committed date: Thursday 22 October**, which leaves room for one full rebuild of

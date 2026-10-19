@@ -434,7 +434,7 @@ def global_junctions(node_count: dict, junctions: np.ndarray) -> int:
     like a plain interior node, and the same road is split differently on each
     side of a border. A national build counts junctions once, over the whole
     country's ways (tools/national_build/junctions.py), and hands the sorted ids
-    in here. docs/national-build.md §2 has the measured cost of skipping this.
+    in here. docs/national-build.md §3 has the measured cost of skipping this.
     """
     ids = np.fromiter(node_count.keys(), dtype=np.int64, count=len(node_count))
     pos = np.searchsorted(junctions, ids)
