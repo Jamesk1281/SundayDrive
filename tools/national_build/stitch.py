@@ -63,19 +63,23 @@ def geo_metadata(path: Path) -> bytes:
 
 
 class GeoWriter:
-    """Append GeoDataFrames to one GeoParquet file, all cast to the first's schema."""
+    """Append GeoDataFrames to one GeoParquet file, each cast to the schema of the
+    file geopandas wrote for the first part (minus `drop`). Taken from the file,
+    not from the first frame, because an empty or all-null column in one frame
+    would otherwise fix that column's type as null for every frame after it."""
 
-    def __init__(self, path: Path, geo: bytes):
-        self.path, self.geo, self.writer, self.schema, self.rows = path, geo, None, None, 0
+    def __init__(self, path: Path, like: Path, drop: tuple = ()):
+        self.path, self.rows = path, 0
+        schema = pq.read_schema(like)
+        keep = [f for f in schema if f.name not in drop and not f.name.startswith("__")]
+        self.schema = pa.schema(keep).with_metadata({b"geo": geo_metadata(like)})
+        self.writer = pq.ParquetWriter(path, self.schema)
 
     def write(self, gdf: gpd.GeoDataFrame):
         df = pd.DataFrame(gdf.drop(columns="geometry"))
         df["geometry"] = shapely.to_wkb(gdf.geometry.values)
-        table = pa.Table.from_pandas(df[[*gdf.columns]], preserve_index=False)
-        if self.writer is None:
-            self.schema = table.schema.with_metadata({b"geo": self.geo})
-            self.writer = pq.ParquetWriter(self.path, self.schema)
-        self.writer.write_table(table.select(self.schema.names).cast(self.schema))
+        table = pa.Table.from_pandas(df[self.schema.names], preserve_index=False)
+        self.writer.write_table(table.cast(self.schema))
         self.rows += len(df)
 
     def close(self):
@@ -134,9 +138,8 @@ def access_tables(c: dict, regs: list, owner: regions.Owner, out: Path, report: 
         ways = gpd.read_parquet(work / r.name / "access_ways.parquet")
         entries = gpd.read_parquet(work / r.name / "access_entries.parquet")
         if ways_w is None:
-            ways_w = GeoWriter(out / "access_ways.parquet", geo_metadata(work / r.name / "access_ways.parquet"))
-            entries_w = GeoWriter(out / "access_entries.parquet",
-                                  geo_metadata(work / r.name / "access_entries.parquet"))
+            ways_w = GeoWriter(out / "access_ways.parquet", work / r.name / "access_ways.parquet")
+            entries_w = GeoWriter(out / "access_entries.parquet", work / r.name / "access_entries.parquet")
         first = shapely.get_point(ways.geometry.values, 0)
         rep = (pd.DataFrame({"component": ways["component"].to_numpy(),
                              "x": shapely.get_x(first), "y": shapely.get_y(first)})
@@ -225,13 +228,15 @@ def main(config: str, out_dir: str, only: list[str]):
         ex = pd.read_parquet(work / r.name / "part_exits.parquet")
         exits.update(zip(ex["node_id"].tolist(), ex["exit_ref"].tolist()))
         written.append(e[["way_id", "u", "v"]])
-        nodes.append(graph.node_table(e))
+        if len(e):
+            nodes.append(graph.node_table(e))
         per_region.append({"region": r.name, "state": r.state, "edges": len(e),
                            "km": float(e["length_m"].sum() / 1000),
                            "nodes": int(len(np.unique(np.r_[e["u"].to_numpy(), e["v"].to_numpy()])))})
         e = e.drop(columns=["way_id", "owner"])
         if edges_w is None:
-            edges_w = GeoWriter(out / "graph_edges.parquet", geo_metadata(work / r.name / "part_edges.parquet"))
+            edges_w = GeoWriter(out / "graph_edges.parquet", work / r.name / "part_edges.parquet",
+                                drop=("way_id", "owner"))
         edges_w.write(e)
         print(f"  {r.name}: {len(e):,} edges", flush=True)
     edges_w.close()
