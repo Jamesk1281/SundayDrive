@@ -978,9 +978,14 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
     km = unique["length_m"].sum() / 1000.0
     score = edges["score"].to_numpy()[unique["edge"].to_numpy()]
     lengths = unique["length_m"].to_numpy()
-    print(f"in the graph: {by_way['way_id'].nunique():,} ways, {len(unique):,} edges, "
-          f"{km:.1f} km; length-weighted score {np.average(score, weights=lengths):.2f}, "
-          f"{lengths[score >= 7.0].sum() / lengths.sum():.1%} of km at 7 or more")
+    if lengths.sum() > 0:
+        print(f"in the graph: {by_way['way_id'].nunique():,} ways, {len(unique):,} edges, "
+              f"{km:.1f} km; length-weighted score {np.average(score, weights=lengths):.2f}, "
+              f"{lengths[score >= 7.0].sum() / lengths.sum():.1%} of km at 7 or more")
+    else:
+        # A region with no seasonally tagged way (Rhode Island, as a national
+        # build's region) has nothing to average; docs/national-build.md §8.
+        print("in the graph: no seasonally closed ways")
     absent = len(closed) - by_way["way_id"].nunique()
     print(f"not in the graph: {absent:,} closed ways have no edge in it "
           "(outside the largest component, or under 1 m)")
