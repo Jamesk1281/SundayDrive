@@ -453,6 +453,17 @@ build has 20.0M.
 country, about 50 minutes for the two. National row numbers change on every stitch,
 so the sidecars are always rerun with it.
 
+> **Sidecars rerun 2026-10-19 with unit D's `closures.py`** (winter closures,
+> [winter-closures-national.md](winter-closures-national.md)), with
+> `SUNDAYDRIVE_FEDERAL` pointed at `data/raw/federal`, because the region PBFs
+> live in `data/national/pbf`, not beside the federal layers. It took 3,700 s.
+> `seasonal_closures` went from 3,850 rows (3,567 edges) to 13,588 (12,318):
+> MVUM 8,077, NPS 1,358, the window table 303. `closed_to_cars` is 71,617 rows,
+> `osm_unpaved` 19,237 and `state_road_class` 49,697. Teton Park Road closes
+> 23.0 km Nov 1–May 1, matching D's acceptance run. One stub is left: a 30 m
+> Kuwohi Access Road edge the table did not place keeps the Smokies' park
+> window (Nov 1–May 14), so it errs toward closed at that end.
+
 ## 8. For the other units, and what is still open
 
 - **Unit B, the router.** `router.py` and `options.py` still measure in
