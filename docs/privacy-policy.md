@@ -121,8 +121,9 @@ all three, because App Review Guideline 5.1.1(ii) asks it to describe the use
 
 It requests *when in use* authorization only (`LocationManager.swift:209`,
 `:315`) — never "always" — and the purpose string the system shows you is the
-one at `ios/project.yml:39`: "Your location is used to plan drives from where
-you are, to check that you’re in New England, and to guide you turn by turn."
+one at `ios/project.yml:39`: "Your location is used to show the map where you
+are, to plan drives from there, to check that you’re in the area the app covers,
+and to guide you turn by turn."
 `tests/test_privacy_page.py` fails if the published page quotes anything
 else, or if this file stops quoting it.
 
