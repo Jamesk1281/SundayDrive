@@ -134,28 +134,34 @@ def naive_cmd(ref_dir, states, out, pbf_a, pbf_b, names):
 
 
 def routes_cmd(dir_a, dir_b, pairs_path, out):
+    """One Router at a time: two New England graphs at once is ~8 GB."""
+    import gc
     from router import Router
     pairs = json.loads(Path(pairs_path).read_text())
-    rows = []
-    routers = {"a": Router(dir_a), "b": Router(dir_b)}
-    for p in pairs:
-        result = {}
-        for side, r in routers.items():
+    found = {}
+    for side, d in (("a", dir_a), ("b", dir_b)):
+        r = Router(d)
+        for p in pairs:
             src, so = r.snap(*p["from"])
             dst, do = r.snap_destination(*p["to"])
             for pref in (0.0, 0.5, 1.0):
-                res = r.route(src, dst, pref)
-                result[(side, pref)] = (res, so, do)
+                res = r.route(src, dst, pref) if src != dst else None
+                found[(side, p["name"], pref)] = {
+                    "snap_m": round(max(so, do), 1),
+                    "km": round(res.km, 3) if res else None,
+                    "min": round(res.minutes, 2) if res else None,
+                    "score": round(res.mean_score, 3) if res else None,
+                    "path": list(zip(res.edges["u"].tolist(), res.edges["v"].tolist())) if res else None}
+        del r
+        gc.collect()
+    rows = []
+    for p in pairs:
         for pref in (0.0, 0.5, 1.0):
-            (ra, sa, da), (rb, sb, db) = result[("a", pref)], result[("b", pref)]
+            a, b = found[("a", p["name"], pref)], found[("b", p["name"], pref)]
             row = {"pair": p["name"], "pref": pref}
-            for side, (res, so, do) in (("a", (ra, sa, da)), ("b", (rb, sb, db))):
-                row[f"{side}_snap_m"] = round(max(so, do), 1)
-                row[f"{side}_km"] = round(res.km, 3) if res else None
-                row[f"{side}_min"] = round(res.minutes, 2) if res else None
-                row[f"{side}_score"] = round(res.mean_score, 3) if res else None
-            row["same_path"] = bool(ra and rb and list(zip(ra.edges["u"], ra.edges["v"]))
-                                    == list(zip(rb.edges["u"], rb.edges["v"])))
+            for side, x in (("a", a), ("b", b)):
+                row.update({f"{side}_{k}": v for k, v in x.items() if k != "path"})
+            row["same_path"] = a["path"] is not None and a["path"] == b["path"]
             rows.append(row)
     df = pd.DataFrame(rows)
     df.to_csv(out, index=False)

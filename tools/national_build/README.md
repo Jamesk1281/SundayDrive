@@ -19,7 +19,7 @@ into `data/processed-ne` or `data/processed`.
 | 5 | `prefetch.py config.json` | every WorldCover tile, before regions run in parallel |
 | 6 | `build.py config.json [region ...]` | `build/<region>/`: the pipeline's outputs, then `part_edges`, `part_restrictions`, `part_exits` |
 | 7 | `stitch.py config.json <out>` | `graph_edges`, `graph_nodes`, `turn_restrictions`, `access_ways`, `access_entries`, `per_region.csv`, `stitch_report.json` |
-| 8 | `sidecars.py config.json <out> ../raw/state-roads` | `closed_to_cars`, `seasonal_closures`, `osm_unpaved`, `state_road_class` |
+| 8 | `sidecars.py config.json <out> ../raw` (state_roads.py appends `state-roads`) | `closed_to_cars`, `seasonal_closures`, `osm_unpaved`, `state_road_class` |
 | check | `compare.py`, `slice.py`, `joint.py` | the border proof and the New England check |
 
 `boundaries/states48dc.parquet` is the Census TIGER/Line 2025 state layer

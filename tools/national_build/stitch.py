@@ -101,8 +101,8 @@ def check_borders(light: pd.DataFrame) -> dict:
     split_differently = multi.index.to_numpy()[((multi["hsums"] > 1) | (multi["ns"] > 1)).to_numpy()]
 
     # Score of the owner's copy against every other region's copy of the same edge.
-    owned = light[light["owner"] == light["region"]]
-    other = light[(light["owner"] != light["region"]) & (light["owner"] != "")]
+    owned = light[light["mine"]]
+    other = light[~light["mine"] & (light["owner"] != "")]
     both = other.merge(owned[["way_id", "u", "v", "score", "length_m"]],
                        on=["way_id", "u", "v"], suffixes=("", "_owner"))
     both = both.drop_duplicates(["way_id", "u", "v", "region"])
@@ -173,6 +173,7 @@ def main(config: str, out_dir: str, only: list[str]):
         t["region"] = r.name
         light.append(t)
     light = pd.concat(light, ignore_index=True)
+    light["mine"] = light["owner"].to_numpy() == light["region"].to_numpy()
     for col in ("oneway", "owner", "region"):
         light[col] = light[col].astype("category")
     print(f"read {len(light):,} region edges in {time.time() - t0:.0f}s", flush=True)
@@ -181,7 +182,7 @@ def main(config: str, out_dir: str, only: list[str]):
     print(json.dumps(report["borders"], indent=1), flush=True)
 
     in_scope = light["owner"].isin(report["regions"]).to_numpy()
-    owned = (light["owner"].astype(str) == light["region"].astype(str)).to_numpy()
+    owned = light["mine"].to_numpy()
     report["outside_the_48_states_and_dc"] = {
         "edges": int((light["owner"] == "").sum()),
         "km": float(light.loc[light["owner"] == "", "length_m"].sum() / 1000)}

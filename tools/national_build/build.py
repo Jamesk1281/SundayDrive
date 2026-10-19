@@ -20,8 +20,8 @@ Every stage's wall time and peak RSS go to <work>/<region>/stages.json.
 The Terrarium and WorldCover tiles are cached once for every region, in
 <work>/raw (elevation.py and landcover.py put their caches beside the processed
 directory). Once a region's graph part is written its rasters and layers are
-deleted unless the region is in "keep": roads.parquet stays, for state_roads.py,
-and so do the access tables and the parts.
+deleted unless the region is in "keep" (New England's six, whose roads.parquet
+state_roads.py reads); the access tables and the parts stay.
 """
 import json
 import math
@@ -41,7 +41,7 @@ PY = sys.executable
 # whole pipeline). elevation.py's mosaic: 37 B per pixel (the same section).
 GB_PER_PBF_GB = 7.0
 MOSAIC_B_PER_PX = 37
-KEEP_ALWAYS = {"roads.parquet", "access_ways.parquet", "access_entries.parquet",
+KEEP_ALWAYS = {"access_ways.parquet", "access_entries.parquet",
                "part_edges.parquet", "part_restrictions.parquet", "part_exits.parquet",
                "stages.json"}
 

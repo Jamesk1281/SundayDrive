@@ -1,6 +1,6 @@
 """closures.py's and state_roads.py's tables for a stitched graph, on national edge ids.
 
-Usage: sidecars.py <config.json> <out_dir> <state_roads_raw_dir> [region ...]
+Usage: sidecars.py <config.json> <out_dir> <raw_dir> [region ...]   (raw_dir holds state-roads/)
 
 Both stages name edges by their row in graph_edges.parquet, and both are run
 unmodified. closures.py reads its PBF with an in-memory location index, which a
@@ -118,8 +118,13 @@ def main(config: str, out_dir: str, state_raw: str, only: list[str]):
     timing = {}
     for r in regs:
         d = out / "sidecars" / r.name
+        if all((d / f"{t}.parquet").exists() for t in TABLES):
+            rows, owned = np.load(d / "national_rows.npy"), np.load(d / "owned.npy")
+            for t in TABLES:
+                collected[t].append(remap(pd.read_parquet(d / f"{t}.parquet"), rows, owned))
+            continue
         rows, owned = write_slice(nat, [r.name], d)
-        timing[r.name] = run([PY, str(PIPELINE / "closures.py"), str(Path(c["pbf_dir"]) / f"{r.name}.osm.pbf"),
+        timing[r.name] = run([PY, str(HERE / "closures_run.py"), str(Path(c["pbf_dir"]) / f"{r.name}.osm.pbf"),
                               str(d)], d / "closures.log")
         for t in TABLES:
             collected[t].append(remap(pd.read_parquet(d / f"{t}.parquet"), rows, owned))

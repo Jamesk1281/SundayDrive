@@ -50,10 +50,14 @@ def main(pbf: str, out: str):
     t0 = time.time()
     refs, ways = drivable_refs(pbf)
     print(f"{ways:,} drivable ways, {len(refs):,} node references in {time.time() - t0:.0f}s")
-    ids, counts = np.unique(refs, return_counts=True)
-    junctions = ids[counts >= 2]
+    # Sorted in place and counted by runs, not np.unique, which would hold two
+    # more copies of a ~2.5 GB array at the national scale.
+    refs.sort()
+    starts = np.flatnonzero(np.r_[True, refs[1:] != refs[:-1]])
+    counts = np.diff(np.r_[starts, len(refs)])
+    junctions = refs[starts[counts >= 2]]
     np.save(out, junctions)
-    print(f"{len(ids):,} distinct nodes, {len(junctions):,} junctions; wrote {out} "
+    print(f"{len(starts):,} distinct nodes, {len(junctions):,} junctions; wrote {out} "
           f"in {time.time() - t0:.0f}s")
 
 
