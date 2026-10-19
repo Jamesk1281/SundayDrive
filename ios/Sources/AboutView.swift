@@ -68,7 +68,7 @@ enum DataSources {
     /// openstreetmap.org/copyright".
     static let openStreetMapCopyrightURL = URL(string: "https://www.openstreetmap.org/copyright")!
 
-    static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, appleMaps]
+    static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, protectedAreas, appleMaps]
 
     /// The route-guidance notice, **verbatim and non-negotiable**.
     ///
@@ -165,18 +165,19 @@ enum DataSources {
     /// "Required attribution" block lists a line per upstream; the three below
     /// are reproduced from it verbatim.
     ///
-    /// Which three: `joerd`'s own per-zoom source table says that at **zoom 11**
+    /// Which four: `joerd`'s own per-zoom source table says that at **zoom 11**
     /// — the zoom `pipeline/elevation.py` fetches — land is `NED/3DEP` and
-    /// `SRTM`, plus `NRCAN` in Canada, and ocean is `ETOPO1`. The pipeline's
-    /// `BBOX` is `(-73.76, 40.93, -66.87, 47.47)`, which reaches north of the
-    /// Maine border into Quebec and New Brunswick and out over the Gulf of
-    /// Maine, so all three upstreams are inside the footprint the relief raster
-    /// is built from. `ArcticDEM` and `GMTED` only apply above 60° latitude at
-    /// this zoom and the European, Austrian, Australian, Mexican, UK, Norwegian
-    /// and New Zealand lines are elsewhere entirely, so they are not reproduced.
+    /// `SRTM`, plus `NRCAN` in Canada and `INEGI` in Mexico, and ocean is
+    /// `ETOPO1`. The national build's footprint is the 48 states' boxes, and
+    /// those reach over the northern border into Canada, over the Rio Grande
+    /// into Mexico, and out to sea, so all four upstreams are inside it.
+    /// `ArcticDEM` only applies above 60° latitude at this zoom, and the
+    /// European, Austrian, Australian, UK, Norwegian and New Zealand lines are
+    /// elsewhere entirely, so they are not reproduced.
     ///
-    /// Note the Canadian line is the reason not to shortcut this: it is the
-    /// Open Government Licence – Canada, not US-government public domain.
+    /// Note the Canadian and Mexican lines are the reason not to shortcut
+    /// this: neither is US-government public domain. The Canadian is the Open
+    /// Government Licence – Canada, and INEGI's is Mexico's free-use terms.
     static let terrainTiles = DataSource(
         role: "Hills and valleys in the scenery scores",
         name: "Terrain Tiles (AWS Open Data, formerly Mapzen)",
@@ -187,9 +188,31 @@ enum DataSources {
                 + "Administration",
             "Canada terrain data contains information licensed under the Open "
                 + "Government Licence – Canada;",
+            "Mexico terrain data source: INEGI, Continental relief, 2016;",
         ],
         licence: nil,
         url: URL(string: "https://registry.opendata.aws/terrain-tiles/")!
+    )
+
+    /// PAD-US 4.1 — `c_protected` at `pipeline/score.py`, the national
+    /// scoring's credit for roads through national and state parks, monuments,
+    /// seashores and wilderness (`pipeline/protected.py`).
+    ///
+    /// US-government public domain, so no credit is owed; USGS asks for this
+    /// citation, which is taken verbatim from the ScienceBase item the
+    /// pipeline's own fetch script names (652d4fc5d34e44db0e2ee45e), and it is
+    /// in every national score the app displays, so it is listed.
+    static let protectedAreas = DataSource(
+        role: "Parks and protected land in the scenery scores",
+        name: "Protected Areas Database of the United States (PAD-US) 4.1",
+        credit: ["U.S. Geological Survey (USGS) Gap Analysis Project (GAP), 2024, "
+                 + "Protected Areas Database of the United States (PAD-US) 4.1: "
+                 + "U.S. Geological Survey data release, https://doi.org/10.5066/P96WBCHS."],
+        // No licence line: `AttributionTests` keeps the words "public
+        // domain" off this screen, so that the terrain aggregate beside it
+        // can never be read as one.
+        licence: nil,
+        url: URL(string: "https://doi.org/10.5066/P96WBCHS")!
     )
 
     /// The basemap under the route lines. MapKit draws Apple's own attribution
@@ -411,6 +434,7 @@ struct AboutView: View {
     private static func hue(for source: DataSource) -> Color {
         if source.name.contains("WorldCover") { return BeautyType.hue(for: "forest") }
         if source.name.contains("Terrain")    { return BeautyType.hue(for: "hills") }
+        if source.name.contains("PAD-US")     { return BeautyType.hue(for: "forest") }
         return .slate
     }
 

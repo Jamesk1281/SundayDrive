@@ -3,18 +3,23 @@ import MapKit
 import XCTest
 @testable import SundayDrive
 
-/// What a phone outside New England can and cannot do.
+/// What a phone outside the covered area can and cannot do.
 ///
-/// Production answered a loop requested from Cupertino with HTTP 400 and
-/// "point is outside the covered road network (currently New England)", which
-/// the app printed verbatim. That is what a reviewer outside the region saw on
-/// tapping Loop. These pin the replacement: the fix is judged on the phone, the
-/// message says what to do instead, and **no request is made**. Both fetch
-/// seams count their calls, so "nothing reached the server" is a number here.
+/// Production once answered a loop requested from Cupertino, outside the New
+/// England build's coverage, with HTTP 400 and "point is outside the covered
+/// road network (currently New England)", which the app printed verbatim.
+/// These pin the replacement, at the national edge: the fix is judged on the
+/// phone, the message says what to do instead, and **no request is made**.
+/// Both fetch seams count their calls, so "nothing reached the server" is a
+/// number here. See `docs/app-goes-national.md`.
 @MainActor
-final class OutsideNewEnglandTests: XCTestCase {
+final class OutsideCoverageTests: XCTestCase {
 
-    private static let cupertino = CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.0090)
+    /// 50 km over the border, in Ontario: outside, and close enough to the
+    /// covered area that the edge, not the distance, decides.
+    private static let toronto = CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832)
+    /// Inside, and nowhere near New England: what the New England build refused.
+    private static let moab = CLLocationCoordinate2D(latitude: 38.5733, longitude: -109.5498)
     private static let boston = CLLocationCoordinate2D(latitude: 42.3601, longitude: -71.0589)
     private static let rockport = CLLocationCoordinate2D(latitude: 42.6557, longitude: -70.6203)
 
@@ -42,26 +47,26 @@ final class OutsideNewEnglandTests: XCTestCase {
         return (model, { requests })
     }
 
-    func test_my_location_outside_new_england_says_so_and_sends_nothing() async {
-        let (model, requests) = directions(at: Self.cupertino)
+    func test_my_location_outside_coverage_says_so_and_sends_nothing() async {
+        let (model, requests) = directions(at: Self.toronto)
         model.end = Self.rockport
         model.endQuery = "Rockport, MA"
         let biasBefore = model.searchRegion.center
 
         await model.useMyLocation()
 
-        XCTAssertEqual(model.errorText, NewEngland.outsideHere)
+        XCTAssertEqual(model.errorText, Coverage.outsideHere)
         XCTAssertEqual(requests(), 0, "no route request reaches the server")
-        XCTAssertNil(model.start, "Cupertino never becomes the start")
+        XCTAssertNil(model.start, "Toronto never becomes the start")
         XCTAssertNil(model.response)
         XCTAssertEqual(model.locationManager.regionStatus, .outside)
         XCTAssertEqual(model.searchRegion.center.latitude, biasBefore.latitude,
-                       "search is not re-ranked around Cupertino")
+                       "search is not re-ranked around Toronto")
         XCTAssertFalse(model.isLocatingUser, "the spinner stops")
     }
 
     func test_a_start_already_typed_survives_an_outside_my_location() async {
-        let (model, requests) = directions(at: Self.cupertino)
+        let (model, requests) = directions(at: Self.toronto)
         model.start = Self.boston
         model.startQuery = "Boston, MA"
 
@@ -85,6 +90,55 @@ final class OutsideNewEnglandTests: XCTestCase {
         XCTAssertEqual(model.locationManager.regionStatus, .inside)
     }
 
+    func test_my_location_far_from_new_england_plans_too() async {
+        // The New England build stopped here with `outsideHere`. Nationally
+        // Moab is covered, so the request goes out, and whether the server
+        // has roads there is the server's to say.
+        let (model, requests) = directions(at: Self.moab)
+        model.end = CLLocationCoordinate2D(latitude: 38.7331, longitude: -109.5925)  // Arches
+
+        await model.useMyLocation()
+
+        XCTAssertNil(model.errorText)
+        XCTAssertEqual(requests(), 1)
+        XCTAssertEqual(model.locationManager.regionStatus, .inside)
+    }
+
+    // MARK: - The launch check
+
+    func test_the_launch_check_inside_moves_the_map_to_the_phone() async {
+        let model = RouteModel()
+        let fix = fix(Self.moab)
+        model.locateRoughly = { fix }
+
+        let status = await model.checkWhereabouts(askingPermission: false)
+
+        XCTAssertEqual(status, .inside)
+        XCTAssertEqual(model.launchFix?.latitude, Self.moab.latitude,
+                       "the home map goes to Moab, not the middle of the country")
+    }
+
+    func test_the_launch_check_outside_leaves_the_map_alone() async {
+        let model = RouteModel()
+        let fix = fix(Self.toronto)
+        model.locateRoughly = { fix }
+
+        let status = await model.checkWhereabouts(askingPermission: false)
+
+        XCTAssertEqual(status, .outside)
+        XCTAssertNil(model.launchFix, "the map does not fly to Toronto")
+    }
+
+    func test_the_launch_check_without_a_fix_knows_nothing() async {
+        let model = RouteModel()
+        model.locateRoughly = { nil }
+
+        let status = await model.checkWhereabouts(askingPermission: false)
+
+        XCTAssertEqual(status, .unknown)
+        XCTAssertNil(model.launchFix)
+    }
+
     // MARK: - Loop
 
     private func loop(at here: CLLocationCoordinate2D) -> (LoopModel, LocationManager, () -> Int) {
@@ -100,14 +154,14 @@ final class OutsideNewEnglandTests: XCTestCase {
         return (model, manager, { requests })
     }
 
-    func test_a_loop_from_outside_new_england_says_so_and_sends_nothing() async {
+    func test_a_loop_from_outside_coverage_says_so_and_sends_nothing() async {
         // The Loop row on Home used to call this with no form in between, so
         // this was the reviewer's one tap to the server's raw error.
-        let (model, manager, requests) = loop(at: Self.cupertino)
+        let (model, manager, requests) = loop(at: Self.toronto)
 
         await model.useMyLocation()
 
-        XCTAssertEqual(model.errorText, NewEngland.outsideHere)
+        XCTAssertEqual(model.errorText, Coverage.outsideHere)
         XCTAssertEqual(requests(), 0, "no loop request reaches the server")
         XCTAssertNil(model.start)
         XCTAssertNil(model.response)
@@ -128,8 +182,8 @@ final class OutsideNewEnglandTests: XCTestCase {
     func test_one_status_is_shared_by_both_planning_stages() async {
         // Directions' My Location and the Loop row write the same answer, so
         // Home cannot say "from here" after Directions has learnt otherwise.
-        let (model, _) = directions(at: Self.cupertino)
-        let fix = fix(Self.cupertino)
+        let (model, _) = directions(at: Self.toronto)
+        let fix = fix(Self.toronto)
         model.loops.locate = { fix }
         model.loops.fetchLoop = { _, _, _, _ in
             XCTFail("no request from outside")
@@ -149,7 +203,7 @@ final class OutsideNewEnglandTests: XCTestCase {
 
     // MARK: - Recents
 
-    func test_a_saved_destination_outside_new_england_is_not_offered() {
+    func test_a_saved_destination_outside_coverage_is_not_offered() {
         let key = "recentDestinations"
         let saved = UserDefaults.standard.data(forKey: key)
         defer {
@@ -160,10 +214,13 @@ final class OutsideNewEnglandTests: XCTestCase {
         let rows = [
             Recent(name: "Rockport", subtitle: "MA", latitude: 42.6557, longitude: -70.6203),
             Recent(name: "Portland", subtitle: "OR", latitude: 45.5151, longitude: -122.6795),
+            Recent(name: "Victoria", subtitle: "BC", latitude: 48.4284, longitude: -123.3656),
         ]
         UserDefaults.standard.set(try! JSONEncoder().encode(rows), forKey: key)
 
-        XCTAssertEqual(Recents.load().map(\.name), ["Rockport"])
+        // Portland, Oregon was dropped by the New England build; nationally
+        // it is covered. Victoria, across the strait from it, is not.
+        XCTAssertEqual(Recents.load().map(\.name), ["Rockport", "Portland"])
     }
 
     func test_clearing_recents_empties_the_list() {

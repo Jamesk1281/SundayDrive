@@ -29,7 +29,10 @@ struct BeautyType: Identifiable {
     /// `apiName`s must match the server's, or its weights are ignored.
     static let all: [BeautyType] = [
         BeautyType(apiName: "coast",  label: "Coast"),
-        BeautyType(apiName: "forest", label: "Forest & parks"),
+        // "& desert" since the national scoring: desert and rock ride this
+        // slider (`c_forest = max(green and tree cover, desert)`), and a desert
+        // road listed under "Forest & parks" alone was wrong.
+        BeautyType(apiName: "forest", label: "Forest, parks & desert"),
         // Off by default, alone among the six. `c_urban` is the one component
         // the 2026-08-25 drive marks scored *below* chance — 0.35 separation
         // against a 0.50 coin, the only one of nine pointing the wrong way —
@@ -90,7 +93,7 @@ struct BeautyType: Identifiable {
     }
 
     /// The backend names the breakdown buckets `forest/park`, `farmland`,
-    /// `town`; the tune sheet calls the same things *Forest & parks*,
+    /// `town`; the tune sheet calls the same things *Forest, parks & desert*,
     /// *Farmland*, *Town centers*. Two vocabularies for one set of six was a
     /// small thing on separate screens and is a visible one now that the bars
     /// carry the sheet's colours. The backend's key stays the key; this is only

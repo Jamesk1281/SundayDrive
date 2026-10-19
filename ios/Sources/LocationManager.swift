@@ -8,7 +8,7 @@ import Observation
 /// stream fixes into `location`; `currentLocation()` takes a single fix so the
 /// planning screen can offer "My Location" as a start point without leaving the
 /// GPS on; `roughLocation()` takes a fix of any accuracy for the one question
-/// that needs no more, whether the phone is in New England.
+/// that needs no more, whether the phone is in the covered area.
 ///
 /// The first two reject junk fixes (see `isUsable`). That matters more than it
 /// looks: `startUpdatingLocation` hands back a *cached* fix immediately, often
@@ -68,7 +68,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             || manager.authorizationStatus == .authorizedAlways
     }
 
-    /// Whether the phone was in New England at the last fix the app planned
+    /// Whether the phone was in the covered area at the last fix the app planned
     /// with. See `RegionStatus`.
     ///
     /// Here because both planning models share this object, so the check at
@@ -346,7 +346,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     var waitingOnAuthorization: Int { pendingAuth.count }
 
     /// Ask for permission if nobody has been asked yet, and wait for the
-    /// answer. Once, at first launch, so the New England check can run; every
+    /// answer. Once, at first launch, so the coverage check can run; every
     /// other path asks when it needs a fix, through `currentLocation()`.
     @MainActor
     @discardableResult
@@ -355,7 +355,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         return await requestAuthorization()
     }
 
-    // MARK: - Any recent fix, for the New England check
+    // MARK: - Any recent fix, for the coverage check
 
     /// The first fix of any accuracy, or nil if there is no permission or
     /// nothing arrives within `timeout`.
@@ -364,7 +364,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     /// enough to drive on (`isUsable`, 65 m), and with Precise Location off it
     /// first raises the temporary full-accuracy prompt — "Turn-by-turn guidance
     /// needs your precise location" — which at launch, with no drive in sight,
-    /// would make no sense. Which side of the New England line the phone is on
+    /// would make no sense. Which side of the coverage line the phone is on
     /// needs kilometres, not metres, so this takes the first real fix to
     /// arrive, an approximate one included, and asks for nothing: not
     /// precision, and not permission either.
@@ -434,7 +434,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             }
         }
 
-        // The New England check takes the first real fix, however coarse.
+        // The coverage check takes the first real fix, however coarse.
         if let rough = pendingRoughFix, Self.isRough(newest, maxAge: roughMaxAge) {
             pendingRoughFix = nil
             settleAfterOneShot()

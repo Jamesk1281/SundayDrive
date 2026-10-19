@@ -73,30 +73,34 @@ final class AttributionTests: XCTestCase {
         XCTAssertTrue(DataSources.worldCover.licence?.contains("CC BY 4.0") == true)
     }
 
-    /// The three `joerd` lines whose upstreams reach the footprint
-    /// `pipeline/elevation.py` builds its relief raster over, at the zoom it
+    /// The four `joerd` lines whose upstreams reach the footprint the
+    /// national relief raster is built over, at the zoom `pipeline/elevation.py`
     /// builds it at. Reproduced from the required-attribution block, not
     /// paraphrased.
     func test_the_terrain_tile_upstreams_are_each_credited() {
         let credit = DataSources.terrainTiles.credit
-        XCTAssertEqual(credit.count, 3, "Got: \(credit)")
+        XCTAssertEqual(credit.count, 4, "Got: \(credit)")
 
         XCTAssertTrue(credit.contains { $0.contains("3DEP (formerly NED)")
             && $0.contains("U.S. Geological Survey") },
             "USGS covers 3DEP and SRTM, which are the land sources at zoom 11 "
-            + "over New England. Got: \(credit)")
+            + "over the 48 states. Got: \(credit)")
 
         XCTAssertTrue(credit.contains { $0.contains("ETOPO1")
             && $0.contains("National Oceanic and Atmospheric Administration") },
-            "ETOPO1 is the ocean source at every zoom, and the BBOX reaches out "
-            + "over the Gulf of Maine. Got: \(credit)")
+            "ETOPO1 is the ocean source at every zoom, and the coastal states' "
+            + "boxes reach out to sea. Got: \(credit)")
 
-        // The one that makes the "it's all US public domain" shortcut wrong.
-        // BBOX's northern edge is 47.47, which is inside Quebec and New
-        // Brunswick, and at zoom 11 Canadian land is NRCAN's CDEM.
+        // The two that make the "it's all US public domain" shortcut wrong.
+        // The northern states' boxes reach into Canada, where zoom 11 land is
+        // NRCAN's CDEM, and the border states' boxes reach over the Rio Grande
+        // into Mexico, where it is INEGI's continental relief.
         XCTAssertTrue(credit.contains { $0.contains("Open Government Licence – Canada") },
-            "The BBOX crosses the Canadian border, so CDEM is in the mosaic and "
-            + "its licence is not US-government public domain. Got: \(credit)")
+            "The northern boxes cross the Canadian border, so CDEM is in the mosaic "
+            + "and its licence is not US-government public domain. Got: \(credit)")
+        XCTAssertTrue(credit.contains { $0 == "Mexico terrain data source: INEGI, Continental relief, 2016;" },
+            "Texas's box alone reaches into Mexico, so INEGI is in the mosaic. "
+            + "Got: \(credit)")
     }
 
     /// The trap this whole entry exists to avoid.
@@ -127,6 +131,8 @@ final class AttributionTests: XCTestCase {
         XCTAssertTrue(names.contains("OpenStreetMap"), "Got: \(names)")
         XCTAssertTrue(names.contains { $0.contains("WorldCover") }, "Got: \(names)")
         XCTAssertTrue(names.contains { $0.contains("Terrain Tiles") }, "Got: \(names)")
+        // The national scoring's landmark credit (docs/app-goes-national.md).
+        XCTAssertTrue(names.contains { $0.contains("PAD-US") }, "Got: \(names)")
     }
 
     /// Every entry needs somewhere to read the licence and the data's own

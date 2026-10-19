@@ -52,10 +52,12 @@ final class RouteModel {
 
     /// The part of the world search results are ranked around — the map's
     /// current camera, updated as the user pans. Apple's search sorts by
-    /// distance from this region's center, so leaving it at the statewide box
+    /// distance from this region's center, so leaving it at a statewide box
     /// (centered near Oxford, 40 miles from Boston) is what made searches from
-    /// eastern MA return places in the middle of the state.
-    var searchRegion: MKCoordinateRegion = .massachusetts
+    /// eastern MA return places in the middle of the state. Starts as the
+    /// whole covered area, which `Coverage.searchBias` restricts to, until the
+    /// map reports its first camera.
+    var searchRegion: MKCoordinateRegion = .coverageEnvelope
 
     /// True while the one-shot "My Location" fix is in flight, so the button
     /// can show a spinner instead of looking dead for a couple of seconds.
@@ -178,6 +180,10 @@ final class RouteModel {
     /// Cupertino can be tested without being in Cupertino.
     var locate: () async -> CLLocation?
 
+    /// How the launch check gets its fix: any accuracy, no prompt. The seam
+    /// `locate` is, for the same reason.
+    var locateRoughly: () async -> CLLocation?
+
     /// How routes are fetched. Tests substitute a stub, the seam
     /// `LoopModel.fetchLoop` already is, so "no request reached the server"
     /// is something a test can count.
@@ -193,6 +199,7 @@ final class RouteModel {
         locationManager = manager
         loops = LoopModel(locationManager: manager)
         locate = { await manager.currentLocation() }
+        locateRoughly = { await manager.roughLocation() }
 
         // Demo mode (launch with SUNDAYDRIVE_DEMO set) preloads a route via the
         // real search path, so a screenshot doubles as an end-to-end check.
@@ -233,8 +240,8 @@ final class RouteModel {
     /// Run a MapKit search, set the matching endpoint, and route if both ends
     /// are now known. Shared by the typed and the autocomplete paths.
     ///
-    /// Takes the first result *in New England*, never simply the first
-    /// (`NewEngland.firstInside`), so nothing outside it can become an end of
+    /// Takes the first result *in the covered area*, never simply the first
+    /// (`Coverage.firstInside`), so nothing outside it can become an end of
     /// the trip, whatever the search was biased toward.
     private func resolve(_ request: MKLocalSearch.Request, label: String, into role: Endpoint) async {
         do {
@@ -243,8 +250,8 @@ final class RouteModel {
                 errorText = "No match for “\(label)”"
                 return
             }
-            guard let match = NewEngland.firstInside(result.mapItems) else {
-                errorText = NewEngland.notInNewEngland(label)
+            guard let match = Coverage.firstInside(result.mapItems) else {
+                errorText = Coverage.notCovered(label)
                 return
             }
             let coordinate = match.placemark.coordinate
@@ -278,7 +285,7 @@ final class RouteModel {
     /// cached location is often Wi-Fi-derived and a street or two out, which is
     /// exactly the error a driver notices at the start of a drive.
     ///
-    /// A fix outside New England goes no further than this. The server would
+    /// A fix outside the covered area goes no further than this. The server would
     /// only refuse it, with "point is outside the covered road network", so
     /// the refusal is said here, in words that say what to do instead, and
     /// nothing is sent. Whatever start was there before is left alone.
@@ -294,7 +301,7 @@ final class RouteModel {
             return
         }
         guard locationManager.noteRegion(of: fix) == .inside else {
-            errorText = NewEngland.outsideHere
+            errorText = Coverage.outsideHere
             return
         }
 
@@ -308,8 +315,10 @@ final class RouteModel {
         await nameCurrentLocation(fix)
     }
 
-    /// Whether the phone is in New England: checked once a launch, so someone
-    /// outside it is told before they try anything rather than after.
+    /// Whether the phone is in the covered area: checked once a launch, so
+    /// someone outside it is told before they try anything rather than after,
+    /// and someone inside it sees their own part of the map rather than the
+    /// whole country (`launchFix`).
     ///
     /// `askingPermission` is true only on the launch that showed "Before you
     /// drive", the one launch that asks. Every later launch checks only if
@@ -318,13 +327,20 @@ final class RouteModel {
     ///
     /// The fix comes from `roughLocation()`, never `currentLocation()`: any
     /// approximate fix will do, and there must be no precision prompt at
-    /// launch. It is tested on the phone, against `NewEngland.contains`.
+    /// launch. It is tested on the phone, against `Coverage.contains`.
     /// Nothing is sent and nothing is geocoded.
     func checkWhereabouts(askingPermission: Bool) async -> RegionStatus {
         if askingPermission { await locationManager.requestPermissionIfUndetermined() }
-        guard let fix = await locationManager.roughLocation() else { return .unknown }
-        return locationManager.noteRegion(of: fix)
+        guard let fix = await locateRoughly() else { return .unknown }
+        let status = locationManager.noteRegion(of: fix)
+        if status == .inside { launchFix = fix.coordinate }
+        return status
     }
+
+    /// The launch check's fix, when it was inside the covered area. The home
+    /// map moves to it (`MKCoordinateRegion.home(around:)`), and the search
+    /// bias follows the map. Nil until then, and nil for a phone outside.
+    var launchFix: CLLocationCoordinate2D?
 
     /// Put a street name on the "My Location" start once reverse geocoding
     /// answers. See `PlaceNaming`, which the loop tab shares.

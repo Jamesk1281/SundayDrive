@@ -36,7 +36,7 @@ targets:
         # planning, not driving, so it names every use (App Review 5.1.1(ii)) and
         # not the app, which iOS already puts in the alert's title. The privacy
         # page quotes it word for word; tests/test_privacy_page.py checks that.
-        NSLocationWhenInUseUsageDescription: "Your location is used to plan drives from where you are, to check that you’re in New England, and to guide you turn by turn."
+        NSLocationWhenInUseUsageDescription: "Your location is used to show the map where you are, to plan drives from there, to check that you’re in the area the app covers, and to guide you turn by turn."
         # Shown when Precise Location is off and a drive asks for it anyway
         # (`LocationManager.precisePurposeKey`). The key has to match exactly: a
         # purpose CoreLocation cannot find here shows no prompt and says nothing.
