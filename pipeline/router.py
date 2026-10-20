@@ -43,6 +43,7 @@ import warnings
 from datetime import date, datetime
 from functools import cached_property
 from pathlib import Path
+from typing import NamedTuple
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -476,6 +477,9 @@ SNAP_OPEN_MAX_M = 20000.0
 # other road, is one the driver cannot follow. server/app.py refuses it with
 # START_TOO_FAR (docs/review-fixes-router.md).
 START_MAX_M = 500.0
+# A lead-in shorter than this is not drawn (`Router.snap_lead`): the car is at
+# its junction.
+LEAD_MIN_M = 1.0
 
 # --- Seasonal closures --------------------------------------------------------
 # The roads OSM marks closed or unmaintained in winter, read from
@@ -1770,10 +1774,10 @@ class Router:
         gate, never beyond it, and never "no route" (docs/closed-roads.md,
         Trap 2). The rest of what roads closed to cars change is `snap`'s.
         """
-        node, off, _ = self._snap(lat, lon)
+        node, off, _, _ = self._snap(lat, lon)
         entry = self.access_point(lat, lon)
         if entry is not None:
-            node, _, _ = self._snap(*entry)
+            node, _, _, _ = self._snap(*entry)
         return self._way_in.get(node, node), off
 
     @staticmethod
@@ -2862,14 +2866,96 @@ class Router:
         starts at. A reroute whose start is further than START_MAX_M is
         refused (server/app.py, START_TOO_FAR).
         """
+        node, off, gap, _ = self.snap_lead(lat, lon, heading, moving)
+        return node, off, gap
+
+    def snap_lead(self, lat: float, lon: float, heading: float | None = None,
+                  moving: bool = False):
+        """`snap_start`, and the lead-in: (node, metres to the road, metres to
+        the start, `Lead` or None).
+
+        The lead-in is the part of the car's own road between where the car
+        is and the junction its route starts at. A route begins at a junction,
+        which on a long edge is kilometres away, and the app called a car
+        driving toward it off its route: on I-10 the line began 14.8 km ahead
+        (docs/review-fixes-router.md, "The lead-in"). `lead_into` puts this in
+        front of a moving car's route, so the line begins at the car. None
+        when the snap left the car's road, or the car stands at the junction.
+        """
         x, y = _TO_M.transform(lon, lat)
-        node, off, moved = self._snap(lat, lon, heading, moving)
+        node, off, moved, e = self._snap(lat, lon, heading, moving)
         out = self._way_out.get(node, node)
         if not moved and out == node:
-            return out, off, off
+            return out, off, off, self._lead(e, shapely.Point(x, y), out)
         real = int(self.real_node[out])
         nx, ny = _TO_M.transform(self.node_lon[real], self.node_lat[real])
-        return out, off, max(off, float(math.hypot(nx - x, ny - y)))
+        return out, off, max(off, float(math.hypot(nx - x, ny - y))), None
+
+    def _lead(self, e: int, point, node: int):
+        """The `Lead` from `point`'s place on edge `e` to `node`, one of its
+        ends, or None."""
+        real = int(self.real_node[node])
+        u, v = int(self.edge_u_idx[e]), int(self.edge_v_idx[e])
+        if real not in (u, v):
+            return None
+        line = self._edge_geom_m[e]
+        along = line.project(point)
+        to_v = real == v
+        part = (line.length - along) if to_v else along
+        if line.length <= 0.0 or part < LEAD_MIN_M:
+            return None
+        frac = part / line.length
+        # The edge's own lon/lat vertices beyond the car, so the lead-in ends
+        # on the junction's exact coordinates and `stitch` joins it to the
+        # route without a seam.
+        ll = self.lines.coords(e)
+        xy = shapely.get_coordinates(line)
+        walked = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+        k = int(np.clip(np.searchsorted(walked, along, side="right") - 1, 0, len(xy) - 2))
+        at = line.interpolate(along)
+        start = np.array(_FROM_M.transform(at.x, at.y))
+        rest = ll[k + 1:] if to_v else ll[k::-1]
+        nxt = xy[k + 1] if to_v else xy[k]
+        # A car standing on a vertex starts at the vertex: a first segment a
+        # few nanometres long has a bearing of rounding noise, which read as
+        # driving back through the strip behind the car (`turnaround_at`).
+        if math.hypot(at.x - nxt[0], at.y - nxt[1]) < LEAD_MIN_M:
+            coords = rest
+        else:
+            coords = np.vstack([start, rest])
+        if len(coords) < 2:
+            return None
+        slots = [int(k2) for k2 in self._members((self._edge_order, self._edge_start), e)
+                 if bool(self.flip[k2]) != to_v]
+        minutes = (float(self.d_minutes[slots[0]]) if slots
+                   else float(self.free_minutes[e])) * frac
+        return Lead(e, coords, float(self.length_m[e]) * frac, minutes)
+
+    def lead_into(self, result, lead, weights: dict = None):
+        """`result` with `lead` in front of it: the same route, its line
+        beginning at the car, its first step covering the lead-in, and the
+        lead-in's metres and minutes in its totals. `result` unchanged when
+        there is no lead."""
+        if result is None or lead is None:
+            return result
+        rows = self.edge_rows([lead.edge])
+        rows["length_m"] = lead.length_m
+        rows["minutes"] = lead.minutes
+        edges = pd.concat([rows, result.edges])
+        scores = (None if result.scores is None else np.concatenate(
+            [self.metric(0.0, weights).scores([lead.edge]), np.asarray(result.scores)]))
+        coords = [lead.coords] + list(result.edge_coords)
+        nodes = ([result.nodes[0]] + list(result.nodes)) if result.nodes else []
+        minutes = (None if result.edge_minutes is None else np.concatenate(
+            [[lead.minutes], np.asarray(result.edge_minutes, float)]))
+        led = RouteResult(edges, stitch(coords), coords, scores, nodes=nodes,
+                          context=result.context, edge_minutes=minutes,
+                          start_heading=result.start_heading, origin=result.origin,
+                          lead_points=len(lead.coords))
+        for name in ("slots", "switch"):
+            if hasattr(result, name):
+                setattr(led, name, getattr(result, name))
+        return led
 
     def _snap(self, lat: float, lon: float, heading: float | None = None,
               moving: bool = False):
@@ -2913,7 +2999,7 @@ class Router:
             # whose side is open, keeps it (Crane Road).
             node = self._forward_end(self._edge_geom_m[e], point, u, v, aiming)
         return (self._own_side(e, node, u, v),
-                float(self._edge_geom_m[e].distance(point)), moved)
+                float(self._edge_geom_m[e].distance(point)), moved, e)
 
     def _road_under(self, point, nearest: int, heading: float | None):
         """The road a moving car is driving on, when the nearest edge is
@@ -3461,6 +3547,17 @@ class Router:
         """One edge's value of a text column, or None."""
         strings = self.text.get(col)
         return None if strings is None else strings.text(int(strings.codes[row]))
+
+
+class Lead(NamedTuple):
+    """The part of a moving car's road between the car and the junction its
+    route starts at (`Router.snap_lead`): the edge row, its [lon, lat] from
+    the car's place on the road to the junction, and its metres and minutes."""
+
+    edge: int
+    coords: np.ndarray
+    length_m: float
+    minutes: float
 
 
 class Trip:
@@ -4020,7 +4117,8 @@ def _unnamed(legs, i) -> str:
 class RouteResult:
     def __init__(self, edge_rows: pd.DataFrame, line, edge_coords=None,
                  scores=None, nodes=None, context: "ManeuverContext" = None,
-                 edge_minutes=None, start_heading=None, origin=None):
+                 edge_minutes=None, start_heading=None, origin=None,
+                 lead_points=0):
         self.edges = edge_rows
         self.line = line
         # Per-edge travel time in travel order, as weighted. None falls back to
@@ -4048,6 +4146,9 @@ class RouteResult:
         # Where the driver was, as (lat, lon), when `start_heading` was read;
         # None when it was not sent. Only `turnaround_m` reads it.
         self.origin = origin
+        # How many of the line's first points are a lead-in from the car to
+        # the route's first junction (`Router.lead_into`); 0 for none.
+        self.lead_points = lead_points
         self._steps = None      # memo for steps(); see there
 
     def _column(self, name):
@@ -4083,8 +4184,21 @@ class RouteResult:
         """
         if self.start_heading is None or self.origin is None or self.line is None:
             return None
-        return turnaround_at(shapely.get_coordinates(self.line), self.origin,
-                             self.start_heading)
+        coords = shapely.get_coordinates(self.line)
+        n = self.lead_points
+        if n < 2:
+            return turnaround_at(coords, self.origin, self.start_heading)
+        # With a lead-in, judged on the lead-in and then on the route after
+        # it, so a U-turn at the junction ahead is still found however long
+        # the lead-in is, at its true distance along the line.
+        back = turnaround_at(coords[:n], self.origin, self.start_heading)
+        if back is not None:
+            return back
+        rest = turnaround_at(coords[n - 1:], self.origin, self.start_heading)
+        if rest is None:
+            return None
+        x, y = _TO_M.transform(coords[:n, 0], coords[:n, 1])
+        return float(np.hypot(np.diff(x), np.diff(y)).sum()) + rest
 
     @property
     def turns_around(self) -> bool:
@@ -4314,6 +4428,13 @@ class RouteResult:
             self._steps = []
             return self._steps
         legs = self._legs()
+        # A lead-in too short to act on before the first maneuver
+        # (`Router.lead_into`) is not a step of its own: the first maneuver
+        # is said as it would have been, from where the car is, and covers it.
+        lead = None
+        if (self.lead_points and len(legs) > 1 and legs[0]["end"] == 1
+                and legs[0]["length_m"] < MIN_INSTRUCTION_GAP_M):
+            lead = legs.pop(0)
         for i, leg in enumerate(legs):
             leg["unnamed"] = _unnamed(legs, i)
         steps = []
@@ -4408,6 +4529,10 @@ class RouteResult:
             step["lat"] = round(pts[0][1], 6)
             step["lon"] = round(pts[0][0], 6)
             step["distance_m"] = round(leg["length_m"])
+            if lead is not None and previous is None:
+                step["lat"] = round(lead["coords"][0][1], 6)
+                step["lon"] = round(lead["coords"][0][0], 6)
+                step["distance_m"] = round(leg["length_m"] + lead["length_m"])
             steps.append(step)
 
         end = legs[-1]["coords"][-1]
@@ -4539,7 +4664,11 @@ class RouteResult:
         if delta is None or abs(delta) < DEPART_TURN_DEGREES:
             step["type"] = "depart"
             step["modifier"] = "straight"
-            where = f" on {leg['label']}" if leg["label"] else ""
+            # A moving car on a nameless road (a lead-in's) is told where it
+            # leads, as any other step onto one is (`_unnamed`); a trip from
+            # rest is worded as it always was.
+            where = (f" on {leg['label']}" if leg["label"]
+                     else leg.get("unnamed", "") if self.lead_points else "")
             step["instruction"] = f"Head {_compass(_bearing_out(pts))}{where}"
             return
 

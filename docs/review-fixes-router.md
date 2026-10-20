@@ -10,7 +10,7 @@ on New England (`data/processed-ne`).
 
 | item | what changed | where |
 |---|---|---|
-| 1. A moving car on a closed road | snaps onto it and leaves forward; a reroute starting over 500 m from the car is refused (`START_TOO_FAR`). **The review's I-10 symptom has another cause, still open** (section 1) | `Router.snap`, `snap_start`, `_road_under`; `app._route` |
+| 1. A moving car on a closed road | a moving car's route begins at the car (the lead-in), which is what the I-10 symptom needed; a moving car on a closed road snaps onto it and leaves forward; a reroute starting off its road over 500 m away is refused (`START_TOO_FAR`) | `Router.snap_lead`, `lead_into`, `_road_under`; `app._route` |
 | 2. `via` skipped the cap | each leg capped as a trip is (`LEG_TOO_LONG`) | `app._route` |
 | 3. Non-finite inputs | refused before any work (`BAD_INPUT`); every error is JSON | `app._finite`, `_parse_ll`, error handlers |
 | 4. False "no route found" | the corridor widens up to the longest trip's (`NO_ROUTE_NEARBY` after that) | `router.corridor_budgets` |
@@ -18,15 +18,19 @@ on New England (`data/processed-ne`).
 | 6. Instruction text | first value of multi-value tags; a direction on unsigned exits; nameless roads described | `RouteResult` steps |
 | 7. Messages and health | sentences with codes, "310 miles", `region`/`commit`/`pack` | `app.py` |
 
-- **The suite:** 1,052 passed, 13 skipped, 0 failed on `processed-ne`
+- **The suite:** 1,056 passed, 13 skipped, 0 failed on `processed-ne`
   (`usa`: 987 and 13).
-- **New England parity:** every status and every drawn line is identical to
-  `usa`, and so are all 3,000 snaps. The differences are step wording, each put
-  down to one of the instruction rules.
-- **Found while doing this:** the blocker in item 1 is not the snap. On I-10
-  the route began 9 miles *ahead* of the car, on the road it was driving,
-  because every reroute begins at a junction. That needs a lead-in or an app
-  change, and is left for the master session and unit I (section 1).
+- **New England parity:**
+  - Every request planned from rest draws the same line as `usa`, and so do all
+    3,000 snaps; only step wording differs, each change put down to one of the
+    instruction rules.
+  - Every moving request draws `usa`'s line with a lead-in from the car in
+    front of it.
+- **The blocker in item 1 was not the snap.** On I-10 the route began 9 miles
+  *ahead* of the car, on the road it was driving, because every reroute began
+  at a junction. The master session decided on 2026-10-20 to build a lead-in
+  on the server, and it is built. On New England, the share of reroutes
+  starting more than 500 m from the car went from 27.6% to 0 (section 1).
 
 ## The contract with the app and the deploy
 
@@ -121,19 +125,94 @@ begins at a junction, and on a 16 km interstate edge that junction can be
 - on the US graph, a point on a motorway is more than 500 m from the junction
   ahead on 56% of motorway length, and more than 2 km on 24%.
 
-**This branch does not change that,** and it is what the blocker actually is.
-The server-side fix is a lead-in: for a request with a heading, the line
-begins at the car's own position on its road and runs to the start junction,
-so the car is on its new route at once. It changes every reroute's line,
-`km`, `minutes` and first step. The app's `awaitingJoin` was designed around a
-line that starts at a junction ahead ("a median 99 m ahead, p90 217 m",
-`ios/Sources/NavigationModel.swift`). So the change belongs with unit I and
-the master session. It is not in the contract, and I have not built it. The
-alternative is in the app: don't call a car off the line while it is still
-driving toward the start of a line that begins ahead on its own road.
+That is the blocker. The master session decided on 2026-10-20 to fix it on
+the server with a lead-in, below ("The lead-in").
 
-What this branch does fix are the snaps that really do send a moving car
-somewhere else (below). On I-10 they leave the route as `usa` had it.
+The snap rules below are a separate fix: they stop a moving car being sent
+to some other road. On I-10 they leave the route as `usa` had it.
+
+### The lead-in
+
+For a moving request (a heading or `declined_uturn`), the line the server
+returns begins at the car's position projected onto the edge it is snapped
+to. It runs along that edge to the junction the route starts at, then follows
+the route exactly as before.
+
+`Router.snap_lead` returns the snap and a `Lead`:
+- the edge;
+- its [lon, lat] points from the car's place to the junction, ending on the
+  junction's exact coordinates;
+- its metres and minutes: the edge's length, and the travel time of its
+  driven direction, prorated by the share of the edge left to drive.
+
+There is no lead-in when the snap left the car's road (START_TOO_FAR decides
+those), or when the car is within 1 m of its junction (`LEAD_MIN_M`).
+`Router.lead_into` puts it in front of a `RouteResult`. `app._route` applies
+it to both arms of every moving answer: plain reroutes, declined U-turns,
+option reroutes and loop rejoins with a heading. A request from rest never
+gets one.
+
+The shape the app receives:
+
+- **The line.** `geometry.coordinates[0]` is the car's projected position,
+  within the snap's offset of the fix (at most 0.1 m in the parity replay).
+  The coordinates up to the start junction are the car's own road. After it,
+  the line is the route's, vertex for vertex.
+- **The totals.** `km` and `minutes` include the lead-in. `mean_score`,
+  `beautiful_km` and `scenery_km` count it as part of the car's road.
+- **The first step covers the lead-in.**
+  - It starts at the car (`lat`, `lon`), and its `distance_m` includes the
+    lead-in's metres.
+  - When the lead-in is 60 m or longer (`MIN_INSTRUCTION_GAP_M`) and the route
+    turns at its junction, the lead-in is a step of its own ("Head south on
+    Fellsway"), and the turn follows it ("Make a U-turn to stay on Fellsway").
+    The U-turn used to be said as the first step, from a car 60 m or more
+    short of the junction where it happens.
+  - Shorter lead-ins fold into the first maneuver, which keeps its words and
+    starts at the car. At Bedford, 2 m short of the junction, the first step
+    is still "Make a U-turn on Bedford Street".
+  - A first step on a nameless road says where it leads ("Head east toward
+    I 495"). This applies only with a lead-in, so a trip from rest is worded as
+    before.
+- **`turns_around` and `turnaround_m`** are judged on the lead-in and then on
+  the route after it, offset by the lead-in's length. A U-turn at a junction
+  800 m ahead is still found, 1,600 m along the line. Judged on the whole line,
+  the 1,000 m window would have missed it.
+- **Not changed:** the pack, the snap, the search, and every request from
+  rest, byte for byte.
+
+**On New England** (the 123 reroutes with a heading in the parity set), the
+distance from the car to where its line begins:
+
+| | p50 | p90 | max | over 500 m |
+|---|---:|---:|---:|---:|
+| before | 172.5 m | 1,137 m | 7,633 m | 27.6% |
+| with the lead-in | 0.0 m | 0.0 m | 0.1 m | **0** |
+
+The parity reroutes start on route vertices, so their projections are exact.
+A real fix lands up to its GPS error from the road, and the line begins at its
+projection.
+
+**On the US pack** (the I-10 reroute): not yet run. Unit D's pack build needs the memory, and no national server starts before `data/pack-us-next.done` exists.
+
+**Tests**, in `tests/test_api.py`:
+- a moving car mid-way along a long New England edge: its line begins within
+  30 m, its `km` and `minutes` grow by the lead-in's, its first step covers
+  it, and the rest of the line is the plain route's, vertex for vertex;
+- the same point from rest begins at the junction;
+- Bedford's 2 m lead-in folds into the U-turn;
+- a synthetic 800 m lead-in before a U-turn keeps `turns_around`. The control,
+  judged the old way, misses it.
+
+`TestAMovingCarOnAClosedRoad` checks that the closed-road reroute's line
+begins at the car and leaves by the end ahead. Mutations: dropping the
+lead-in fails 2 tests; not folding a short one fails 2.
+
+One bug was found and fixed on the way. A car standing exactly on a vertex
+gave a lead-in whose first segment was nanometres long. Its bearing was
+rounding noise, and `turnaround_at` read it as driving back through the strip
+behind the car (2 of 123 reroutes said `turns_around`). The lead-in now starts
+at the vertex.
 
 ### The rules
 
@@ -438,6 +517,7 @@ direction to nothing, and the fold to off fails 9 of them.
   between those points" became `NO_ROUTE_NEARBY`: "Sunday Drive couldn't find a
   drivable route between those points. One of them may be on a road cut off
   from the rest."
+- `server/serve.py` no longer mentions Docker, which unit P removed.
 - "no loop of that length from there" became `NO_LOOP`. Its hint is in miles,
   as the app shows distances, and `nearest_km` carries the number.
 
@@ -478,15 +558,25 @@ different steps. On Maine's I 295 the oracle had "Continue onto Tukey's
 Bridge" covering 5,529 m, most of it I 295, because a 66 m "I 295;US 1;ME 26"
 leg had folded into it. The branch says the bridge for 153 m, then I 295.
 
-So no new difference is a route. The reroutes never started on a closed road
-(no line changed), and none was refused as starting too far. The New England
-data has no case of either among these requests; the tests above construct
-them.
+So no new difference is a route.
+
+**With the lead-in**, the same replay against the run before it:
+- **From rest:** all 579 requests are byte-identical.
+- **Moving:** all 123 return 200.
+  - **Lines:** 210 route features are the same line with a lead-in in front;
+    36 are unchanged (the car was at its junction).
+  - **First steps:** 140 keep their words, start at the car and cover the
+    lead-in. 31 change only their compass word, because the departure is now
+    measured over the lead-in. 39 gain a lead-in step before what used to be
+    the first maneuver: 9 unchanged after it, 30 reworded after it, as in
+    "Make a U-turn on Fellsway" → "Head south on Fellsway", "Make a U-turn to
+    stay on Fellsway".
+  - **The rest:** no total fell, and `turns_around` is unchanged in all 123.
 
 ## The suite
 
 `SUNDAYDRIVE_DATA=…/data/processed-ne .venv/bin/python -m pytest tests/`:
-**1,052 passed, 13 skipped, 0 failed**. On `usa` the count was 987 passed, 13
+**1,056 passed, 13 skipped, 0 failed**. On `usa` the count was 987 passed, 13
 skipped.
 
 New tests:
@@ -495,7 +585,7 @@ New tests:
   - `TestNoRouteNearby`: the corridor schedule as literals, and a search that
     finds nothing widens exactly that far;
   - `TestInstructionText`.
-- `tests/test_api.py`: the contract.
+- `tests/test_api.py`: the contract, and the lead-in (section 1).
   - Every refusal is checked for status, code, a sentence, and numbers that
     are numbers.
   - `BAD_INPUT` on 21 malformed requests, including every case the review
@@ -545,16 +635,13 @@ a busier Mac). Nothing here needs more memory.
 
 ## What is left
 
-1. **The I-10 symptom (section 1).** A reroute's line begins at a junction,
-   which on long edges is kilometres ahead, and the app calls the car off the
-   line. Either the server adds a lead-in from the car to that junction for
-   requests with a heading, or the app stops calling a car off the line while
-   it drives toward a line beginning ahead on its own road. That is the
-   master session's and unit I's decision; it changes the server–app contract.
+1. **Unit I** has the lead-in's shape (section 1, "The lead-in") and verifies
+   the app against it: `awaitingJoin` was designed for a line beginning at a
+   junction ahead, and now a moving car is on its new line at once.
 2. **Merging with unit D.** The ford change removes the I-10 and CA-1 cases
    from the data. Nothing here depends on it. Andrew Molera to Big Sur should
    then be the 4-mile road, worth one check on `pack-us-next`.
-3. **Unit I** decodes the codes above, including the six beyond the agreed
+3. **Unit I** also decodes the codes above, including the six beyond the agreed
    seven (`CLOSED_FOR_SEASON`, `SAME_ROAD`, `NO_LOOP`, `BUSY`, `NOT_FOUND`,
    `SERVER_ERROR`). It also takes `max_mi` for the slider and reads `exit_ref`
    as possibly "7A/7B".

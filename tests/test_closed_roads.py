@@ -756,8 +756,13 @@ class TestAMovingCarOnAClosedRoad:
                 "heading": f"{_toward_v(line, along):.1f}", "pref": "0"}
         resp = server_app.app.test_client().post("/api/route", data=form)
         assert resp.status_code == 200, resp.get_json()
-        first = resp.get_json()["fastest"]["geometry"]["coordinates"][0]
-        assert first == pytest.approx([r.node_lon[v], r.node_lat[v]], abs=1e-6)
+        line = resp.get_json()["fastest"]["geometry"]["coordinates"]
+        # It begins at the car, on the closed road (the lead-in), and leaves
+        # the road by its end ahead.
+        car = r._edge_geom_m[e].interpolate(along)
+        assert shapely.Point(_TO_M.transform(*line[0])).distance(car) < 1.0
+        assert any(c == pytest.approx([r.node_lon[v], r.node_lat[v]], abs=1e-7)
+                   for c in line[:len(r._edge_geom_m[e].coords) + 1])
 
 
 def r_grid(lat, lon, heading):

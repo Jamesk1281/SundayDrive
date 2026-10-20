@@ -1,7 +1,7 @@
 """Run the Sunday Drive routing API.
 
-Uses waitress — a production WSGI server that runs the same on Windows, macOS,
-Linux, and in Docker (unlike gunicorn, which is Unix-only). One worker process
+Uses waitress — a production WSGI server that runs the same on Windows, macOS
+and Linux (unlike gunicorn, which is Unix-only). One worker process
 with a few threads: the ~1 GB graph is loaded once, and the threads keep the
 server responsive (accepting connections, serving /api/health) while a route is
 being computed.

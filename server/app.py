@@ -585,7 +585,13 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     moving = heading is not None or declined_uturn
     # Heading applies to the start only: it says which way the driver is
     # travelling, and a destination isn't travelling anywhere.
-    s, s_off, s_gap = ROUTER.snap_start(*a, heading=heading, moving=moving)
+    s, s_off, s_gap, lead = ROUTER.snap_lead(*a, heading=heading, moving=moving)
+    # A moving car's route begins where the car is, not at the junction it
+    # was snapped to, which on a long edge is kilometres on and read as "off
+    # route" in the app (`Router.lead_into`, docs/review-fixes-router.md,
+    # "The lead-in"). Planning from rest is untouched.
+    if not moving:
+        lead = None
     # The destination goes through the access layer: a pin on a building inside
     # a car park has to become the road you can get in from, not the nearest
     # road as the crow flies, which is routinely the wrong side of the building.
@@ -677,6 +683,7 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         if fastest is None or scenic is None:
             return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
         scenic = _no_worse_than_fastest(fastest, scenic)
+        fastest, scenic = _led(lead, weights, fastest, scenic)
         return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
     # The menu of in-between routes, for a plan. Never for a reroute, which
@@ -715,6 +722,7 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
                                bound=_bound(scenic, weights, avoid_unpaved, day))
         if fastest is not None and scenic is not None:
             scenic = _no_worse_than_fastest(fastest, scenic)
+            fastest, scenic = _led(lead, weights, fastest, scenic)
             return jsonify(fastest=fastest.geojson(),
                            scenic=route_options.feature(scenic))
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
@@ -744,7 +752,18 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
             return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
     scenic = _no_worse_than_fastest(fastest, scenic)
+    fastest, scenic = _led(lead, weights, fastest, scenic)
     return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
+
+
+def _led(lead, weights, *results):
+    """Each result with the lead-in in front (`Router.lead_into`), once per
+    distinct result: at pref 0 the scenic arm is the fastest one."""
+    done = {}
+    for r in results:
+        if id(r) not in done:
+            done[id(r)] = ROUTER.lead_into(r, lead, weights)
+    return [done[id(r)] for r in results]
 
 
 @app.route("/api/loop", methods=["GET", "POST"])

@@ -887,3 +887,116 @@ def test_the_loop_limit_is_the_longest_disc_under_the_node_count(
     assert 5.0 <= limit < 400.0
     assert planner.disc_nodes(start, limit) <= threshold
     assert planner.disc_nodes(start, limit + 0.2) > threshold
+
+
+# --- the lead-in --------------------------------------------------------------
+# docs/review-fixes-router.md, "The lead-in". A moving car's route begins
+# where the car is, not at the junction it was snapped to: on I-10 that
+# junction was 14.8 km ahead, and the app called the car off its route.
+
+def _long_edge(router, min_m=1500.0):
+    """The midpoint of a long, open, two-way-drivable edge, its heading toward
+    its v end, and the edge: a car whose junction ahead is far off."""
+    import math
+    from router import _FROM_M
+    lengths = router.length_m
+    for e in np.flatnonzero(np.asarray(lengths) > min_m)[:2000]:
+        e = int(e)
+        if router._snap_closed[e] or (router.closed_to_cars and e in router.closed_to_cars.at):
+            continue
+        line = router._edge_geom_m[e]
+        a, b = line.interpolate(0.5 * line.length), line.interpolate(0.5 * line.length + 5)
+        if router._edge_tree.nearest(a) != e:
+            continue
+        lon, lat = _FROM_M.transform(a.x, a.y)
+        heading = math.degrees(math.atan2(b.x - a.x, b.y - a.y)) % 360.0
+        s, _, _, lead = router.snap_lead(lat, lon, heading=heading, moving=True)
+        if lead is not None and lead.length_m > 600.0:
+            return lat, lon, heading, e, lead
+    pytest.skip("no long open edge in this build")
+
+
+import numpy as np  # noqa: E402
+
+
+def _metres(a, b):
+    import math
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    h = (math.sin((la2 - la1) / 2) ** 2
+         + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2)
+    return 2 * 6371008.8 * math.asin(math.sqrt(h))
+
+
+def test_a_moving_reroute_begins_at_the_car_and_counts_the_lead_in(client):
+    server = _server()
+    router = server.ROUTER
+    lat, lon, heading, e, lead = _long_edge(router)
+    form = {"from": f"{lat:.7f},{lon:.7f}", "to": BOSTON, "pref": "0",
+            "heading": f"{heading:.1f}"}
+    moving = client.post("/api/route", data=form).get_json()["fastest"]
+    line = moving["geometry"]["coordinates"]
+    assert _metres((lat, lon), (line[0][1], line[0][0])) < 30.0
+    # The same route without the lead-in, as `usa` drew it: it begins at the
+    # junction ahead, hundreds of metres on.
+    s, _ = router.snap(lat, lon, heading=heading, moving=True)
+    plain = router.route(s, router.snap_destination(42.3551, -71.0657)[0], 0.0,
+                         server._parse_weights({}), heading=heading,
+                         origin=(lat, lon), on=date(2027, 7, 15))
+    first = plain.line.coords[0]
+    assert _metres((lat, lon), (first[1], first[0])) > 600.0
+    props = moving["properties"]
+    assert props["km"] == pytest.approx(plain.km + lead.length_m / 1000.0, abs=0.06)
+    assert props["minutes"] == pytest.approx(plain.minutes + lead.minutes, abs=0.06)
+    assert props["minutes"] > round(plain.minutes, 1)
+    # The first step covers the lead-in and starts at the car.
+    step = props["steps"][0]
+    assert step["distance_m"] >= round(lead.length_m) - 1
+    assert _metres((lat, lon), (step["lat"], step["lon"])) < 30.0
+    # The rest of the line is the plain route's, vertex for vertex.
+    tail = np.asarray(plain.line.coords)
+    np.testing.assert_allclose(np.asarray(line[-len(tail):]), tail, atol=1e-7)
+
+
+def test_planning_from_rest_has_no_lead_in(client):
+    server = _server()
+    router = server.ROUTER
+    lat, lon, heading, e, lead = _long_edge(router)
+    body = client.post("/api/route", data={"from": f"{lat:.7f},{lon:.7f}",
+                                           "to": BOSTON, "pref": "0"}).get_json()
+    first = body["fastest"]["geometry"]["coordinates"][0]
+    s, _ = router.snap(lat, lon)
+    real = int(router.real_node[s])
+    assert first == pytest.approx([router.node_lon[real], router.node_lat[real]])
+
+
+def test_a_short_lead_in_folds_into_the_first_maneuver(client):
+    """At Bedford the car is 2 m from its junction: no "Head northwest" step
+    of 2 m before the U-turn, which is said from where the car is."""
+    props = _bedford(client)["fastest"]["properties"]
+    step = props["steps"][0]
+    assert step["modifier"] == "uturn"
+    here = tuple(float(x) for x in BEDFORD_HERE.split(","))
+    assert _metres(here, (step["lat"], step["lon"])) < 30.0
+    assert props["turns_around"] is True
+
+
+def test_a_long_lead_in_does_not_hide_the_u_turn_after_it():
+    """`turns_around` looks 1,000 m along the line. A lead-in 800 m ahead and
+    a U-turn there puts the strip behind the car 1,600 m along: still a
+    turnaround, found at its true distance."""
+    from router import RouteResult, stitch
+    import geopandas as gpd
+    import shapely
+    lat0, lon0, deg = 42.3, -71.5, 1.0 / 111_132.0     # metres of latitude
+    lead = np.array([[lon0, lat0], [lon0, lat0 + 800 * deg]])
+    back = np.array([[lon0, lat0 + 800 * deg], [lon0, lat0 - 400 * deg]])
+    rows = gpd.GeoDataFrame({"name": ["A", "A"], "ref": ["", ""],
+                             "length_m": [800.0, 1200.0],
+                             "geometry": [shapely.LineString(lead),
+                                          shapely.LineString(back)]}, crs=4326)
+    result = RouteResult(rows, stitch([lead, back]), [lead, back],
+                         start_heading=0.0, origin=(lat0, lon0), lead_points=2)
+    assert result.turnaround_m == pytest.approx(1600.0, abs=15.0)
+    unled = RouteResult(rows, stitch([lead, back]), [lead, back],
+                        start_heading=0.0, origin=(lat0, lon0))
+    assert unled.turnaround_m is None, "the control: the old reading misses it"
