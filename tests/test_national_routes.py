@@ -26,13 +26,16 @@ import continuity  # noqa: E402
 MILES = 1.609344
 
 # The trips the 2026-10-20 review planned through a ford on a paved major road,
-# as (from, to, the most the trip may be in miles). Each bound is a tenth over
-# the drive along the highway, which the review gave as about 150, 95 and 26
-# miles; with the fords closed they planned at 253.7, 132.4 and 136.3.
+# as (from, to, the most the trip may be in miles): about a tenth over each
+# drive along the highway. Measured on data/pack-us and data/pack-us-next
+# (docs/review-fixes-data.md, "The trips"): 308.7 -> 152.1, 132.3 -> 97.2,
+# 80.8 -> 58.2, 137.1 -> 26.1, and no route -> 3.9.
 REVIEW_TRIPS = {
     "El Paso to Carlsbad Caverns, US-62/180": ((31.7587, -106.4869), (32.1753, -104.4440), 165),
     "Needles to Blythe, US-95": ((34.8480, -114.6141), (33.6103, -114.5964), 105),
+    "Fort Stockton to Marathon, US-385": ((30.8940, -102.8793), (30.2071, -103.2427), 64),
     "Carmel to Big Sur village, CA-1": ((36.5553, -121.9233), (36.2704, -121.8077), 29),
+    "Andrew Molera to Big Sur village, CA-1": ((36.2878, -121.8443), (36.2704, -121.8077), 5),
 }
 
 
@@ -76,7 +79,7 @@ def test_numbered_highways_route_along_themselves(national):
     """Every leg passes, or is one of the failures docs/review-fixes-data.md
     explains (continuity.KNOWN)."""
     legs = json.loads(continuity.LEGS.read_text())
-    results = continuity.check(national, legs)
+    results = continuity.check(national, legs, _processed())
     failed = {continuity.key(r): r for r in results if not r["passed"]}
     unexplained = sorted(set(failed) - set(continuity.KNOWN))
     assert not unexplained, "\n".join(

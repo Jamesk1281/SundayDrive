@@ -7,18 +7,13 @@ its section names.
 **Done:**
 - the ford rule, with tests on both sides of it;
 - the major-road audit;
-- the continuity check, run on `data/pack-us`;
 - `data/processed-us-next/`, rebuilt and diffed against `data/processed-us`;
+- `data/pack-us-next/`, built; `data/pack-us-next.done` marks it ready;
+- the continuity check and the review trips, run on both packs;
 - New England confirmed byte-identical;
 - the suite (see "The suite").
 
-**Left:**
-- `data/pack-us-next/` is not built. The disk ran out under the router build (see
-  "The pack");
-- so the continuity check and the three review trips have not been run on the
-  new pack.
-
-The commands for both are in "What is left".
+**Left:** the swap at merge, and the owner's calls ("What is left").
 
 ## The rule
 
@@ -251,21 +246,44 @@ Eleven of the 22 found no route at all (`route_km` None): US 62/180 west of
 the Guadalupes, US 93 and US 95 in Arizona, and all of Trail Ridge. Unit R's
 corridor widening (its item 4) is the general fix for that.
 
-**After, on `data/pack-us-next`: not run**, because the pack is not built. The
-expected result is 11,407 passes, with exactly the 7 `KNOWN` legs failing. That
-is a prediction, not a measurement.
+**After, on `data/pack-us-next`: 11,407 of 11,414 legs pass, in 367 s.** The
+7 that fail are exactly `continuity.KNOWN`: Trail Ridge four times, US 12
+twice and US 322 once, each with its closure on the ref's own path. Every
+ford failure is gone.
 
 `tests/test_national_routes.py` is skipped unless `SUNDAYDRIVE_PACK` is set:
 - the processed directory is `SUNDAYDRIVE_PACK_DATA`, or the pack's sibling with
   "processed" for "pack";
-- it checks the three review trips: El Paso → Carlsbad Caverns at 165 mi or less,
-  Needles → Blythe at 105, Carmel → Big Sur village at 29. Each bound is about a
-  tenth over the review's "about" figure;
+- it checks the five trips in "The trips", each at about a tenth over the
+  drive along the highway;
 - it checks that `legs.json` is the graph's;
-- it runs the full check, about 8 minutes.
+- it runs the full check.
 
-On `pack-us`, it should fail the trips and the 15 ford legs. On `pack-us-next`,
-it should pass. Neither result is measured yet.
+Measured on 2026-10-20:
+- on `pack-us-next`, **7 passed in 418 s**;
+- on `pack-us`, 6 failed: all five trips and the continuity test. Only the
+  `legs.json` check passed, as it should, since the graph is the same.
+
+## The trips
+
+These are the fastest arm on 2027-07-15, snapped with `Router.snap` at both
+ends. "Mostly" is the leading refs by miles.
+
+| trip | `pack-us` | `pack-us-next` | mostly, after | test bound |
+|---|---:|---:|---|---:|
+| El Paso → Carlsbad Caverns | 308.7 mi, 276 min | **152.1 mi, 150 min** | US 62/180 | 165 |
+| Needles → Blythe | 132.3 mi, 200 min | **97.2 mi, 125 min** | US 95 | 105 |
+| Fort Stockton → Marathon | 80.8 mi, 105 min | **58.2 mi, 52 min** | US 385 | 64 |
+| Carmel → Big Sur village | 137.1 mi, 193 min | **26.1 mi, 43 min** | CA 1 | 29 |
+| Andrew Molera → Big Sur village | no route | **3.9 mi, 5 min** | CA 1 | 5 |
+
+Before, the routes went round by I-10, US-285 and I-20 (El Paso), AZ-95 and
+I-40 (Needles), US-67 and US-90 (Fort Stockton), and US-101 with a forest road
+(Carmel). The review measured El Paso → Carlsbad Caverns at 253.7 mi. The
+308.7 here is from these endpoints, on this date.
+
+Andrew Molera now drives the 4-mile CA-1 road. Its start snaps 66 m from the
+point given, the park entrance road.
 
 ## The rebuilt tables
 
@@ -294,8 +312,23 @@ That the shortcut reproduces the served build is shown two ways:
 
 ## The pack
 
-Not built. `tools/national_audit/pack_next.py` runs `pack.py`'s own `main` with
-`np.save` wrapped:
+**Built 2026-10-20 at about 17:15, alone on the machine:**
+- 382 s, peak 11.36 GB RAM;
+- 11.88 GB as `pack.py` counts it, 20,023,955 nodes and 25,849,861 edges;
+- free disk went from 15 GB to 6.5 GB, and was never below 3.95 GB.
+
+26 of its 92 arrays were written new and 66 cloned. More arrays moved than
+the closures alone. Removing the four through barriers takes one routing-node
+copy each out of the turn-restriction expansion (20,186,995 routing nodes in
+`pack-us`, 20,186,991 here), and that shifts every slot-indexed array. That is
+about 8.5 GB written.
+
+The build printed 60,953 edges closed to cars. The router loads the pack
+against `processed-us-next` (the server refuses a pack whose fingerprints
+don't match), which the continuity check and the test run did.
+
+`tools/national_audit/pack_next.py` runs `pack.py`'s own `main` with `np.save`
+wrapped:
 - an array equal to the one of the same name in `data/pack-us` (dtype, shape and
   every element) is written as an APFS clone of that file (`cp -c`). That takes
   no space until one copy is written to, and is otherwise an ordinary,
@@ -306,35 +339,21 @@ Not built. `tools/national_audit/pack_next.py` runs `pack.py`'s own `main` with
 The result is the pack `pack.py` would write, file for file. It needs only the
 changed arrays' space, not about 12 GB.
 
-It failed on memory, not on that. Building the router from parquets peaks at
-9–14 GB of RAM. The Mac was already holding unit R's national server and its
-loop-limit measurement (about 6.6 GB between them) and 10 GB of swap. Swap
+The first attempt, earlier the same day, failed on memory. Unit R's national
+server and its loop-limit measurement were running (about 6.6 GB), and swap
 grew to 18.4 GB, which on APFS comes out of the same free space. Free disk fell
-from 8.9 GB to 0.9 GB before `pack-us-next` was even created, and the watchdog
-stopped the build by its PID at 1.5 GB.
-
-It needs a quieter machine: R's and I's servers stopped, or about 15 GB free.
+from 8.9 GB to 0.9 GB, and the watchdog stopped the build by its PID. The pack
+needs the machine to itself: its 11.4 GB peak, and about 9 GB of disk for the
+arrays it writes.
 
 ## What is left
 
-1. Build the pack once the machine is quiet:
-   ```
-   .venv/bin/python <tree>/tools/national_audit/pack_next.py data/processed-us-next data/pack-us-next data/pack-us --region "the contiguous United States"
-   ```
-   Or use `tools/us_scale_router/pack.py data/processed-us-next data/pack-us-next --region "the contiguous United States"`
-   if there are 12 GB to spare.
-2. Run the check and the trips on it:
-   ```
-   SUNDAYDRIVE_PACK=data/pack-us-next SUNDAYDRIVE_DATA=data/processed-ne .venv/bin/python -m pytest tests/test_national_routes.py
-   ```
-   Or use `continuity.py check data/processed-us-next data/pack-us-next tools/national_audit/legs.json <out>`
-   and `explain`. Record the after numbers here, and fix `KNOWN` if the 7 are
-   not exactly what fails.
-3. The swap, at merge: `processed-us-next` → `processed-us`, and `pack-us-next`
+1. The swap, at merge: `processed-us-next` → `processed-us`, and `pack-us-next`
    → `pack-us`. The symlinks are absolute and point into `processed-us`. Swap by
    renaming the new directory's real files into the old one, or replace the
-   links with the files, before the old directory goes.
-4. Owner's calls, not made here:
+   links with the files, before the old directory goes. `pack-us-next`'s
+   clones are independent files, so deleting `pack-us` does not touch them.
+2. Owner's calls, not made here:
    - Trail Ridge Road's `vehicle=permit`;
    - the two `smoothness` mis-tags (the fix is an OSM edit, or a local
      exception);

@@ -2,8 +2,11 @@
 
     python pack_next.py <processed_dir> <pack_dir> <old_pack_dir> [--region "..."]
 
-A closures change moves a handful of a pack's arrays; the rest, gigabytes of
-geometry, grids and scores, come out byte-identical. The disk had about 12 GB
+A closures change leaves most of a pack's arrays byte-identical: the geometry,
+grids, text and scores. It rewrites the slot-indexed ones only when a through
+barrier comes or goes, since that changes the turn-restriction expansion
+(26 of 92 arrays, about 8.5 GB, for the ford change of 2026-10-20;
+docs/review-fixes-data.md, "The pack"). The disk had about 12 GB
 free on 2026-10-20 and a national pack is about 12 GB, so this runs pack.py's
 own `main` with `np.save` wrapped: an array equal (dtype, shape and every
 element) to the one of the same name in <old_pack_dir> is written as an APFS
