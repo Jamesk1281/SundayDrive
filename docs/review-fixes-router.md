@@ -18,7 +18,7 @@ on New England (`data/processed-ne`).
 | 6. Instruction text | first value of multi-value tags; a direction on unsigned exits; nameless roads described | `RouteResult` steps |
 | 7. Messages and health | sentences with codes, "310 miles", `region`/`commit`/`pack` | `app.py` |
 
-- **The suite:** 1,056 passed, 13 skipped, 0 failed on `processed-ne`
+- **The suite:** 1,059 passed, 13 skipped, 0 failed on `processed-ne`
   (`usa`: 987 and 13).
 - **New England parity:**
   - Every request planned from rest draws the same line as `usa`, and so do all
@@ -30,7 +30,9 @@ on New England (`data/processed-ne`).
   *ahead* of the car, on the road it was driving, because every reroute began
   at a junction. The master session decided on 2026-10-20 to build a lead-in
   on the server, and it is built. On New England, the share of reroutes
-  starting more than 500 m from the car went from 27.6% to 0 (section 1).
+  starting more than 500 m from the car went from 27.6% to 0. A moving car on
+  a one-way carriageway that a closure cuts off now drives on through it
+  (section 1, "Committed to a carriageway").
 
 ## The contract with the app and the deploy
 
@@ -224,6 +226,75 @@ gave a lead-in whose first segment was nanometres long. Its bearing was
 rounding noise, and `turnaround_at` read it as driving back through the strip
 behind the car (2 of 123 reroutes said `turns_around`). The lead-in now starts
 at the vertex.
+
+### Committed to a carriageway
+
+Unit I found one case the lead-in left. On the open 1.1 km of I-10 westbound
+before edge 1470492 (edge 1470493, and the on-ramp 1473085), every reroute
+was refused with `START_TOO_FAR`. The car's junction ahead is cut off by the
+ford, so its way out begins 17 km on, on another road. The app said "Off
+route" until the car reached the closed edge.
+
+The master session decided on 2026-10-20 that such a car is committed: it
+cannot turn round, and the closure is almost certainly a mis-tag. So, only
+when all of these hold:
+- the request is moving, with a heading;
+- the car is on a **one-way carriageway**: every directed copy of its edge runs
+  the same way, or it is a motorway or a `_link`;
+- the junction ahead is cut off by closures (`_ways_round`).
+
+Then `Router._committed` follows the carriageway forward, edge by edge,
+straightest first. It goes through the closed stretch and stops at the first
+junction a route can start from. The route starts there, and the lead-in
+covers the rest of the car's edge and every edge followed. It gives up, and
+today's rule stands, when the walk passes no closed edge, or after 60 edges or
+50 km (`COMMITTED_MAX_EDGES`, `COMMITTED_MAX_M`).
+
+Two-way roads keep today's rule, because a car can turn round there; Crane
+Road is unchanged. Planning from rest is unchanged. `START_TOO_FAR` still
+answers every other case.
+
+**Counted in the journal.** Each such answer prints one line, for example
+`reroute through closed edges [1470492], 16.8 km of lead-in`. It names the
+closed edges and never where the car is, so the journal shows how often it
+happens and which closures are worth fixing. No response field changed.
+
+**On the US pack** (`data/pack-us`, the ford still closed), the cases were:
+- both edges arriving at the closed edge's east end: I-10 (1,101 m) and its
+  on-ramp (610 m);
+- the car 10%, 50% and 90% along each;
+- on the road and 15 m to either side;
+- with and without `declined_uturn`.
+
+All 36 return 200 and start within 15 m of the fix. 34 run through edge 1470492
+to its west end, each with the log line. Example: 118.4 km to Blythe, the first
+step "Head west on Pearl Harbor Memorial Highway". The other two are a fix 15 m
+south of the road 10% along, which is 3 m from a parallel road, so the car is
+snapped to that road and routed from it, as any fix nearer another road is.
+With the rule switched off, the same approach is refused with `START_TOO_FAR`
+(m = 17,004). A parked request on the approach is unchanged: it starts at the
+way out, as before.
+
+**In New England**, ten one-way roads run into a closure with no open way off.
+Among them:
+- Kresge Way (7 edges to a start);
+- Schoodic Loop Road (8);
+- an airport's Inner Roadway Arrivals Level;
+- Davisville Road (2 closed edges).
+
+None appears in the parity requests: all 702 answers are identical to the
+lead-in's run.
+
+**Tests**, `TestCommittedToACarriageway` in `tests/test_closed_roads.py`:
+- every New England one-way carriageway into a closure (at least 3) drives on
+  through: it starts where `_committed` says, with the closed edges in its
+  lead-in, and the parked control is unchanged;
+- 40 two-way roads into a closure keep today's rule;
+- through the API, the line begins at the car, passes the closed edge, and the
+  log line is printed.
+
+Mutations: switching the rule off fails the first test, and dropping the
+one-way condition fails the second.
 
 ### The rules
 
@@ -587,7 +658,7 @@ So no new difference is a route.
 ## The suite
 
 `SUNDAYDRIVE_DATA=…/data/processed-ne .venv/bin/python -m pytest tests/`:
-**1,056 passed, 13 skipped, 0 failed**. On `usa` the count was 987 passed, 13
+**1,059 passed, 13 skipped, 0 failed**. On `usa` the count was 987 passed, 13
 skipped.
 
 New tests:
@@ -646,9 +717,9 @@ a busier Mac). Nothing here needs more memory.
 
 ## What is left
 
-1. **Unit I** has the lead-in's shape (section 1, "The lead-in") and verifies
-   the app against it: `awaitingJoin` was designed for a line beginning at a
-   junction ahead, and now a moving car is on its new line at once.
+1. **Unit I** verified the lead-in with no app change: on I-10 the line starts
+   0 m from the car, with no off-line fixes. The committed-carriageway rule
+   uses the same lead-in shape, longer.
 2. **Merging with unit D.** The ford change removes the I-10 and CA-1 cases
    from the data. Nothing here depends on it. Andrew Molera to Big Sur should
    then be the 4-mile road, worth one check on `pack-us-next`.

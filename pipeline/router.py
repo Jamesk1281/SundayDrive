@@ -480,6 +480,10 @@ START_MAX_M = 500.0
 # A lead-in shorter than this is not drawn (`Router.snap_lead`): the car is at
 # its junction.
 LEAD_MIN_M = 1.0
+# How far `Router._committed` follows a one-way carriageway through a closure
+# before it gives up: a mis-tagged closure is a stretch, not a region.
+COMMITTED_MAX_EDGES = 60
+COMMITTED_MAX_M = 50_000.0
 
 # --- Seasonal closures --------------------------------------------------------
 # The roads OSM marks closed or unmaintained in winter, read from
@@ -2887,13 +2891,33 @@ class Router:
         out = self._way_out.get(node, node)
         if not moved and out == node:
             return out, off, off, self._lead(e, shapely.Point(x, y), out)
+        aiming = heading is not None and 0.0 <= heading < 360.0
+        if moving and aiming and not moved and self._one_way(e):
+            committed = self._committed(e, node)
+            if committed is not None:
+                start, slots, closed = committed
+                lead = self._lead(e, shapely.Point(x, y), node, slots, closed)
+                if lead is not None:
+                    return start, off, off, lead
         real = int(self.real_node[out])
         nx, ny = _TO_M.transform(self.node_lon[real], self.node_lat[real])
         return out, off, max(off, float(math.hypot(nx - x, ny - y))), None
 
-    def _lead(self, e: int, point, node: int):
+    def _lead(self, e: int, point, node: int, slots=(), closed=()):
         """The `Lead` from `point`'s place on edge `e` to `node`, one of its
-        ends, or None."""
+        ends, and on along `slots` (`_committed`), or None."""
+        first = self._lead_part(e, point, node)
+        more = [LeadPart(int(self.eidx[k]), self.slot_coords(k),
+                         float(self.length_m[self.eidx[k]]), float(self.d_minutes[k]),
+                         int(self.real_node[self.tail[k]])) for k in slots]
+        parts = ([first] if first is not None else []) + more
+        if not parts:
+            return None
+        return Lead(tuple(parts), tuple(int(c) for c in closed))
+
+    def _lead_part(self, e: int, point, node: int):
+        """The `LeadPart` from `point`'s place on edge `e` to `node`, one of
+        its ends, or None."""
         real = int(self.real_node[node])
         u, v = int(self.edge_u_idx[e]), int(self.edge_v_idx[e])
         if real not in (u, v):
@@ -2929,7 +2953,65 @@ class Router:
                  if bool(self.flip[k2]) != to_v]
         minutes = (float(self.d_minutes[slots[0]]) if slots
                    else float(self.free_minutes[e])) * frac
-        return Lead(e, coords, float(self.length_m[e]) * frac, minutes)
+        return LeadPart(e, coords, float(self.length_m[e]) * frac, minutes, real)
+
+    def _one_way(self, e: int) -> bool:
+        """Whether edge `e` is a one-way carriageway: every directed copy of
+        it runs the same way, or it is a motorway or a link, which OSM means
+        one way whether or not it says so."""
+        highway = self.edge_text("highway", e) or ""
+        if highway == "motorway" or highway.endswith("_link"):
+            return True
+        flips = {bool(self.flip[k])
+                 for k in self._members((self._edge_order, self._edge_start), e)}
+        return len(flips) == 1
+
+    def _committed(self, e: int, node: int):
+        """For a car on one-way edge `e` driving toward `node`: when the
+        carriageway ahead reaches a road closed to cars before any open way
+        off, the way on through it to the first junction a route can start
+        from. (start node, slots driven, closed edges among them), or None.
+
+        A car on a one-way carriageway cannot turn round, so it will drive
+        whatever lies ahead, and the closure is almost certainly a mis-tag.
+        Without this its reroute started 17 km away on I-10 and was refused
+        with START_TOO_FAR, so the app said "Off route" until the car reached
+        the closure (docs/review-fixes-router.md, "Committed to a carriageway").
+        Followed edge by edge, straightest first, for at most
+        COMMITTED_MAX_EDGES edges and COMMITTED_MAX_M metres. None when it
+        passes no closed edge, or finds nowhere to start.
+        """
+        closed_slots = self._car_closed_slots
+        if closed_slots is None or not len(closed_slots):
+            return None
+        here, came, arrival = int(node), e, None
+        slots, closed, metres = [], [], 0.0
+        while here in self._way_out:
+            if len(slots) >= COMMITTED_MAX_EDGES or metres > COMMITTED_MAX_M:
+                return None
+            best, best_turn = None, None
+            for k in self.outgoing_slots(here):
+                k = int(k)
+                if int(self.eidx[k]) == came:
+                    continue
+                c = self.slot_coords(k)
+                turn = (0.0 if arrival is None
+                        else abs(_turn_delta(arrival, _bearing_out(c.tolist()))))
+                if best is None or turn < best_turn:
+                    best, best_turn = k, turn
+            if best is None:
+                return None
+            slots.append(best)
+            c = self.slot_coords(best)
+            arrival = _bearing_in(c.tolist())
+            came = int(self.eidx[best])
+            metres += float(self.length_m[came])
+            if _members_of(closed_slots, np.array([best]))[1][0]:
+                closed.append(came)
+            here = int(self.head[best])
+        if not closed:
+            return None
+        return here, slots, closed
 
     def lead_into(self, result, lead, weights: dict = None):
         """`result` with `lead` in front of it: the same route, its line
@@ -2938,16 +3020,19 @@ class Router:
         there is no lead."""
         if result is None or lead is None:
             return result
-        rows = self.edge_rows([lead.edge])
-        rows["length_m"] = lead.length_m
-        rows["minutes"] = lead.minutes
+        rows_of = [p.edge for p in lead.parts]
+        rows = self.edge_rows(rows_of)
+        rows["length_m"] = [p.length_m for p in lead.parts]
+        rows["minutes"] = [p.minutes for p in lead.parts]
         edges = pd.concat([rows, result.edges])
         scores = (None if result.scores is None else np.concatenate(
-            [self.metric(0.0, weights).scores([lead.edge]), np.asarray(result.scores)]))
-        coords = [lead.coords] + list(result.edge_coords)
-        nodes = ([result.nodes[0]] + list(result.nodes)) if result.nodes else []
+            [self.metric(0.0, weights).scores(rows_of), np.asarray(result.scores)]))
+        coords = [p.coords for p in lead.parts] + list(result.edge_coords)
+        # The junction each part is counted from; the car's own part, which
+        # starts at no junction, is counted from the one it drives to.
+        nodes = ([p.node for p in lead.parts] + list(result.nodes)) if result.nodes else []
         minutes = (None if result.edge_minutes is None else np.concatenate(
-            [[lead.minutes], np.asarray(result.edge_minutes, float)]))
+            [[p.minutes for p in lead.parts], np.asarray(result.edge_minutes, float)]))
         led = RouteResult(edges, stitch(coords), coords, scores, nodes=nodes,
                           context=result.context, edge_minutes=minutes,
                           start_heading=result.start_heading, origin=result.origin,
@@ -3549,15 +3634,38 @@ class Router:
         return None if strings is None else strings.text(int(strings.codes[row]))
 
 
-class Lead(NamedTuple):
-    """The part of a moving car's road between the car and the junction its
-    route starts at (`Router.snap_lead`): the edge row, its [lon, lat] from
-    the car's place on the road to the junction, and its metres and minutes."""
+class LeadPart(NamedTuple):
+    """One edge of a lead-in: its row, its [lon, lat] as driven, its metres
+    and minutes, and the junction it is counted from (`RouteResult.nodes`)."""
 
     edge: int
     coords: np.ndarray
     length_m: float
     minutes: float
+    node: int
+
+
+class Lead(NamedTuple):
+    """The road between a moving car and the junction its route starts at
+    (`Router.snap_lead`): the rest of the car's own edge, and, for a car
+    committed to a one-way carriageway that a closure cuts off, the edges on
+    through it (`Router._committed`). `through_closed` lists the closed edges
+    it drives, empty for an ordinary lead-in."""
+
+    parts: tuple
+    through_closed: tuple = ()
+
+    @property
+    def coords(self) -> np.ndarray:
+        return np.asarray(stitch([p.coords for p in self.parts]).coords)
+
+    @property
+    def length_m(self) -> float:
+        return float(sum(p.length_m for p in self.parts))
+
+    @property
+    def minutes(self) -> float:
+        return float(sum(p.minutes for p in self.parts))
 
 
 class Trip:

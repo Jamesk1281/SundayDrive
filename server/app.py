@@ -592,6 +592,13 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # "The lead-in"). Planning from rest is untouched.
     if not moving:
         lead = None
+    if lead is not None and lead.through_closed:
+        # A car committed to a one-way carriageway that a closure cuts off
+        # drives on through it (`Router._committed`). Counted here, by the
+        # closed edges and never by where the car is, so the journal shows
+        # how often it happens and which closures are mis-tags worth fixing.
+        print(f"reroute through closed edges {list(lead.through_closed)}, "
+              f"{lead.length_m / 1000:.1f} km of lead-in", flush=True)
     # The destination goes through the access layer: a pin on a building inside
     # a car park has to become the road you can get in from, not the nearest
     # road as the crow flies, which is routinely the wrong side of the building.

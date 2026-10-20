@@ -765,6 +765,95 @@ class TestAMovingCarOnAClosedRoad:
                    for c in line[:len(r._edge_geom_m[e].coords) + 1])
 
 
+class TestCommittedToACarriageway:
+    """A moving car on a one-way carriageway that runs into a closure with no
+    open way off before it drives on through, to the first junction a route
+    can start from; on a two-way road it does not (docs/review-fixes-router.md,
+    "Committed to a carriageway")."""
+
+    def _into_cut_off(self, r, one_way):
+        """Slots from an open junction into one a closure cuts off, on a road
+        that is (or is not) a one-way carriageway."""
+        cut = np.zeros(r.n, bool)
+        cut[list(r._way_out)] = True
+        out = []
+        for k in np.flatnonzero(cut[r.head] & ~cut[r.tail]):
+            e = int(r.eidx[k])
+            if not r._snap_closed[e] and r._one_way(e) == one_way:
+                out.append(int(k))
+        return out
+
+    def _car(self, r, k):
+        """A moving car halfway along slot `k`, heading the way it runs."""
+        e = int(r.eidx[k])
+        line = r._edge_geom_m[e]
+        along = 0.5 * line.length
+        heading = _toward_v(line, along)
+        if r.flip[k]:
+            heading = (heading + 180.0) % 360.0
+        return e, _ll(line.interpolate(along)), heading
+
+    def test_it_drives_on_through_the_closure(self, closed_router):
+        r = closed_router
+        checked = 0
+        for k in self._into_cut_off(r, one_way=True):
+            e, (lat, lon), heading = self._car(r, k)
+            if r._edge_tree.nearest(r._edge_geom_m[e].interpolate(
+                    0.5 * r._edge_geom_m[e].length)) != e:
+                continue
+            node = r._snap(lat, lon, heading, True)[0]
+            if node not in r._way_out:
+                continue        # the car's own junction is open: not committed
+            committed = r._committed(e, node)
+            if committed is None:
+                continue
+            start, off, gap, lead = r.snap_lead(lat, lon, heading=heading, moving=True)
+            assert lead is not None and lead.through_closed, e
+            assert start == committed[0] and start not in r._way_out
+            assert gap == off < 1.0
+            # It drives the closed edges it says it does.
+            assert set(lead.through_closed) <= {p.edge for p in lead.parts}
+            # The control: at rest, the way out, as before.
+            parked, _, parked_gap, parked_lead = r.snap_lead(lat, lon)
+            assert parked_lead is None or not parked_lead.through_closed
+            checked += 1
+        assert checked >= 3, f"only {checked} committed carriageways in this build"
+
+    def test_a_two_way_road_keeps_todays_rule(self, closed_router):
+        r = closed_router
+        cases = self._into_cut_off(r, one_way=False)[:40]
+        assert cases, "no two-way road runs into a closure; this tests nothing"
+        for k in cases:
+            e, (lat, lon), heading = self._car(r, k)
+            lead = r.snap_lead(lat, lon, heading=heading, moving=True)[3]
+            assert lead is None or not lead.through_closed, e
+
+    def test_through_the_api_it_begins_at_the_car_and_is_logged(
+            self, server, monkeypatch, capsys):
+        from datetime import date
+        monkeypatch.setattr(server, "_today", lambda: date(2027, 7, 15))
+        r = server.ROUTER
+        for k in self._into_cut_off(r, one_way=True):
+            e, (lat, lon), heading = self._car(r, k)
+            lead = r.snap_lead(lat, lon, heading=heading, moving=True)[3]
+            if lead is None or not lead.through_closed:
+                continue
+            resp = server.app.test_client().post("/api/route", data={
+                "from": f"{lat:.7f},{lon:.7f}", "to": "42.3601,-71.0589",
+                "heading": f"{heading:.1f}", "pref": "0"})
+            if resp.status_code != 200:
+                continue
+            line = resp.get_json()["fastest"]["geometry"]["coordinates"]
+            car = r._edge_geom_m[e].interpolate(0.5 * r._edge_geom_m[e].length)
+            assert shapely.Point(_TO_M.transform(*line[0])).distance(car) < 1.0
+            closed = r._edge_geom_m[lead.through_closed[0]]
+            drawn = shapely.LineString([_TO_M.transform(*c) for c in line])
+            assert drawn.distance(closed.interpolate(0.5, normalized=True)) < 1.0
+            assert "reroute through closed edges" in capsys.readouterr().out
+            return
+        pytest.skip("no committed carriageway answered in this build")
+
+
 def r_grid(lat, lon, heading):
     from router import _grid_heading
     return _grid_heading(lat, lon, heading)
