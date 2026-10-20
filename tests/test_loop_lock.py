@@ -107,7 +107,7 @@ class TestALoopBuild:
             done.set()
         assert response is not None, "the loop build queued instead of refusing"
         assert response.status_code == 503
-        assert response.get_json() == {"error": server.LOOP_BUSY}
+        assert response.get_json() == {"error": server.LOOP_BUSY, "code": "BUSY"}
         assert server.IN_FLIGHT == 0
 
     def test_only_one_waits_and_the_rest_are_refused_at_once(self, server, client,
@@ -126,7 +126,7 @@ class TestALoopBuild:
             build.set()
             waiter.set()
         assert response is not None and response.status_code == 503
-        assert response.get_json() == {"error": server.LOOP_BUSY}
+        assert response.get_json() == {"error": server.LOOP_BUSY, "code": "BUSY"}
         assert elapsed < 5, f"a second waiter waited {elapsed:.1f} s"
 
     def test_waits_for_a_build_that_ends_inside_the_wait(self, server, client,

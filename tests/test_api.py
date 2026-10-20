@@ -223,9 +223,16 @@ def test_the_scenic_arm_never_scores_below_the_fastest_arm(client, pair, pref):
 
 
 def test_weights_are_clamped_not_rejected(client):
-    for query in ("w_coast=-3", "w_coast=99", "w_coast=1e999"):
+    for query in ("w_coast=-3", "w_coast=99"):
         r = client.get(f"/api/route?from={WORCESTER}&to={BOSTON}&pref=0.5&{query}")
         assert r.status_code == 200, query
+
+
+def test_a_weight_that_is_not_finite_is_refused(client):
+    """1e999 reads as infinity, and used to be clamped to the top of the range
+    as though the client had meant it (docs/review-fixes-router.md)."""
+    r = client.get(f"/api/route?from={WORCESTER}&to={BOSTON}&pref=0.5&w_coast=1e999")
+    assert r.status_code == 400 and r.get_json()["code"] == "BAD_INPUT"
 
 
 def test_unparseable_weight_is_a_bad_request(client):
@@ -377,13 +384,18 @@ def test_a_loop_too_short_for_the_geography_says_so(client):
     assert body["note"] and "doubles back" in body["note"]
 
 
-def test_the_distance_is_clamped_not_rejected(client):
+def test_the_distance_is_raised_to_the_bottom_and_refused_over_the_top(client):
     # Literals, not `looper`'s constants: a test that imports the clamp it
-    # asserts against passes at any value. 5 and 400 are `LoopModel.minKm` and
-    # `maxKm` in ios/Sources/LoopModel.swift, which has to change with them.
-    for km, expected in ((1, 5.0), (9999, 400.0)):
-        meta = client.get(f"/api/loop?from={NEEDHAM}&km={km}").get_json()["meta"]
-        assert meta["target_km"] == expected
+    # asserts against passes at any value. 5 is `LoopModel.minKm` in
+    # ios/Sources/LoopModel.swift; the top is the start's own limit, 400 km
+    # everywhere in New England (docs/review-fixes-router.md).
+    meta = client.get(f"/api/loop?from={NEEDHAM}&km=1").get_json()["meta"]
+    assert meta["target_km"] == 5.0
+    r = client.get(f"/api/loop?from={NEEDHAM}&km=9999")
+    assert r.status_code == 400
+    body = r.get_json()
+    assert body["code"] == "LOOP_TOO_LONG"
+    assert body["max_km"] == 400.0 and body["km"] == 9999.0
 
 
 @pytest.mark.parametrize("query", [
@@ -662,3 +674,216 @@ def test_the_loop_rejoin_accepts_the_flag_and_ignores_it(client):
     flagged = client.post("/api/route", data={**params, "declined_uturn": "1"})
     assert plain.status_code == flagged.status_code == 200
     assert flagged.get_json() == plain.get_json()
+
+
+# --- error bodies, input validation, caps and health -------------------------
+# docs/review-fixes-router.md. The contract with the app: every JSON error is
+# {"error": <a sentence>, "code": <string>, ...numbers}, numbers as numbers.
+
+GREENWICH = "41.0262,-73.6282"     # Connecticut's south-west corner
+FORT_KENT = "47.2587,-68.5895"     # Maine's north; about 790 km from Greenwich
+
+
+def _server():
+    return sys.modules["app"]
+
+
+def _refusal(response, status, code):
+    assert response.status_code == status, response.get_data(as_text=True)[:300]
+    assert response.is_json, "an error that is not JSON is one the app cannot read"
+    body = response.get_json()
+    assert body["code"] == code, body
+    sentence = body["error"]
+    assert sentence[:1].isupper() and sentence.rstrip().endswith("."), sentence
+    for key, value in body.items():
+        if key not in ("error", "code"):
+            assert value is None or isinstance(value, (int, float)), (key, value)
+    return body
+
+
+@pytest.mark.parametrize("query", [
+    "from=nan,nan&to=" + BOSTON,
+    f"from={WORCESTER}&to=inf,-71.0",
+    f"from=91,-71.0&to={BOSTON}",
+    f"from={WORCESTER}&to=42.3,-181",
+    f"from={WORCESTER}&to={BOSTON}&pref=nan",
+    f"from={WORCESTER}&to={BOSTON}&w_coast=nan",
+    f"from={WORCESTER}&to={BOSTON}&avoid_unpaved=inf",
+    f"from={WORCESTER}&to={BOSTON}&heading=nan",
+    f"from={WORCESTER}&to={BOSTON}&via=nan,nan",
+    f"from={WORCESTER}&to={BOSTON}&leave=42.3,-71.5,nan",
+    f"from={WORCESTER}&to={BOSTON}&rejoin=42.3,-71.5",
+    f"from=42.3&to={BOSTON}",
+    "",
+    f"from={WORCESTER}",
+    f"from=garbage&to={BOSTON}",
+])
+def test_bad_numbers_are_refused_as_bad_input_before_any_work(client, query):
+    """from=nan,nan used to be Flask's HTML 500, and pref=nan and w_coast=nan
+    were accepted and routed with."""
+    _refusal(client.get(f"/api/route?{query}"), 400, "BAD_INPUT")
+
+
+@pytest.mark.parametrize("query", [
+    f"from=nan,nan&km=40",
+    f"from={NEEDHAM}&km=nan",
+    f"from={NEEDHAM}&km=inf",
+    f"from={NEEDHAM}&km=40&pref=nan",
+    f"from={NEEDHAM}&km=40&w_town=inf",
+    f"from={NEEDHAM}&km=40&sector=NNE",
+])
+def test_bad_loop_numbers_are_refused_as_bad_input(client, query):
+    _refusal(client.get(f"/api/loop?{query}"), 400, "BAD_INPUT")
+
+
+def test_an_unknown_path_is_a_json_refusal(client):
+    _refusal(client.get("/api/nowhere"), 404, "NOT_FOUND")
+
+
+def test_a_point_outside_the_region_says_so_with_a_code(client):
+    _refusal(client.get(f"/api/route?from=40.7128,-74.0060&to={BOSTON}"), 400,
+             "OUTSIDE_COVERAGE")
+
+
+def test_the_same_road_twice_says_so_with_a_code(client):
+    _refusal(client.get(f"/api/route?from={BOSTON}&to={BOSTON}"), 400, "SAME_ROAD")
+
+
+def test_a_trip_over_the_cap_says_310_miles(client):
+    """500 km is 310.7 miles. The app says 310; the server said 311."""
+    body = _refusal(client.get(f"/api/route?from={GREENWICH}&to={FORT_KENT}"),
+                    400, "TRIP_TOO_LONG")
+    assert body["max_km"] == 500.0 and body["km"] > 500.0
+    assert "up to 310 miles" in body["error"], body["error"]
+
+
+def test_a_via_leg_over_the_cap_is_refused_before_any_search(client):
+    """Boston via Los Angeles to Miami ran 46 s and 5.8 GB on the national
+    server, with every driver behind it waiting."""
+    to = GREENWICH.replace("41.0262", "41.0362")
+    body = _refusal(client.get(f"/api/route?from={GREENWICH}&to={to}"
+                               f"&via={FORT_KENT}"), 400, "LEG_TOO_LONG")
+    assert body["leg"] == 1 and body["km"] > 500.0 and body["max_km"] == 500.0
+    body = _refusal(client.get(f"/api/route?from={FORT_KENT}&to={GREENWICH}"
+                               f"&via={FORT_KENT.replace('47.2587', '47.2487')}"),
+                    400, "LEG_TOO_LONG")
+    assert body["leg"] == 2
+
+
+def test_a_reroute_far_from_its_start_is_refused(client, monkeypatch):
+    """START_TOO_FAR, only for a moving car, measured by `Router.snap_start`.
+    The threshold is squeezed so an ordinary snap trips it: the wiring is the
+    point here; tests/test_closed_roads.py has the real distances."""
+    monkeypatch.setattr(_server(), "START_MAX_M", 0.0)
+    moving = client.post("/api/route", data={"from": WORCESTER, "to": BOSTON,
+                                             "heading": "90"})
+    body = _refusal(moving, 400, "START_TOO_FAR")
+    assert body["m"] > 0 and body["max_m"] == 0.0
+    declined = client.post("/api/route", data={"from": WORCESTER, "to": BOSTON,
+                                               "declined_uturn": "1"})
+    _refusal(declined, 400, "START_TOO_FAR")
+    parked = client.post("/api/route", data={"from": WORCESTER, "to": BOSTON})
+    assert parked.status_code == 200
+
+
+def test_the_loop_limit_is_posted_and_answers_numbers(client):
+    r = client.post("/api/loop/limit", data={"from": NEEDHAM})
+    assert r.status_code == 200
+    body = r.get_json()
+    assert set(body) == {"max_km", "max_mi"}
+    assert isinstance(body["max_km"], float) and isinstance(body["max_mi"], int)
+    # New England's whole graph holds fewer nodes than the threshold, so every
+    # start keeps the old top of the slider: 400 km, 248 miles.
+    assert body == {"max_km": 400.0, "max_mi": 248}
+
+
+def test_the_loop_limit_never_takes_coordinates_in_the_url(client):
+    _refusal(client.get(f"/api/loop/limit?from={NEEDHAM}"), 405, "NOT_FOUND")
+    _refusal(client.post("/api/loop/limit", data={}), 400, "BAD_INPUT")
+    _refusal(client.post("/api/loop/limit", data={"from": "45.5,-73.6"}), 400,
+             "OUTSIDE_COVERAGE")
+
+
+def test_a_loop_over_this_starts_limit_is_refused_and_its_top_is_served(
+        client, monkeypatch):
+    """The limit follows the disc's node count: squeezed here so Needham's is
+    under 400 km, as a dense metro's is on the national graph."""
+    import looper
+    monkeypatch.setattr(looper, "LOOP_DISC_MAX_NODES", 150_000)
+    limit = client.post("/api/loop/limit", data={"from": NEEDHAM}).get_json()
+    assert 5.0 < limit["max_km"] < 400.0
+    assert limit["max_mi"] == int(limit["max_km"] * 0.621371)
+    over = client.get(f"/api/loop?from={NEEDHAM}&km={limit['max_km'] + 10:.1f}")
+    body = _refusal(over, 400, "LOOP_TOO_LONG")
+    assert body["max_km"] == limit["max_km"]
+    # The top of the app's own slider, max_mi turned back into km, is built.
+    top = limit["max_mi"] * 1.609344
+    assert top <= limit["max_km"] + 0.5
+    built = client.get(f"/api/loop?from={NEEDHAM}&km={top:.3f}")
+    assert built.status_code in (200, 404)
+
+
+def test_health_names_the_region_commit_and_pack(client):
+    body = client.get("/api/health").get_json()
+    assert {"status", "nodes", "routing_slots", "region", "commit", "pack"} <= set(body)
+    assert isinstance(body["region"], str) and body["region"]
+    # The suite runs from parquets: no pack, so no fingerprint.
+    assert body["pack"] is None
+
+
+def test_the_commit_comes_from_the_environment_then_the_deploy_file(
+        client, monkeypatch, tmp_path):
+    server = _server()
+    monkeypatch.setattr(server, "ROOT", tmp_path)
+    monkeypatch.setenv("SUNDAYDRIVE_COMMIT", "  abc1234def56 ")
+    assert server._commit() == "abc1234def56"
+    monkeypatch.delenv("SUNDAYDRIVE_COMMIT")
+    assert server._commit() is None
+    (tmp_path / "DEPLOYED_COMMIT").write_text("0123456789ab\n")
+    assert server._commit() == "0123456789ab"
+
+
+def test_the_pack_fingerprint_is_the_manifests_sha256(client, monkeypatch, tmp_path):
+    import hashlib
+    server = _server()
+    (tmp_path / "manifest.json").write_text('{"version": 2}')
+    monkeypatch.setattr(server, "PACK", str(tmp_path))
+    assert server._pack_fingerprint() == hashlib.sha256(b'{"version": 2}').hexdigest()
+    monkeypatch.setattr(server, "PACK", None)
+    assert server._pack_fingerprint() is None
+
+
+def test_a_search_that_finds_nothing_says_no_route_nearby(client, monkeypatch):
+    """It was "no route found between those points", lower case, no code."""
+    router = _server().ROUTER
+    monkeypatch.setattr(router, "route", lambda *a, **k: None)
+    body = _refusal(client.get(f"/api/route?from={WORCESTER}&to={BOSTON}"), 404,
+                    "NO_ROUTE_NEARBY")
+    assert body["error"].startswith("Sunday Drive couldn't find a drivable route")
+
+
+def test_a_route_only_a_seasonal_closure_cuts_says_so_with_a_code(client, monkeypatch):
+    router = _server().ROUTER
+    real = router.route
+    # Nothing on the request's day; a route with nothing closed.
+    monkeypatch.setattr(router, "route",
+                        lambda *a, on=None, **k: None if on is not None
+                        else real(*a, **k))
+    body = _refusal(client.get(f"/api/route?from={WORCESTER}&to={BOSTON}"), 404,
+                    "CLOSED_FOR_SEASON")
+    assert body["error"] == "The only way there is closed for the season."
+
+
+@pytest.mark.parametrize("threshold", [60_000, 150_000, 400_000])
+def test_the_loop_limit_is_the_longest_disc_under_the_node_count(
+        client, monkeypatch, threshold):
+    """`max_km` is the longest target whose first disc holds at most
+    LOOP_DISC_MAX_NODES nodes: under it at the limit, over it a little past."""
+    import looper
+    monkeypatch.setattr(looper, "LOOP_DISC_MAX_NODES", threshold)
+    planner = _server().LOOPER
+    start = _server().ROUTER.snap(42.2809, -71.2378)[0]
+    limit = planner.max_km(start)
+    assert 5.0 <= limit < 400.0
+    assert planner.disc_nodes(start, limit) <= threshold
+    assert planner.disc_nodes(start, limit + 0.2) > threshold

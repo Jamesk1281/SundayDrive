@@ -605,6 +605,163 @@ class TestCorridorSearch:
         assert trip.excess(path) <= router_module.CORRIDOR_TOUCH * allowance + 1e-9
 
 
+class TestNoRouteNearby:
+    """How far a search widens before it says there is no route
+    (docs/review-fixes-router.md, "No route nearby"). Two doublings and no
+    more answered "no route found" for a 4-mile trip whose road was closed."""
+
+    def test_the_schedule(self):
+        # Literals: a test that imported the constants would pass at any value.
+        from router import corridor_budgets
+        assert list(corridor_budgets(6.0)) == [29.0, 52.0, 98.0, 190.0, 374.0,
+                                               742.0, 770.0]
+        assert list(corridor_budgets(300.0)) == [470.0, 640.0, 770.0]
+        # At the cap the first corridor is already the biggest, and a reroute
+        # past it is never widened toward the whole national graph.
+        assert list(corridor_budgets(500.0)) == [770.0]
+        assert list(corridor_budgets(600.0)) == [920.0]
+
+    def test_a_search_that_finds_nothing_widens_to_the_cap_and_stops(
+            self, router, monkeypatch):
+        import router as router_module
+        s, t = router.snap(*BOSTON)[0], router.snap(*WORCESTER)[0]
+        seen = []
+        monkeypatch.setattr(router_module.Router, "_search",
+                            lambda self, c, *a, **k: seen.append(c) or None)
+        real = router_module.Router.corridor
+        budgets = []
+        monkeypatch.setattr(router_module.Router, "corridor",
+                            lambda self, trip, budget: budgets.append(budget)
+                            or real(self, trip, budget))
+        assert router.route(s, t, 0.0) is None
+        trip_km = router.trip_km(s, t)
+        assert budgets == list(router_module.corridor_budgets(trip_km))
+        assert budgets[-1] == 770.0 and len(budgets) > 3
+
+
+class TestInstructionText:
+    """Forty random national trips: 5.2% of steps read a raw multi-value, 2.9%
+    took an exit with no number, destination or direction, 1.8% named no road
+    (docs/review-fixes-router.md, "Instruction text")."""
+
+    def _result(self, legs, refs=None):
+        import geopandas as gpd
+        rows = gpd.GeoDataFrame(
+            {"name": [x[1] for x in legs],
+             "ref": refs or [""] * len(legs),
+             "highway": [x[2] for x in legs],
+             "junction": [""] * len(legs),
+             "dest_ref": [x[3] if len(x) > 3 else "" for x in legs],
+             "dest_name": [""] * len(legs),
+             "length_m": [float(x[4]) if len(x) > 4 else 200.0 for x in legs],
+             "geometry": [shapely.LineString(x[0]) for x in legs]},
+            crs=4326,
+        )
+        coords = [np.array(x[0]) for x in legs]
+        return RouteResult(rows, stitch(coords), coords,
+                           nodes=list(range(len(legs) + 1)),
+                           context=ManeuverContext({}, np.zeros(len(legs) + 1, dtype=int)))
+
+    def test_a_multi_valued_ref_announces_its_first_value(self):
+        legs = [([_point(0, 0), _point(0, 200)], "Main Street", "primary"),
+                ([_point(0, 200), _point(200, 200)], "", "primary")]
+        steps = self._result(legs, refs=["", "I 295;US 1;ME 26"]).steps()
+        assert steps[1]["instruction"] == "Turn right onto I 295"
+        assert steps[1]["name"] == "I 295"
+
+    def test_a_multi_valued_name_announces_its_first_value(self):
+        legs = [([_point(0, 0), _point(0, 200)], "Main Street", "residential"),
+                ([_point(0, 200), _point(-200, 200)], "Acquoni Road;ᎡᏆᏂ ᎦᏅᏅ",
+                 "residential")]
+        steps = self._result(legs).steps()
+        assert steps[1]["instruction"] == "Turn left onto Acquoni Road"
+
+    @pytest.mark.parametrize("bearing,ref,expected", [
+        (270, "I 64", "I 64 West"),       # even: east-west, by parity
+        (200, "I 64", "I 64 West"),       # still West heading south-west
+        (100, "I 64", "I 64 East"),
+        (10, "I 95", "I 95 North"),       # odd: north-south
+        (170, "US 1", "US 1 South"),
+        (95, "CA 1", "CA 1 East"),        # a state route: the compass point
+        (10, "US 220 ALT", "US 220 ALT North"),   # three digits: the compass
+        (190, "I 270", "I 270 South"),
+    ])
+    def test_an_unsigned_exit_onto_a_route_number_says_which_way(
+            self, bearing, ref, expected):
+        """"Take the exit onto I 64" at Waynesboro, VA: half a sign."""
+        ramp_end = _point(*_along(30, 150))
+        far = _along(bearing, 3000)
+        legs = [([_point(0, 0), _point(0, 200)], "", "motorway"),
+                ([_point(0, 200), ramp_end], "", "motorway_link"),
+                ([ramp_end, (ramp_end[0] + far[0] * _DEG_LON,
+                             ramp_end[1] + far[1] * _DEG_LAT)], ref, "motorway")]
+        steps = self._result(legs).steps()
+        exit_step = [st for st in steps if st["type"] == "exit"][0]
+        assert exit_step["instruction"] == f"Take the exit onto {expected}"
+
+    def test_an_exit_onto_a_named_interstate_is_announced_by_its_number(self):
+        """"Take the exit onto Will Rogers Expressway": the shields say I 44."""
+        ramp_end = _point(*_along(30, 150))
+        far = _along(90, 3000)
+        legs = [([_point(0, 0), _point(0, 200)], "", "motorway"),
+                ([_point(0, 200), ramp_end], "", "motorway_link"),
+                ([ramp_end, (ramp_end[0] + far[0] * _DEG_LON,
+                             ramp_end[1] + far[1] * _DEG_LAT)],
+                 "Will Rogers Expressway", "motorway")]
+        steps = self._result(legs, refs=["", "", "I 44;US 412"]).steps()
+        exit_step = [st for st in steps if st["type"] == "exit"][0]
+        assert exit_step["instruction"] == "Take the exit onto I 44 East"
+
+    def test_a_ramp_serving_two_exits_names_both(self):
+        legs = [([_point(0, 0), _point(0, 200)], "", "motorway"),
+                ([_point(0, 200), _point(*_along(30, 150))], "", "motorway_link"),
+                ([_point(*_along(30, 150)), _point(200, 400)], "I 93", "motorway")]
+        result = self._result(legs)
+        result.context = ManeuverContext({1: "7A; 7B"}, np.zeros(4, dtype=int))
+        exit_step = [st for st in result.steps() if st["type"] == "exit"][0]
+        assert exit_step["instruction"] == "Take exit 7A or 7B"
+        assert exit_step["exit_ref"] == "7A/7B"
+        result = self._result(legs)
+        result.context = ManeuverContext({1: "3A;3B;3C"}, np.zeros(4, dtype=int))
+        assert [st for st in result.steps() if st["type"] == "exit"][0][
+            "instruction"] == "Take exit 3A, 3B or 3C"
+
+    def test_an_exit_onto_a_named_street_gets_no_compass_word(self):
+        ramp_end = _point(*_along(30, 150))
+        legs = [([_point(0, 0), _point(0, 200)], "", "motorway"),
+                ([_point(0, 200), ramp_end], "", "motorway_link"),
+                ([ramp_end, _point(200, 400)], "Main Street", "primary")]
+        exit_step = [st for st in self._result(legs).steps() if st["type"] == "exit"][0]
+        assert exit_step["instruction"] == "Take the exit onto Main Street"
+
+    def test_a_turn_onto_a_nameless_road_says_where_it_leads(self):
+        legs = [([_point(0, 0), _point(0, 200)], "Main Street", "residential"),
+                ([_point(0, 200), _point(150, 200)], "", "service", "", 150),
+                ([_point(150, 200), _point(150, 400)], "Elm Street", "residential")]
+        steps = self._result(legs).steps()
+        assert steps[1]["instruction"] == "Turn right toward Elm Street"
+        assert steps[1]["name"] == ""
+
+    def test_a_nameless_road_with_nothing_named_near_says_what_it_is(self):
+        legs = [([_point(0, 0), _point(0, 200)], "Main Street", "residential"),
+                ([_point(0, 200), _point(-1500, 200)], "", "service", "", 1500)]
+        assert self._result(legs).steps()[1]["instruction"] == \
+            "Turn left onto a service road"
+        legs[1] = ([_point(0, 200), _point(-1500, 200)], "", "unclassified", "", 1500)
+        assert self._result(legs).steps()[1]["instruction"] == \
+            "Turn left onto an unnamed road"
+
+    def test_a_bare_continue_is_folded_into_the_step_before(self):
+        legs = [([_point(0, 0), _point(0, 200)], "Main Street", "residential"),
+                ([_point(0, 200), _point(0, 400)], "", "residential"),
+                ([_point(0, 400), _point(200, 400)], "Elm Street", "residential")]
+        steps = self._result(legs).steps()
+        assert [st["instruction"] for st in steps] == [
+            "Head north on Main Street", "Turn right onto Elm Street",
+            "Arrive at your destination"]
+        assert steps[0]["distance_m"] == 400
+
+
 class TestTurnRestrictions:
     """A Dijkstra over nodes cannot say "not from that road", so the junctions
     that need to say it are split into one node per approach."""

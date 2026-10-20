@@ -38,9 +38,8 @@ from pyproj import Transformer
 from scipy.sparse.csgraph import dijkstra
 
 from common import CRS_METERS
-from router import (_TO_M, BEAUTIFUL_SCORE, CORRIDOR_KM, CORRIDOR_SHARE,
-                    CORRIDOR_TOUCH, CORRIDOR_WIDENINGS, TURN_BACK_CAP_MIN,
-                    _tangent_at, _turn_delta)
+from router import (_TO_M, BEAUTIFUL_SCORE, CORRIDOR_TOUCH, TURN_BACK_CAP_MIN,
+                    _tangent_at, _turn_delta, corridor_budgets)
 
 # Switch points along S: every this many km, or len(S)/SWITCH_POINTS, whichever
 # is coarser. The study's spacing; finer buys nothing visible on the menu.
@@ -320,9 +319,8 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
     # (router.CORRIDOR_SHARE), and work in its indices: `G` turns them back
     # into the graph's.
     trip = router._trip(int(s), int(targets[0]))
-    allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
-    for attempt in range(CORRIDOR_WIDENINGS + 1):
-        c = router.corridor(trip, trip.km + allowance)
+    for budget in corridor_budgets(trip.km):
+        c = router.corridor(trip, budget)
         G = c.nodes
         ls = int(c.local(s)[0])
         lt = c.local(targets)
@@ -331,9 +329,8 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
                           directed=True, indices=ls, return_predecessors=True)
         dst = int(lt[np.argmin(d1[lt])])
         S = _tree_path(p1, dst, {ls}) if np.isfinite(d1[dst]) else None
-        if S is not None and trip.excess(G[S]) <= CORRIDOR_TOUCH * allowance:
+        if S is not None and trip.excess(G[S]) <= CORRIDOR_TOUCH * (budget - trip.km):
             break
-        allowance *= 2.0
     if S is None:
         return None
     S_local = np.array(S[::-1], dtype=np.int64)

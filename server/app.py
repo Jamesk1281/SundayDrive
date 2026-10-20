@@ -11,7 +11,14 @@ Loads the routing graph once at startup and serves:
   GET  /api/loop?from=LAT,LON&km=40[&pref=1.0][&sector=NE][&w_<type>=...]
                               -> {"loop": <GeoJSON Feature>, "meta": {...},
                                   "alternatives": [...], "note": null|str}
-  GET  /api/health
+  POST /api/loop/limit  (from=LAT,LON in the body)
+                              -> {"max_km": <float>, "max_mi": <int>}
+  GET  /api/health            -> {"status", "nodes", "routing_slots",
+                                  "region", "commit", "pack"}
+
+Every error is JSON: {"error": <a sentence>, "code": <string>, ...numbers}.
+The codes are listed at ERROR CODES below, and docs/review-fixes-router.md
+has what each means to the app.
 
 `pref` (0..1) is the overall scenery strength. Each beauty type can also be
 weighted with w_<type> (e.g. w_coast=2&w_town=3&w_farm=0); each defaults to 1.0
@@ -53,19 +60,23 @@ option in full and how it reroutes one mid-drive.
 Every route and loop avoids the roads OpenStreetMap marks closed for the season
 on the day of the request, judged on every date the contiguous US is on at that
 moment (router.region_today, pipeline/closures.py). When the only way to a
-destination is one of them, /api/route says so: a 404 whose error is
-CLOSED_FOR_SEASON.
+destination is one of them, /api/route says so: a 404 whose code is
+"CLOSED_FOR_SEASON".
 
 A point-to-point trip is capped at router.MAX_TRIP_KM in a straight line
 between its snapped ends, and refused before any search with a 400 whose
 `code` is "TRIP_TOO_LONG" (a reroute, with a heading, at
-router.REROUTE_MAX_TRIP_KM). docs/router-at-us-scale.md.
+router.REROUTE_MAX_TRIP_KM). docs/router-at-us-scale.md. Each leg of a `via`
+route is capped the same way ("LEG_TOO_LONG"), and a loop at the start's own
+limit (`LoopPlanner.max_km`, "LOOP_TOO_LONG"). docs/review-fixes-router.md.
 
 Run:  python server/app.py [processed_dir]   (default: data/processed)
 With SUNDAYDRIVE_PACK set, the graph is mapped from that pack
 (tools/us_scale_router/pack.py) instead of built from the parquets.
 """
 
+import hashlib
+import math
 import os
 import sys
 import threading
@@ -73,6 +84,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from flask import Flask, jsonify, request
+from werkzeug.exceptions import HTTPException
 from flask_compress import Compress
 from flask_cors import CORS
 
@@ -81,7 +93,8 @@ sys.path.insert(0, str(ROOT / "pipeline"))
 from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
                     LoopPlanner)  # noqa: E402
 from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED,  # noqa: E402
-                    MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, Router, region_today)
+                    MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, START_MAX_M, Router,
+                    region_today)
 import options as route_options  # noqa: E402
 
 # How far a user may push a single beauty type. 0 ignores it; the upper bound
@@ -120,27 +133,69 @@ REGION_ENV = (os.environ.get("SUNDAYDRIVE_REGION")
               or os.environ.get("VICTORYLAP_REGION")
               or os.environ.get("SCENIC_REGION"))
 
-def _outside(what: str) -> str:
+# --- ERROR CODES ---------------------------------------------------------------
+# Every JSON error is {"error": <a sentence>, "code": <one of these>, ...}, with
+# any numbers as numbers (docs/review-fixes-router.md, "Error bodies"). The app
+# branches on `code` and shows `error` as written, so `error` is a sentence for
+# a driver: a capital first letter and a full stop.
+TRIP_TOO_LONG = "TRIP_TOO_LONG"          # a trip over the cap: km, max_km
+LEG_TOO_LONG = "LEG_TOO_LONG"            # a `via` leg over it: km, max_km, leg
+LOOP_TOO_LONG = "LOOP_TOO_LONG"          # a loop over this start's limit: km, max_km
+NO_ROUTE_NEARBY = "NO_ROUTE_NEARBY"      # the search ran out of room
+START_TOO_FAR = "START_TOO_FAR"          # a reroute starting far from the car: m, max_m
+OUTSIDE_COVERAGE = "OUTSIDE_COVERAGE"    # a point no covered road is near
+BAD_INPUT = "BAD_INPUT"                  # a missing, unreadable or non-finite number
+# And the refusals that existed before the codes above, each with its own:
+SEASON_CLOSED = "CLOSED_FOR_SEASON"      # only a road shut for the season connects
+SAME_ROAD = "SAME_ROAD"                  # both ends on the same stretch of road
+NO_LOOP = "NO_LOOP"                      # no loop of that length: nearest_km or null
+BUSY = "BUSY"                            # a loop build refused while another runs (503)
+NOT_FOUND = "NOT_FOUND"                  # no such endpoint or method
+SERVER_ERROR = "SERVER_ERROR"            # a bug: the request was not the problem
+
+KM_TO_MI = 0.621371
+
+
+def _error(status: int, code: str, sentence: str, **numbers):
+    """A JSON error the app can branch on, as (response, status)."""
+    return jsonify(error=sentence, code=code, **numbers), status
+
+
+def _miles(km: float) -> int:
+    """A cap in whole miles, rounded down: 500 km is 310.7 miles, and a cap
+    that said 311 would promise a trip it refuses."""
+    return int(math.floor(km * KM_TO_MI))
+
+
+def _outside(what: str):
     """The 400 for a point no road we cover is near. The app shows it as
     written (ios RouteService), so it is a sentence for a driver."""
-    return f"Sunday Drive covers {REGION}, and {what} is outside it."
-
-
-# The 400 for a trip longer than the cap allows, as `code`, beside the words.
-TRIP_TOO_LONG = "TRIP_TOO_LONG"
+    return _error(400, OUTSIDE_COVERAGE,
+                  f"Sunday Drive covers {REGION}, and {what} is outside it.")
 
 
 def _too_far(km: float, cap: float) -> str:
     """What the app shows for a trip over the cap, in the miles it uses."""
-    return (f"That trip is {km * 0.621371:.0f} miles in a straight line. "
-            f"Sunday Drive plans drives of up to {cap * 0.621371:.0f} miles, "
+    return (f"That trip is {km * KM_TO_MI:.0f} miles in a straight line. "
+            f"Sunday Drive plans drives of up to {_miles(cap)} miles, "
             "so pick a stop along the way and plan it in two parts.")
 
 
+def _leg_too_far(km: float, cap: float) -> str:
+    return (f"One leg of that drive is {km * KM_TO_MI:.0f} miles in a straight "
+            f"line. Sunday Drive plans legs of up to {_miles(cap)} miles.")
+
+
 # The 404 for a trip that only a road closed for the season connects. Kept
-# apart from "no route found", which reads as a wrong pin or a broken app: this
-# place is real, and the road to it opens again in spring.
-CLOSED_FOR_SEASON = "the only way there is closed for the season"
+# apart from "no route nearby", which reads as a wrong pin or a broken app: this
+# place is real, and the road to it opens again in spring. The sentence keeps
+# the name it had before codes; its code is SEASON_CLOSED.
+CLOSED_FOR_SEASON = "The only way there is closed for the season."
+
+# The 404 when the search found nothing: it widened as far as the longest trip
+# searches (router.CORRIDOR_MAX_KM) and no drivable road joins the two points.
+NO_ROUTE = ("Sunday Drive couldn't find a drivable route between those points. "
+            "One of them may be on a road cut off from the rest.")
 
 # Reject a request whose endpoint lies farther than this from any road — it's
 # outside the covered region (see REGION), and the "nearest" road would be in an
@@ -215,6 +270,10 @@ REJOIN_LOCK = threading.Lock()
 LOOP_BUSY_WAIT_S = 5.0
 LOOP_WAIT_SLOT = threading.Lock()
 LOOP_BUSY = "Busy planning other drives. Try again in a moment."
+# How far over a start's limit a loop request may ask and still be built, at
+# the limit: a client that shows `max_mi` and sends it back as km lands a
+# fraction over `max_km`, and refusing the top of its own slider is wrong.
+LOOP_LIMIT_SLACK_KM = 0.5
 
 # Built loops, keyed by the whole request. The planner's caches make a *new* loop
 # cost ~0.65 s; this makes an *identical* request cost nothing, which is the
@@ -268,9 +327,78 @@ print(f"ready: {ROUTER.n_real:,} nodes "
       f"({ROUTER.n:,} routing slots after turn-restriction splits)")
 
 
-def _parse_ll(s: str):
-    lat, lon = (float(x) for x in s.split(","))
+def _commit():
+    """The deployed commit for /api/health: SUNDAYDRIVE_COMMIT, else the first
+    line of DEPLOYED_COMMIT beside the checkout, which the deploy writes; None
+    when neither says. Read once: a running server does not change commits."""
+    value = os.environ.get("SUNDAYDRIVE_COMMIT", "").strip()
+    if not value:
+        try:
+            value = (ROOT / "DEPLOYED_COMMIT").read_text().splitlines()[0].strip()
+        except (OSError, IndexError):
+            value = ""
+    return value or None
+
+
+def _pack_fingerprint():
+    """The pack's fingerprint for /api/health: the sha256 of its manifest.json,
+    which names every source file's hash, so two packs of the same parquets
+    share one and a rebuild after any change does not. None with no pack."""
+    if PACK is None:
+        return None
+    return hashlib.sha256((Path(PACK) / "manifest.json").read_bytes()).hexdigest()
+
+
+COMMIT = _commit()
+PACK_FINGERPRINT = _pack_fingerprint()
+
+
+class BadInput(ValueError):
+    """A parameter that is missing, unreadable, or not a finite number in
+    range: a 400 BAD_INPUT, before any work (docs/review-fixes-router.md)."""
+
+    def __init__(self, sentence: str):
+        super().__init__(sentence)
+        self.sentence = sentence
+
+
+def _finite(raw, name: str) -> float:
+    """`raw` as a finite float, or BadInput naming `name`. `float()` reads
+    "nan" and "inf" happily, and each then passes every `<` and `>` test the
+    clamps below make, so they are refused here, once."""
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        raise BadInput(f"The request's {name} must be a number.") from None
+    if not math.isfinite(value):
+        raise BadInput(f"The request's {name} must be a finite number.")
+    return value
+
+
+def _number(args, name: str, default: float) -> float:
+    """A finite number parameter, or `default` when it is absent."""
+    raw = args.get(name)
+    return default if raw is None or raw == "" else _finite(raw, name)
+
+
+def _parse_ll(s: str, name: str = "point"):
+    """`lat,lon` as two finite numbers on the Earth, or BadInput."""
+    parts = (s or "").split(",")
+    if len(parts) != 2:
+        raise BadInput(f"The request's {name} must be a latitude and a "
+                       "longitude, separated by a comma.")
+    lat, lon = (_finite(x, name) for x in parts)
+    if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+        raise BadInput(f"The request's {name} is not a place on the Earth: "
+                       "latitude runs from -90 to 90 and longitude from -180 to 180.")
     return lat, lon
+
+
+def _required_ll(args, name: str):
+    raw = args.get(name)
+    if not raw:
+        raise BadInput(f"The request needs {name}=latitude,longitude.")
+    return _parse_ll(raw, name)
 
 
 def _today():
@@ -307,7 +435,9 @@ def _parse_heading(args):
     raw = args.get("heading")
     if raw is None or raw == "":
         return None
-    value = float(raw)          # a non-numeric heading is a real bad request
+    # A non-numeric or non-finite heading is a real bad request: NaN would
+    # pass the range test below and reach `snap` as a course.
+    value = _finite(raw, "heading")
     if value < 0.0 or value > 360.0:
         return None
     # The same 0..360 window `Router.snap` accepts, so both layers agree on
@@ -338,7 +468,7 @@ def _parse_avoid_unpaved(args):
     jammed in among them would quietly turn every attraction down. This one is
     priced in minutes and does not touch the beauty blend at all.
     """
-    value = float(args.get("avoid_unpaved", 1.0))
+    value = _number(args, "avoid_unpaved", 1.0)
     return max(0.0, min(MAX_AVOID_UNPAVED, value))
 
 
@@ -347,7 +477,7 @@ def _parse_weights(args):
     defaults to 1.0 (neutral) and is clamped to [WEIGHT_MIN, WEIGHT_MAX]."""
     weights = {}
     for name, *_ in BEAUTY_TYPES:
-        value = float(args.get(f"w_{name}", 1.0))
+        value = _number(args, f"w_{name}", 1.0)
         weights[name] = max(WEIGHT_MIN, min(WEIGHT_MAX, value))
     return weights
 
@@ -362,9 +492,14 @@ def _parse_switch(args, name):
     raw = args.get(name)
     if not raw:
         return None
-    lat, lon, heading = (float(x) for x in raw.split(","))
+    parts = raw.split(",")
+    if len(parts) != 3:
+        raise BadInput(f"The request's {name} must be a latitude, a longitude "
+                       "and a heading, separated by commas.")
+    lat, lon = _parse_ll(",".join(parts[:2]), name)
+    heading = _finite(parts[2], name)
     if not 0.0 <= heading <= 360.0:
-        raise ValueError(name)
+        raise BadInput(f"The request's {name} heading must be from 0 to 360.")
     return lat, lon, heading % 360.0
 
 
@@ -420,23 +555,20 @@ def _request_params():
 def api_route():
     args = _request_params()
     try:
-        a = _parse_ll(args["from"])
-        b = _parse_ll(args["to"])
-        pref = float(args.get("pref", 0.5))
+        a = _required_ll(args, "from")
+        b = _required_ll(args, "to")
+        pref = _number(args, "pref", 0.5)
         avoid_unpaved = _parse_avoid_unpaved(args)
         heading = _parse_heading(args)
         declined_uturn = _parse_declined_uturn(args)
         weights = _parse_weights(args)
         raw_via = args.get("via")
-        via = _parse_ll(raw_via) if raw_via else None
+        via = _parse_ll(raw_via, "via") if raw_via else None
         leave = _parse_switch(args, "leave")
         rejoin = _parse_switch(args, "rejoin")
         want_options = args.get("options", "") in ("1", "true")
-    except (KeyError, ValueError):
-        return jsonify(error="need from=lat,lon&to=lat,lon[&pref=0..1]"
-                             "[&heading=0..360][&declined_uturn=1]"
-                             "[&via=lat,lon][&w_<type>=...][&options=1]"
-                             "[&leave=lat,lon,deg][&rejoin=lat,lon,deg]"), 400
+    except BadInput as bad:
+        return _error(400, BAD_INPUT, bad.sentence)
     with _computing() as alone:
         return _route(a, b, pref, avoid_unpaved, heading, declined_uturn,
                       weights, via, leave, rejoin,
@@ -447,32 +579,43 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
            leave, rejoin, with_options):
     day = _today()
 
+    # A moving car (a heading or a declined U-turn) is somewhere a parked one
+    # is not: on the road under it, even one closed to cars, which it leaves
+    # forward (`Router.snap`, docs/review-fixes-router.md).
+    moving = heading is not None or declined_uturn
     # Heading applies to the start only: it says which way the driver is
     # travelling, and a destination isn't travelling anywhere.
-    s, s_off = ROUTER.snap(*a, heading=heading)
+    s, s_off, s_gap = ROUTER.snap_start(*a, heading=heading, moving=moving)
     # The destination goes through the access layer: a pin on a building inside
     # a car park has to become the road you can get in from, not the nearest
     # road as the crow flies, which is routinely the wrong side of the building.
     t, t_off = ROUTER.snap_destination(*b)
     if max(s_off, t_off) > SNAP_MAX_M:
-        return jsonify(error=_outside("that point")), 400
+        return _outside("that point")
+    # A reroute that would begin out of sight, on a road the car is not on,
+    # is refused rather than drawn: the app keeps the route it has, and says
+    # why (docs/review-fixes-router.md, "START_TOO_FAR").
+    if moving and s_gap > START_MAX_M:
+        return _error(400, START_TOO_FAR,
+                      "Sunday Drive can't start a new route where you are: the "
+                      "nearest road it can route from is too far away.",
+                      m=round(s_gap), max_m=START_MAX_M)
     if s == t:
-        return jsonify(error="those points are too close together — "
-                             "they sit on the same stretch of road"), 400
+        return _error(400, SAME_ROAD, "Those points are too close together. "
+                                      "They sit on the same stretch of road.")
 
     # The cap, before any search: corridor search was measured to stay near
     # today's latency up to MAX_TRIP_KM, and a longer trip is refused rather
     # than left to run past the app's 20 s. A reroute (it carries a heading)
     # gets more room, because a driver who has wandered past the cap
-    # mid-drive is better served slowly than not at all. A loop's rejoin is
-    # bounded by the loop's own length. docs/router-at-us-scale.md.
+    # mid-drive is better served slowly than not at all.
+    # docs/router-at-us-scale.md.
+    cap = REROUTE_MAX_TRIP_KM if moving else MAX_TRIP_KM
     if via is None:
-        moving = heading is not None or declined_uturn
-        cap = REROUTE_MAX_TRIP_KM if moving else MAX_TRIP_KM
         km = ROUTER.trip_km(s, t)
         if km > cap:
-            return jsonify(error=_too_far(km, cap), code=TRIP_TOO_LONG,
-                           max_km=cap, km=round(km, 1)), 400
+            return _error(400, TRIP_TOO_LONG, _too_far(km, cap),
+                          max_km=cap, km=round(km, 1))
 
     # Both routes are scored with the user's beauty weights so the two numbers
     # the app puts side by side ("scenery 4.1 -> 6.3") are on one scale. The
@@ -491,7 +634,15 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         # a destination — there is no building to find the car park entrance for.
         w, w_off = ROUTER.snap(*via)
         if w_off > SNAP_MAX_M:
-            return jsonify(error=_outside("that waypoint")), 400
+            return _outside("that waypoint")
+        # Each leg capped as a trip is. Uncapped, Boston via Los Angeles to
+        # Miami ran 46 s and 5.8 GB, and every driver behind it waited
+        # (docs/review-fixes-router.md, "via").
+        for leg, (x, y) in enumerate(((s, w), (w, t)), start=1):
+            km = ROUTER.trip_km(x, y)
+            if km > cap:
+                return _error(400, LEG_TOO_LONG, _leg_too_far(km, cap),
+                              max_km=cap, km=round(km, 1), leg=leg)
         # The rejoin's own planner and lock, never the loop builds': a driver
         # is not queued behind anyone's "Try another direction", and is never
         # refused as busy (docs/loop-lock-contention.md). Still inside
@@ -522,9 +673,9 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         # routes carry no `turns_around`, so nothing here can be declined.
         # docs/reroute-uturn.md.
         if closed:
-            return jsonify(error=CLOSED_FOR_SEASON), 404
+            return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         if fastest is None or scenic is None:
-            return jsonify(error="no route found through that waypoint"), 404
+            return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
         scenic = _no_worse_than_fastest(fastest, scenic)
         return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
@@ -567,8 +718,8 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
             return jsonify(fastest=fastest.geojson(),
                            scenic=route_options.feature(scenic))
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
-            return jsonify(error=CLOSED_FOR_SEASON), 404
-        return jsonify(error="no route found between those points"), 404
+            return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
+        return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
 
     # `origin` lets each route say whether it turns the driver around, and
     # `keep_ahead` asks for one that doesn't once they have declined one.
@@ -590,8 +741,8 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         # cut it off: the destination is up a road shut for the season, or
         # the driver is already on one.
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
-            return jsonify(error=CLOSED_FOR_SEASON), 404
-        return jsonify(error="no route found between those points"), 404
+            return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
+        return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
     scenic = _no_worse_than_fastest(fastest, scenic)
     return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
 
@@ -607,23 +758,22 @@ def api_loop():
     """
     args = _request_params()
     try:
-        start_ll = _parse_ll(args["from"])
-        target_km = float(args.get("km", 40.0))
+        start_ll = _required_ll(args, "from")
+        target_km = _number(args, "km", 40.0)
         # Loops default to full scenery where routes default to 0.5. With the
         # length already pinned by the slider, pref has little left to trade,
         # and the middle of its travel is not monotone for loops — see the
         # docstring in pipeline/looper.py. Clients should leave this alone.
-        pref = max(0.0, min(1.0, float(args.get("pref", 1.0))))
+        pref = max(0.0, min(1.0, _number(args, "pref", 1.0)))
         weights = _parse_weights(args)
         avoid_unpaved = _parse_avoid_unpaved(args)
-    except (KeyError, ValueError):
-        return jsonify(error=f"need from=lat,lon[&km={MIN_TARGET_KM:.0f}.."
-                             f"{MAX_TARGET_KM:.0f}][&pref=0..1]"
-                             f"[&sector={'|'.join(SECTORS)}][&w_<type>=...]"), 400
+    except BadInput as bad:
+        return _error(400, BAD_INPUT, bad.sentence)
 
     sector = args.get("sector") or None
     if sector is not None and sector not in SECTORS:
-        return jsonify(error=f"sector must be one of {', '.join(SECTORS)}"), 400
+        return _error(400, BAD_INPUT,
+                      f"The request's sector must be one of {', '.join(SECTORS)}.")
     day = _today()
 
     # A loop is planned from a standstill by definition — the driver is choosing
@@ -632,13 +782,46 @@ def api_loop():
     # destination pin to pull out of a car park.
     start, offset = ROUTER.snap(*start_ll)
     if offset > SNAP_MAX_M:
-        return jsonify(error=_outside("that point")), 400
+        return _outside("that point")
+
+    # This start's limit, before any search (`LoopPlanner.max_km`): the top of
+    # the app's slider, from POST /api/loop/limit. Below the bottom is still
+    # raised to it, as it always was. LOOP_LIMIT_SLACK_KM absorbs a client
+    # turning `max_mi` back into km.
+    max_km = LOOPER.max_km(start)
+    if target_km > max_km + LOOP_LIMIT_SLACK_KM:
+        return _error(400, LOOP_TOO_LONG,
+                      f"Loops from here go up to {_miles(max_km)} miles, because "
+                      "the roads around this start are dense enough to make a "
+                      "longer one slow to plan. Pick a shorter loop.",
+                      max_km=max_km, km=round(target_km, 1))
 
     with _computing():
-        return _loop(start, target_km, pref, weights, sector, avoid_unpaved, day)
+        return _loop(start, min(target_km, max_km), pref, weights, sector,
+                     avoid_unpaved, day, max_km)
 
 
-def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
+@app.route("/api/loop/limit", methods=["POST"])
+def api_loop_limit():
+    """The longest loop from `from`: the top of the app's distance slider.
+
+    POST only, with `from` in the body, so a driver's coordinates never sit in
+    a URL (docs/coordinates-out-of-the-url.md). Costs a few thousand
+    distances and no search (`LoopPlanner.max_km`).
+    """
+    try:
+        start_ll = _required_ll(request.form, "from")
+    except BadInput as bad:
+        return _error(400, BAD_INPUT, bad.sentence)
+    start, offset = ROUTER.snap(*start_ll)
+    if offset > SNAP_MAX_M:
+        return _outside("that point")
+    max_km = LOOPER.max_km(start)
+    return jsonify(max_km=max_km, max_mi=_miles(max_km))
+
+
+def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day,
+          max_km=MAX_TARGET_KM):
     target_km = max(MIN_TARGET_KM, min(MAX_TARGET_KM, target_km))
     key = (start, round(target_km, 1), round(pref, 4), sector,
            tuple(sorted(weights.items())), round(avoid_unpaved, 4),
@@ -650,7 +833,7 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
     # thread, and four of them starved every driver's reroute (K-1). Loop
     # builds only — nothing a driver sends mid-drive comes through here.
     if not _acquire_loop_lock():
-        return jsonify(error=LOOP_BUSY), 503
+        return _error(503, BUSY, LOOP_BUSY)
     try:
         # The build just waited for may have been this same request, sent
         # twice.
@@ -664,10 +847,12 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day):
             # direction at that length, since `plan` returns the best available
             # rather than holding out for a good one.
             nearest = LOOPER.nearest_length(start, target_km, pref, weights,
-                                            avoid_unpaved, on=day)
-            hint = (f" The nearest loop from here is about {nearest:.0f} km."
-                    if nearest else "")
-            return jsonify(error="no loop of that length from there." + hint), 404
+                                            avoid_unpaved, on=day, max_km=max_km)
+            hint = (f" The nearest loop from here is about "
+                    f"{max(1, round(nearest * KM_TO_MI))} miles." if nearest else "")
+            return _error(404, NO_LOOP, "There's no loop of that length from there."
+                          + hint, nearest_km=(None if nearest is None
+                                              else round(nearest, 1)))
         available = LOOPER.sectors(start, loop.target_km, pref, weights,
                                    avoid_unpaved, on=day)
     finally:
@@ -736,7 +921,31 @@ def _cached_loop(key):
 
 @app.get("/api/health")
 def health():
-    return jsonify(status="ok", nodes=ROUTER.n_real, routing_slots=ROUTER.n)
+    """Liveness, and what is serving: the region the graph covers, the
+    deployed commit and the pack's fingerprint (`_commit`,
+    `_pack_fingerprint`), which the deploy checks after a restart."""
+    return jsonify(status="ok", nodes=ROUTER.n_real, routing_slots=ROUTER.n,
+                   region=REGION, commit=COMMIT, pack=PACK_FINGERPRINT)
+
+
+@app.errorhandler(HTTPException)
+def _http_error(exc):
+    """Flask's own refusals, as JSON with a code rather than an HTML page the
+    app cannot read: an unknown path or method, a body too large."""
+    if exc.code in (404, 405):
+        return _error(exc.code, NOT_FOUND,
+                      "There's no such request on this server.")
+    return _error(exc.code or 400, BAD_INPUT, "The server couldn't read that request.")
+
+
+@app.errorhandler(Exception)
+def _server_error(exc):
+    """A bug, as JSON with a code, never Flask's HTML 500 (which the review
+    got for from=nan,nan). Logged with its traceback for whoever reads the
+    journal."""
+    app.logger.exception("unhandled error")
+    return _error(500, SERVER_ERROR, "Something went wrong planning that drive. "
+                                     "Try again in a moment.")
 
 
 @app.get("/")
@@ -762,6 +971,7 @@ def index():
             "/api/loop": (f"from=LAT,LON&km={MIN_TARGET_KM:.0f}..{MAX_TARGET_KM:.0f}"
                           "[&sector=NE][&pref=0..1][&w_<type>=0..4]"
                           "[&avoid_unpaved=0..2]"),
+            "/api/loop/limit": "POST from=LAT,LON -> max_km, max_mi",
             "/api/health": "liveness check",
         },
         # How the two routing endpoints take those parameters. The app posts

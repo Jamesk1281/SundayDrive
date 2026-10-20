@@ -36,6 +36,7 @@ writes out/route_fastest.geojson and out/route_scenic.geojson.
 import json
 import math
 import pickle
+import re
 import sys
 import threading
 import warnings
@@ -364,8 +365,12 @@ BEAUTIFUL_SCORE = 7.0
 #
 # It is empirical, so the answer checks itself. A route that comes within
 # CORRIDOR_TOUCH of the allowance at its worst point may be one the boundary
-# bent, and is searched again with the allowance doubled, up to
-# CORRIDOR_WIDENINGS times.
+# bent, and is searched again with the allowance doubled; so is a trip the
+# corridor holds no route for at all. The doubling goes on until the corridor
+# is as big as the longest planned trip's (`corridor_budgets`), and at least
+# CORRIDOR_WIDENINGS times within that. Two doublings and no more answered "no
+# route found" for real detours, such as a 4-mile trip on CA-1 whose road was
+# closed (docs/review-fixes-router.md, "No route nearby").
 #
 # This replaced the A* the fastest arm used (docs/astar-fastest-arm.md). Its
 # landmark tables were 103 MB on New England and would be about 2.5 GB for the
@@ -396,6 +401,12 @@ CORRIDOR_MAX_SHARE = 0.6
 # driver mid-drive who has wandered past the cap is worse than a slow answer.
 MAX_TRIP_KM = 500.0
 REROUTE_MAX_TRIP_KM = 650.0
+# The biggest corridor any search widens to, in km of |a v| + |v b|: the
+# first corridor of a trip at MAX_TRIP_KM. A search for a shorter trip that
+# finds nothing widens up to it, so a failure costs what the longest trip
+# already may, and never more; a trip already at or past it is not widened.
+# docs/review-fixes-router.md, "No route nearby".
+CORRIDOR_MAX_KM = MAX_TRIP_KM * (1.0 + CORRIDOR_SHARE) + CORRIDOR_KM
 
 # Grid cells, in degrees, of the two spatial indexes. Nodes, for corridors and
 # loop discs: 0.1 degree is about 11 by 8 km, so a 20 km trip reads a few dozen
@@ -460,6 +471,11 @@ TURN_BACK_CAP_MIN = 15.0
 # hundred metres from a closed one.
 SNAP_OPEN_SLACK_M = 50.0
 SNAP_OPEN_MAX_M = 20000.0
+# The furthest a reroute may start from the car, when the snap had to leave the
+# road under it (`Router.snap_start`): a route beginning out of sight, on some
+# other road, is one the driver cannot follow. server/app.py refuses it with
+# START_TOO_FAR (docs/review-fixes-router.md).
+START_MAX_M = 500.0
 
 # --- Seasonal closures --------------------------------------------------------
 # The roads OSM marks closed or unmaintained in winter, read from
@@ -946,6 +962,29 @@ def _members_of(sorted_set: np.ndarray, query) -> tuple[np.ndarray, np.ndarray]:
         return np.zeros(len(query), np.int64), np.zeros(len(query), bool)
     at = np.minimum(np.searchsorted(sorted_set, query), len(sorted_set) - 1)
     return at, sorted_set[at] == query
+
+
+def corridor_budgets(trip_km: float):
+    """The corridor budgets a search of a `trip_km` trip tries, in order.
+
+    The allowance starts at CORRIDOR_SHARE of the trip plus CORRIDOR_KM and
+    doubles. It goes on doubling while fewer than CORRIDOR_WIDENINGS widenings
+    have been tried or the corridor is smaller than CORRIDOR_MAX_KM, and no
+    budget is larger than CORRIDOR_MAX_KM, or than the trip's first budget
+    when that is already larger. A 6 km trip tries 29, 52, 98, 190, 374, 742
+    and 770 km; a 300 km trip 470, 640 and 770; a 600 km reroute only 920.
+    """
+    allowance = CORRIDOR_SHARE * trip_km + CORRIDOR_KM
+    ceiling = max(CORRIDOR_MAX_KM, trip_km + allowance)
+    widened = 0
+    while True:
+        budget = min(trip_km + allowance, ceiling)
+        yield budget
+        if budget >= ceiling or (widened >= CORRIDOR_WIDENINGS
+                                 and budget >= CORRIDOR_MAX_KM):
+            return
+        allowance *= 2.0
+        widened += 1
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -1731,10 +1770,10 @@ class Router:
         gate, never beyond it, and never "no route" (docs/closed-roads.md,
         Trap 2). The rest of what roads closed to cars change is `snap`'s.
         """
-        node, off = self._snap(lat, lon)
+        node, off, _ = self._snap(lat, lon)
         entry = self.access_point(lat, lon)
         if entry is not None:
-            node, _ = self._snap(*entry)
+            node, _, _ = self._snap(*entry)
         return self._way_in.get(node, node), off
 
     @staticmethod
@@ -2744,8 +2783,8 @@ class Router:
                 w[_members_of(blocked, slots)[1]] = np.inf
         return w
 
-    def snap(self, lat: float, lon: float,
-             heading: float | None = None) -> tuple[int, float]:
+    def snap(self, lat: float, lon: float, heading: float | None = None,
+             moving: bool = False) -> tuple[int, float]:
         """Routable node for a lat/lon: (node index, meters to the road).
 
         Finds the nearest road *segment* first, then takes one of that segment's
@@ -2794,13 +2833,49 @@ class Router:
             instead;
           - and at a node no route can leave, behind a closed gate, the nearest
             one on the way out that a route can start from.
-        """
-        node, off = self._snap(lat, lon, heading)
-        return self._way_out.get(node, node), off
 
-    def _snap(self, lat: float, lon: float, heading: float | None = None):
+        `moving` says the car is driving (the request carried a heading or a
+        declined U-turn), and changes the rules for a car that has evidently
+        driven past a closure already (docs/review-fixes-router.md, "A moving
+        car on a closed road"):
+          - on a road closed by its tags, or between two barriers, it is on
+            that road (`_road_under`), and starts from the end ahead;
+          - beside a barrier whose own side is cut off behind another closure,
+            it starts from the end ahead, past the barrier.
+        A car at rest keeps every rule above, and so does a moving car short of
+        a barrier whose own side is open, such as Crane Road's gate.
+        """
+        node, off, _ = self.snap_start(lat, lon, heading, moving)
+        return node, off
+
+    def snap_start(self, lat: float, lon: float, heading: float | None = None,
+                   moving: bool = False) -> tuple[int, float, float]:
+        """`snap`, and how far the car is from where its route will begin:
+        (node index, metres to the road, metres to the start).
+
+        The start is where the car joins the route's own roads. On the road
+        the car was snapped to, that is the road itself, whatever the distance
+        to the junction it starts from: the car drives there along it, which
+        is what the app's `awaitingJoin` is for. When the snap had to leave
+        that road, for the nearest one a car can use or for the way out from
+        behind a gate, it is the straight line to the junction the route
+        starts at. A reroute whose start is further than START_MAX_M is
+        refused (server/app.py, START_TOO_FAR).
+        """
+        x, y = _TO_M.transform(lon, lat)
+        node, off, moved = self._snap(lat, lon, heading, moving)
+        out = self._way_out.get(node, node)
+        if not moved and out == node:
+            return out, off, off
+        real = int(self.real_node[out])
+        nx, ny = _TO_M.transform(self.node_lon[real], self.node_lat[real])
+        return out, off, max(off, float(math.hypot(nx - x, ny - y)))
+
+    def _snap(self, lat: float, lon: float, heading: float | None = None,
+              moving: bool = False):
         """`snap` before the way round a closure: the node on the road the
-        point is on, on its own side of any barrier."""
+        point is on, on its own side of any barrier, the metres to that
+        road, and whether it is a road other than the one under the point."""
         x, y = _TO_M.transform(lon, lat)
         point = shapely.Point(x, y)
         aiming = heading if heading is not None and 0.0 <= heading < 360.0 else None
@@ -2808,12 +2883,20 @@ class Router:
             # From true north to the grid the roads are measured on.
             aiming = _grid_heading(lat, lon, aiming)
         e = int(self._edge_tree.nearest(point))
+        on_closed = moved = False
         if self._shut_at(e, point):
-            e = self._nearest_open(point, e)
-        if aiming is not None:
+            under = self._road_under(point, e, aiming) if moving else None
+            if under is None:
+                nearest, e = e, self._nearest_open(point, e)
+                moved = e != nearest
+            else:
+                e, on_closed = under, self._shut_at(under, point)
+        if aiming is not None and not on_closed:
             e = self._aligned_edge(point, e, aiming)
         u, v = int(self.edge_u_idx[e]), int(self.edge_v_idx[e])
-        node = self._barrier_end(e, point, u, v)
+        # A moving car on a closed stretch leaves it by the end ahead, past
+        # whichever barriers lie that way; it has evidently passed the others.
+        node = None if on_closed else self._barrier_end(e, point, u, v)
         if node is None and aiming is None:
             ex, ey = _TO_M.transform(self.node_lon[[u, v]], self.node_lat[[u, v]])
             du = (ex[0] - x) ** 2 + (ey[0] - y) ** 2
@@ -2821,7 +2904,47 @@ class Router:
             node = u if du <= dv else v
         elif node is None:
             node = self._forward_end(self._edge_geom_m[e], point, u, v, aiming)
-        return self._own_side(e, node, u, v), float(self._edge_geom_m[e].distance(point))
+        elif (moving and aiming is not None
+                and self._own_side(e, node, u, v) in self._way_out):
+            # The barrier's own side is cut off behind another closure, so a
+            # car driving there has already passed one: it leaves forward,
+            # rather than from wherever the cut-off node's way out happens to
+            # be (docs/review-fixes-router.md). A car short of a real gate,
+            # whose side is open, keeps it (Crane Road).
+            node = self._forward_end(self._edge_geom_m[e], point, u, v, aiming)
+        return (self._own_side(e, node, u, v),
+                float(self._edge_geom_m[e].distance(point)), moved)
+
+    def _road_under(self, point, nearest: int, heading: float | None):
+        """The road a moving car is driving on, when the nearest edge is
+        closed to cars where it is, or None if it is not evidently on one.
+
+        A car driving at speed along a closed road is on it: a wrongly closed
+        one, since 71,617 rows close roads nationally and some are mistakes.
+        Sending it to the nearest open road instead starts its reroute on a
+        road it is not on, as far as SNAP_MAX_M away
+        (docs/review-fixes-router.md). So the nearest edge is the car's road
+        when it runs with the heading, as `_aligned_edge` judges it, and
+        otherwise the best-aligned edge within SNAP_HEADING_SLACK_M of it,
+        open or closed. With no edge aligned the car is not evidently on
+        any, and `snap` takes the nearest open road as before. With no
+        heading at all (a declined U-turn sent without one), the nearest
+        edge.
+        """
+        if heading is None:
+            return nearest
+        best, best_off = nearest, self._misalignment(nearest, point, heading)
+        if best_off <= SNAP_HEADING_DEG:
+            return nearest
+        reach = self._edge_geom_m[nearest].distance(point) + SNAP_HEADING_SLACK_M
+        for c in self._edge_tree.query(point.buffer(reach)):
+            c = int(c)
+            if c == nearest or self._edge_geom_m[c].distance(point) > reach:
+                continue
+            c_off = self._misalignment(c, point, heading)
+            if c_off < best_off:
+                best, best_off = c, c_off
+        return best if best_off <= SNAP_HEADING_DEG else None
 
     def _shut_at(self, e: int, point) -> bool:
         """Whether no car can be on edge `e` where `point` is: the edge is
@@ -3111,14 +3234,13 @@ class Router:
         trip = self._trip(src_idx, int(targets[0]))
         limit = (np.inf if bound is None or not np.isfinite(bound)
                  else bound * (1.0 + 1e-9) + 1e-6)
-        allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
         path = None
-        for attempt in range(CORRIDOR_WIDENINGS + 1):
-            c = self.corridor(trip, trip.km + allowance)
+        for budget in corridor_budgets(trip.km):
+            c = self.corridor(trip, budget)
             path = self._search(c, src_idx, targets, metric, limit)
-            if path is not None and trip.excess(path) <= CORRIDOR_TOUCH * allowance:
+            if (path is not None
+                    and trip.excess(path) <= CORRIDOR_TOUCH * (budget - trip.km)):
                 return path
-            allowance *= 2.0
         if path is None and np.isfinite(limit):
             # The bounding path ran outside every corridor tried: unbounded,
             # rather than a "no route" the bound alone made.
@@ -3738,6 +3860,79 @@ def _leg_kind(highway: str, junction: str) -> str:
 
 _ORDINALS = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"]
 
+# --- Words for a road ---------------------------------------------------------
+# docs/review-fixes-router.md, "Instruction text". Forty random national trips
+# gave 4,899 steps, of which 5.2% read a tag's raw multi-value ("Continue onto
+# I 295;US 1;ME 26"), 2.9% took an exit with no number and no destination ("Take
+# the exit onto I 64", no direction) and 1.8% named no road at all.
+
+# A route number: a network and a number, as OSM writes `ref` ("I 64", "US 1",
+# "CA 1", "FM 1960", "US 220 ALT"). The cardinal direction is added only to
+# these, so a street named "Main Street" never becomes "Main Street North".
+_ROUTE_NUMBER = re.compile(r"^([A-Z]{1,4}) (\d{1,4})[A-Z]?"
+                           r"( (ALT|Alt|BUS|Bus|Business|TRUCK|Truck|BYP|Byp|Bypass"
+                           r"|SPUR|Spur|CONN|Conn))?$")
+# Networks whose direction is signed by the number's parity, as the Interstate
+# and US systems sign their one- and two-digit routes: even numbers run
+# east-west, odd ones north-south. Three-digit ones run any way (US 220 and
+# Maryland's I 270 are signed north-south), so they take the compass.
+_PARITY_NETWORKS = {"I", "US"}
+# How far along the road joined a direction is read: the carriageway's bearing
+# over its first stretch, not across a cloverleaf's curl.
+DIRECTION_READ_M = 2000.0
+# How far past a nameless road an instruction looks for the named one it leads
+# to ("Turn left toward Elm Street"), in metres of road.
+NAMELESS_LOOKAHEAD_M = 1000.0
+# What a nameless road is called when nothing named lies close beyond it.
+_NAMELESS_NOUN = {"motorway": "the highway", "trunk": "the highway",
+                  "service": "a service road", "track": "a track"}
+
+
+def _split_values(text) -> list:
+    """An OSM multi-value's parts, ";"-separated, stripped, blanks dropped."""
+    return [p.strip() for p in str(text or "").split(";") if p.strip()]
+
+
+def _first_value(text) -> str:
+    """The first of an OSM multi-value, ";"-separated: "I 295;US 1;ME 26" is
+    "I 295", and "Acquoni Road;ᎡᏆᏂ ᎦᏅᏅ" is "Acquoni Road". The first is the one
+    OSM's convention puts first for a reason, and a sign shows one road
+    number big; the rest are what a driver could not say aloud anyway."""
+    parts = _split_values(text)
+    return parts[0] if parts else ""
+
+
+def _signed_direction(label: str, bearing: float) -> str:
+    """The direction a route number is signed in for a carriageway running on
+    `bearing`, or "" when `label` is not a route number.
+
+    By parity for one- and two-digit Interstate and US routes, which is what
+    the shields say even where the road bends ("I 64 West" through a stretch
+    heading south-west). Otherwise the nearest of the four compass points."""
+    m = _ROUTE_NUMBER.match(label or "")
+    if m is None:
+        return ""
+    rad = math.radians(bearing)
+    north, east = math.cos(rad), math.sin(rad)
+    if m.group(1) in _PARITY_NETWORKS and len(m.group(2)) <= 2:
+        if int(m.group(2)) % 2 == 0:
+            return "East" if east >= 0 else "West"
+        return "North" if north >= 0 else "South"
+    if abs(north) >= abs(east):
+        return "North" if north >= 0 else "South"
+    return "East" if east >= 0 else "West"
+
+
+def _bearing_along(coords, metres: float) -> float:
+    """The bearing from the start of `coords` to the point `metres` along it
+    (or its end)."""
+    start, walked = coords[0], 0.0
+    for a, b in zip(coords[:-1], coords[1:]):
+        walked += _dist_m(a, b)
+        if walked >= metres:
+            return _bearing(start, b)
+    return _bearing(start, coords[-1])
+
 
 def _ordinal(n: int) -> str:
     """'2nd', for counting rotary exits. Beyond the table, a rotary with nine
@@ -3799,6 +3994,27 @@ class ManeuverContext:
         if best is None:
             return ""
         return "left" if wanted < best else "right"
+
+
+def _unnamed(legs, i) -> str:
+    """How an instruction onto leg `i` names it when the road has no name:
+    "" for a named road; " toward X" when a named road lies within
+    NAMELESS_LOOKAHEAD_M beyond it; otherwise " onto" what kind of road it
+    is. A bare "Turn left" is true and leaves a driver at a junction of three
+    unnamed lanes with nothing to match against."""
+    if legs[i]["label"]:
+        return ""
+    ahead = 0.0
+    for leg in legs[i:]:
+        if leg["label"]:
+            return f" toward {leg['label']}"
+        ahead += leg["length_m"]
+        if ahead > NAMELESS_LOOKAHEAD_M:
+            break
+    highway = legs[i]["highway"] or ""
+    if legs[i]["kind"] == "ramp":
+        return " onto the ramp"
+    return " onto " + _NAMELESS_NOUN.get(highway, "an unnamed road")
 
 
 class RouteResult:
@@ -3947,7 +4163,10 @@ class RouteResult:
         stream of slight rights — which is exactly what the first test drive
         got.
         """
-        names, refs = self._column("name"), self._column("ref")
+        # Each tag's first value only (`_first_value`); the label is what a
+        # step is called and what decides whether two edges are one road.
+        names = [_first_value(n) for n in self._column("name")]
+        refs = [_first_value(r) for r in self._column("ref")]
         highways, junctions = self._column("highway"), self._column("junction")
         dest_refs, dest_names = self._column("dest_ref"), self._column("dest_name")
         lengths = self.edges["length_m"].to_numpy()
@@ -4009,6 +4228,9 @@ class RouteResult:
                 # that: "Take the 1st exit at MA 122" reads as though the
                 # roundabout were named after the highway crossing it.
                 "name": names[i],
+                # The route number on its own, which is what an exit's sign
+                # shows for the road it joins (`_describe_ramp`).
+                "ref": refs[i],
                 "coords": coords, "length_m": float(lengths[i]),
                 "start": i, "end": i + 1,
                 "dest_ref": dest_refs[i], "dest_name": dest_names[i],
@@ -4092,6 +4314,8 @@ class RouteResult:
             self._steps = []
             return self._steps
         legs = self._legs()
+        for i, leg in enumerate(legs):
+            leg["unnamed"] = _unnamed(legs, i)
         steps = []
 
         for i, leg in enumerate(legs):
@@ -4115,7 +4339,7 @@ class RouteResult:
                 elif (previous["kind"] == "ramp"
                         and leg["highway"] in _GRADE_SEPARATED):
                     step["type"] = "merge"
-                    onto = f" onto {leg['label']}" if leg["label"] else ""
+                    onto = f" onto {leg['label']}" if leg["label"] else leg["unnamed"]
                     step["instruction"] = f"Merge{onto}"
                 elif leg.get("fork") and modifier in ("straight", "slight left",
                                                       "slight right"):
@@ -4164,7 +4388,10 @@ class RouteResult:
                 # read it. Folding on the near side alone swaps one crowded
                 # pair for another a few metres further on.
                 idle = (step["type"] == "continue"
-                        and (crowded or leg["length_m"] < MIN_INSTRUCTION_GAP_M))
+                        and (crowded or leg["length_m"] < MIN_INSTRUCTION_GAP_M
+                             # A bare "Continue" names nothing and asks for
+                             # nothing: the road ahead simply has no name.
+                             or not leg["label"]))
                 # ...but never a fork. That one exists precisely because the
                 # road ahead is not the road to take, so folding it back into
                 # "the same road, already named" is the bug it was written to
@@ -4226,10 +4453,15 @@ class RouteResult:
         geometrically true and useless.
         """
         step["type"] = "exit"
-        number = self._exit_number(leg)
+        # A ramp serving several numbered exits carries them all ("7A;7B"):
+        # "Take exit 7A or 7B", and "7A/7B" for the badge.
+        numbers = list(dict.fromkeys(_split_values(self._exit_number(leg))))
+        number = ("" if not numbers else numbers[0] if len(numbers) == 1
+                  else ", ".join(numbers[:-1]) + " or " + numbers[-1])
         destination = self._destination(leg)
-        joins = next((f["label"] for f in following if f["kind"] != "ramp"), "")
-        step["exit_ref"] = number
+        joined = next((f for f in following if f["kind"] != "ramp"), None)
+        joins = joined["label"] if joined else ""
+        step["exit_ref"] = "/".join(numbers)
         step["destination"] = destination
         step["name"] = leg["label"] or joins
 
@@ -4241,7 +4473,15 @@ class RouteResult:
         elif destination:
             step["instruction"] = f"Take the exit toward {destination}"
         elif joins:
-            step["instruction"] = f"Take the exit onto {joins}"
+            # The road joined as its sign shows it: its route number, when it
+            # has one, and the direction that carriageway is signed in, read
+            # off its own bearing. "Take the exit onto I 64" is half the sign
+            # a driver is looking for, and "onto Will Rogers Expressway" names
+            # a road its shields call I 44.
+            bearing = _bearing_along(joined["coords"], DIRECTION_READ_M)
+            road = joined["ref"] if _signed_direction(joined["ref"], bearing) else joins
+            way = _signed_direction(road, bearing)
+            step["instruction"] = f"Take the exit onto {road}" + (f" {way}" if way else "")
         else:
             step["instruction"] = f"Take the exit on the {side}" if side else "Take the exit"
 
@@ -4263,7 +4503,7 @@ class RouteResult:
         elif label:
             step["instruction"] = f"Keep {side} onto {label}"
         else:
-            step["instruction"] = f"Keep {side}"
+            step["instruction"] = f"Keep {side}{leg['unnamed']}"
 
     def _describe_start(self, step, leg, pts):
         """The first step: a compass departure, or a maneuver when we know
@@ -4308,7 +4548,7 @@ class RouteResult:
         step["modifier"] = modifier
         phrase = _MODIFIER_PHRASE[modifier]
         if not leg["label"]:
-            step["instruction"] = phrase
+            step["instruction"] = phrase + leg.get("unnamed", "")
         elif modifier == "uturn":
             # You turn around *on* a road, not onto one: a U-turn leaves you on
             # the same carriageway you were already driving.
@@ -4325,7 +4565,7 @@ class RouteResult:
         else:
             step["type"] = "turn"
             if not leg["label"]:
-                step["instruction"] = phrase           # no useful name to offer
+                step["instruction"] = phrase + leg.get("unnamed", "")
             elif leg["label"] == previous["label"]:
                 step["instruction"] = f"{phrase} to stay on {leg['label']}"
             else:

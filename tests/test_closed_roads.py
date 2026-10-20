@@ -613,6 +613,158 @@ class TestTheSnapStaysOnItsSide:
         assert r.route(s, r.snap(*BOSTON)[0], 0.0) is not None
 
 
+class TestAMovingCarOnAClosedRoad:
+    """A car driving along a road closed to cars is on it, whatever the tags
+    say: it snaps there, to the end ahead, and its route leaves the road
+    forward (docs/review-fixes-router.md, "A moving car on a closed road").
+    A car at rest still starts on the nearest open road, and a barrier inside
+    an edge still keeps every car on its own side (TestTheCraneRoadReroute)."""
+
+    def _blunt(self, r, table):
+        e = int(table.loc[table["osm_id"] == BLUNT_PARK_WAY, "edge"].iat[0])
+        line = r._edge_geom_m[e]
+        along = 0.5 * line.length
+        return e, line, along, int(r.edge_u_idx[e]), int(r.edge_v_idx[e])
+
+    def _end(self, r, node):
+        return int(r.real_node[node])
+
+    @pytest.mark.parametrize("toward", ["v", "u"])
+    def test_it_starts_at_the_end_ahead_on_its_own_road(self, closed_router, table,
+                                                       toward):
+        r = closed_router
+        e, line, along, u, v = self._blunt(r, table)
+        heading = _toward_v(line, along)
+        if toward == "u":
+            heading = (heading + 180.0) % 360.0
+        lat, lon = _ll(line.interpolate(along))
+        parked, _ = r.snap(lat, lon)
+        assert self._end(r, parked) not in (u, v), "the control: at rest it leaves the road"
+        s, off, gap = r.snap_start(lat, lon, heading=heading, moving=True)
+        assert self._end(r, s) == (v if toward == "v" else u)
+        # On its own road: the start is the road itself, however far the end.
+        assert gap == off < 1.0
+
+    def test_a_declined_u_turn_without_a_heading_still_counts_as_moving(
+            self, closed_router, table):
+        r = closed_router
+        e, line, along, u, v = self._blunt(r, table)
+        s, _ = r.snap(*_ll(line.interpolate(along)), moving=True)
+        assert self._end(r, s) in (u, v)
+
+    def test_between_two_barriers_it_leaves_by_the_end_ahead(self, closed_router, table):
+        """At rest, the side beyond the nearer barrier (the Turner Road test
+        above); moving, the end it is driving to, past the barrier ahead."""
+        r = closed_router
+        rows = table[table["osm_id"].isin(TURNER_BARRIERS)]
+        e = int(rows["edge"].iat[0])
+        line, (first, last) = r._edge_geom_m[e], sorted(rows["at_m"])
+        u, v = int(r.edge_u_idx[e]), int(r.edge_v_idx[e])
+        near_first = first + 4.0
+        assert r.snap(*_ll(line.interpolate(near_first)))[0] == u
+        ahead = _toward_v(line, near_first)
+        s, _ = r.snap(*_ll(line.interpolate(near_first)), heading=ahead, moving=True)
+        assert self._end(r, s) == v
+        near_last = last - 4.0
+        back = (_toward_v(line, near_last) + 180.0) % 360.0
+        s, _ = r.snap(*_ll(line.interpolate(near_last)), heading=back, moving=True)
+        assert self._end(r, s) == u
+
+    def _cut_off_side(self, r):
+        """Edges with one barrier inside, one end cut off behind closures and
+        the other open: a car on the cut-off side got there past a barrier."""
+        found = []
+        for e, at in r.closed_to_cars.at.items():
+            if len(at) != 1 or r._snap_closed[e]:
+                continue
+            u, v = int(r.edge_u_idx[e]), int(r.edge_v_idx[e])
+            cut_u, cut_v = (r._own_side(e, u, u, v) in r._way_out,
+                            r._own_side(e, v, u, v) in r._way_out)
+            if cut_u != cut_v:
+                found.append((e, float(at[0]), u, v, cut_u))
+        return found
+
+    def test_past_a_barrier_whose_side_is_cut_off_it_leaves_forward(
+            self, closed_router):
+        """A car on the cut-off side of a barrier got there past a closure:
+        it leaves forward, not from wherever the cut-off node's way out is."""
+        r = closed_router
+        cases = self._cut_off_side(r)
+        if not cases:
+            pytest.skip("no barrier in this build has one side cut off")
+        checked = elsewhere = 0
+        for e, gate, u, v, cut_u in cases[:40]:
+            line = r._edge_geom_m[e]
+            # 10 m into the cut-off side, driving toward the barrier and on.
+            along = gate - 10.0 if cut_u else gate + 10.0
+            if not 0.0 < along < line.length or abs(along - gate) > 0.5 * line.length:
+                continue
+            heading = _toward_v(line, along)
+            if not cut_u:
+                heading = (heading + 180.0) % 360.0
+            lat, lon = _ll(line.interpolate(along))
+            if r._edge_tree.nearest(line.interpolate(along)) != e:
+                continue
+            ahead = v if cut_u else u
+            behind, _, gap_behind = r.snap_start(lat, lon, heading=heading)
+            s, off, gap = r.snap_start(lat, lon, heading=heading, moving=True)
+            assert int(r.real_node[s]) == ahead, (e, gate)
+            assert gap == off
+            checked += 1
+            # The control: without `moving`, the cut-off side's way out, which
+            # behind a gate at a dead end is the gate's near side anyway, and
+            # elsewhere is somewhere else entirely.
+            elsewhere += int(r.real_node[behind]) != ahead
+        assert checked >= 3, f"only {checked} usable cases"
+        assert elsewhere >= 1, "no case where the old rule sent the car elsewhere"
+
+    def test_a_heading_across_the_closed_road_is_not_evidence_of_being_on_it(
+            self, closed_router, table):
+        """Driving at right angles to the nearest closed road, the car is on
+        something else; with nothing aligned near, the old rule stands."""
+        r = closed_router
+        e, line, along, u, v = self._blunt(r, table)
+        lat, lon = _ll(line.interpolate(along))
+        across = (_toward_v(line, along) + 90.0) % 360.0
+        assert r._road_under(line.interpolate(along), e,
+                             r_grid(lat, lon, across)) is None
+        assert r.snap(lat, lon, heading=across, moving=True)[0] == \
+            r.snap(lat, lon, heading=across)[0]
+
+    def test_at_rest_the_start_is_the_open_road_it_was_sent_to(self, closed_router, table):
+        """`snap_start` measures to the junction the route begins at when the
+        snap left the road under the point: what START_TOO_FAR refuses."""
+        r = closed_router
+        e, line, along, u, v = self._blunt(r, table)
+        lat, lon = _ll(line.interpolate(along))
+        s, off, gap = r.snap_start(lat, lon)
+        real = int(r.real_node[s])
+        point = line.interpolate(along)
+        to_start = math.hypot(r._nx[real] - point.x, r._ny[real] - point.y)
+        assert gap == pytest.approx(max(off, to_start), abs=0.5)
+        assert gap > off
+
+    def test_the_reroute_through_the_api_begins_at_the_end_ahead(
+            self, server, table, monkeypatch):
+        server_app = server
+        from datetime import date
+        monkeypatch.setattr(server_app, "_today", lambda: date(2027, 7, 15))
+        r = server_app.ROUTER
+        e, line, along, u, v = self._blunt(r, table)
+        lat, lon = _ll(line.interpolate(along))
+        form = {"from": f"{lat:.7f},{lon:.7f}", "to": "42.3601,-71.0589",
+                "heading": f"{_toward_v(line, along):.1f}", "pref": "0"}
+        resp = server_app.app.test_client().post("/api/route", data=form)
+        assert resp.status_code == 200, resp.get_json()
+        first = resp.get_json()["fastest"]["geometry"]["coordinates"][0]
+        assert first == pytest.approx([r.node_lon[v], r.node_lat[v]], abs=1e-6)
+
+
+def r_grid(lat, lon, heading):
+    from router import _grid_heading
+    return _grid_heading(lat, lon, heading)
+
+
 # Two roads closed as too rough for a car (docs/safety-quick-fixes.md):
 # Beartown State Forest Road in Monterey, MA, `smoothness=horrible` over two
 # edges, and McMurphy Road in New Hampshire, the extract's one `4wd_only=yes`.

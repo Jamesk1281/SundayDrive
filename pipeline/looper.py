@@ -104,6 +104,7 @@ search — which is why these loops reach far out and come back rather than
 rambling in a circle.
 """
 
+import math
 from dataclasses import dataclass, field as _dc_field
 from datetime import date
 
@@ -190,6 +191,17 @@ MIN_LEG_KM = 0.5
 # Boston and Needham 6, Gloucester 7).
 MIN_TARGET_KM, MAX_TARGET_KM = 5.0, 400.0
 
+# The top of the slider for one start: the longest loop whose disc holds at
+# most LOOP_DISC_MAX_NODES routing nodes (`LoopPlanner.max_km`), so a first
+# loop costs about the same from Philadelphia as from Nevada. Decided by the
+# owner on 2026-10-20 in place of one distance everywhere: 400 km where roads
+# are sparse, less in dense metros. The threshold is a measurement, the node
+# count at which a first loop's p90 reaches about 8.5 s of Mac CPU, which is
+# about 12 s on the box (docs/review-fixes-router.md, "Loops capped by
+# density"). New England's whole graph is under it, so every New England start
+# keeps 400 km.
+LOOP_DISC_MAX_NODES = 1_800_000
+
 # The two field passes run only over a disc around the start, not all of New
 # England (docs/loop-speed.md). A candidate's way out and way home are each at
 # most `target x (1 + CANDIDATE_TOLERANCE)` km of road, and a road is never
@@ -230,7 +242,7 @@ DISC_WIDENINGS = 2
 # `from looper import BEAUTIFUL_SCORE` keeps working for server/app.py.
 from router import BEAUTIFUL_SCORE  # noqa: E402,F401
 from router import (CORRIDOR_KM, CORRIDOR_SHARE, CORRIDOR_TOUCH,  # noqa: E402
-                    CORRIDOR_WIDENINGS, SLOT_PRIVATE)
+                    SLOT_PRIVATE, corridor_budgets)
 from compact import _ranges  # noqa: E402
 
 
@@ -712,10 +724,9 @@ class LoopPlanner:
         r = self.router
         ends = self._arrival_indices(dst)
         trip = r._trip(src, int(ends[0]))
-        allowance = CORRIDOR_SHARE * trip.km + CORRIDOR_KM
         paths = None
-        for attempt in range(CORRIDOR_WIDENINGS + 1):
-            c = r.corridor(trip, trip.km + allowance)
+        for budget in corridor_budgets(trip.km):
+            c = r.corridor(trip, budget)
             local_src = int(c.local(src)[0])
             dist, pred = dijkstra(c.matrix(c.price(metric)),
                                   directed=True, indices=local_src,
@@ -728,14 +739,71 @@ class LoopPlanner:
                 path = _tree_path(pred, local_src, int(end))
                 if path is not None:
                     paths.append([int(v) for v in c.nodes[path]])
-            if paths and trip.excess(paths[0]) <= CORRIDOR_TOUCH * allowance:
+            if paths and trip.excess(paths[0]) <= CORRIDOR_TOUCH * (budget - trip.km):
                 return paths
-            allowance *= 2.0
         return paths or None
+
+    def max_km(self, start: int) -> float:
+        """The longest loop this start offers: the largest target, in
+        [MIN_TARGET_KM, MAX_TARGET_KM], whose disc (`_fields`' first, for that
+        target) holds at most LOOP_DISC_MAX_NODES routing nodes.
+
+        The count grows with the target, so the largest one under it is
+        where the running total of `_grid_disc` first passes it.
+        """
+        dist, total = self._grid_disc(start)
+        over = np.flatnonzero(total > LOOP_DISC_MAX_NODES)
+        if not len(over):
+            return MAX_TARGET_KM
+        km = float(dist[over[0]]) / ((1.0 + CANDIDATE_TOLERANCE) * (1.0 + DISC_SLACK))
+        return float(np.clip(math.floor(km * 10.0) / 10.0, MIN_TARGET_KM, MAX_TARGET_KM))
+
+    def disc_nodes(self, start: int, target_km: float) -> int:
+        """About how many routing nodes the first disc of a `target_km` loop
+        from `start` holds, as `max_km` counts them."""
+        dist, total = self._grid_disc(start)
+        radius = target_km * (1.0 + CANDIDATE_TOLERANCE) * (1.0 + DISC_SLACK)
+        k = int(np.searchsorted(dist, radius, side="right"))
+        return int(total[k - 1]) if k else 0
+
+    def _grid_disc(self, start: int):
+        """(distance, running node count) over the node grid's cells around
+        `start` out to the longest loop's disc, nearest cell first.
+
+        A cell at its centre's distance, so it costs a few thousand distances
+        and no node: the answer feeds a threshold, and a cell is 11 km across
+        against a disc hundreds of km wide.
+        """
+        r = self.router
+        g = r.node_grid
+        origin = int(r.real_node[int(start)])
+        lat0, lon0 = float(r.node_lat[origin]), float(r.node_lon[origin])
+        radius = (MAX_TARGET_KM * (1.0 + CANDIDATE_TOLERANCE) * (1.0 + DISC_SLACK)
+                  + g.cell * 111.32)
+        dlat = math.degrees(radius / EARTH_KM)
+        dlon = min(180.0, dlat / max(math.cos(math.radians(min(abs(lat0) + dlat, 89.0))),
+                                     1e-6))
+        x0 = max(0, int(math.floor((lon0 - dlon - g.lon0) / g.cell)))
+        x1 = min(g.ncols - 1, int(math.floor((lon0 + dlon - g.lon0) / g.cell)))
+        y0 = max(0, int(math.floor((lat0 - dlat - g.lat0) / g.cell)))
+        y1 = min(g.nrows - 1, int(math.floor((lat0 + dlat - g.lat0) / g.cell)))
+        if x1 < x0 or y1 < y0:
+            return np.zeros(0), np.zeros(0, np.int64)
+        cx, cy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+        cells = (cy * g.ncols + cx).ravel()
+        count = (g.start[cells + 1] - g.start[cells]).astype(np.int64)
+        la = np.radians(g.lat0 + (cy.ravel() + 0.5) * g.cell)
+        lo = np.radians(g.lon0 + (cx.ravel() + 0.5) * g.cell)
+        la1, lo1 = math.radians(lat0), math.radians(lon0)
+        h = (np.sin((la - la1) / 2.0) ** 2
+             + math.cos(la1) * np.cos(la) * np.sin((lo - lo1) / 2.0) ** 2)
+        dist = 2.0 * EARTH_KM * np.arcsin(np.sqrt(np.minimum(h, 1.0)))
+        order = np.argsort(dist, kind="stable")
+        return dist[order], np.cumsum(count[order])
 
     def nearest_length(self, start: int, target_km: float, pref: float = 1.0,
                        weights: dict = None, avoid_unpaved: float = 1.0,
-                       on: date | None = None):
+                       on: date | None = None, max_km: float = MAX_TARGET_KM):
         """The closest loop length that has any candidate at all, or None.
 
         For the message shown when `plan` returns None. Needs passes over
@@ -746,12 +814,15 @@ class LoopPlanner:
         cached passes already cover it, two searches when they do not
         (docs/loop-speed.md).
         """
-        fields = self._fields(start, pref, weights, avoid_unpaved, on)
+        # Up to this start's own limit (`max_km`), so the hint never names a
+        # loop the server would refuse, and never costs the passes of one.
+        fields = self._fields(start, pref, weights, avoid_unpaved, on,
+                              target_km=None if max_km >= MAX_TARGET_KM else max_km)
         ok = fields.lreachable & (fields.out.lkm >= MIN_LEG_KM)
         if fields.out.lexact is not None:
             ok &= fields.out.lexact & fields.back.lexact
         km = fields.lloop_km[ok]
-        km = km[(km >= MIN_TARGET_KM) & (km <= MAX_TARGET_KM)]
+        km = km[(km >= MIN_TARGET_KM) & (km <= min(max_km, MAX_TARGET_KM))]
         if not len(km):
             return None
         return float(km[np.argmin(np.abs(km - target_km))])

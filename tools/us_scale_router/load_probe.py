@@ -43,19 +43,23 @@ def sample(pid):
     return rss, fp
 
 
-def post(port, path, params, timeout=120):
+def post(port, path, params, timeout=120, body=False):
     data = urllib.parse.urlencode(params).encode()
     req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=data)
     t = time.perf_counter()
+    payload = None
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            r.read()
+            raw = r.read()
             status = r.status
+            if body:
+                payload = json.loads(raw)
     except urllib.error.HTTPError as e:
         status = e.code
     except Exception:
         status = -1
-    return status, time.perf_counter() - t
+    dt = time.perf_counter() - t
+    return (status, dt, payload) if body else (status, dt)
 
 
 def workload(lat, lon, rng):
@@ -107,6 +111,15 @@ def run(pack, port, seconds, seed):
             rng = np.random.default_rng(seed * 100 + k)
             while not done.is_set():
                 kind, path, params = workload(lat, lon, rng)
+                if kind == "loop":
+                    # As the app does: the start's own limit first, and no
+                    # loop past it (docs/review-fixes-router.md). A server
+                    # without the endpoint answers 404 and the length stands.
+                    status, dt, body = post(port, "/api/loop/limit",
+                                            {"from": params["from"]}, body=True)
+                    rows.append(("limit", status, dt))
+                    if status == 200 and float(params["km"]) > body["max_km"]:
+                        params["km"] = f"{body['max_km']:g}"
                 status, dt = post(port, path, params)
                 rows.append((kind, status, dt))
 
@@ -134,7 +147,7 @@ def run(pack, port, seconds, seed):
                                                          or [np.nan])),
                                 "p90_s": float(np.percentile([r[2] for r in rows if r[0] == k]
                                                              or [np.nan], 90))}
-                            for k in ("route", "options", "reroute", "loop")},
+                            for k in ("route", "options", "reroute", "loop", "limit")},
                 "statuses": {str(s): sum(1 for r in rows if r[1] == s)
                              for s in sorted({r[1] for r in rows})}}
     finally:
