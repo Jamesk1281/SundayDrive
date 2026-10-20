@@ -598,8 +598,35 @@ extension RouteStep {
 }
 
 extension String {
+    /// An instruction with raw OSM multi-values made readable, for the banner
+    /// and the voice alike. The router words them itself ("Take exit 7A or
+    /// 7B", "I-295 / US-1": docs/review-fixes-router.md), so this only
+    /// matters for a server that does not, and changes nothing that does.
+    ///
+    /// - "exit 7A;7B" and "exit 7A/7B" become "exit 7A or 7B" (and "7A, 7B
+    ///   or 7C"), the router's own wording, since a ramp that serves several
+    ///   exits is any of them.
+    /// - Any other ";" is the slash a sign uses: "I 295;US 1" becomes
+    ///   "I 295 / US 1", which the voice reads as "and".
+    ///
+    /// docs/review-fixes-app.md, "Exit numbers and multi-values".
+    var multiValuesTidied: String {
+        var out = replacing(#/\b([Ee]xits?) (\d+[A-Z]?(?:\s*[;/]\s*\d+[A-Z]?)+)\b/#) { match in
+            let numbers = match.2.split(whereSeparator: { $0 == ";" || $0 == "/" })
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+            let list = numbers.count == 2
+                ? "\(numbers[0]) or \(numbers[1])"
+                : numbers.dropLast().joined(separator: ", ") + " or " + numbers.last!
+            return "\(match.1.hasPrefix("E") ? "Exit" : "exit") \(list)"
+        }
+        out = out.replacing(#/\s*;\s*/#, with: " / ")
+        return out
+    }
+}
+
+extension String {
     var spokenAloud: String {
-        var out = self
+        var out = multiValuesTidied
         // A slash is *dropped*, not read: "Soldiers Field Road West / Newton"
         // measured shorter than either replacement, so two destinations run
         // together into one name. "and" is both audible and the right word.

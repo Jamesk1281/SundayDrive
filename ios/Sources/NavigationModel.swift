@@ -1377,7 +1377,7 @@ final class NavigationModel {
 
     /// The instruction shown in the banner right now.
     var currentInstruction: String {
-        currentStep < steps.count ? steps[currentStep].instruction : ""
+        currentStep < steps.count ? steps[currentStep].instruction.multiValuesTidied : ""
     }
 
     /// The icon for that instruction. A maneuver is read at a glance long

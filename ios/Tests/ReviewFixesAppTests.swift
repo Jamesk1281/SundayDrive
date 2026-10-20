@@ -42,7 +42,8 @@ final class ReviewFixesAppTests: XCTestCase {
 
     func test_every_contract_code_decodes_with_its_numbers() {
         for code in ["TRIP_TOO_LONG", "LEG_TOO_LONG", "LOOP_TOO_LONG", "NO_ROUTE_NEARBY",
-                     "START_TOO_FAR", "OUTSIDE_COVERAGE", "BAD_INPUT"] {
+                     "START_TOO_FAR", "OUTSIDE_COVERAGE", "BAD_INPUT", "CLOSED_FOR_SEASON",
+                     "SAME_ROAD", "NO_LOOP", "NOT_FOUND", "SERVER_ERROR"] {
             let error = RouteService.failure(
                 status: 400, body: body(["error": "A sentence.", "code": code,
                                          "max_km": 120.5, "km": 300, "extra": [1, 2]]))
@@ -152,6 +153,77 @@ final class ReviewFixesAppTests: XCTestCase {
                                                     hasPath: true),
                            .lost(.serverUnreachable), "\(status)")
         }
+    }
+
+    // MARK: - The router's other codes
+
+    private func refusal(_ code: String, status: Int = 404,
+                         error: String = "A sentence from the server.") -> RouteService.ServiceError {
+        RouteService.failure(status: status, body: body(["error": error, "code": code]))
+    }
+
+    func test_busy_is_the_busy_path_at_any_status() {
+        for status in [503, 429, 400] {
+            guard case .busy(let words) = refusal("BUSY", status: status,
+                                                  error: "Busy planning other drives. Try again in a moment.")
+            else { return XCTFail("BUSY at \(status) was not .busy") }
+            XCTAssertEqual(words, "Busy planning other drives. Try again in a moment.")
+        }
+    }
+
+    func test_closed_for_season_has_the_seasonal_wording_whatever_the_server_says() {
+        let error = refusal("CLOSED_FOR_SEASON", error: "Some other wording.")
+        XCTAssertEqual(error.errorDescription, "The only way there is closed for the season.")
+        guard case .server(let refusal) = error else { return XCTFail("\(error)") }
+        XCTAssertEqual(refusal.kind, .closedForSeason)
+        // Mid-drive it is the server's no, under the trip card.
+        XCTAssertEqual(NavigationModel.classify(error, hasPath: true),
+                       .server("The only way there is closed for the season."))
+    }
+
+    func test_the_other_router_codes_show_the_servers_sentence() {
+        for (code, status) in [("SAME_ROAD", 400), ("NO_LOOP", 404), ("NOT_FOUND", 405),
+                               ("SERVER_ERROR", 500), ("SOMETHING_NEW", 400)] {
+            let error = refusal(code, status: status, error: "The server's own sentence.")
+            guard case .server(let refusal) = error else { return XCTFail(code) }
+            XCTAssertEqual(refusal.rawCode, code)
+            XCTAssertEqual(error.errorDescription, "The server's own sentence.", code)
+            // An answer, so never "No connection" mid-drive.
+            XCTAssertEqual(NavigationModel.classify(error, hasPath: true),
+                           .server("The server's own sentence."), code)
+        }
+        // NO_LOOP's nearest_km may be null, which must not stop it decoding.
+        let noLoop = RouteService.failure(status: 404, body: body([
+            "error": "There's no loop of that length from there.", "code": "NO_LOOP",
+            "nearest_km": NSNull()]))
+        guard case .server(let refusal) = noLoop else { return XCTFail("\(noLoop)") }
+        XCTAssertEqual(refusal.kind, .noLoop)
+    }
+
+    // MARK: - Exit numbers and multi-values
+
+    func test_a_ramp_serving_two_exits_reads_as_either() {
+        // The router's own wording is left as it is.
+        XCTAssertEqual("Take exit 7A or 7B toward Boston".multiValuesTidied,
+                       "Take exit 7A or 7B toward Boston")
+        XCTAssertEqual("Take exit 7A or 7B toward Boston".spokenAloud,
+                       "Take exit 7A or 7B toward Boston")
+        // A server that sends the raw values gets the same words.
+        XCTAssertEqual("Take exit 7A;7B toward Boston".multiValuesTidied,
+                       "Take exit 7A or 7B toward Boston")
+        XCTAssertEqual("Take exit 7A/7B".multiValuesTidied, "Take exit 7A or 7B")
+        XCTAssertEqual("Take exit 12;13;14".multiValuesTidied, "Take exit 12, 13 or 14")
+        XCTAssertEqual("Exit 7A/7B".multiValuesTidied, "Exit 7A or 7B")
+    }
+
+    func test_raw_multi_value_refs_are_shown_and_spoken_as_a_sign_shows_them() {
+        XCTAssertEqual("Continue onto I 295;US 1;ME 26".multiValuesTidied,
+                       "Continue onto I 295 / US 1 / ME 26")
+        XCTAssertEqual("Continue onto I 295;US 1;ME 26".spokenAloud,
+                       "Continue onto Interstate 295 and Route 1 and Route 26")
+        // A slash that is not an exit's is left alone.
+        XCTAssertEqual("Take the exit toward Soldiers Field Road West / Newton".multiValuesTidied,
+                       "Take the exit toward Soldiers Field Road West / Newton")
     }
 
     // MARK: - 2. Spoken road names

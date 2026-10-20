@@ -366,11 +366,13 @@ enum RouteService {
         // limiter or a tunnel answers in HTML, not our JSON shape, and that
         // is the case the status code alone used to leak into the sheet.
         guard let refusal = Refusal(body: body) else { return .unreachable(status) }
-        // A 503 with our JSON is the backend refusing a loop build because
-        // it is already running one — checked before `.server`, which means
-        // something else entirely to both callers. A 503 without it is a
-        // tunnel or a proxy, and stays `.unreachable`.
-        return status == 503 ? .busy(refusal.sentence) : .server(refusal)
+        // A 503 with our JSON, or the code BUSY at any status, is the backend
+        // refusing a loop build because it is already running one — checked
+        // before `.server`, which means something else entirely to both
+        // callers. A 503 without it is a tunnel or a proxy, and stays
+        // `.unreachable`.
+        return status == 503 || refusal.kind == .busy ? .busy(refusal.sentence)
+                                                      : .server(refusal)
     }
 
     // MARK: - The trip cap
@@ -410,7 +412,10 @@ enum RouteService {
 /// (HTTP 400). Older servers send `error` alone, in lower case and with no
 /// full stop, and are still read. docs/review-fixes-app.md, item 1.
 struct Refusal: Equatable, ExpressibleByStringLiteral {
-    /// The codes the server sends beside its sentence.
+    /// The codes the server sends beside its sentence: the seven the units
+    /// agreed, then the six the router gave the refusals that existed before
+    /// codes (docs/review-fixes-router.md, "Error bodies"). A code not listed
+    /// here still shows the server's sentence.
     enum Code: String {
         case tripTooLong = "TRIP_TOO_LONG"
         case legTooLong = "LEG_TOO_LONG"
@@ -419,7 +424,18 @@ struct Refusal: Equatable, ExpressibleByStringLiteral {
         case startTooFar = "START_TOO_FAR"
         case outsideCoverage = "OUTSIDE_COVERAGE"
         case badInput = "BAD_INPUT"
+        case closedForSeason = "CLOSED_FOR_SEASON"
+        case sameRoad = "SAME_ROAD"
+        case noLoop = "NO_LOOP"
+        case busy = "BUSY"
+        case notFound = "NOT_FOUND"
+        case serverError = "SERVER_ERROR"
     }
+
+    /// The app's words for a road closed for the season, whatever an older
+    /// or a newer server words it: the place is real, and the road to it
+    /// opens again, so it must never read as a wrong pin or a broken app.
+    static let closedForSeason = "The only way there is closed for the season."
 
     let message: String
     /// The code as sent. Kept as a string so a code this build does not know
@@ -451,10 +467,14 @@ struct Refusal: Equatable, ExpressibleByStringLiteral {
     /// say them in miles, and the server's sentence otherwise, made one if
     /// an older server sent a lower-case fragment.
     var sentence: String {
-        if kind == .tripTooLong, let km, let maxKm {
-            return RouteService.tripTooLong(km: km, maxKm: maxKm)
+        switch kind {
+        case .tripTooLong? where km != nil && maxKm != nil:
+            return RouteService.tripTooLong(km: km!, maxKm: maxKm!)
+        case .closedForSeason?:
+            return Self.closedForSeason
+        default:
+            return Self.asSentence(message)
         }
-        return Self.asSentence(message)
     }
 
     /// "no route found between those points" -> "No route found between
