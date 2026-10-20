@@ -22,7 +22,8 @@ document by item number.
 
 **Left:**
 
-- a full-suite run against unit R's branch once it is committed (§7);
+- R's call on `START_TOO_FAR` on an open approach to a closed edge (§1, "The
+  I-10 lead-in");
 - the owner's sign-off on the new copy (§6);
 - the replay red that `usa` already had (§7), which belongs to another
   unit.
@@ -67,6 +68,95 @@ moment. (HTTP 400)".
 
   The banner for both is "Off route", as for any refusal.
 - The trace records a refusal's code with its message (`CODE: message`).
+
+### The router's six extra codes
+
+Unit R's branch (4db54fc) gives a code to the refusals that existed before
+codes (`docs/review-fixes-router.md`, "Error bodies"). The app reads them all
+(`Refusal.Code`):
+
+| code | what the app does |
+| --- | --- |
+| `BUSY` | `.busy` at any status, the existing "Busy planning other drives" path: never the server's "no", so the loop page does not ask again at once and a drive does not climb the backoff |
+| `CLOSED_FOR_SEASON` | the app's own sentence, "The only way there is closed for the season.", whatever the server's words |
+| `SAME_ROAD`, `NO_LOOP`, `NOT_FOUND`, `SERVER_ERROR` | the server's sentence |
+| any other code, or none | the server's sentence (a fragment from an older server is made one) |
+
+Every one of them is an answer, so mid-drive none is "No connection". That
+includes a 500 `SERVER_ERROR`: its sentence goes under the trip card, and the
+reroute backs off as for any refusal. `NO_LOOP`'s `nearest_km` may be `null`,
+and the body still decodes.
+
+### Exit numbers and multi-values
+
+The router now words a ramp that serves several exits "Take exit 7A or 7B",
+with `exit_ref` "7A/7B" for a badge. The app draws no exit badge (`exit_ref`
+is decoded, not shown), so the instruction is what a driver sees and hears,
+and the router's wording is left exactly as sent.
+
+For a server that still sends raw OSM values, `String.multiValuesTidied`
+applies to both the banner (`NavigationModel.currentInstruction`) and the
+voice (`spokenAloud`):
+
+- "exit 7A;7B" and "exit 7A/7B" become "exit 7A or 7B";
+- three numbers become "exit 12, 13 or 14";
+- any other ";" becomes the sign's " / ". "Continue onto I 295;US 1;ME 26"
+  shows as "I 295 / US 1 / ME 26" and is spoken "Interstate 295 and Route 1
+  and Route 26";
+- a slash that is not an exit's ("Soldiers Field Road West / Newton") is left
+  alone.
+
+### The I-10 lead-in
+
+The review's blocker was this banner: "Off route · route 9.5 mi away / Head
+back to your route", under the U-turn arrow, on I-10 westbound through edge
+1470492. Unit R found the cause, and it was not a jump to another road. The
+reroute's line began at the junction at the far end of the 16.3 km edge, so
+the car was driving the new route's own road while the app called it off the
+line.
+
+- R's fix is a lead-in (d36a564): a reroute with a heading begins where the
+  car is.
+- **The app needed no change to take that line.** `awaitingJoin` settles on
+  the first fix, which is 0 m from it.
+
+**The test.** `LeadInRerouteTests` drives it against a live server:
+
+- It plans a route to Blythe, CA from 1.1 km east of the edge on
+  `data/pack-us`, where the ford still closes the edge.
+- It then feeds `NavigationModel` fixes at 35 m/s, one a second, west down
+  I-10 through the edge, with real reroutes on the test's clock.
+- It asserts that every line adopted starts within 50 m of the car, and that
+  once one is adopted the car is never called off it.
+- It skips without `SUNDAYDRIVE_API`, and never uses the deployed server.
+- `TEST_RUNNER_SUNDAYDRIVE_LEADIN_TRACE=1` prints every fix.
+
+| server | lines adopted | where they began | called off the line after adopting |
+| --- | --- | --- | --- |
+| `usa` (no lead-in) | fix 11 | 16,987 m from the car | 438 fixes, "Off route · route 9.5 mi away / Head back to your route" |
+| R, d36a564 | fix 38 | 0 m from the car | 0 |
+
+The test reproduces the review's banner on `usa`, and it is gone with R's
+lead-in.
+
+**What is left: refusals on the approach (server).** Before the first
+adoption the car is still called off the line, on the open 1.1 km of I-10 that
+leads only into the closed edge. There R answers every reroute with
+`START_TOO_FAR` (`m` 17,171 and 16,542 at two fixes): the only start it can
+find is past the ford. The planned route left I-10 at the exit there, so "Off
+route" is true, but on a freeway it is not useful.
+
+- This is R's to decide. D's ford rule removes the case on I-10 itself
+  (`pack-us-next`).
+- It will recur before any other closed edge on a one-way road.
+
+**The app's half (`RerouteFailure.refusedHere`).** Mid-drive,
+`START_TOO_FAR` is said under the trip card like any refusal, but it no
+longer climbs the reroute backoff. It depends only on where the car is, so
+the next ask, at the base 8 s cooldown, is the one that can succeed. With
+the backoff, two refusals at 16 s and 32 s kept that banner up for 50 fixes.
+Without it, the window is 27 fixes, all of them on the approach. A unit test
+in `MidDriveRecoveryTests` pins the gaps at 10 s or less.
 
 ## 2. Spoken road names
 
@@ -174,8 +264,12 @@ defaulting was checked on the simulator (§7).
 | Any older server fragment | shown as sent, e.g. "no route found between those points" | first letter capitalised, full stop added: "No route found between those points." |
 | Mid-drive, a refusal | "No connection. Head back to your route." (spoken) | the server's sentence under the trip card, banner "Off route" |
 | Mid-drive, an unreadable 4xx | "No connection. Head back to your route." | "Couldn’t plan a new route from here. Keep to your route or head for a bigger road." |
+| Mid-drive, `START_TOO_FAR` | "No connection. Head back to your route." (the body did not decode) | the server's sentence under the trip card, asked again at the base cooldown |
 | Directions and Loop, location off | "Location access is off — allow it in Settings to start from here." | "Location access is off. Allow it in Settings to start from here." plus a button, **Open Settings** |
 | Loop dial | (nothing) | "Up to {N} mi from here" |
+| A road closed for the season (`CLOSED_FOR_SEASON`) | the server's words, e.g. "the only way there is closed for the season" | "The only way there is closed for the season." always |
+| Banner and voice, a raw multi-value exit | "Take exit 7A;7B" | "Take exit 7A or 7B" |
+| Banner, a raw multi-value ref | "Continue onto I 295;US 1;ME 26" | "Continue onto I 295 / US 1 / ME 26" (spoken "Interstate 295 and Route 1 and Route 26") |
 | Spoken | "CA 1", "TX 71", "SR 20", "CR 12", "FM 1960", "BIA 15" read as letters | "Route 1", "Route 71", "State Route 20", "County Road 12", "Farm to Market Road 1960", "BIA Route 15" |
 | Before you drive, first line | (none) | "Sunday Drive finds the beautiful way: a scenic route to where you’re going, or a loop back to where you started." |
 | Before you drive, section heading | "What it does not do" | "Good to know" |
@@ -280,7 +374,46 @@ On the simulator, New York's Loop page showed **"Up to 179 mi from here"**,
 and the slider's top read 5 hr 46. That is 288 km at the seed's 1.2 min/km.
 `ReviewFixesAppTests` keeps R's `LOOP_TOO_LONG` body verbatim.
 
-**Not yet done:** a full-suite run against R's branch once it is committed.
+### Against unit R's committed branch
+
+**Setup.**
+
+- The server was started from an export of `claude/review-fixes-router` at
+  d36a564 (the lead-in), on `data/pack-us` and `data/processed-us`.
+- It ran only after unit D's `data/pack-us-next.done` existed and no
+  `pack.py` was running.
+- One server at a time, stopped by its own PID. A fresh simulator, deleted
+  afterwards.
+
+**Suite: 525 tests, 31 skipped, 3 failures.** There are 7 new tests:
+
+- five in `ReviewFixesAppTests`;
+- the `START_TOO_FAR` backoff test;
+- `LeadInRerouteTests`.
+
+**The failures.**
+
+- Two are the replay failures above, unchanged.
+- The third was `SimulatedDriveRegressionTests.test_F6_instructions_carry_no_raw_ref_lists`,
+  a strict expected failure ("semicolon ref lists in instructions"). R's
+  branch fixes Finding 6 on the server, so the expected failure stopped
+  happening.
+  - It is now a plain assertion. Rerun against R's server, it passes.
+  - Against a server older than R's it fails, which is right: those servers
+    still send the lists. The app's `multiValuesTidied` covers the banner and
+    the voice either way.
+
+**On the simulator** (`simctl location start` playback at 35 m/s, through
+the 99 waypoints of I-10 westbound through edge 1470492):
+
+- The app planned Blythe from "My Location · I-10 W, Salome" around the
+  ford, via Salome.
+- The car kept to I-10.
+- About a minute in, and again two minutes in, the banner read "67–69 mi /
+  Keep right onto I 10 Truck", with the line under the car on the closed
+  edge: no "Off route", no U-turn arrow.
+- The approach window (§1, "The I-10 lead-in") was not caught on screen. The
+  test measures it.
 
 ## 8. What the app needs from the server (unit R)
 

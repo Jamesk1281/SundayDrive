@@ -248,6 +248,31 @@ final class MidDriveRecoveryTests: XCTestCase {
         XCTAssertLessThanOrEqual(gap, 18)
     }
 
+    func test_not_from_here_is_said_but_does_not_climb_the_backoff() async {
+        // START_TOO_FAR depends only on where the car is, so the next ask, a
+        // few hundred metres on, is the one that can succeed. Two of them at
+        // 16 s and 32 s held "Off route" up for 50 s before a closed edge on
+        // I-10 (docs/review-fixes-app.md, "The I-10 lead-in").
+        let backend = Backend()
+        let tooFar = RouteService.failure(status: 400, body: try! JSONSerialization.data(
+            withJSONObject: ["error": "Sunday Drive can't start a new route where you are.",
+                             "code": "START_TOO_FAR", "m": 17171, "max_m": 500.0]
+                as [String: Any]))
+        backend.fallback = .fail(tooFar)
+        let nav = model(backend)
+        await leaveTheRoute(nav)
+        XCTAssertEqual(nav.actionProblem, "Sunday Drive can't start a new route where you are.")
+        XCTAssertNil(nav.lostConnection, "the server answered")
+        XCTAssertEqual(noConnectionSaid, 0)
+        _ = await stayOff(nav, from: 930, seconds: 40)
+        let gaps = zip(backend.asked, backend.asked.dropFirst())
+            .map { $1.at.timeIntervalSince($0.at) }
+        XCTAssertGreaterThanOrEqual(backend.asked.count, 4,
+                                    "asked \(backend.asked.count) times in 40 s")
+        // Every retry at the base cooldown, never doubling.
+        XCTAssertTrue(gaps.allSatisfy { $0 <= 10 }, "gaps \(gaps)")
+    }
+
     // MARK: - When to try again (plan, section 3.1)
 
     func test_no_timer_retries_without_a_path_and_one_when_it_returns() async {
