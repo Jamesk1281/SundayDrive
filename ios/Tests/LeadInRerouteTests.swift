@@ -149,6 +149,11 @@ final class LeadInRerouteTests: XCTestCase {
                 lineStart = first
                 adopted.append((i, CLLocation(latitude: first.latitude, longitude: first.longitude)
                     .distance(from: fix)))
+                // The banner's distance belongs to the new first instruction,
+                // which starts at the car, not to the line just left.
+                XCTAssertLessThan(nav.distanceToNext, 100,
+                                  "fix \(i): the new instruction carried the old route's "
+                                  + "distance, \(Int(nav.distanceToNext)) m")
             }
             let text = NavView.bannerText(nav: nav, location: LocationManager())
             let calledOff = nav.isOffTheLine || text.symbol == "arrow.uturn.backward"

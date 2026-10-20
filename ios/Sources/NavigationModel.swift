@@ -2344,6 +2344,15 @@ final class NavigationModel {
         followedCurrentRoute = false
         remainingMeters = feature.properties.km * 1000
         remainingMinutes = feature.properties.minutes
+        // The new first instruction's distance, measured the way the next
+        // fix will measure it while the join is awaited (`advanceSteps`).
+        // Left alone it was the old route's: on I-10 the banner read "950 ft
+        // / Head west on Pearl Harbor Memorial Highway" for a fix, 950 ft
+        // being the way to a turn on the line just abandoned
+        // (docs/review-fixes-app.md, "The I-10 lead-in").
+        if let here = lastFix, let first = steps.first {
+            distanceToNext = here.distance(to: first.coordinate)
+        }
         // The driver has not reached this line yet — it begins at a junction
         // ahead of them. Hold off-route recovery until they do, or this route
         // triggers its own replacement on the very next fix.
