@@ -41,6 +41,7 @@ struct DirectionsView: View {
                         Text(error)
                             .font(.system(size: 13))
                             .foregroundStyle(Color.alert)
+                        if model.isLocationOff { OpenSettingsButton() }
                     }
 
                     if model.isLoading && model.response == nil {
@@ -78,7 +79,11 @@ struct DirectionsView: View {
         .onChange(of: model.response == nil) { _, noRoute in
             if !noRoute { editingTrip = false }
         }
-        .task { if model.response == nil && model.end == nil { focused = .end } }
+        .task {
+            guard model.response == nil, model.end == nil else { return }
+            focused = .end
+            await model.defaultStartToHere()
+        }
     }
 
     // MARK: - The two ends

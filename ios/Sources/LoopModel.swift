@@ -10,6 +10,9 @@ import Observation
 typealias LoopFetcher = (CLLocationCoordinate2D, Double, String?,
                          [String: Double]) async throws -> LoopResponse
 
+/// How a start's loop limit is fetched; a seam for the same reason.
+typealias LoopLimitFetcher = (CLLocationCoordinate2D) async throws -> LoopLimit
+
 /// State for the loop tab: one start point, one distance, and the loop that came
 /// back. The driver picks the compass direction; the server picks the first.
 ///
@@ -44,8 +47,9 @@ final class LoopModel {
     /// `pipeline/looper.py`). They are not graph limits — the longest available
     /// loop from a Massachusetts start is over 500 km — they are the range where
     /// the answer is a drive rather than an expedition: 400 km is a full day.
-    /// Restored from the last session, so "Loop" on the home screen is one tap
-    /// to a finished drive rather than one tap to a form.
+    /// The top is lower where roads are dense: see `limit`. Restored from the
+    /// last session, so "Loop" on the home screen is one tap to a finished
+    /// drive rather than one tap to a form.
     ///
     /// Written back in `fetch`, when a loop has actually come back at this
     /// length — not from a `didSet`. Two reasons: what is worth remembering is
@@ -58,6 +62,25 @@ final class LoopModel {
     private static let targetKey = "lastLoopTargetKm"
     static let minKm: Double = 5
     static let maxKm: Double = 400
+
+    /// This start's limit from `POST /api/loop/limit`, or nil until it is
+    /// known: loops are capped by how much road their disc holds, so a dense
+    /// metro tops out below `maxKm` (docs/review-fixes-app.md, item 4). Nil
+    /// also when the server is older than the endpoint, and the slider is
+    /// then the 5–400 km it always was.
+    private(set) var limit: LoopLimit?
+
+    /// The start `limit` was asked for, so it is asked once per start.
+    private var limitStart: CLLocationCoordinate2D?
+
+    /// The top of the slider: this start's limit, within the server's clamp.
+    /// Never below twice the minimum, so the track always has room to move.
+    var sliderMaxKm: Double {
+        min(Self.maxKm, max(2 * Self.minKm, (limit?.max_km ?? Self.maxKm).rounded(.down)))
+    }
+
+    /// How a start's limit is fetched. Tests substitute a stub.
+    var fetchLimit: LoopLimitFetcher = { start in try await RouteService.loopLimit(from: start) }
 
     /// Minutes per kilometre, for labelling the distance dial in time.
     ///
@@ -106,6 +129,11 @@ final class LoopModel {
     var fetchLoop: LoopFetcher = { start, km, sector, weights in
         try await RouteService.loop(from: start, km: km, sector: sector,
                                     weights: weights)
+    }
+
+    /// The error on screen is location being off, which Settings fixes.
+    var isLocationOff: Bool {
+        errorText == LocationManager.locationOffText && locationManager.isLocationOff
     }
 
     /// True once there is something on screen to drive.
@@ -173,9 +201,8 @@ final class LoopModel {
         defer { isLocatingUser = false }
 
         guard let fix = await locate() else {
-            errorText = locationManager.authorization == .denied
-                    || locationManager.authorization == .restricted
-                ? "Location access is off — allow it in Settings to start from here."
+            errorText = locationManager.isLocationOff
+                ? LocationManager.locationOffText
                 : "Couldn’t get a location fix. Try again in a moment."
             return
         }
@@ -220,6 +247,8 @@ final class LoopModel {
         preferredSector = nil
         pendingSector = nil
         isLoading = false
+        limit = nil
+        limitStart = nil
     }
 
     // MARK: - Asking for loops
@@ -269,12 +298,33 @@ final class LoopModel {
         let generation = requestGeneration
         if !regenerating { isLoading = true }
         errorText = nil
+        learnLimit(for: origin)
+        if targetKm > sliderMaxKm { targetKm = sliderMaxKm }
+
+        // A length over this start's limit is refused with the limit in the
+        // reply, which is then this start's limit and asked for at once. The
+        // usual way here is a long loop remembered from a sparser start.
+        func ask(_ sector: String?) async throws -> LoopResponse {
+            do {
+                return try await fetchLoop(origin, targetKm, sector, weights)
+            } catch RouteService.ServiceError.server(let refusal)
+                        where refusal.kind == .loopTooLong {
+                guard let maxKm = refusal.maxKm, maxKm.rounded(.down) < targetKm,
+                      maxKm >= Self.minKm, generation == requestGeneration
+                else { throw RouteService.ServiceError.server(refusal) }
+                limit = LoopLimit(max_km: maxKm, max_mi: nil)
+                limitStart = origin
+                targetKm = sliderMaxKm
+                return try await fetchLoop(origin, targetKm, sector, weights)
+            }
+        }
 
         do {
             let result: LoopResponse
             do {
-                result = try await fetchLoop(origin, targetKm, sector, weights)
-            } catch RouteService.ServiceError.server(_) where sector != nil && !regenerating {
+                result = try await ask(sector)
+            } catch let RouteService.ServiceError.server(refusal)
+                        where sector != nil && !regenerating && refusal.kind != .loopTooLong {
                 // The remembered direction has nothing at this length or from
                 // this start — the server's own refusal, not a dead network,
                 // which a second request would only wait on twice. Nor `.busy`,
@@ -282,7 +332,7 @@ final class LoopModel {
                 // (docs/loop-lock-contention.md). Better the server's choice than an error and an
                 // empty map for a preference the driver set at another length.
                 guard generation == requestGeneration else { return }
-                result = try await fetchLoop(origin, targetKm, nil, weights)
+                result = try await ask(nil)
             }
             guard generation == requestGeneration else { return }
             response = result
@@ -307,6 +357,29 @@ final class LoopModel {
         }
         isLoading = false
         pendingSector = nil
+    }
+
+    /// Ask for this start's limit, once per start, beside the loop rather
+    /// than before it: the loop is what the driver is waiting for, and one
+    /// over the limit is refused with the limit anyway. A failure leaves the
+    /// slider as it was and is not retried until the start changes, so an
+    /// older server costs one request per start, not one per loop.
+    private func learnLimit(for origin: CLLocationCoordinate2D) {
+        if let limitStart, limitStart.matches(origin) { return }
+        limitStart = origin
+        limit = nil
+        Task { [fetchLimit] in
+            guard let found = try? await fetchLimit(origin),
+                  found.max_km.isFinite, found.max_km > 0,
+                  limitStart?.matches(origin) == true else { return }
+            limit = found
+            // Pulled in now only if nothing is on its way: a loop in flight
+            // at the old length is answered by the server, and `fetch` sets
+            // the slider from that answer.
+            if !isLoading, pendingSector == nil, targetKm > sliderMaxKm {
+                targetKm = sliderMaxKm
+            }
+        }
     }
 
     /// Per-beauty-type weights, so the tune screen shapes a loop the same way it

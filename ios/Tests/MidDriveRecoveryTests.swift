@@ -170,6 +170,13 @@ final class MidDriveRecoveryTests: XCTestCase {
             (RouteService.ServiceError.busy("Busy planning other drives."), true,
              noConnection, "a busy refusal"),
             (RouteService.ServiceError.server("no route found"), true, offRoute, "the server's no"),
+            // The trip cap's reply carries numbers. Its body failed to decode,
+            // and the refusal was "No connection" (docs/review-fixes-app.md).
+            (RouteService.failure(status: 400, body: try! JSONSerialization.data(withJSONObject: [
+                "error": "That trip is 400 miles in a straight line.", "code": "TRIP_TOO_LONG",
+                "max_km": 600.0, "km": 643.7] as [String: Any])),
+             true, offRoute, "the trip cap's 400"),
+            (RouteService.ServiceError.unreachable(400), true, offRoute, "an unreadable 400"),
         ]
         for (error, hasPath, expected, label) in cases {
             path = hasPath
@@ -187,7 +194,8 @@ final class MidDriveRecoveryTests: XCTestCase {
         backend.fallback = .fail(RouteService.ServiceError.server("closed for the season"))
         let nav = model(backend)
         await leaveTheRoute(nav)
-        XCTAssertEqual(nav.actionProblem, "closed for the season")
+        // As a sentence (docs/review-fixes-app.md, item 1).
+        XCTAssertEqual(nav.actionProblem, "Closed for the season.")
         XCTAssertNil(nav.lostConnection, "the server answered, so the connection works")
         XCTAssertEqual(noConnectionSaid, 0, "nothing new is said for the server's no")
     }

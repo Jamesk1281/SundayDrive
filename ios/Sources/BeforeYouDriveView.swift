@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// **Before you drive** — the route-guidance notice, and what this app is not.
+/// **Before you drive** — what the app does, the route-guidance notice, and
+/// its limits in plain words.
 ///
 /// Shown once, on first launch, and permanently reachable from Sources. Two
 /// ways in, **one view, one copy of the string**.
@@ -30,6 +31,15 @@ struct BeforeYouDriveView: View {
                 VStack(alignment: .leading, spacing: 17) {
                     Text("Before you drive").sectionLabel(.alert)
 
+                    // What the app does, first. The screen used to open on
+                    // six things it does not do, and one of them told most of
+                    // the country it was untested where they live
+                    // (docs/review-fixes-app.md, item 6).
+                    Text(Self.whatItDoes)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(Color.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Route guidance").sectionLabel(.alert)
                         Text(DataSources.routeGuidanceNotice)
@@ -46,27 +56,9 @@ struct BeforeYouDriveView: View {
                             .stroke(Color.alert, lineWidth: 1.5)
                     }
 
-                    Text("What it does not do").sectionLabel()
+                    Text("Good to know").sectionLabel()
 
-                    limit("The 48 contiguous states and DC only.",
-                          "Directions go up to 500 km (310 miles) in a straight line. "
-                          + "Loops have their own limits.")
-                    limit("Driven in New England only.",
-                          "Everywhere else, routes come from the same map data and the "
-                          + "same scoring, but nobody has driven them to check.")
-                    limit("No lane guidance.",
-                          "In the states measured, the data covers between 4.6% and 23.8% "
-                          + "of junction approaches, which is not enough to tell you which "
-                          + "lane to be in.")
-                    limit("No live traffic.",
-                          "Every time shown is a model, not a measurement.")
-                    limit("Beauty is a model.",
-                          "One ruler for the whole country, checked against drivers’ "
-                          + "ratings in New England only.")
-                    limit("Seasonal roads.",
-                          "Some mountain roads close for winter. The app avoids the "
-                          + "closures OpenStreetMap records, but not every closure is "
-                          + "recorded, so follow posted signs.")
+                    ForEach(Self.limits, id: \.head) { item in limit(item.head, item.body) }
 
                     if onAcknowledge != nil {
                         Text("Also in Sources, any time.")
@@ -87,6 +79,28 @@ struct BeforeYouDriveView: View {
         }
         .background(Color.paper)
     }
+
+    /// The first line on the screen. docs/review-fixes-app.md lists every
+    /// string here, with what it replaced.
+    static let whatItDoes = "Sunday Drive finds the beautiful way: a scenic route to "
+        + "where you’re going, or a loop back to where you started."
+
+    /// The limits, in plain words. The cap is the floored figure
+    /// `RouteService.capMiles` gives, so it can never read 311.
+    static let limits: [(head: String, body: String)] = [
+        ("Drives of up to \(RouteService.capMiles(RouteService.maxTripKm)) miles.",
+         "Directions go up to \(RouteService.capMiles(RouteService.maxTripKm)) miles in a "
+         + "straight line, anywhere in the 48 contiguous states and DC. Loops reach "
+         + "farther in open country than in a city."),
+        ("Signs come first.",
+         "Some roads close for the season, and the map doesn’t know every closure. "
+         + "Follow posted signs."),
+        ("Times are estimates.",
+         "There’s no live traffic and no lane guidance."),
+        ("Beauty is an estimate.",
+         "Scenery scores come from map data, so a road you love may score lower "
+         + "than it deserves."),
+    ]
 
     private func limit(_ head: String, _ body: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {

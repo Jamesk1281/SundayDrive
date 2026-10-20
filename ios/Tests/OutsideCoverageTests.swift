@@ -146,6 +146,7 @@ final class OutsideCoverageTests: XCTestCase {
         let model = LoopModel(locationManager: manager)
         let fix = fix(here)
         model.locate = { fix }
+        model.fetchLimit = { _ in throw URLError(.cancelled) }
         var requests = 0
         model.fetchLoop = { start, km, sector, _ in
             requests += 1

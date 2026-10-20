@@ -606,15 +606,35 @@ extension String {
         out = out.replacingOccurrences(of: " / ", with: " and ")
         // "MA 60" is read as either "em-ay sixty" or "ma sixty" and "US 1" as
         // the word "us" — neither is what a driver is looking for on a sign.
-        // Every state prefix is listed rather than matching any two capitals,
-        // so "YMCA Drive" cannot become "Route CA".
-        out = out.replacing(#/\b(?:MA|RI|NH|VT|ME|CT|US)[ -](\d+[A-Z]?)\b/#) { "Route \($0.1)" }
+        // Every prefix is listed rather than matching any two capitals, and a
+        // number must follow, so "YMCA Drive" cannot become "Route CA". Every
+        // state's and DC's, since the app went national; New England's alone
+        // left "CA 1" and "TX 71" to be read as letters
+        // (docs/review-fixes-app.md, item 2). Case matters: "In 500 feet" is
+        // not Indiana.
+        out = out.replacing(Self.stateRoute) { "Route \($0.1)" }
+        // The prefixes that are not a state's, said as the road's kind. "SR"
+        // reads as "senior", and "CR" and "FM" as letters nobody outside the
+        // county or Texas would know were a road.
+        out = out.replacing(#/\bSR[ -](\d+[A-Z]?)\b/#) { "State Route \($0.1)" }
+        out = out.replacing(#/\bCR[ -](\d+[A-Z]?)\b/#) { "County Road \($0.1)" }
+        out = out.replacing(#/\bFM[ -](\d+[A-Z]?)\b/#) { "Farm to Market Road \($0.1)" }
+        out = out.replacing(#/\bBIA[ -](\d+[A-Z]?)\b/#) { "BIA Route \($0.1)" }
         // Polish rather than repair: "I 93" already reads as "eye ninety-three",
         // which is what people say. "Interstate" costs 0.38 s and cannot be
         // misheard as the pronoun.
         out = out.replacing(#/\bI[ -](\d+[A-Z]?)\b/#) { "Interstate \($0.1)" }
         return out
     }
+
+    /// A state's or DC's postal code, or `US`, then a number: the routes
+    /// read as "Route <n>". Built from `Coverage.stateCodes` so the two lists
+    /// cannot drift apart.
+    private static let stateRoute: Regex<(Substring, Substring)> = {
+        let prefixes = (Coverage.stateCodes.sorted() + ["US"]).joined(separator: "|")
+        return try! Regex("\\b(?:\(prefixes))[ -](\\d+[A-Z]?)\\b",
+                          as: (Substring, Substring).self)
+    }()
 
     /// For the second half of a chained utterance: "…, then turn left onto X".
     var firstLowercased: String {

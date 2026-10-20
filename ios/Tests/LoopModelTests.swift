@@ -66,6 +66,9 @@ final class LoopModelTests: XCTestCase {
         let model = LoopModel(locationManager: LocationManager())
         model.start = Self.start
         model.fetchLoop = handler
+        // No limit, so the slider is the 5-400 km these tests were written
+        // for (docs/review-fixes-app.md, item 4).
+        model.fetchLimit = { _ in throw URLError(.cancelled) }
         return model
     }
 
@@ -285,7 +288,9 @@ final class LoopModelTests: XCTestCase {
         // Blanking the map because one direction came back empty would throw
         // away a drive the user was looking at.
         XCTAssertEqual(model.response?.meta.sector, "N")
-        XCTAssertEqual(model.errorText, "no loop there")
+        // As a sentence, the way an older server's fragment is shown
+        // (docs/review-fixes-app.md, item 1).
+        XCTAssertEqual(model.errorText, "No loop there.")
     }
 
     func test_a_failed_first_search_leaves_nothing_on_screen() async {
@@ -294,7 +299,7 @@ final class LoopModelTests: XCTestCase {
         }
         await model.generate()
         XCTAssertNil(model.response)
-        XCTAssertEqual(model.errorText, "outside the covered network")
+        XCTAssertEqual(model.errorText, "Outside the covered network.")
     }
 
     func test_it_does_not_call_the_server_without_a_start() async {

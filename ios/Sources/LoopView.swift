@@ -42,6 +42,7 @@ struct LoopView: View {
 
                     if let error = loops.errorText {
                         Text(error).font(.system(size: 13)).foregroundStyle(Color.alert)
+                        if loops.isLocationOff { OpenSettingsButton() }
                     }
                     if loops.isLoading {
                         ProgressView().frame(maxWidth: .infinity).padding(.vertical, 18)
@@ -97,7 +98,7 @@ struct LoopView: View {
             // an hour about a quarter of the way along and four hours at two-thirds.
             Slider(value: Binding(get: { loops.targetKm.squareRoot() },
                                   set: { loops.targetKm = ($0 * $0).rounded() }),
-                   in: LoopModel.minKm.squareRoot()...LoopModel.maxKm.squareRoot()) { editing in
+                   in: LoopModel.minKm.squareRoot()...loops.sliderMaxKm.squareRoot()) { editing in
                 if !editing, loops.start != nil { Task { await loops.generate() } }
             }
             .tint(Color.amber)
@@ -111,7 +112,7 @@ struct LoopView: View {
             HStack {
                 Text(TimeText.compact(minutes: loops.estimatedMinutes(forKm: LoopModel.minKm)))
                 Spacer()
-                Text(TimeText.compact(minutes: loops.estimatedMinutes(forKm: LoopModel.maxKm)))
+                Text(TimeText.compact(minutes: loops.estimatedMinutes(forKm: loops.sliderMaxKm)))
             }
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(Color.slate)
@@ -129,7 +130,22 @@ struct LoopView: View {
             .foregroundStyle(Color.ink2)
             .padding(.top, 7)
             .accessibilityHidden(true)
+
+            // The top of the track is this start's, so say so: a dense metro
+            // tops out well below a rural start, and a slider that stops short
+            // without a word looks broken (docs/review-fixes-app.md, item 4).
+            if let limit = loops.limit {
+                Text(LoopView.limitCaption(limit))
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 2)
+            }
         }
+    }
+
+    /// "Up to 155 mi from here."
+    static func limitCaption(_ limit: LoopLimit) -> String {
+        "Up to \(limit.miles) mi from here"
     }
 
     private var estimate: Double { loops.estimatedMinutes(forKm: loops.targetKm) }
