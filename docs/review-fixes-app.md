@@ -22,8 +22,6 @@ document by item number.
 
 **Left:**
 
-- R's call on `START_TOO_FAR` on an open approach to a closed edge (§1, "The
-  I-10 lead-in");
 - the owner's sign-off on the new copy (§6);
 - the replay red that `usa` already had (§7), which belongs to another
   unit.
@@ -134,12 +132,37 @@ line.
 | server | lines adopted | where they began | called off the line after adopting |
 | --- | --- | --- | --- |
 | `usa` (no lead-in) | fix 11 | 16,987 m from the car | 438 fixes, "Off route · route 9.5 mi away / Head back to your route" |
-| R, d36a564 | fix 38 | 0 m from the car | 0 |
+| R, d36a564 | fix 38 | 0 m from the car | 0 (27 fixes before it, see below) |
+| R, 51a4c84 | fix 11 | 0 m from the car | 0, and 0 before it |
 
 The test reproduces the review's banner on `usa`, and it is gone with R's
 lead-in.
 
-**What is left: refusals on the approach (server).** Before the first
+**The approach is fixed too (51a4c84).** The master session decided the rule
+R built: a moving car on a one-way carriageway whose junction ahead is cut
+off by closures is routed forward through the closed stretch. On the run
+against 51a4c84:
+
+- the first reroute, at fix 11 on the approach, is answered at once;
+- its line starts at the car;
+- the car is not called off a line on any fix of the 17.4 km.
+
+The rest of this section records how it looked before that.
+
+**One fix of the old route's distance (app, fixed).** On adopting a route
+the banner showed the new first instruction with the abandoned route's
+distance for one fix: "950 ft / Head west on Pearl Harbor Memorial Highway",
+950 ft being the way to a turn on the old line.
+
+- `adopt` now measures the new first step from the last fix, the way the
+  next fix will. That reads "50 ft".
+- The test asserts it: the first banner after an adoption reads under 100 m,
+  because the line starts at the car.
+- With a lead-in, "Head west on …" stays on the banner for about 2 s, until
+  the join settles and the banner moves to the next maneuver. That is the
+  order `update` has always run in, and it is left as it is.
+
+**Before 51a4c84: refusals on the approach (server).** Before the first
 adoption the car is still called off the line, on the open 1.1 km of I-10 that
 leads only into the closed edge. There R answers every reroute with
 `START_TOO_FAR` (`m` 17,171 and 16,542 at two fixes): the only start it can
@@ -435,6 +458,11 @@ and the slider's top read 5 hr 46. That is 288 km at the seed's 1.2 min/km.
   - Against a server older than R's it fails, which is right: those servers
     still send the lists. The app's `multiValuesTidied` covers the banner and
     the voice either way.
+
+**Again against 51a4c84** (R's rule for a one-way carriageway cut off by
+closures, plus this branch's `adopt` distance fix), on the same setup:
+**526 tests, 31 skipped, 2 failures.** The two failures are the replay
+failures above. F6 passes, and so do both `LeadInRerouteTests`.
 
 **On the simulator** (`simctl location start` playback at 35 m/s, through
 the 99 waypoints of I-10 westbound through edge 1470492):
