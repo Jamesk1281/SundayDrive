@@ -193,7 +193,18 @@ The parity reroutes start on route vertices, so their projections are exact.
 A real fix lands up to its GPS error from the road, and the line begins at its
 projection.
 
-**On the US pack** (the I-10 reroute): not yet run. Unit D's pack build needs the memory, and no national server starts before `data/pack-us-next.done` exists.
+**On the US pack** (`data/pack-us`, where the ford on edge 1470492 is still
+closed): run after unit D's `pack-us-next.done` appeared, with no pack build
+running. The reroute was westbound on I-10, heading about 280, to Blythe at
+pref 0.5. The fix was 15 m to either side of the road, at 10%, 25%, 50% and
+90% along the edge, each with and without `declined_uturn`:
+
+- In all 16 requests the line begins **14.9 m from the fix**, the car's
+  projection onto the road; `usa` began it up to 14.8 km ahead.
+- The first step is "Head west on Pearl Harbor Memorial Highway", from the
+  same point, covering the lead-in and the road on to the exit.
+- `km` includes the lead-in: 116.3 km at 10% against 101.6 km before. No
+  request `turns_around`.
 
 **Tests**, in `tests/test_api.py`:
 - a moving car mid-way along a long New England edge: its line begins within
@@ -267,8 +278,8 @@ A westbound car on edge 1470492, heading 280, asking for Blythe at pref 0:
 
 | along the edge | `usa` | this branch |
 |---|---|---|
-| 10% (short of the ford) | 200; route begins at the west end, 14.8 km ahead | the same route; `snap_start` puts the start on the car's own road |
-| 25% to 90% (past it) | 200; begins at the west end, 12.3 km down to 1.6 km ahead | the same |
+| 10% (short of the ford) | 200; route begins at the west end, 14.8 km ahead | the same route, with the lead-in from the car (below); `snap_start` puts the start on the car's own road |
+| 25% to 90% (past it) | 200; begins at the west end, 12.3 km down to 1.6 km ahead | the same route, with the lead-in |
 
 With rule 2 switched off, the 10% request is refused with `START_TOO_FAR`
 (m = 14,803), because the start would come from the cut-off node's way out.
