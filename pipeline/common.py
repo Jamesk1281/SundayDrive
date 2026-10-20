@@ -101,15 +101,48 @@ def logging_checkpoint(tags) -> bool:
                 or CHECKPOINT_NAME.search(tags.get("name") or ""))
 
 
-def barrier_closes(tags):
-    """Why a node with these tags stops a car on the road it sits on, or None.
+# The road classes on which a ford is a tagging error rather than a ford: a
+# paved motorway, trunk, primary or secondary road, or one of their links,
+# does not cross a river through the water. Nationally the rule closed 409
+# such edges, 1,027.6 km, among them I-10 west of Tonopah and CA-1 at Andrew
+# Molera (decided 2026-10-20; docs/review-fixes-data.md).
+FORD_OPEN_CLASSES = frozenset({
+    "motorway", "motorway_link", "trunk", "trunk_link",
+    "primary", "primary_link", "secondary", "secondary_link",
+})
 
-    A ford stops it whatever else is tagged: a consumer car app should not plan
-    one. So does a logging checkpoint (`logging_checkpoint`). A
-    PASSABLE_BARRIERS gate stops it only when its own tags close it. Any other
-    `barrier=` stops it unless its own tags open it.
+
+def ford_closes(way, node=None) -> bool:
+    """Whether a ford stops a car on the way with tags `way`. `node` is the
+    ford node's own tags, when the ford is a node.
+
+    It does, as a consumer car app should not plan one, unless the way is in
+    FORD_OPEN_CLASSES and nothing says it is unpaved: neither the way's
+    `surface` nor the node's is in score.UNPAVED. A ford on a minor road, or
+    on an unpaved road of any class, stays closed. With no way given it
+    closes, which is the rule as it stood before 2026-10-20.
     """
-    if (tags.get("ford") or "").strip().lower() == "yes":
+    if way is None:
+        return True
+    if (way.get("highway") or "").strip().lower() not in FORD_OPEN_CLASSES:
+        return True
+    from score import UNPAVED  # here, since score.py imports this module
+    surfaces = [(t.get("surface") or "").strip().lower() for t in (way, node) if t]
+    return any(s in UNPAVED for s in surfaces)
+
+
+def barrier_closes(tags, way=None):
+    """Why a node with these tags stops a car on the road it sits on, or None.
+    `way` is the tags of that road, when known.
+
+    A ford stops it whatever else is tagged, unless the road is a paved major
+    one (`ford_closes`): a consumer car app should not plan one. So does a
+    logging checkpoint (`logging_checkpoint`). A PASSABLE_BARRIERS gate stops
+    it only when its own tags close it. Any other `barrier=` stops it unless
+    its own tags open it. A ford left open is then read as whatever barrier
+    it also is.
+    """
+    if (tags.get("ford") or "").strip().lower() == "yes" and ford_closes(way, tags):
         return "ford=yes"
     barrier = (tags.get("barrier") or "").strip().lower()
     if not barrier:
