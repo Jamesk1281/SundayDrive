@@ -422,6 +422,129 @@ class TestTheGateJoin:
             (0, "edge"), (0, "through"), (1, "through")]
 
 
+# ------------------------------------------------------- fords on major roads
+
+class TestFordsOnMajorRoads:
+    """A ford on a paved motorway, trunk, primary or secondary road, or one of
+    their links, is a tagging error and stays open. Fords on minor roads, and
+    on unpaved roads of any class, stay closed (docs/review-fixes-data.md)."""
+
+    MAJOR = ["motorway", "motorway_link", "trunk", "trunk_link",
+             "primary", "primary_link", "secondary", "secondary_link"]
+    MINOR = ["tertiary", "tertiary_link", "unclassified", "residential",
+             "living_street"]
+
+    def test_the_open_classes_are_the_major_ones_and_all_drivable(self):
+        from common import DRIVABLE, FORD_OPEN_CLASSES
+        assert FORD_OPEN_CLASSES == set(self.MAJOR)
+        assert set(self.MAJOR) | set(self.MINOR) == DRIVABLE
+
+    @pytest.mark.parametrize("highway", MAJOR)
+    @pytest.mark.parametrize("surface", [None, "asphalt", "paved", "concrete"])
+    def test_a_ford_on_a_paved_major_road_stays_open(self, highway, surface):
+        from common import barrier_closes, ford_closes
+        way = {"highway": highway, **({"surface": surface} if surface else {})}
+        assert not ford_closes(way)
+        assert barrier_closes({"ford": "yes"}, way) is None
+
+    @pytest.mark.parametrize("highway", MINOR)
+    @pytest.mark.parametrize("surface", [None, "asphalt", "gravel"])
+    def test_a_ford_on_a_minor_road_stays_closed(self, highway, surface):
+        from common import barrier_closes
+        way = {"highway": highway, **({"surface": surface} if surface else {})}
+        assert barrier_closes({"ford": "yes"}, way) == "ford=yes"
+
+    @pytest.mark.parametrize("highway", MAJOR)
+    def test_a_ford_on_an_unpaved_major_road_stays_closed(self, highway):
+        """Trap 1: every surface score.py counts as unpaved, on the way or on
+        the ford node itself, keeps the ford closed."""
+        from common import barrier_closes, ford_closes
+        from score import UNPAVED
+        for surface in UNPAVED:
+            assert ford_closes({"highway": highway, "surface": surface})
+            assert ford_closes({"highway": highway, "surface": surface.upper() + " "})
+            assert barrier_closes({"ford": "yes", "surface": surface},
+                                  {"highway": highway}) == "ford=yes"
+
+    def test_with_no_way_a_ford_closes_as_before(self):
+        from common import barrier_closes, ford_closes
+        assert ford_closes(None)
+        assert barrier_closes({"ford": "yes"}) == "ford=yes"
+
+    def test_a_ford_left_open_is_still_whatever_barrier_it_is(self):
+        from common import barrier_closes
+        primary = {"highway": "primary"}
+        assert barrier_closes({"ford": "yes", "barrier": "gate", "access": "no"},
+                              primary) == "barrier=gate, access=no"
+        assert barrier_closes({"ford": "yes", "barrier": "bollard"},
+                              primary) == "barrier=bollard"
+        assert barrier_closes({"ford": "yes", "barrier": "gate"}, primary) is None
+        gate = {"ford": "yes", "barrier": "gate",
+                "motor_vehicle:conditional": "no @ (Nov-Apr)"}
+        assert gate_windows(gate, primary) == {
+            WINTER: ["barrier=gate, motor_vehicle:conditional=no @ (Nov-Apr)"]}
+        assert gate_windows(gate, {"highway": "residential"}) == {}
+
+    def test_the_scan_opens_only_the_paved_major_fords(self, tmp_path):
+        """Through the real osmium pass, on a hand-written extract: a ford
+        node on each kind of road, two ford ways, and one ford node shared
+        by a primary road and the unclassified road that crosses it."""
+        from closures import scan
+        nodes, ways = {}, []
+
+        def way(way_id, tags, ford_at=None, ford_tags=None, shared=None):
+            ids = [way_id * 10 + i for i in range(3)]
+            for i, n in enumerate(ids):
+                nodes[n] = (-110.0 + way_id * 0.01, 33.0 + i * 0.001, {})
+            if ford_at is not None:
+                nodes[ids[ford_at]] = (*nodes[ids[ford_at]][:2],
+                                       {"ford": "yes", **(ford_tags or {})})
+            if shared is not None:
+                ids[1] = shared
+            ways.append((way_id, ids, tags))
+            return ids
+
+        way(1, {"highway": "primary"}, ford_at=1)
+        way(2, {"highway": "residential"}, ford_at=1)
+        way(3, {"highway": "primary", "surface": "gravel"}, ford_at=1)
+        way(4, {"highway": "secondary"}, ford_at=1, ford_tags={"surface": "dirt"})
+        way(5, {"highway": "trunk", "ford": "yes", "surface": "asphalt"})
+        way(6, {"highway": "unclassified", "ford": "yes"})
+        way(7, {"highway": "motorway_link", "ford": "yes", "surface": "unpaved"})
+        crossing = way(8, {"highway": "primary"}, ford_at=1)[1]
+        way(9, {"highway": "unclassified"}, shared=crossing)
+
+        xml = ['<?xml version="1.0"?>', '<osm version="0.6">']
+        for n, (lon, lat, tags) in sorted(nodes.items()):
+            xml.append(f'<node id="{n}" version="1" lat="{lat}" lon="{lon}">'
+                       + "".join(f'<tag k="{k}" v="{v}"/>' for k, v in tags.items())
+                       + "</node>")
+        for way_id, ids, tags in ways:
+            xml.append(f'<way id="{way_id}" version="1">'
+                       + "".join(f'<nd ref="{n}"/>' for n in ids)
+                       + "".join(f'<tag k="{k}" v="{v}"/>' for k, v in tags.items())
+                       + "</way>")
+        xml.append("</osm>")
+        path = tmp_path / "fords.osm"
+        path.write_text("\n".join(xml))
+
+        found = scan(str(path))
+        assert found.drivable == 9
+        by_id = {w["way_id"]: w for w in found.ways}
+        owners = {nid: sorted(by_id_of(found.ways, b[3])) for nid, b in found.barriers.items()}
+        assert owners == {21: [2], 31: [3], 41: [4], crossing: [9]}
+        assert {nid: b[2] for nid, b in found.barriers.items()} == dict.fromkeys(owners, "ford=yes")
+        assert {i: (w["closes"], w["kind"]) for i, w in by_id.items() if w["closes"]} == {
+            6: ("ford=yes", "ford"), 7: ("ford=yes", "ford")}
+        assert 1 not in by_id and 5 not in by_id
+        assert dict(found.record["fords left open on paved major roads"]) == {
+            "node, highway=primary": 2, "way, highway=trunk": 1}
+
+
+def by_id_of(ways, indexes):
+    return [ways[i]["way_id"] for i in indexes]
+
+
 # ---------------------------------------------------------------- the calendar
 
 def _table(rows):

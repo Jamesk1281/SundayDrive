@@ -178,7 +178,9 @@ written, with one exception, the kerb.
      This is the one place the build departs from the brief. Reverting it is a
      one-word change to `PASSABLE_BARRIERS`.
 5. **Fords are closed.** A `ford=yes` way, or a `ford=yes` node on a drivable way,
-   whatever else it is tagged.
+   whatever else it is tagged. Since 2026-10-20, except on a paved motorway,
+   trunk, primary or secondary road or link, where a ford is a tagging error
+   (docs/review-fixes-data.md).
 6. **Closed for every caller**, `on=None` included. The table is loaded once
    and never changes, so no cache needed a new key.
 

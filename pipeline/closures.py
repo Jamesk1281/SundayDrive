@@ -64,9 +64,10 @@ conditions those are and why. A gate closes for the season by the same car
 conditionals, on the node (`gate_windows`).
 
 A way is closed to cars all year when `closed_to_cars` (common.py) says so, it
-is a ford (`ford=yes`), or it is too rough for a car (`too_rough`:
+is a ford (`ford=yes`) that `ford_closes` closes, which is every ford but one
+on a paved major road (docs/review-fixes-data.md), or it is too rough for a car (`too_rough`:
 `4wd_only=yes`, or `smoothness` of `very_bad` or worse), and a node closes the road it stands on when
-`barrier_closes` says so. Where that node stands decides what is closed; see
+`barrier_closes` says so for that way. Where that node stands decides what is closed; see
 `join_closed_to_cars`.
 
 Usage: python closures.py <input.osm.pbf> <processed_dir> [<out_dir> [<federal_dir>]]
@@ -87,7 +88,7 @@ from pyproj import Transformer
 
 from common import (CLOSED_TO_CARS, CLOSURE_WINDOW, CRS_METERS, DRIVABLE,
                     PASSABLE_BARRIERS, PRIVATE_ACCESS, SEALED, barrier_closes,
-                    car_access, closed_to_cars, in_window)
+                    car_access, closed_to_cars, ford_closes, in_window)
 
 # The keys whose conditional can close a road to a car. `access` binds every
 # road user, `vehicle` everything on wheels, `motor_vehicle` everything with an
@@ -349,7 +350,7 @@ def _car_windows(tags) -> dict:
     return found
 
 
-def gate_windows(tags) -> dict:
+def gate_windows(tags, way=None) -> dict:
     """{window: [the tags that close it]} for a barrier node that closes the
     road it stands on for part of the year, and empty for any other node.
 
@@ -366,8 +367,10 @@ def gate_windows(tags) -> dict:
     them. A node `barrier_closes` already closes all year gets nothing here,
     so a chain that is `access=private` with `access=permissive @ (winter)`
     stays closed all year; it is closed_to_cars' row, not this table's.
+    `way` is the tags of the road the node stands on, as `barrier_closes`
+    takes them.
     """
-    if not (tags.get("barrier") or "").strip() or barrier_closes(tags):
+    if not (tags.get("barrier") or "").strip() or barrier_closes(tags, way):
         return {}
     found = _car_windows(tags)
     barrier = tags["barrier"].strip().lower()
@@ -477,7 +480,8 @@ def scan(pbf_path: str):
             self.record = {key: Counter() for key in (
                 "dropped but open", "local access", "unrecognised",
                 "left open", "timed gates", "barrier car conditionals",
-                "tiger:cfcc A5x left paved")}
+                "tiger:cfcc A5x left paved",
+                "fords left open on paved major roads")}
 
         def node(self, n):
             if n.location.valid():
@@ -543,7 +547,11 @@ def scan(pbf_path: str):
             if tag:
                 closes.append(tag)
             if (tags.get("ford") or "").strip().lower() == "yes":
-                closes.append("ford=yes")
+                if ford_closes(tags):
+                    closes.append("ford=yes")
+                else:
+                    self.record["fords left open on paved major roads"][
+                        f"way, highway={tags.get('highway')}"] += 1
             rough = too_rough(tags)
             closes += rough
             found = car_access(tags)
@@ -557,16 +565,19 @@ def scan(pbf_path: str):
                 hit = self.tagged.get(n.ref)
                 if hit is None:
                     continue
-                why = barrier_closes(hit[2])
+                why = barrier_closes(hit[2], tags)
                 if why:
                     stops.append((n.ref, hit, why))
                 else:
-                    windows = gate_windows(hit[2])
+                    if (hit[2].get("ford") or "").strip().lower() == "yes":
+                        self.record["fords left open on paved major roads"][
+                            f"node, highway={tags.get('highway')}"] += 1
+                    windows = gate_windows(hit[2], tags)
                     if windows:
                         seasonal.append((n.ref, hit, windows))
                 if n.ref not in self.counted:
                     self.counted.add(n.ref)
-                    self._count(hit[2], why)
+                    self._count(hit[2], why, tags)
             if not closes and not stops and not seasonal:
                 return
             points = points or _points(w)
@@ -588,11 +599,11 @@ def scan(pbf_path: str):
                     len(self.ways) - 1)
 
         @staticmethod
-        def _conditional(tags, why):
+        def _conditional(tags, why, way):
             """What a barrier's car conditional came to, for the record."""
             if why:
                 return "already closed all year, left closed"
-            if gate_windows(tags):
+            if gate_windows(tags, way):
                 return "closed for the season"
             reasons = set()
             for key in CAR_KEYS:
@@ -602,7 +613,7 @@ def scan(pbf_path: str):
             return ("closes nothing: " + ", ".join(sorted(reasons)) if reasons
                     else "closes nothing: not `no @` or `yes @` with dates")
 
-        def _count(self, tags, why):
+        def _count(self, tags, why, way):
             """One tally per node, of the ones left open and the gates whose
             access depends on the time, for the record."""
             barrier = (tags.get("barrier") or "").strip().lower()
@@ -610,7 +621,7 @@ def scan(pbf_path: str):
                     f"{key}:conditional" in tags for key in CAR_KEYS)):
                 self.record["timed gates"]["closed" if why else "left open"] += 1
             if barrier and any(f"{key}:conditional" in tags for key in CAR_KEYS):
-                self.record["barrier car conditionals"][self._conditional(tags, why)] += 1
+                self.record["barrier car conditionals"][self._conditional(tags, why, way)] += 1
             if why or not barrier:
                 return
             found = car_access(tags)
