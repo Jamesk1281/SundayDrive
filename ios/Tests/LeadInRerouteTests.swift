@@ -103,6 +103,8 @@ final class LeadInRerouteTests: XCTestCase {
             planned = try await route(api, from: start, to: Self.blythe, pref: 0.5, heading: nil)
         } catch let error as URLError {
             throw XCTSkip("no Sunday Drive API at \(api) (\(error.code))")
+        } catch RouteService.ServiceError.server(let refusal) where refusal.kind == .outsideCoverage {
+            throw XCTSkip("\(api) does not cover Arizona: a national server is needed")
         }
 
         let nav = NavigationModel(route: planned.scenic, destination: Self.blythe,
@@ -179,5 +181,114 @@ final class LeadInRerouteTests: XCTestCase {
                        "after a reroute was adopted the car was called off its own line "
                        + "\(offTheLine.count) times, first: "
                        + "\(offTheLine.first.map { "\($0.1.over) / \($0.1.main)" } ?? "")")
+    }
+
+    // MARK: - A lead-in before a U-turn
+
+    /// Bedford Street, MA: the car docs/reroute-uturn.md pins, heading
+    /// north-west, with its destination 600 m behind it, so the cheapest
+    /// route turns it around (tests/test_api.py on the router's branch).
+    private static let bedfordHere = CLLocationCoordinate2D(latitude: 42.479463,
+                                                            longitude: -71.255401)
+    private static let bedfordBehind = CLLocationCoordinate2D(latitude: 42.475215,
+                                                              longitude: -71.250901)
+
+    /// The shape the lead-in gives a U-turn: from 250 m short of the
+    /// junction the router answers "Head northwest on Bedford Street" as a
+    /// step of its own, then "Make a U-turn to stay on Bedford Street", and
+    /// `turnaround_m` counts the lead-in. From 120 m short the reroute lands
+    /// a couple of dozen metres short of the junction, under 60 m, so the
+    /// lead-in folds into the U-turn. Both are driven through the real
+    /// adoption path: planned from rest, driven the other way, rerouted with
+    /// a heading, then followed through the U-turn to the pin. Once a line is
+    /// adopted the car must never be told it is going the wrong way or is off
+    /// its line (docs/review-fixes-app.md, "The lead-in before a U-turn").
+    func test_a_lead_in_before_a_u_turn_is_driven_without_a_wrong_way() async throws {
+        let api = try base()
+        for back in [120.0, 250.0] {
+            try await driveBedford(api, back: back)
+        }
+    }
+
+    private func driveBedford(_ api: String, back: Double) async throws {
+        let start = Self.offset(Self.bedfordHere, bearing: 142, metres: back)
+        let moving: RouteResponse
+        do {
+            moving = try await route(api, from: start, to: Self.bedfordBehind, pref: 0.7,
+                                     heading: 322)
+        } catch let error as URLError {
+            throw XCTSkip("no Sunday Drive API at \(api) (\(error.code))")
+        }
+        let steps = moving.scenic.properties.steps
+        guard moving.scenic.properties.turnaround_m != nil else {
+            throw XCTSkip("this server's route from Bedford Street does not turn around")
+        }
+        print("lead-in u-turn \(Int(back)) m back: "
+              + steps.prefix(3).map { "\($0.maneuver) \($0.instruction)" }.joined(separator: " | "))
+
+        // The route being followed runs off north-east, square to Bedford
+        // Street, so the car driving north-west leaves it within a few fixes
+        // and is rerouted the ordinary way: off route, with a heading. A
+        // route from rest would not do: it runs back down Bedford Street,
+        // and the car rejoins it after its own U-turn without ever asking.
+        let away = Self.offset(start, bearing: 52, metres: 2_000)
+        let planned = Fixture.decode(Fixture.feature(
+            coordinates: [[start.longitude, start.latitude], [away.longitude, away.latitude]],
+            km: 2, minutes: 2,
+            steps: [(start, "Head northeast on Test Road", "Test Road"),
+                    (away, "Arrive at your destination", nil)]))
+        let nav = NavigationModel(route: planned, destination: Self.bedfordBehind,
+                                  pref: 0.7, weights: [:])
+        clock = clock.addingTimeInterval(3600)
+        nav.now = { [unowned self] in self.clock }
+        nav.networkReachable = { true }
+        nav.fetchRoute = { [unowned self] from, to, pref, _, heading in
+            try await self.route(api, from: from, to: to, pref: pref, heading: heading)
+        }
+        nav.fetchRouteKeepingAhead = { [unowned self] from, to, pref, _, heading in
+            try await self.route(api, from: from, to: to, pref: pref, heading: heading,
+                                 declinedUTurn: true)
+        }
+
+        var lineStart = nav.coordinates.first
+        var adoptedAt: Int?
+        var calledOff: [String] = []
+        var shown: [String] = []
+        for (i, fix) in fixes(along: moving.scenic.coordinates, metres: 12, speed: 12).enumerated() {
+            clock = clock.addingTimeInterval(1)
+            nav.update(fix)
+            for _ in 0..<5 { await Task.yield() }
+            var waited = 0
+            while nav.isRerouting && waited < 600 {
+                try await Task.sleep(for: .milliseconds(50))
+                waited += 1
+            }
+            if let first = nav.coordinates.first, lineStart.map({ !$0.matches(first) }) ?? true {
+                lineStart = first
+                if adoptedAt == nil { adoptedAt = i }
+            }
+            let text = NavView.bannerText(nav: nav, location: LocationManager())
+            if shown.last != text.main { shown.append(text.main) }
+            if adoptedAt != nil, nav.isOffTheLine || text.over.hasPrefix("Wrong way")
+                || text.symbol == "arrow.uturn.backward" {
+                calledOff.append("fix \(i): \(text.over) / \(text.main)")
+            }
+            if nav.arrived { break }
+        }
+        print("lead-in u-turn \(Int(back)) m back: adopted at fix "
+              + "\(adoptedAt.map(String.init) ?? "none"); banner: \(shown.joined(separator: " → "))")
+        XCTAssertNotNil(adoptedAt, "\(Int(back)) m back: no reroute was adopted")
+        XCTAssertEqual(calledOff, [], "\(Int(back)) m back: called off the line after adopting")
+        XCTAssertTrue(shown.contains { $0.contains("U-turn") },
+                      "\(Int(back)) m back: the U-turn was never on the banner")
+        XCTAssertTrue(nav.arrived, "\(Int(back)) m back: never arrived")
+    }
+
+    private static func offset(_ c: CLLocationCoordinate2D, bearing: Double,
+                               metres: Double) -> CLLocationCoordinate2D {
+        let b = bearing * .pi / 180
+        return CLLocationCoordinate2D(
+            latitude: c.latitude + metres * cos(b) / 111_320,
+            longitude: c.longitude + metres * sin(b) / (111_320 * cos(c.latitude * .pi / 180)))
     }
 }

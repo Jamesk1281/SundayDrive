@@ -158,6 +158,39 @@ the backoff, two refusals at 16 s and 32 s kept that banner up for 50 fixes.
 Without it, the window is 27 fixes, all of them on the approach. A unit test
 in `MidDriveRecoveryTests` pins the gaps at 10 s or less.
 
+### The lead-in before a U-turn
+
+The lead-in changes the first steps of a moving reroute, and the app reads
+two of them:
+
+- **With 60 m or more** before a junction where the route turns,
+  `steps[0]` is the lead-in itself ("depart", "Head northwest on Bedford
+  Street") and the U-turn is `steps[1]`.
+- **`turnaround_m`** counts the lead-in.
+
+The app needed no change for either.
+
+- It never looked for a U-turn in `steps[0]`.
+- The declined-U-turn rule (`trackFollowing`) compares `turnaround_m` with
+  the car's distance along the same line, and both now start at the car.
+- On adoption the banner shows `steps[0]`, then each maneuver as the car
+  reaches it. The voice prepares for the U-turn and never for a depart.
+
+**The test.** `LeadInRerouteTests.test_a_lead_in_before_a_u_turn_is_driven_without_a_wrong_way`
+drives this on unit R's server (f6e4748, `data/processed-ne`), on Bedford
+Street with the destination 600 m behind the car:
+
+- The car follows a line square to the road, so it is rerouted the ordinary
+  way: off route, with a heading.
+- It then drives the U-turn route through to the pin, at 12 m/s.
+
+| start | the line adopted at fix 8 | banner | called off the line or "Wrong way" after adopting |
+| --- | --- | --- | --- |
+| 120 m short of the U-turn | lead-in under 60 m, folded | "Make a U-turn on Bedford Street" → "Arrive" | none, arrived |
+| 250 m short | lead-in step, then the U-turn | "Head northwest on Bedford Street" → "Make a U-turn to stay on Bedford Street" → "Arrive" | none, arrived |
+
+The I-10 test skips on a server that does not cover Arizona.
+
 ## 2. Spoken road names
 
 `String.spokenAloud` turned `MA|RI|NH|VT|ME|CT|US <n>` into "Route <n>". It
