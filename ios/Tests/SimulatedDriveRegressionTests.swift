@@ -115,13 +115,15 @@ final class SimulatedDriveRegressionTests: XCTestCase {
         }
     }
 
-    /// Finding 6. OSM's raw `ref` list reaches the instruction text, and so
-    /// the voice: "Take the exit onto I 395;ME 9;ME 15".
+    /// Finding 6, fixed on the server by unit R: OSM's raw `ref` list reached
+    /// the instruction text, and so the voice ("Take the exit onto I 395;ME
+    /// 9;ME 15"). The router now splits it (docs/review-fixes-router.md), so
+    /// this is a plain assertion: against a server older than that it fails,
+    /// and the app still tidies the text itself (`multiValuesTidied`,
+    /// docs/review-fixes-app.md).
     func test_F6_instructions_carry_no_raw_ref_lists() async throws {
         let route = try await planned("suburban-002", pref: 0.0)
         let raw = route.feature.properties.steps.map(\.instruction).filter { $0.contains(";") }
-        XCTExpectFailure("Finding 6: semicolon ref lists in instructions", strict: true) {
-            XCTAssertEqual(raw, [])
-        }
+        XCTAssertEqual(raw, [])
     }
 }

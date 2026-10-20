@@ -170,6 +170,13 @@ final class MidDriveRecoveryTests: XCTestCase {
             (RouteService.ServiceError.busy("Busy planning other drives."), true,
              noConnection, "a busy refusal"),
             (RouteService.ServiceError.server("no route found"), true, offRoute, "the server's no"),
+            // The trip cap's reply carries numbers. Its body failed to decode,
+            // and the refusal was "No connection" (docs/review-fixes-app.md).
+            (RouteService.failure(status: 400, body: try! JSONSerialization.data(withJSONObject: [
+                "error": "That trip is 400 miles in a straight line.", "code": "TRIP_TOO_LONG",
+                "max_km": 600.0, "km": 643.7] as [String: Any])),
+             true, offRoute, "the trip cap's 400"),
+            (RouteService.ServiceError.unreachable(400), true, offRoute, "an unreadable 400"),
         ]
         for (error, hasPath, expected, label) in cases {
             path = hasPath
@@ -187,7 +194,8 @@ final class MidDriveRecoveryTests: XCTestCase {
         backend.fallback = .fail(RouteService.ServiceError.server("closed for the season"))
         let nav = model(backend)
         await leaveTheRoute(nav)
-        XCTAssertEqual(nav.actionProblem, "closed for the season")
+        // As a sentence (docs/review-fixes-app.md, item 1).
+        XCTAssertEqual(nav.actionProblem, "Closed for the season.")
         XCTAssertNil(nav.lostConnection, "the server answered, so the connection works")
         XCTAssertEqual(noConnectionSaid, 0, "nothing new is said for the server's no")
     }
@@ -238,6 +246,31 @@ final class MidDriveRecoveryTests: XCTestCase {
         let gap = backend.asked[1].at.timeIntervalSince(first)
         XCTAssertGreaterThan(gap, 16)
         XCTAssertLessThanOrEqual(gap, 18)
+    }
+
+    func test_not_from_here_is_said_but_does_not_climb_the_backoff() async {
+        // START_TOO_FAR depends only on where the car is, so the next ask, a
+        // few hundred metres on, is the one that can succeed. Two of them at
+        // 16 s and 32 s held "Off route" up for 50 s before a closed edge on
+        // I-10 (docs/review-fixes-app.md, "The I-10 lead-in").
+        let backend = Backend()
+        let tooFar = RouteService.failure(status: 400, body: try! JSONSerialization.data(
+            withJSONObject: ["error": "Sunday Drive can't start a new route where you are.",
+                             "code": "START_TOO_FAR", "m": 17171, "max_m": 500.0]
+                as [String: Any]))
+        backend.fallback = .fail(tooFar)
+        let nav = model(backend)
+        await leaveTheRoute(nav)
+        XCTAssertEqual(nav.actionProblem, "Sunday Drive can't start a new route where you are.")
+        XCTAssertNil(nav.lostConnection, "the server answered")
+        XCTAssertEqual(noConnectionSaid, 0)
+        _ = await stayOff(nav, from: 930, seconds: 40)
+        let gaps = zip(backend.asked, backend.asked.dropFirst())
+            .map { $1.at.timeIntervalSince($0.at) }
+        XCTAssertGreaterThanOrEqual(backend.asked.count, 4,
+                                    "asked \(backend.asked.count) times in 40 s")
+        // Every retry at the base cooldown, never doubling.
+        XCTAssertTrue(gaps.allSatisfy { $0 <= 10 }, "gaps \(gaps)")
     }
 
     // MARK: - When to try again (plan, section 3.1)

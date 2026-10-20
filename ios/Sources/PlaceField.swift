@@ -45,6 +45,23 @@ struct PlaceField: View {
                         completer.clear()
                         onSubmit(text)
                     }
+                    // A filled field is selected whole when it takes the
+                    // keyboard, so typing replaces the place rather than
+                    // editing it: "Santa Cruz Beach Boardwalk" plus a typed
+                    // "R" was "Santa Cruz Beach R…" (docs/review-fixes-app.md,
+                    // item 3). On the next turn of the run loop, after the tap
+                    // that focused the field has placed its caret, and after
+                    // `focused` has caught up: the notification arrives first,
+                    // so checking it here would always miss.
+                    .onReceive(NotificationCenter.default.publisher(
+                        for: UITextField.textDidBeginEditingNotification)) { note in
+                        guard let field = note.object as? UITextField else { return }
+                        DispatchQueue.main.async {
+                            guard focused == role, !text.isEmpty, field.isFirstResponder
+                            else { return }
+                            field.selectAll(nil)
+                        }
+                    }
                 if showsMyLocation { myLocationButton }
                 if let onClear, !text.isEmpty {
                     Button {
@@ -196,6 +213,20 @@ struct PrimaryButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// The way to the switch that "allow it in Settings" names. Without it the
+/// sentence sends a driver hunting through Settings for an app's page,
+/// which `openSettingsURLString` opens directly (docs/review-fixes-app.md,
+/// item 5).
+struct OpenSettingsButton: View {
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        SecondaryButton(title: "Open Settings", systemImage: "gear") {
+            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+        }
     }
 }
 

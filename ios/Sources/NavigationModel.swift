@@ -649,6 +649,13 @@ final class NavigationModel {
         /// The server's own message ("no route found", "closed for the
         /// season").
         case server(String)
+        /// The server's "not from here" (`START_TOO_FAR`): it cannot start a
+        /// route where the car is now. Unlike every other "no", asking again
+        /// a few hundred metres on is exactly what helps, so it is said but
+        /// does not climb the backoff. On the open kilometre of I-10 before
+        /// a closed edge, two of these at 16 s and 32 s held "Off route" up
+        /// for 50 s (docs/review-fixes-app.md, "The I-10 lead-in").
+        case refusedHere(String)
         case lost(LostConnection)
     }
 
@@ -1377,7 +1384,7 @@ final class NavigationModel {
 
     /// The instruction shown in the banner right now.
     var currentInstruction: String {
-        currentStep < steps.count ? steps[currentStep].instruction : ""
+        currentStep < steps.count ? steps[currentStep].instruction.multiValuesTidied : ""
     }
 
     /// The icon for that instruction. A maneuver is read at a glance long
@@ -1983,7 +1990,8 @@ final class NavigationModel {
             // (plan, section 2, row 10). The server's own "no" is its message.
             switch outcome {
             case .failed(.lost): report("Can't switch — no connection.")
-            case .failed(.server(let message)): report(message)
+            case .failed(.server(let message)), .failed(.refusedHere(let message)):
+                report(message)
             default: break
             }
         case .adopted, .superseded:
@@ -2152,19 +2160,39 @@ final class NavigationModel {
     /// one ever does, it must not be booked as the server's "no", which
     /// climbs the reroute backoff and shows "Busy planning other drives"
     /// under the trip card.
-    private static func classify(_ error: Error?, hasPath: Bool) -> RerouteFailure {
-        if case .server(let message)? = error as? RouteService.ServiceError {
-            return .server(message)
+    ///
+    /// A 4xx is an answer even when its body cannot be read: something heard
+    /// the request and said no, so it is booked as a refusal, never as "No
+    /// connection. Head back to your route." That was the trip cap's reply
+    /// mid-drive, while its body failed to decode (docs/review-fixes-app.md,
+    /// item 1). A timeout (408) and a rate limit (429) are the exceptions,
+    /// because waiting is what fixes them.
+    static func classify(_ error: Error?, hasPath: Bool) -> RerouteFailure {
+        switch error as? RouteService.ServiceError {
+        case .server(let refusal)? where refusal.kind == .startTooFar:
+            return .refusedHere(refusal.sentence)
+        case .server(let refusal)?:
+            return .server(refusal.sentence)
+        case .unreachable(let status)? where (400..<500).contains(status)
+                                          && status != 408 && status != 429:
+            return .server(refusedReroute)
+        default:
+            return .lost(hasPath ? .serverUnreachable : .noSignal)
         }
-        return .lost(hasPath ? .serverUnreachable : .noSignal)
     }
+
+    /// Under the trip card for a refusal whose reason could not be read.
+    static let refusedReroute = "Couldn’t plan a new route from here. Keep to your route "
+        + "or head for a bigger road."
 
     /// The trace's account of a thrown error — see `DriveTrace.reroute`.
     private static func traceDetail(of error: Error?)
         -> (errorClass: String?, status: Int?, message: String?) {
         guard let error else { return (nil, nil, nil) }
         switch error as? RouteService.ServiceError {
-        case .server(let message)?: return ("server", nil, message)
+        case .server(let refusal)?:
+            return ("server", nil, refusal.rawCode.map { "\($0): \(refusal.message)" }
+                                    ?? refusal.message)
         case .busy(let message)?: return ("busy", 503, message)
         case .unreachable(let status)?: return ("unreachable", status, nil)
         case .timedOut?: return ("timed_out", nil, nil)
@@ -2194,6 +2222,11 @@ final class NavigationModel {
             connectionWorked()
             guard Self.isAutomatic(reason) else { return }
             consecutiveReroutes += 1
+            onRouteSince = nil
+            report(message)
+        case .refusedHere(let message):
+            connectionWorked()
+            guard Self.isAutomatic(reason) else { return }
             onRouteSince = nil
             report(message)
         case .lost(let lost):

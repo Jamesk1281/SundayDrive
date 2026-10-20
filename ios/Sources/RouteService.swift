@@ -50,11 +50,11 @@ enum RouteService {
     /// which is what a Cloudflare tunnel with nothing behind it answers, and
     /// what this used to surface verbatim — could act on none of them.
     enum ServiceError: LocalizedError {
-        /// The backend answered with its own `{"error": ...}`. Passed through
-        /// untouched: these are written for the driver ("point is outside the
-        /// covered road network", "no route found between those points") and
-        /// say the one thing a generic message can't, which is what to change.
-        case server(String)
+        /// The backend answered with its own `{"error": ..., "code": ...}`.
+        /// These are written for the driver and say the one thing a generic
+        /// message can't, which is what to change. See `Refusal` for how the
+        /// body is read and which codes get the app's own words.
+        case server(Refusal)
         /// Something answered, but not with anything this app can read — a
         /// 502/503/530, or the HTML page a tunnel or a proxy serves when the
         /// backend behind it is down. The status is worth carrying for a bug
@@ -79,7 +79,7 @@ enum RouteService {
 
         var errorDescription: String? {
             switch self {
-            case let .server(message): return message
+            case let .server(refusal): return refusal.sentence
             case let .busy(message): return message
             case let .unreachable(status):
                 return "The routing service isn't reachable right now. "
@@ -274,6 +274,26 @@ enum RouteService {
         } + (sector.map { [URLQueryItem(name: "sector", value: $0)] } ?? []))
     }
 
+    /// The longest loop this start can have: `POST /api/loop/limit`.
+    ///
+    /// Loops are capped by how much road their disc holds, not by one
+    /// distance, so the top of the slider is a property of the start. 400 km
+    /// where roads are sparse, less in a dense metro. A loop asked for over it
+    /// is refused with `LOOP_TOO_LONG` and the same `max_km`, so this is the
+    /// slider's courtesy and not the only guard. docs/review-fixes-app.md,
+    /// item 4.
+    static func loopLimit(from start: CLLocationCoordinate2D) async throws -> LoopLimit {
+        try await send(loopLimitRequest(from: start))
+    }
+
+    /// The request `loopLimit(from:)` sends; see `routeRequest(...)`.
+    static func loopLimitRequest(from start: CLLocationCoordinate2D,
+                                 base: String = baseURL) -> URLRequest {
+        formRequest("\(base)/api/loop/limit", [
+            URLQueryItem(name: "from", value: "\(start.latitude),\(start.longitude)"),
+        ])
+    }
+
     /// A POST carrying `items` as a form body, and nothing on the URL.
     ///
     /// The parameters are the driver's position and destination, and the API
@@ -345,12 +365,133 @@ enum RouteService {
         // The backend's own message whenever there is one to lift. A rate
         // limiter or a tunnel answers in HTML, not our JSON shape, and that
         // is the case the status code alone used to leak into the sheet.
-        guard let message = try? JSONDecoder().decode([String: String].self, from: body)["error"]
-        else { return .unreachable(status) }
-        // A 503 with our JSON is the backend refusing a loop build because
-        // it is already running one — checked before `.server`, which means
-        // something else entirely to both callers. A 503 without it is a
-        // tunnel or a proxy, and stays `.unreachable`.
-        return status == 503 ? .busy(message) : .server(message)
+        guard let refusal = Refusal(body: body) else { return .unreachable(status) }
+        // A 503 with our JSON, or the code BUSY at any status, is the backend
+        // refusing a loop build because it is already running one — checked
+        // before `.server`, which means something else entirely to both
+        // callers. A 503 without it is a tunnel or a proxy, and stays
+        // `.unreachable`.
+        return status == 503 || refusal.kind == .busy ? .busy(refusal.sentence)
+                                                      : .server(refusal)
+    }
+
+    // MARK: - The trip cap
+
+    /// The longest point-to-point trip the server plans, in a straight line
+    /// between its ends (`router.MAX_TRIP_KM`). A reroute gets more room on
+    /// the server, so only planning is checked against it here.
+    static let maxTripKm = 500.0
+
+    /// The cap as the app says it. Floored, never rounded: 500 km is 310.7
+    /// miles, and "up to 311 miles" would promise a trip the server refuses.
+    /// docs/review-fixes-app.md, "The cap reads 310 miles".
+    static func capMiles(_ km: Double) -> Int { Int(km.milesFromKm.rounded(.down)) }
+
+    /// What the driver reads for a trip over the cap, whether the phone or the
+    /// server noticed. The same sentence as the server's, in the app's miles.
+    static func tripTooLong(km: Double, maxKm: Double = maxTripKm) -> String {
+        "That trip is \(km.wholeMilesFromKm) miles in a straight line. "
+            + "Sunday Drive plans drives of up to \(capMiles(maxKm)) miles, "
+            + "so pick a stop along the way and plan it in two parts."
+    }
+
+    /// The trip's refusal, said on the phone before anything is sent, or nil
+    /// when the server should be asked. Planning only; see `maxTripKm`.
+    static func refusalBeforeAsking(from a: CLLocationCoordinate2D,
+                                    to b: CLLocationCoordinate2D) -> String? {
+        let km = CLLocation(latitude: a.latitude, longitude: a.longitude).distance(to: b) / 1000
+        return km > maxTripKm ? tripTooLong(km: km) : nil
+    }
+}
+
+/// The server's "no", read from `{"error": <sentence>, "code": <string>, ...}`.
+///
+/// Read field by field, never as `[String: String]`: the trip cap's reply
+/// carries `max_km` and `km` as numbers, so a dictionary of strings failed to
+/// decode, and Boston to Chicago told the driver the service was unreachable
+/// (HTTP 400). Older servers send `error` alone, in lower case and with no
+/// full stop, and are still read. docs/review-fixes-app.md, item 1.
+struct Refusal: Equatable, ExpressibleByStringLiteral {
+    /// The codes the server sends beside its sentence: the seven the units
+    /// agreed, then the six the router gave the refusals that existed before
+    /// codes (docs/review-fixes-router.md, "Error bodies"). A code not listed
+    /// here still shows the server's sentence.
+    enum Code: String {
+        case tripTooLong = "TRIP_TOO_LONG"
+        case legTooLong = "LEG_TOO_LONG"
+        case loopTooLong = "LOOP_TOO_LONG"
+        case noRouteNearby = "NO_ROUTE_NEARBY"
+        case startTooFar = "START_TOO_FAR"
+        case outsideCoverage = "OUTSIDE_COVERAGE"
+        case badInput = "BAD_INPUT"
+        case closedForSeason = "CLOSED_FOR_SEASON"
+        case sameRoad = "SAME_ROAD"
+        case noLoop = "NO_LOOP"
+        case busy = "BUSY"
+        case notFound = "NOT_FOUND"
+        case serverError = "SERVER_ERROR"
+    }
+
+    /// The app's words for a road closed for the season, whatever an older
+    /// or a newer server words it: the place is real, and the road to it
+    /// opens again, so it must never read as a wrong pin or a broken app.
+    static let closedForSeason = "The only way there is closed for the season."
+
+    let message: String
+    /// The code as sent. Kept as a string so a code this build does not know
+    /// still reaches the trace; `kind` is the one the app branches on.
+    var rawCode: String?
+    var maxKm: Double?
+    var km: Double?
+
+    init(message: String, rawCode: String? = nil, maxKm: Double? = nil, km: Double? = nil) {
+        self.message = message
+        self.rawCode = rawCode
+        self.maxKm = maxKm
+        self.km = km
+    }
+
+    init(stringLiteral value: String) { self.init(message: value) }
+
+    /// Nil unless `body` is a JSON object whose `error` is a string.
+    init?(body: Data) {
+        guard let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+              let message = object["error"] as? String else { return nil }
+        self.init(message: message, rawCode: object["code"] as? String,
+                  maxKm: Self.number(object["max_km"]), km: Self.number(object["km"]))
+    }
+
+    var kind: Code? { rawCode.flatMap(Code.init(rawValue:)) }
+
+    /// What the driver reads. The app's own words where it has numbers to
+    /// say them in miles, and the server's sentence otherwise, made one if
+    /// an older server sent a lower-case fragment.
+    var sentence: String {
+        switch kind {
+        case .tripTooLong? where km != nil && maxKm != nil:
+            return RouteService.tripTooLong(km: km!, maxKm: maxKm!)
+        case .closedForSeason?:
+            return Self.closedForSeason
+        default:
+            return Self.asSentence(message)
+        }
+    }
+
+    /// "no route found between those points" -> "No route found between
+    /// those points." Leaves a sentence that already is one alone.
+    static func asSentence(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let first = trimmed.first else { return trimmed }
+        let capitalised = first.uppercased() + trimmed.dropFirst()
+        guard let last = capitalised.last, !".!?”\"".contains(last) else { return capitalised }
+        return capitalised + "."
+    }
+
+    /// A number, or a string holding one: the contract says numbers, and a
+    /// string costs nothing to accept.
+    private static func number(_ value: Any?) -> Double? {
+        if let number = value as? NSNumber, !(value is Bool) { return number.doubleValue }
+        if let text = value as? String { return Double(text) }
+        return nil
     }
 }

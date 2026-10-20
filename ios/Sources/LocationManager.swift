@@ -62,6 +62,13 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             && accuracy == .reducedAccuracy
     }
 
+    /// Location is off for this app, by the driver or by a restriction, so
+    /// only Settings can turn it back on.
+    var isLocationOff: Bool { authorization == .denied || authorization == .restricted }
+
+    /// What the planning pages say then, above an Open Settings button.
+    static let locationOffText = "Location access is off. Allow it in Settings to start from here."
+
     /// Whether the app may use location at all, Precise or not.
     var isAuthorized: Bool {
         manager.authorizationStatus == .authorizedWhenInUse

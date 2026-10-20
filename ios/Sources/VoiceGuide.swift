@@ -598,23 +598,70 @@ extension RouteStep {
 }
 
 extension String {
+    /// An instruction with raw OSM multi-values made readable, for the banner
+    /// and the voice alike. The router words them itself ("Take exit 7A or
+    /// 7B", "I-295 / US-1": docs/review-fixes-router.md), so this only
+    /// matters for a server that does not, and changes nothing that does.
+    ///
+    /// - "exit 7A;7B" and "exit 7A/7B" become "exit 7A or 7B" (and "7A, 7B
+    ///   or 7C"), the router's own wording, since a ramp that serves several
+    ///   exits is any of them.
+    /// - Any other ";" is the slash a sign uses: "I 295;US 1" becomes
+    ///   "I 295 / US 1", which the voice reads as "and".
+    ///
+    /// docs/review-fixes-app.md, "Exit numbers and multi-values".
+    var multiValuesTidied: String {
+        var out = replacing(#/\b([Ee]xits?) (\d+[A-Z]?(?:\s*[;/]\s*\d+[A-Z]?)+)\b/#) { match in
+            let numbers = match.2.split(whereSeparator: { $0 == ";" || $0 == "/" })
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+            let list = numbers.count == 2
+                ? "\(numbers[0]) or \(numbers[1])"
+                : numbers.dropLast().joined(separator: ", ") + " or " + numbers.last!
+            return "\(match.1.hasPrefix("E") ? "Exit" : "exit") \(list)"
+        }
+        out = out.replacing(#/\s*;\s*/#, with: " / ")
+        return out
+    }
+}
+
+extension String {
     var spokenAloud: String {
-        var out = self
+        var out = multiValuesTidied
         // A slash is *dropped*, not read: "Soldiers Field Road West / Newton"
         // measured shorter than either replacement, so two destinations run
         // together into one name. "and" is both audible and the right word.
         out = out.replacingOccurrences(of: " / ", with: " and ")
         // "MA 60" is read as either "em-ay sixty" or "ma sixty" and "US 1" as
         // the word "us" — neither is what a driver is looking for on a sign.
-        // Every state prefix is listed rather than matching any two capitals,
-        // so "YMCA Drive" cannot become "Route CA".
-        out = out.replacing(#/\b(?:MA|RI|NH|VT|ME|CT|US)[ -](\d+[A-Z]?)\b/#) { "Route \($0.1)" }
+        // Every prefix is listed rather than matching any two capitals, and a
+        // number must follow, so "YMCA Drive" cannot become "Route CA". Every
+        // state's and DC's, since the app went national; New England's alone
+        // left "CA 1" and "TX 71" to be read as letters
+        // (docs/review-fixes-app.md, item 2). Case matters: "In 500 feet" is
+        // not Indiana.
+        out = out.replacing(Self.stateRoute) { "Route \($0.1)" }
+        // The prefixes that are not a state's, said as the road's kind. "SR"
+        // reads as "senior", and "CR" and "FM" as letters nobody outside the
+        // county or Texas would know were a road.
+        out = out.replacing(#/\bSR[ -](\d+[A-Z]?)\b/#) { "State Route \($0.1)" }
+        out = out.replacing(#/\bCR[ -](\d+[A-Z]?)\b/#) { "County Road \($0.1)" }
+        out = out.replacing(#/\bFM[ -](\d+[A-Z]?)\b/#) { "Farm to Market Road \($0.1)" }
+        out = out.replacing(#/\bBIA[ -](\d+[A-Z]?)\b/#) { "BIA Route \($0.1)" }
         // Polish rather than repair: "I 93" already reads as "eye ninety-three",
         // which is what people say. "Interstate" costs 0.38 s and cannot be
         // misheard as the pronoun.
         out = out.replacing(#/\bI[ -](\d+[A-Z]?)\b/#) { "Interstate \($0.1)" }
         return out
     }
+
+    /// A state's or DC's postal code, or `US`, then a number: the routes
+    /// read as "Route <n>". Built from `Coverage.stateCodes` so the two lists
+    /// cannot drift apart.
+    private static let stateRoute: Regex<(Substring, Substring)> = {
+        let prefixes = (Coverage.stateCodes.sorted() + ["US"]).joined(separator: "|")
+        return try! Regex("\\b(?:\(prefixes))[ -](\\d+[A-Z]?)\\b",
+                          as: (Substring, Substring).self)
+    }()
 
     /// For the second half of a chained utterance: "…, then turn left onto X".
     var firstLowercased: String {

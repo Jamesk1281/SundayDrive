@@ -92,3 +92,15 @@ struct LoopAlternative: Decodable, Identifiable {
         }
     }
 }
+
+/// `POST /api/loop/limit`: the longest loop a start can have.
+struct LoopLimit: Decodable, Equatable {
+    let max_km: Double
+    /// The server's own whole miles, so the slider says what the server
+    /// would. Optional only so a reply without it still decodes.
+    let max_mi: Int?
+
+    /// Whole miles for "up to N mi from here", floored when the server did
+    /// not say: an "up to" must never promise more than it allows.
+    var miles: Int { max_mi ?? RouteService.capMiles(max_km) }
+}

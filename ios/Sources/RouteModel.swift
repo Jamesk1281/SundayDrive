@@ -167,6 +167,11 @@ final class RouteModel {
     var isLoading = false
     var errorText: String?
 
+    /// The error on screen is location being off, which Settings fixes.
+    var isLocationOff: Bool {
+        errorText == LocationManager.locationOffText && locationManager.isLocationOff
+    }
+
     /// Ticks up on every route request, so a slow response that comes back
     /// after a newer request has started can be recognized as stale and
     /// dropped — otherwise the older route could overwrite the newer one.
@@ -263,16 +268,26 @@ final class RouteModel {
                 endQuery = name
                 // Destinations only, not trips: a start point is usually where
                 // you happen to be and is worth nothing tomorrow. See `Recents`.
-                Recents.remember(Recent(
+                // Held until a route to it comes back, so a destination the
+                // cap or the server refuses is not one tap from the first
+                // screen (docs/review-fixes-app.md, item 5).
+                pendingRecent = Recent(
                     name: name,
                     subtitle: [match.placemark.locality, match.placemark.administrativeArea]
                         .compactMap { $0 }
                         .filter { !name.localizedCaseInsensitiveContains($0) }
                         .joined(separator: ", "),
                     latitude: coordinate.latitude,
-                    longitude: coordinate.longitude))
+                    longitude: coordinate.longitude)
             }
             errorText = nil
+            // A destination with no start used to do nothing at all: only a
+            // Recents row filled Start. It is wherever the driver is, when the
+            // app may know that (docs/review-fixes-app.md, item 3).
+            if role == .end, start == nil, locationManager.isAuthorized {
+                await useMyLocation()
+                return
+            }
             if start != nil, end != nil { await computeRoute() }
         } catch {
             errorText = "Couldn’t find “\(label)”"
@@ -294,9 +309,8 @@ final class RouteModel {
         defer { isLocatingUser = false }
 
         guard let fix = await locate() else {
-            errorText = locationManager.authorization == .denied
-                    || locationManager.authorization == .restricted
-                ? "Location access is off — allow it in Settings to start from here."
+            errorText = locationManager.isLocationOff
+                ? LocationManager.locationOffText
                 : "Couldn’t get a location fix. Try again in a moment."
             return
         }
@@ -479,14 +493,55 @@ final class RouteModel {
         loops.clear()
     }
 
+    /// The destination last chosen by search, until a route to it comes back
+    /// and it goes into `Recents`, or it is refused and forgotten. A failure
+    /// to reach the server is neither, and leaves it waiting.
+    var pendingRecent: Recent?
+
+    /// File the pending destination if a route to it came back, and forget
+    /// it either way.
+    private func rememberDestination(routed: Bool) {
+        guard let recent = pendingRecent else { return }
+        guard let end, end.matches(recent.coordinate) else { pendingRecent = nil; return }
+        if routed { Recents.remember(recent) }
+        pendingRecent = nil
+    }
+
+    /// Fill Start with My Location when it is empty and the app may use
+    /// location: Directions should start from where the driver is, as every
+    /// maps app does, without a tap on the location button first. Not from
+    /// outside the covered area, where it would only say so.
+    ///
+    /// Only with no destination yet. After a drive the destination survives
+    /// (`endNavigation`), and a start filled from here would route straight
+    /// back to the place just arrived at. Choosing a destination fills Start
+    /// in `resolve` instead.
+    func defaultStartToHere() async {
+        guard start == nil, end == nil, startQuery.isEmpty, locationManager.isAuthorized,
+              locationManager.regionStatus != .outside else { return }
+        await useMyLocation()
+    }
+
     /// Ask the backend for the fastest and scenic routes at the current preference.
     func computeRoute() async {
         guard let a = start, let b = end else { return }
 
         requestGeneration += 1
         let generation = requestGeneration
-        isLoading = true
         errorText = nil
+
+        // Over the cap is said on the phone, before anything is sent: the
+        // answer cannot change, and the driver should not wait for it.
+        if let refusal = RouteService.refusalBeforeAsking(from: a, to: b) {
+            response = nil
+            responsePref = nil
+            forgetPlan()
+            isLoading = false
+            errorText = refusal
+            rememberDestination(routed: false)
+            return
+        }
+        isLoading = true
 
         do {
             let result = try await fetchRoute(a, b, pref, weights, nil)
@@ -494,6 +549,7 @@ final class RouteModel {
             response = result
             responsePref = pref
             forgetPlan()
+            rememberDestination(routed: true)
             // A menu opens on its default: the most scenic option within 25%
             // of the fastest time, which is what `scenic` already is.
             if let options = result.options, options.menu.indices.contains(options.defaultIndex) {
@@ -508,6 +564,9 @@ final class RouteModel {
             responsePref = nil
             forgetPlan()
             errorText = error.localizedDescription
+            if case .server? = error as? RouteService.ServiceError {
+                rememberDestination(routed: false)
+            }
         }
         isLoading = false
     }
