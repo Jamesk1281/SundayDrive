@@ -10,6 +10,13 @@ listed under [What the first run changed](#what-the-first-run-changed). The
 figures under [Part 13](#part-13--measure-it-and-write-the-numbers-down) are
 now measured on the box, not scaled from the Mac.
 
+**The box serves New England today. The national server is deployed by the
+same script** (`server/deploy-oracle.sh`, see [Updating the box](#updating-the-box)),
+which ships the pack beside `processed-us` and writes the unit's environment.
+[Part 14](#part-14--the-national-server) is what the national server needs from
+the box: room for 19.7 GB, the memory check, and the 8 → 12 GB resize. None of
+it has been run on the box yet (`docs/review-fixes-deploy.md`).
+
 The 2026-09-28 independent review (`docs/hosting-independent-review.md`, on
 branch `claude/sunday-drive-hosting-review-c9c122`) recommends running this box
 *beside* a hardened laptop, as a second health-gated connector, rather than as
@@ -194,7 +201,7 @@ Console → **Compute → Instances → Create instance**.
 | Image | **Canonical Ubuntu 24.04** | Ships Python 3.12. The lock file needs 3.10–3.13. Once you pick an Ampere shape the console gives you the `aarch64` build, which is what you want |
 | Shape | **Change shape → Shape series: Ampere → `VM.Standard.A1.Flex`** | "Browse all shapes" opens on the x86 list, and A1 is not in it. The only *Always Free-eligible* shape on that first list is E2.1.Micro, with **1 GB**, which cannot hold the graph. Everything else on it is paid, and on a trial account a paid shape quietly spends the trial credit |
 | OCPUs | **2** | **It defaults to 1.** Expand the shape with ▸ and set 2, which is the whole entitlement. Never more — see [the landmine](#the-landmine-never-exceed-the-entitlement) |
-| Memory | **8 GB** | **Deliberately not 12.** See [idle reclaim](#part-12--what-keeps-the-box-alive) |
+| Memory | **8 GB** | **Deliberately not 12** for New England. See [idle reclaim](#part-12--what-keeps-the-box-alive). The national server wants 12: [Part 14](#part-14--the-national-server) resizes it in place |
 | Networking | **Select existing VCN `sundaydrive` → Select existing subnet → `public subnet-sundaydrive`** | Now the public-IPv4 toggle works. Turn it **on**. Pick the *public* subnet, not the private one |
 | Public IPv4 | **on** | |
 | IPv6 | off | |
@@ -304,6 +311,10 @@ run: every package came from a wheel under Python 3.12.3.
 
 ## Part 6 — The data, 382 MB, from the Mac
 
+**This part is New England's first copy, by hand.** The national data (an
+11.9 GB pack and 7.8 GB of parquets) is never copied by hand. The script
+copies it, verifies it and swaps it in ([Updating the box](#updating-the-box)).
+
 The parquets are not in git. Create the directory first — `rsync` will not make
 a nested path for you:
 
@@ -409,6 +420,32 @@ EOF
 sudo systemctl daemon-reload && sudo systemctl enable --now sundaydrive-api
 ```
 
+**The script adds a drop-in to this unit, and never edits it.** Each deploy
+that restarts the API writes
+`/etc/systemd/system/sundaydrive-api.service.d/deploy.conf`, whose
+`Environment=` lines override the ones above. For the national server:
+
+```ini
+[Service]
+Environment=SUNDAYDRIVE_DATA=/home/ubuntu/Scenic/data/processed-us
+Environment=SUNDAYDRIVE_PACK=/home/ubuntu/Scenic/data/pack-us
+Environment=SUNDAYDRIVE_REGION=
+Environment=SUNDAYDRIVE_COMMIT=<the 12-character commit it deployed>
+```
+
+For New England (`--region ne`), `SUNDAYDRIVE_DATA` names `processed-ne`, and
+`SUNDAYDRIVE_PACK` is empty, which means no pack. An empty
+`SUNDAYDRIVE_REGION` lets the pack name the region. `SUNDAYDRIVE_COMMIT` is what
+`/api/health` reports as `commit`, and the same value goes in
+`~/Scenic/DEPLOYED_COMMIT`. To see what the unit really runs with:
+
+```bash
+systemctl show -p Environment sundaydrive-api
+```
+
+Deleting the drop-in (then `sudo systemctl daemon-reload`) falls back to the
+unit above, which is New England's.
+
 Three things about this unit:
 
 - **`SUNDAYDRIVE_HOST=127.0.0.1`** — `serve.py` defaults to `0.0.0.0` so a phone can
@@ -445,7 +482,9 @@ Expect:
 
 **`794685` is the check.** It is the row count of `graph_nodes.parquet`, and a
 different number means the wrong parquets. (`routing_slots` is higher because
-the router splits junctions that carry turn restrictions.)
+the router splits junctions that carry turn restrictions.) The national server
+reports **`20023955`**, and adds `region`, `commit` and `pack`. The deploy
+script checks all four ([Updating the box](#updating-the-box)).
 
 ```bash
 systemctl status sundaydrive-api --no-pager
@@ -636,9 +675,9 @@ laptop, the same loop becomes a PowerShell script run by the §7 task. Deploys
 then roll: detach one box, restart its API, let the gate reattach it, then do
 the other. Two costs come with it. Every deploy goes to both boxes. And the
 public monitor only sees whichever replica answered, so each box needs its own
-local check. `/api/health` should also report a commit and a data fingerprint
-(`server/app.py`, proposed in the review, not made), because users near each
-box see a different one.
+local check. `/api/health` reports a `commit` and a `pack` fingerprint for
+exactly this, because users near each box may see a different one. The deploy
+writes the commit and checks both.
 
 ---
 
@@ -673,6 +712,7 @@ is the only thing keeping the box alive.**
 |---|---|---|
 | 12 GB (the full entitlement) | would be about 35% | safe |
 | **8 GB (what you built)** | **4.2 GiB of 7.7 GiB used, 55%** (`free -h`, after routing) | **safe, with margin** |
+| 12 GB, the national server | not measured. About 3.2 GB of anonymous memory after load, plus the OS, is about 30% | probably safe; measure it ([Part 14](#part-14--the-national-server)) |
 
 This is why you provisioned 8 GB rather than the 12 you are entitled to: **more
 RAM lowers the percentage and moves the box towards reclamation.** Keep the
@@ -708,9 +748,13 @@ system.
 ### Monitoring
 
 A free UptimeRobot monitor on `https://api.jameskouvlis.com/api/health`, 5-minute
-interval, **keyword `794685`** — asserting the keyword rather than just a 200
-catches a box serving the *wrong graph*, which a liveness check cannot see.
-Alert to an address you read.
+interval, **keyword `794685`** for New England, **`20023955`** for the national
+graph. Asserting the keyword rather than just a 200 catches a box serving the
+*wrong graph*, which a liveness check cannot see. Alert to an address you read.
+The deploy script prints the keyword the box needs after each deploy
+(`UptimeRobot keyword must be …`). **Change it in UptimeRobot the moment a
+deploy switches region.** Otherwise the monitor alerts on a correct box. The
+keyword is not the commit, which changes with every deploy.
 
 ---
 
@@ -755,41 +799,207 @@ shrug: **above 5.5 GB** (something is holding more than the graph) and **below
 
 ---
 
+## Part 14 — The national server
+
+The national server maps an 11.9 GB pack (`tools/us_scale_router/pack.py`)
+beside 7.8 GB of parquets. It needs nothing new installed. It needs disk, it
+needs memory, and it reads from a slow disk. None of the box figures in this
+part has been measured on the box. The memory figures were measured on the
+Mac (`docs/router-at-us-scale.md`, "Memory"), and the disk figures come from
+Oracle's published rates.
+
+### Disk
+
+| on the 50 GB boot volume | size |
+|---|---|
+| the national data, once deployed | 19.7 GB (pack 11.9 GB, `processed-us` 7.8 GB) |
+| a new pack being copied beside the live one | another 11.9 GB until the restart |
+| a new graph (every parquet changes) being copied | another 19.7 GB until the restart |
+
+Before the first national deploy, look at what is free:
+
+```bash
+df -h ~/Scenic/data
+```
+
+The script refuses a copy that would leave under 2 GB free. If a full rebuild
+does not fit beside the live copy, the cheapest fix is **a bigger boot volume.**
+Always Free includes 200 GB of block storage in total, so 100 GB costs nothing,
+and Balanced throughput scales with size (below). Oracle's steps are "Resizing
+a Volume" and then "Extending the Partition for a Boot Volume" in its Block
+Volume documentation. Follow those pages rather than this summary: the console
+resize runs online, and the partition and filesystem are then grown from the
+box. This has not been done on this box.
+
+### The disk is slow, and that sets the copy time and the start time
+
+A Balanced volume (10 VPU, the default) is rated at **480 KB/s per GB**, so a
+50 GB boot volume gets about **24 MB/s** (Oracle, "Block Volume Performance").
+The first run's 382 MB upload took 16 s, which is the same rate. What follows
+from it:
+
+- **The first national copy is about 14 minutes to write, and as long again to
+  verify on the box.** The script prints its own estimate.
+- **A cold national start reads 3.2 GB before it answers**, the arrays every
+  search uses. That is about 2–3 minutes at 24 MB/s, against 2.5–3.0 s on the
+  Mac. The script waits up to 600 s.
+- **Cold pack pages are read from disk on first use.** The first routes in a
+  new region after a restart, or after the kernel has dropped those pages, are
+  slower. The memory check below shows how often that happens.
+
+Doubling the volume to 100 GB doubles the rate. Raising its VPUs also raises
+it, but whether that is free under Always Free is not established here, so
+don't, without checking.
+
+### Memory check
+
+Run this on the box after a deploy, and again after a day of real traffic:
+
+```bash
+free -m
+pid=$(systemctl show -p MainPID --value sundaydrive-api)
+grep -E 'RssAnon|RssFile|VmSwap' /proc/$pid/status
+fincore -b -n -o RES ~/Scenic/data/pack-us/*.npy | awk '{ s += $1 } END { printf "%.1f GB of the pack in page cache\n", s / 1e9 }'
+cat /proc/pressure/memory
+vmstat 5 6
+```
+
+The deploy script prints `free` and the server's three lines after every restart. What each
+one tells you:
+
+| reading | what it is | expect | act when |
+|---|---|---|---|
+| `RssAnon` | memory the server holds that the kernel cannot drop | about 3.2 GB after load, up to 4.1–4.8 GB under load (Mac footprint) | over 5.5 GB: something holds more than the graph |
+| `VmSwap` | the server's own memory pushed to swap | 0 | any steady amount. Routing on swapped arrays takes seconds |
+| `RssFile` and `fincore` | pack pages in memory, which the kernel can drop and re-read | as much as fits | — |
+| `/proc/pressure/memory`, `some avg60` | percent of time something waited on memory | under 1 | over 10: the pack is being re-read from disk over and over |
+| `vmstat` `bi` | blocks read per second | near 0 at idle | high and steady while idle: the same |
+| `free` used % | (total − available) / total, the reclaim figure | 30% or more | under 20%: Part 12 |
+
+`fincore` is in util-linux, which Ubuntu 24.04 ships. On 8 GB, 4.8 GB at peak
+plus the OS leaves about 2.5 GB to cache an 11.9 GB pack, so a pressure reading
+that climbs under real traffic is the expected failure. The fix is the resize.
+
+### The 8 → 12 GB resize
+
+The allowance is 2 OCPU and **12 GB** per tenancy. The box uses 2 and 8. Resize
+**before** the first national deploy, so there is one restart to watch rather
+than two.
+
+1. **Check the allowance is free.** Console → Compute → Instances. This must be
+   the only A1 instance. Never go above 2 OCPU or 12 GB in total
+   ([the landmine](#the-landmine-never-exceed-the-entitlement)).
+2. **Know it will reboot.** A changed shape takes effect only after a stop and
+   start. That means about a minute of 530 or 502, plus the graph load. Both
+   services are `enabled`, so they come back on their own.
+3. **Change it.** Console → the instance → **Edit** → **Edit shape** →
+   `VM.Standard.A1.Flex`, OCPUs **2**, memory **12 GB** → **Save changes**.
+   Confirm the reboot. Labels move around in the console. The page to find is
+   the one with the OCPU and memory sliders.
+4. **If it says `Out of host capacity`,** the old shape keeps running and
+   nothing is lost. Retry later. Ashburn's capacity is not guaranteed at the
+   moment of a resize (`docs/load-test-oracle.md`).
+5. **Check it.** On the box: `free -h` should show about 11.7 Gi total, and
+   `systemctl is-active sundaydrive-api cloudflared` should print `active`
+   twice. Then:
+
+   ```bash
+   curl -s http://127.0.0.1:5057/api/health
+   ```
+
+   Then run the memory check above.
+6. **Then deploy** with `server/deploy-oracle.sh --ref usa`. On 12 GB its
+   memory warning goes away.
+
+Reclaim stays safe on 12 GB if the server holds about 3.2 GB or more
+(Part 12). A week after the resize, check the instance's **Metrics → Memory
+Utilization** in the console against the 20% floor.
+
+---
+
 ## Updating the box
 
 Nothing on the box pulls code or data by itself, and the server reads the
 graph once at startup. So every change goes through one script, run on the
-Mac from any checkout:
+Mac from any checkout. **Always dry-run first**:
 
 ```bash
-server/deploy-oracle.sh --dry-run
+server/deploy-oracle.sh --ref usa --dry-run
 ```
 
 ```bash
-server/deploy-oracle.sh
+server/deploy-oracle.sh --ref usa
 ```
 
-The dry run says what would change and touches nothing. The real run does the
-following, and stops at the first step that fails:
+| what you want | command |
+|---|---|
+| the national server, from `usa` (until it is merged into `main`) | `server/deploy-oracle.sh --ref usa` |
+| the national server, from `main` (after that merge) | `server/deploy-oracle.sh` |
+| New England, from `main` | `server/deploy-oracle.sh --region ne` |
+| back to New England from a national box | `server/deploy-oracle.sh --region ne --allow-rewind` |
+| a rebuilt pack D left beside the old one | `--pack data/pack-us-next --data data/processed-us-next` |
+| re-hash everything on the box (about 13 min for the national data) | `--rehash` |
 
-1. Checks with `git ls-remote` that local `main` is on GitHub (Part 0.1).
-2. Hashes the six parquets at both ends. It copies only the ones that differ,
-   from the main checkout, then checks the hashes again (Part 6).
-3. Fast-forwards the box to `main`. If the lock file changed, it reinstalls
-   the dependencies.
-4. Restarts `sundaydrive-api` once, **only if** server code or data changed.
-   A docs-only change is pulled and nothing restarts. `--restart` forces one.
-5. Waits up to 180 s for `/api/health`. Then it prints the router's
-   `seasonal closures: ...` and `closed to cars: ...` lines from the journal,
-   checks that the node count equals `graph_nodes.parquet`'s row count,
-   reports memory against the reclaim floor, and checks the public hostname.
-   A closures line reading `none`, or no line at all, means the box is
-   routing over roads closed for the season, or closed to cars.
+The pack and parquet paths are on the **Mac**. On the box they always land in
+`~/Scenic/data/pack-us` and `~/Scenic/data/processed-us`, so a `-next` build
+needs no change to the unit. `--region ne` is the old script's behaviour, with
+the same files, the same journal checks and the same node check. `main`'s own
+copy of the script still works for New England, and it refuses a box that is
+on `usa` code ("not an ancestor of main"), so it cannot restart a national box
+into New England's code.
+
+The dry run says what would change and touches nothing on the box: it only
+reads (hashes, `df`, the drop-in). The real run does the following, and stops
+at the first step that fails:
+
+1. **The Mac, before the box.**
+   - `git ls-remote` shows the branch is on GitHub (Part 0.1).
+   - For the national server, the branch's `server/app.py` must read
+     `SUNDAYDRIVE_PACK`. `main` before the `usa` merge fails this.
+   - The pack's manifest must list only files that exist, and its version must
+     be the one the branch's router reads.
+   - The manifest's fingerprints must match the parquets being shipped
+     beside it (`pipeline/router.py`, `_sources`). That catches a `pack-us-next`
+     sent with the old `processed-us` on the Mac, rather than after a restart
+     on the box, where the server would refuse it.
+2. **What differs.** Every file is hashed with SHA-256 on the Mac (about 22 s
+   for 19.7 GB). On the box, the record the script wrote after its last
+   verified copy (`.deploy-sha256` in each directory) is used. Any file whose
+   size disagrees with the record is hashed again, as is every file with
+   `--rehash`. Only files that differ are copied.
+3. **The plan.** It shows the code, the data, the unit's new environment, the
+   disk (refusing anything that would leave under 2 GB free), the box's memory
+   (warning if a national deploy finds under 11 GB), and the UptimeRobot
+   keyword.
+4. **Data first.** Changed files go to `<dir>.incoming` beside the live
+   directory, and each is verified there by SHA-256. A mismatch deletes that
+   file and stops, with nothing swapped in and the API still serving.
+5. **Then code.** The box checks out the commit, detached, so deploying `usa`
+   never moves the box's `main` branch. If the lock file changed, it
+   reinstalls. A docs-only change stops here, with no restart.
+6. **One swap and one restart.** The verified files are renamed over the live
+   ones. The running server keeps the old files open until it restarts, so
+   the disk they use is freed only then. Files the pack no longer lists are
+   removed. The drop-in and `DEPLOYED_COMMIT` are written, systemd reloads,
+   and the API restarts.
+7. **The checks.** The script waits for `/api/health`: up to 180 s for New
+   England, up to 600 s for the national server, whose start reads 3.2 GB
+   from a disk rated for about 24 MB/s (Part 14). Then it compares:
+   - `nodes` with the parquet's row count or the pack's manifest;
+   - `region` with "New England" or the pack's region;
+   - `commit` with what it deployed;
+   - `pack` with the SHA-256 of the pack's `manifest.json`, or null for New
+     England.
+
+   A field the server does not report yet is a warning, and a wrong one stops
+   the deploy. For New England it also prints the closure lines from the
+   journal, as before. A pack logs none, because the tables are inside it and
+   step 1 checked they went in. Finally it prints the memory (Part 14) and
+   checks the public hostname.
 
 Code and data both arrive before the single restart. That is what prevents
-the `KeyError: 'c_green'` crash. A restart still means about 66 s of `502`
-while the graph loads, because only one box is serving. If a rebuild changes
-the node count, the script tells you to update the UptimeRobot keyword.
+the `KeyError: 'c_green'` crash. A restart still means a minute or more of
+`502` while the graph loads, because only one box is serving.
 
 The ssh key must be in the agent (Part 0.2). Once there are two gated
 connectors (Part 10), this script covers one box, and the rolling deploy
@@ -825,7 +1035,14 @@ until the box is updated. It does not break the old build.
 
 ## Rollback
 
-At any point, including after cutover:
+**From the national server back to New England**, on the same box:
+`server/deploy-oracle.sh --region ne --allow-rewind` (dry-run it first). The
+New England parquets stay in `~/Scenic/data/processed-ne` through a national
+deploy, so nothing needs copying. The script checks out `main`, rewrites the
+drop-in, restarts, and checks for 794685 nodes. Then set the UptimeRobot
+keyword back to `794685`.
+
+**From this box to another origin**, at any point, including after cutover:
 
 1. Stop the tunnel on the box: `sudo systemctl stop cloudflared`.
 2. Start `cloudflared` on the laptop again.
@@ -846,7 +1063,10 @@ it as a gated second connector (Part 10).
 | `HTTP 530` from the public hostname | **No connector attached at all.** `cloudflared` is down on every origin | `systemctl status cloudflared`, then `sudo journalctl -u cloudflared -n 50`. (The 2026-09-19 row blamed the API here. That was wrong) |
 | `HTTP 502` | `cloudflared` is connected, but the API is not answering on `:5057`: it is down, or still loading (about 66 s after a restart) | Wait a minute, then `systemctl status sundaydrive-api`. An `ImportError` at startup looks exactly like this |
 | `KeyError: 'c_green'` or similar at startup | **Old code, new parquets** | Compare `git log --oneline -1` at both ends |
-| `/api/health` reports a node count that is not 794685 | Wrong or partial parquets | Re-run Part 6, then compare the hashes |
+| `/api/health` reports a node count that is not 794685 (New England) or 20023955 (national) | Wrong or partial data | Re-run the deploy with `--rehash` |
+| The journal says a pack "was packed from different files than … holds now" | The pack and `processed-us` on the box are from different builds | Deploy them as a pair, from the directories the pack was built from. The script checks this on the Mac first |
+| The deploy stops with "less than 2 GB free" | The copy lands beside the live files | Part 14, "Disk" |
+| UptimeRobot alerts right after a deploy that switched region | The keyword is still the old region's node count | Set the keyword the script printed |
 | A test skipped for a reason other than `test_graph.py` or `scored_chunks.parquet` | A parquet did not arrive | Re-run Part 6, then compare the hashes |
 | `rsync` prints a usage summary and copies nothing | macOS's `openrsync` rejects `--append-verify` | Use Part 6's command as written now |
 | `ssh -v` says `Server accepts key`, then `Permission denied (publickey)` | The key has a passphrase and no agent holds it | `ssh-add` (Part 0.2) |

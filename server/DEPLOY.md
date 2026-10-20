@@ -13,9 +13,19 @@ then it was Option A below, a spare Windows laptop, which is now off. **Before
 the laptop is next switched on, disable its tunnel task** (§7), or it rejoins
 the tunnel as an ungated second connector. See DEPLOY-oracle.md, Part 10.
 
+**The Oracle box is the only origin, and `server/deploy-oracle.sh` is the only
+way onto it**, for New England and for the national graph alike. See
+DEPLOY-oracle.md, "Updating the box". The rest of this file is the laptop setup
+and New England's data. The national server serves from a pack: an 11.9 GB
+directory that `tools/us_scale_router/pack.py` builds from `data/processed-us`.
+It ships with those parquets, and `SUNDAYDRIVE_PACK` names it
+(DEPLOY-oracle.md, Part 14). There is no Docker path. The Dockerfile could
+not start the current server: it left out `looper.py` and `options.py`, had
+no pack, and copied `data/processed`. It was removed with this note.
+
 ## What ships
 
-Only a few files are needed to *serve* routes — never the OSM/elevation data or
+For New England, only a few files are needed to *serve* routes — never the OSM/elevation data or
 the pipeline scripts:
 
 - **Data** (build locally, copy over): `data/processed/graph_edges.parquet` +
@@ -221,6 +231,9 @@ local network out and means you can safely decline the Windows Firewall prompt.
 curl http://localhost:5057/api/health      # {"status":"ok","nodes":794685,...}
 ```
 
+The national server also reports `region`, `commit` and `pack`, and has
+20,023,955 nodes.
+
 `nodes` is read live off the loaded graph, so it names the build you copied:
 **794,685 for New England, 310,807 for Massachusetts**. That makes it the one
 cheap assertion that distinguishes "up" from "up and serving the right data" —
@@ -328,13 +341,6 @@ seven sliders that each re-route on release, plus off-route reroutes every 8 s.
 Reboot and confirm `/api/health` answers without you touching anything. That is
 the only real test of the setup.
 
-## Option B — Docker
-
-```sh
-docker build -f server/Dockerfile -t sundaydrive-api .   # build context = repo root
-docker run -p 5057:5057 --restart unless-stopped sundaydrive-api
-```
-
 ## Option C — Bare VPS
 
 Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd
@@ -342,7 +348,8 @@ Same as the laptop, minus the tunnel. Run `server/serve.py` under systemd
 HTTPS. Note the unit goes *active* the moment the process forks, while the graph
 needs 42.6 s (longer on a slower core) before it answers — so don't let a monitor
 page you during a restart. Size it for
-**6 GB minimum, 8 GB comfortable** on the New England build. Hetzner is no longer
+**6 GB minimum, 8 GB comfortable** on the New England build, and **12 GB** with
+**at least 25 GB free disk** for the national pack (DEPLOY-oracle.md, Part 14). Hetzner is no longer
 the cheap answer it was when this file said "roughly €4": its CX line is EU-only
 and the June 2026 rises put a US box that clears 8 GB at ~€62/mo. Contabo is
 ~€5.50/mo for 4 vCPU / 8 GB with a US location.
