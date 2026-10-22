@@ -22,7 +22,16 @@ Reads the PAD-US 4.1 national geodatabase (public domain, USGS; 1.52 GB zip from
 ScienceBase item 652d4fc5d34e44db0e2ee45e, whose `catalog/file/get/<item>?name=`
 endpoint serves the file -- the item's "manager" links are web pages) and writes:
 
-  data/processed/protected.parquet   lon, lat, landmark (0/1) per chunk
+  data/processed/protected.parquet   lon, lat, landmark (0/1) per chunk, and
+                                     landmark_near (0/1): within DIST["green"]
+
+`landmark_near` is what score.py credits (L in docs/national-scenery-types-verdict.md,
+built in docs/national-scenery-additions.md). PAD-US's fee polygons cut the road
+right-of-way out of the park: the Tamiami Trail is inside Big Cypress for 9% of its
+length and within 80 m of it for 98%. 80 m is score.py's own reach for "next to a
+park" (DIST["green"]), measured in the region's metric projection (common.CRS_METERS,
+which tools/national_build/stage.py sets per region). `landmark` keeps the old
+inside-the-polygon flag, so a file written before the change still scores as it did.
 
 Joined by position, like tree_cover.parquet: this stage chunks the roads with
 score.py's own chunk_roads() and stores the midpoint it tested, and score.py
@@ -50,7 +59,8 @@ import pandas as pd
 import pyogrio
 import shapely
 
-from score import chunk_roads, load_layer
+import common
+from score import DIST, chunk_roads, load_layer
 
 LAYER = "PADUS4_1Combined_Proclamation_Marine_Fee_Designation_Easement"
 # Designation types that name a place people go to look at. Codes from the
@@ -62,16 +72,23 @@ LANDMARK = {"NP", "NM", "NCA", "NRA", "NSBV", "NLS", "WA", "WSA", "SP", "SW"}
 FEATURE_CLASSES = {"Fee", "Designation"}
 
 
-def landmark_flags(lon: np.ndarray, lat: np.ndarray, polygons: gpd.GeoDataFrame) -> np.ndarray:
-    """1.0 where a point falls in any landmark polygon, else 0.0."""
+def landmark_flags(lon: np.ndarray, lat: np.ndarray, polygons: gpd.GeoDataFrame,
+                   within_m: float = 0.0) -> np.ndarray:
+    """1.0 where a point falls in any landmark polygon, or with `within_m` > 0 lies
+    within that many metres of one (in common.CRS_METERS), else 0.0."""
     keep = (polygons["FeatClass"].isin(FEATURE_CLASSES).to_numpy()
             & polygons["Des_Tp"].isin(LANDMARK).to_numpy())
-    geoms = shapely.make_valid(polygons.geometry.values[keep])
     flags = np.zeros(len(lon), dtype=np.float32)
-    if len(geoms) == 0:
+    if not keep.any():
         return flags
-    pts = gpd.GeoSeries(gpd.points_from_xy(lon, lat), crs=4326).to_crs(polygons.crs).values
-    hit = shapely.STRtree(geoms).query(pts, predicate="intersects")
+    crs = common.CRS_METERS if within_m > 0 else polygons.crs
+    geoms = shapely.make_valid(polygons.geometry[keep].to_crs(crs).values)
+    pts = gpd.GeoSeries(gpd.points_from_xy(lon, lat), crs=4326).to_crs(crs).values
+    tree = shapely.STRtree(geoms)
+    if within_m > 0:
+        hit = tree.query(pts, predicate="dwithin", distance=within_m)
+    else:
+        hit = tree.query(pts, predicate="intersects")
     flags[np.unique(hit[0])] = 1.0
     return flags
 
@@ -99,11 +116,14 @@ def main(processed_dir: str, gdb: str):
     print(f"{len(polygons):,} PAD-US polygons in the region's box in {time.time() - t0:.0f}s")
 
     flags = landmark_flags(lon, lat, polygons)
+    near = landmark_flags(lon, lat, polygons, within_m=DIST["green"])
     out = d / "protected.parquet"
-    pd.DataFrame({"lon": lon, "lat": lat, "landmark": flags}).to_parquet(out)
+    pd.DataFrame({"lon": lon, "lat": lat, "landmark": flags, "landmark_near": near}).to_parquet(out)
     km = chunks.geometry.length.to_numpy() / 1000
     print(f"landmark: {100 * flags.mean():.2f}% of chunks, "
-          f"{100 * km[flags > 0].sum() / km.sum():.2f}% of km; wrote {out} in {time.time() - t0:.0f}s")
+          f"{100 * km[flags > 0].sum() / km.sum():.2f}% of km; within {DIST['green']:.0f} m: "
+          f"{100 * near.mean():.2f}% of chunks, {100 * km[near > 0].sum() / km.sum():.2f}% of km; "
+          f"wrote {out} in {time.time() - t0:.0f}s")
 
 
 if __name__ == "__main__":

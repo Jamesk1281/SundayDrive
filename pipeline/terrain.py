@@ -12,8 +12,14 @@ Reads data/processed/elevation.tif and writes:
 
   data/processed/range3k.tif   max - min elevation within ~3 km (m), EPSG:3857,
                                same grid as elevation.tif, NaN = no data
+  data/processed/prom10k.tif   the highest elevation within a 10 km half-side
+                               square, minus the pixel's own (m), same grid
 
-score.py samples it into `c_grand`. A separate stage rather than a second filter
+score.py samples both into `c_grand`: the range directly, and the prominence as
+distant relief over open land (V in docs/national-scenery-types-verdict.md, built
+in docs/national-scenery-additions.md). The two are computed one after the other,
+never held together: at Montana's mosaic each is a 3.6 GB array. range3k.tif is
+written last, so its presence (which the national build checks) means both are. A separate stage rather than a second filter
 pass inside elevation.py, for two reasons: it runs on any existing build without
 re-fetching a tile, and elevation.py's in-RAM mosaic is already the memory wall a
 national build has to tile around.
@@ -54,6 +60,10 @@ from elevation import ELEV_MAX_M, ELEV_MIN_M, RELIEF_REF_LAT
 # Ground size of the window, measured the way elevation.py measures RELIEF_WINDOW_M:
 # at RELIEF_REF_LAT, so one constant means one distance in every region.
 RANGE_WINDOW_M = 3000.0
+# Distant relief: the half-side of the square searched for the highest ground, also
+# at RELIEF_REF_LAT. 10 km is the middle of the 5-15 km the study swept; 15 km fails
+# New England's check (docs/national-scenery-types-verdict.md §4).
+PROM_HALF_SIDE_M = 10_000.0
 # How far a pixel may sit from its 5x5 median before it is treated as corrupt.
 SPIKE_M = 250.0
 SPIKE_WINDOW = 5
@@ -114,9 +124,28 @@ def range_within(z: np.ndarray, win: int) -> np.ndarray:
     return np.where(gap | ~np.isfinite(out), np.nan, out).astype(np.float32)
 
 
+def prominence_within(z: np.ndarray, win: int) -> np.ndarray:
+    """The highest elevation within a win x win window, minus the pixel's own. Holes
+    are invisible to the maximum, and NaN where the pixel itself is a hole."""
+    gap = np.isnan(z)
+    a = np.where(gap, -np.inf, z)
+    out = maximum_filter(a, size=win)
+    del a
+    out -= z
+    out[gap | ~np.isfinite(out)] = np.nan
+    return out.astype(np.float32, copy=False)
+
+
 def window_px(transform) -> int:
     px_ground = transform.a * math.cos(math.radians(RELIEF_REF_LAT))
     return max(3, int(round(RANGE_WINDOW_M / px_ground)) | 1)
+
+
+def prom_window_px(transform) -> int:
+    """Odd pixel side of the 2 x PROM_HALF_SIDE_M square, sized as the study sized it
+    (tools/scenery_types/feat_lib.py, dem_features)."""
+    px_ground = transform.a * math.cos(math.radians(RELIEF_REF_LAT))
+    return int(round(2 * PROM_HALF_SIDE_M / px_ground)) | 1
 
 
 def main(processed_dir: str):
@@ -134,10 +163,20 @@ def main(processed_dir: str):
     # Ocean bathymetry to sea level, as elevation.py does, so a coastal road is
     # not credited with the sea floor.
     np.clip(z, 0.0, None, out=z)
+    prof.update(dtype="float32", nodata=float("nan"), compress="deflate", predictor=2)
+    # Despiked before the maximum: a 10 km window finds every in-band spike there is.
+    pwin = prom_window_px(transform)
+    out = prominence_within(z, pwin)
+    with rasterio.open(d / "prom10k.tif", "w", **prof) as dst:
+        dst.write(out, 1)
+    valid = ~np.isnan(out)
+    print(f"prominence within {PROM_HALF_SIDE_M:.0f} m ({pwin} px): median "
+          f"{np.median(out[valid]):.0f} m, p95 {np.percentile(out[valid], 95):.0f} m; "
+          f"wrote {d / 'prom10k.tif'} in {time.time() - t0:.0f}s")
+    del out, valid
     win = window_px(transform)
     rng = range_within(z, win)
     del z
-    prof.update(dtype="float32", nodata=float("nan"), compress="deflate", predictor=2)
     with rasterio.open(d / "range3k.tif", "w", **prof) as dst:
         dst.write(rng, 1)
     valid = ~np.isnan(rng)
