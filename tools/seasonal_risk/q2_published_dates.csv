@@ -1,0 +1,177 @@
+road,season,opened,open_quality,closed,close_quality,source_url,read,note
+tioga,2025,2025-05-26,actual,2025-11-12,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2024,2024-06-10,actual,2024-11-11,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2023,2023-07-22,actual,2023-11-15,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2022,2022-05-27,actual,2022-10-31,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2021,2021-05-27,actual,2021-10-21,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2020,2020-06-15,actual,2020-11-05,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2019,2019-07-01,actual,2019-11-19,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2018,2018-05-21,actual,2018-11-20,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2017,2017-06-29,actual,2017-11-14,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2016,2016-05-18,actual,2016-11-16,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2015,2015-05-04,actual,2015-11-01,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2014,2014-05-02,actual,2014-11-13,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2013,2013-05-11,actual,2013-11-18,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2012,2012-05-07,actual,2012-11-08,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2011,2011-06-18,actual,2011-12-31,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+tioga,2010,2010-06-05,actual,2011-01-17,actual,https://www.nps.gov/yose/planyourvisit/seasonal.htm (Roads CSV),2026-10-21,
+gtsr,2010,2010-06-24,actual,2010-10-18,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2011,2011-07-13,actual,2011-09-17,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2012,2012-06-19,actual,2012-09-16,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2013,2013-06-21,actual,2013-09-23,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2014,2014-07-02,actual,2014-09-22,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2015,2015-06-19,actual,2015-10-05,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2016,2016-06-16,actual,2016-10-10,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2017,2017-06-28,actual,2017-09-03,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2018,2018-06-22,actual,2018-09-29,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2019,2019-06-22,actual,2019-09-25,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2020,2020-07-13,actual,2020-10-09,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2021,2021-06-25,actual,2021-10-13,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+gtsr,2022,2022-07-13,actual,2022-10-16,actual,https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm,2026-10-21,Logan Pass; footnoted closings include fire and construction
+lassen,2010,2010-07-08,actual,2010-10-23,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2011,2011-07-16,actual,2011-11-22,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2012,2012-06-01,actual,2012-11-19,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2013,2013-05-24,actual,2013-12-18,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2014,2014-05-19,actual,2014-12-01,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2015,2015-05-03,actual,2015-11-08,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2016,2016-06-12,actual,2016-10-30,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2017,2017-07-26,actual,2017-11-10,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2018,2018-05-27,actual,2018-11-20,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2019,2019-06-22,actual,2019-11-29,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2020,2020-05-29,actual,2020-11-13,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2021,2021-05-17,actual,2021-10-21,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2022,2022-06-03,actual,2022-11-06,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2023,2023-07-01,actual,2023-12-05,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2024,2024-06-20,actual,2024-12-06,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2025,2025-06-27,actual,2025-10-24,actual,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+lassen,2026,2026-05-22,actual,,,https://www.nps.gov/lavo/planyourvisit/winter-road-closures-and-spring-clearing-update.htm,2026-10-21,
+trail_ridge,2000,2000-05-23,actual,2000-10-24,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2000,2000-06-30,actual,2000-10-19,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2001,2001-05-25,actual,2001-10-10,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2001,2001-06-30,actual,2001-10-18,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2002,2002-05-07,actual,2002-10-22,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2002,2002-07-04,actual,2002-10-28,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2003,2003-05-23,actual,2003-11-01,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2003,2003-07-04,actual,2003-10-31,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2004,2004-05-20,actual,2004-10-12,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2004,2004-07-04,actual,2004-09-30,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2005,2005-05-21,actual,2005-10-28,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2005,2005-07-02,actual,2005-10-13,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2006,2006-05-24,actual,2006-10-16,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2006,2006-07-01,actual,2006-09-26,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2007,2007-05-25,actual,2007-10-22,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2007,2007-06-30,actual,2007-10-10,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2008,2008-05-23,actual,2008-11-06,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+old_fall_river,2008,2008-07-04,actual,2008-10-20,actual,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,closing = the parenthesised date where given
+trail_ridge,2009,2009-05-21,actual,,,https://www.nps.gov/romo/learn/photosmultimedia/opening_closing_trr_ofr.htm,2026-10-21,"closing = the parenthesised ""not opened after"" date where given"
+trail_ridge,2016,,,2016-11-18,actual,https://www.nps.gov/romo/learn/news/pr_trail-ridge-road-closes-on-november-18-to-through-travel-for-the-season.htm,2026-10-21,
+crater_lake_west,2004,2004-06-17,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2005,2005-06-10,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2006,2006-06-14,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2007,2007-05-24,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2008,2008-06-20,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2009,2009-06-01,actual,2009-10-27,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2010,2010-06-07,actual,2010-10-24,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2011,2011-06-24,actual,2011-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2012,2012-06-11,actual,2012-10-23,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2013,2013-05-15,actual,2013-10-28,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2014,2014-05-23,actual,2014-10-28,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2015,2015-05-14,actual,2015-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2016,2016-05-27,actual,2016-10-14,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2017,2017-06-22,actual,2017-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2018,2018-05-25,actual,2018-10-29,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2019,2019-06-15,actual,2019-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2020,2020-06-09,actual,2020-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2021,2021-05-28,actual,2021-10-22,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2022,2022-06-09,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_west,2023,2023-06-30,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,North Entrance & West Rim Drive
+crater_lake_east,2004,2004-07-03,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2005,2005-06-29,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2006,2006-07-14,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2007,2007-06-29,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2008,2008-07-11,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2009,2009-06-30,actual,2009-10-13,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2010,2010-07-09,actual,2010-10-23,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2011,2011-07-22,actual,2011-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2012,2012-07-17,actual,2012-10-23,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2013,2013-07-02,actual,2013-10-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2014,2014-07-01,actual,2014-10-27,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2015,2015-06-11,actual,2015-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2016,2016-07-13,actual,2016-10-14,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2017,2017-07-21,actual,2017-10-13,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2018,2018-06-16,actual,2018-10-29,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2019,2019-07-11,actual,2019-10-17,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2020,2020-07-11,actual,2020-11-01,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2021,2021-06-25,actual,2021-10-21,actual,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+crater_lake_east,2022,2022-07-15,actual,,,https://www.nps.gov/crla/planyourvisit/hours.htm,2026-10-21,East Rim Drive
+chinook,2025,2025-05-23,actual,2025-10-24,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2024,2024-05-31,actual,2024-10-31,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2023,2023-05-26,actual,2023-11-10,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2022,2022-05-26,actual,2022-10-27,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2021,2021-05-28,actual,2021-11-09,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2020,2020-06-04,actual,2020-11-12,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2019,2019-05-23,actual,2019-10-19,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,May 23 reopened -- Oct. 25 / Oct. 19 - temporary Nov. 21
+chinook,2018,2018-06-11,actual,2018-11-20,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2017,2017-06-09,actual,2017-11-07,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2016,2016-05-17,actual,2016-11-29,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2015,2015-04-02,actual,2015-11-16,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2014,2014-05-23,actual,2014-11-24,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2013,2013-05-17,actual,2013-12-02,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2012,2012-05-25,actual,2012-11-12,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2011,2011-06-23,actual,2011-11-11,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+chinook,2010,2010-05-28,actual,2010-11-16,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2026,2026-04-30,actual,,,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,partial reopening
+north_cascades,2025,2025-04-22,actual,2025-12-04,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2024,2024-04-19,actual,2024-11-18,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2023,2023-05-11,actual,2023-11-30,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2022,2022-05-10,actual,2022-11-03,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2021,2021-05-05,actual,2021-11-15,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2020,2020-05-12,actual,2020-11-16,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2019,2019-04-18,actual,2019-12-11,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2018,2018-05-11,actual,2018-11-28,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2017,2017-05-16,actual,2017-11-10,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2016,2016-04-22,actual,2016-11-18,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2015,2015-04-03,actual,2015-11-12,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2014,2014-05-08,actual,2014-11-24,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2013,2013-04-16,actual,2013-12-03,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2012,2012-05-10,actual,2012-11-20,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2011,2011-05-25,actual,2011-11-21,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+north_cascades,2010,2010-04-16,actual,2010-12-01,actual,https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates,2026-10-21,
+independence,2014,,,2014-11-12,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2015,,,2015-11-04,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2016,,,2016-11-17,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2017,,,2017-11-17,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2018,,,2018-11-05,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2019,,,2019-10-28,actual,https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2020,2020-06-01,actual,2020-11-13,actual,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season ; https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,"opening delayed by the pandemic, not snow"
+independence,2021,2021-05-27,actual,2021-10-28,actual,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season ; https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,CDOT's 2022 release gives Oct 25 for the 2021 closing
+independence,2022,2022-05-26,actual,2022-11-04,actual,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season ; https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2023,2023-05-25,actual,2023-10-30,actual,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season ; https://www.codot.gov/news/2024/october/seasonal-closure-co82-independence-pass-through-spring-2025,2026-10-21,
+independence,2024,2024-05-31,actual,,,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season,2026-10-21,
+independence,2025,2025-05-22,actual,,,https://www.codot.gov/news/2025/may/independence-pass-open-for-2025-season,2026-10-21,
+independence,2025,,,2025-11-17,actual,https://www.codot.gov/news/2025/november/co82-independence-pass-closed-nov17,2026-10-21,
+vt108,2021,2021-04-19,actual,2021-11-24,actual,https://www.wcax.com/2021/04/19/vermont-route-108-open-again-through-smugglers-notch/ ; closing: https://www.wcax.com/2022/05/03/vtrans-opens-notch-road-2022-season,2026-10-21,"opened Apr 13, reclosed by snow, reopened Apr 19"
+vt108,2022,2022-05-03,actual,,,https://www.wcax.com/2022/05/03/vtrans-opens-notch-road-2022-season,2026-10-21,
+vt108,2023,,,2023-11-14,by,https://www.vermontpublic.org/local-news/2023-11-15/smugglers-notch-road-officially-closed-for-winter-season,2026-10-21,closure announced on Tuesday Nov 14
+vt108,2024,2024-05-15,by,,,https://www.vermontpublic.org/local-news/2024-05-15/smugglers-notch-road-reopens-with-new-truck-deterrent-barriers,2026-10-21,report date: open by then
+vt108,2026,2026-05-04,actual,,,https://www.wcax.com/2026/05/04/notch-road-opens-season/,2026-10-21,
+lincoln_gap,2024,2024-05-15,by,,,https://www.vermontpublic.org/local-news/2024-05-15/smugglers-notch-road-reopens-with-new-truck-deterrent-barriers,2026-10-21,report date: open by then
+greylock,2023,2023-05-20,scheduled,,,https://wupe.com/mount-greylock-2024-opening/,2026-10-21,DCR post quoted by WUPE
+greylock,2024,2024-05-18,scheduled,,,https://berkshires.org/events/mt-greylock-summit-to-open/2024-05-25,2026-10-21,
+greylock,2026,2026-05-16,scheduled,2026-10-30,scheduled,https://mass.gov/locations/mount-greylock-state-reservation,2026-10-21,
+beartooth,2018,2018-06-01,projected,,,https://yellowstoneinsider.com/2018/05/23/beartooth-highway-open-next-week-not-memorial-day-weekend,2026-10-21,
+beartooth,2022,2022-05-27,actual,,,https://www.nps.gov/yell/learn/news/2205262.htm,2026-10-21,closed again at 5 pm on opening day for snow; June floods shut it to late July
+beartooth,2023,2023-05-26,scheduled,2023-10-10,actual,https://www.nps.gov/yell/learn/news/230524.htm ; closing: https://www.kulr8.com/news/beartooth-highway-officially-closes-for-the-season-october-10/article_380dd3cc-67c2-11ee-a42a-b3513cf2bfa8.html,2026-10-21,a storm shut it right after opening
+beartooth,2024,2024-06-01,projected,2024-10-15,actual,https://www.nps.gov/yell/learn/news/240530.htm ; closing: https://home.nps.gov/yell/learn/news/241010.htm,2026-10-21,"scheduled May 24, held by a storm"
+beartooth,2026,2026-05-23,actual,,,https://www.nps.gov/yell/learn/news/26010.htm,2026-10-21,"Montana side May 22, Wyoming side May 23"
+sonora,2015,2015-04-17,actual,,,https://www.uniondemocrat.com/news/article_0ace8830-070e-11ee-9c23-436539232cc8.html,2026-10-21,"the decade's earliest, per the 2023 article"
+sonora,2017,2017-06-13,actual,,,https://www.uniondemocrat.com/news/article_0ace8830-070e-11ee-9c23-436539232cc8.html,2026-10-21,the decade's latest
+sonora,2023,,,2024-01-02,actual,https://dot.ca.gov/caltrans-near-me/district-9/district-9-news/2024_5_16-sr-108-and-sr-120-w-reopen,2026-10-21,
+sonora,2024,2024-05-16,actual,,,https://dot.ca.gov/caltrans-near-me/district-9/district-9-news/2024_5_16-sr-108-and-sr-120-w-reopen,2026-10-21,
+sonora,2025,,,2025-12-26,actual,https://dot.ca.gov/caltrans-near-me/district-9/district-9-news/2026-4-30-state-route-108-reopens-from-winter-closure,2026-10-21,
+sonora,2026,2026-04-30,actual,,,https://dot.ca.gov/caltrans-near-me/district-9/district-9-news/2026-4-30-state-route-108-reopens-from-winter-closure,2026-10-21,
+stevens_canyon,2012,2012-05-25,projected,,,https://www.nps.gov/mora/learn/news/spring-opening.htm,2026-10-21,
+stevens_canyon,2022,,,2022-10-17,scheduled,https://www.nationalparkstraveler.org/2022/09/section-stevens-canyon-road-mount-rainier-national-park-closed-all-travel,2026-10-21,the annual closure date; a section was shut for construction from September
+stevens_canyon,2026,2026-05-28,by,,,https://www.wta.org/news/signpost/hiker-headlines-rainier-roads-open-enchanted-valley-permits-releasing-soon-marblemount-bridge-nightly-closures-5-28-26,2026-10-21,
+sunrise,2012,2012-06-22,projected,,,https://www.nps.gov/mora/learn/news/spring-opening.htm,2026-10-21,
+sunrise,2025,,,2025-10-05,scheduled,https://www.wta.org/news/signpost/hiker-headlines-sunrise-road-closing-soon-last-call-for-photo-contest-cascade-river-road-closure-10-2-25,2026-10-21,
