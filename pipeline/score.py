@@ -1,18 +1,21 @@
 """Score every drivable road chunk in the region for scenic quality.
 
 Scoring components (the per-segment "beauty vector"):
-  water   - proximity to lakes/reservoirs/rivers
+  water   - proximity to lakes/reservoirs/rivers, or to the sea where the road
+            is on it (a bridge or causeway)
   coast   - proximity to the ocean coastline
   forest  - OSM woods/forests/parks/reserves, blended half-and-half with
             measured tree cover from landcover.py; or desert and rock within
             ~1 km, whichever is larger
   curves  - heading change per km (twistiness)
   relief  - local terrain relief from elevation.py (hills, valleys, overlooks)
-  grand   - mountain- and canyon-scale terrain above relief's cap, from terrain.py
+  grand   - mountain- and canyon-scale terrain above relief's cap, from terrain.py;
+            or distant mountains seen across open land, whichever is larger
   farm    - adjacency to farmland/orchards/meadows
   views   - proximity to mapped viewpoints
   scenic  - designated scenic byway (OSM route relation, or scenic=yes)
-  protected - inside a landmark protected area (PAD-US, from protected.py)
+  protected - inside or within 80 m of a landmark protected area (PAD-US, from
+            protected.py)
   urban   - proximity to town/village centers and retail/commercial districts
 
 The relief component is read from data/processed/relief.tif if present
@@ -20,7 +23,10 @@ The relief component is read from data/processed/relief.tif if present
 data/processed/tree_cover.parquet (run landcover.py first); grand from
 range3k.tif (terrain.py) and protected from protected.parquet (protected.py).
 Any one missing degrades its component to zero and prints a notice, so a build
-made before the national components scores exactly as it did.
+made before the national components scores exactly as it did. The same holds for
+the three scenery additions (docs/national-scenery-additions.md): without
+prom10k.tif, the ~1 km shares in tree_cover.parquet or protected.parquet's
+landmark_near column, each scores as E1 did.
 
 Each chunk keeps its component vector (the per-segment "beauty vector")
 plus a composite 0-10 score. Output: scored_chunks.parquet.
@@ -114,6 +120,27 @@ GRAND_FULL = 900.0
 # landmark km divide: every km above 0.3 was an urban park or reservation
 # (108 km); Utah has none above it, Colorado 11 km (Denver's reservoir parks).
 PROTECTED_BUILT_MAX = 0.3
+
+# c_water's credit at DIST["water_mid"], shared by the sea below.
+WATER_MID = 0.45
+
+# The scenery additions, V, S2 and L (docs/national-scenery-types-verdict.md, built
+# in docs/national-scenery-additions.md). Each folds into an existing column by max(),
+# so no weight mass is added and no slider changes. Every constant was hand-set by
+# analogy before anything was scored, and swept; none is to be tuned here.
+#
+# V, distant relief: terrain.py's prom10k (the highest ground within 10 km, minus the
+# road's) credited on c_grand's own scale, GRAND_START to GRAND_FULL, and only as far
+# as the ~1 km box is open land: not tree, built or mangrove. Into c_grand.
+# S2, the sea as water: c_water's own distance curve to the coastline, from the chunk
+# midpoint, only where at least ON_SEA_WATER_SHARE of the ~1 km box is permanent water.
+# That is a road with water on both sides; a shore road has about half at most. OSM
+# maps no water polygon over the open sea (verdict §2), so without it the Overseas
+# Highway scored as a dry road. Into c_water.
+# L: PROTECTED_BUILT_MAX's landmark credit, within DIST["green"] of the polygon rather
+# than inside it, because PAD-US cuts road rights-of-way out of its parks. Into
+# c_protected (protected.py writes the flag).
+ON_SEA_WATER_SHARE = 0.5
 CLASS_ADJ = {
     "motorway": -0.45, "motorway_link": -0.40, "trunk": -0.10, "trunk_link": -0.18,
     "primary": -0.04, "primary_link": -0.10, "secondary": 0.0, "secondary_link": -0.10,
@@ -439,29 +466,48 @@ def read_aligned(chunks: gpd.GeoDataFrame, path: Path, stage: str) -> pd.DataFra
     return tc
 
 
+BOX_SHARES = ("tree_1k", "water_1k", "mangrove_1k")
+
+
 def sample_cover(chunks: gpd.GeoDataFrame, path: Path):
-    """Per-chunk WorldCover tree-cover, desert-and-rock and built-up fractions, as
-    written by landcover.py. A file from before desert was added has neither
-    later column: desert scores 0, which is what it was, and built comes back
-    None, which sample_protected treats as "cannot tell a city park from a
-    national one" and so credits nothing."""
+    """Per-chunk WorldCover tree-cover, desert-and-rock and built-up fractions, and
+    the ~1 km box's BOX_SHARES, as written by landcover.py. A file from before desert
+    was added has neither later column: desert scores 0, which is what it was, and
+    built comes back None, which sample_protected treats as "cannot tell a city park
+    from a national one" and so credits nothing. A file from before the scenery
+    additions has no BOX_SHARES, and they come back None."""
     if not path.exists():
         print(f"NOTE: {path.name} missing; c_forest falls back to OSM green at "
               f"half strength, which under-scores the whole network "
               f"(run landcover.py to enable measured tree cover)")
-        return np.zeros(len(chunks)), np.zeros(len(chunks)), None
+        return np.zeros(len(chunks)), np.zeros(len(chunks)), None, None
     tc = read_aligned(chunks, path, "landcover.py")
     if "desert" not in tc.columns:
         print(f"NOTE: {path.name} has no desert column; desert and rock score 0 "
               f"(re-run landcover.py to enable it)")
-        return tc["tree"].to_numpy(), np.zeros(len(chunks)), None
+        return tc["tree"].to_numpy(), np.zeros(len(chunks)), None, None
     built = tc["built"].to_numpy() if "built" in tc.columns else None
-    return tc["tree"].to_numpy(), tc["desert"].to_numpy(), built
+    shares = None
+    if built is not None and all(c in tc.columns for c in BOX_SHARES):
+        shares = {c: tc[c].to_numpy() for c in BOX_SHARES}
+    else:
+        print(f"NOTE: {path.name} has no ~1 km tree, water and mangrove shares; distant "
+              f"relief and the sea as water score 0 (re-run landcover.py to enable them)")
+    return tc["tree"].to_numpy(), tc["desert"].to_numpy(), built, shares
 
 
 def sample_tree_cover(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
     """Tree cover alone."""
     return sample_cover(chunks, path)[0]
+
+
+def sample_raster(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
+    """A single-band EPSG:3857 raster's value at each chunk midpoint, NaN as stored."""
+    import rasterio
+    mids = chunks.geometry.interpolate(0.5, normalized=True).to_crs(3857)
+    coords = np.column_stack([mids.x.values, mids.y.values])
+    with rasterio.open(path) as src:
+        return np.fromiter((v[0] for v in src.sample(coords)), dtype=float, count=len(coords))
 
 
 def sample_grand(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
@@ -470,13 +516,37 @@ def sample_grand(chunks: gpd.GeoDataFrame, path: Path) -> np.ndarray:
         print(f"NOTE: {path.name} missing; c_grand = 0 "
               f"(run terrain.py to enable mountain-scale terrain)")
         return np.zeros(len(chunks))
-    import rasterio
-    mids = chunks.geometry.interpolate(0.5, normalized=True).to_crs(3857)
-    coords = np.column_stack([mids.x.values, mids.y.values])
-    with rasterio.open(path) as src:
-        vals = np.fromiter((v[0] for v in src.sample(coords)), dtype=float, count=len(coords))
-    vals = np.nan_to_num(vals, nan=0.0)
+    vals = np.nan_to_num(sample_raster(chunks, path), nan=0.0)
     return np.clip((vals - GRAND_START) / (GRAND_FULL - GRAND_START), 0, 1)
+
+
+def vista(prom: np.ndarray, tree_1k: np.ndarray, built_1k: np.ndarray,
+          mangrove_1k: np.ndarray) -> np.ndarray:
+    """V: distant relief over open land, 0..1 (see the comment above ON_SEA_WATER_SHARE).
+    tools/scenery_types/cands.py's `vista`, at R = 10 km and GRAND_START/GRAND_FULL."""
+    open_land = np.clip(1 - tree_1k - built_1k - mangrove_1k, 0, 1)
+    p = np.nan_to_num(prom, nan=0.0)
+    return open_land * np.clip((p - GRAND_START) / (GRAND_FULL - GRAND_START), 0, 1)
+
+
+def sample_vista(chunks: gpd.GeoDataFrame, path: Path, built: np.ndarray | None,
+                 shares: dict | None) -> np.ndarray:
+    """V at each chunk midpoint, from terrain.py's prom10k.tif and landcover.py's box."""
+    if not path.exists():
+        print(f"NOTE: {path.name} missing; distant relief = 0 "
+              f"(run terrain.py to enable it)")
+        return np.zeros(len(chunks))
+    if shares is None:
+        return np.zeros(len(chunks))
+    return vista(sample_raster(chunks, path), shares["tree_1k"], built, shares["mangrove_1k"])
+
+
+def sea_as_water(near: np.ndarray, mid: np.ndarray, water_1k: np.ndarray) -> np.ndarray:
+    """S2: c_water's curve to the coastline, where the road is on the sea. `near`
+    and `mid` say whether the midpoint is within DIST["water"] and DIST["water_mid"]
+    of it. tools/scenery_types/cands.py's `sea` with on_sea=True."""
+    s = np.where(near, 1.0, np.where(mid, WATER_MID, 0.0))
+    return s * (water_1k >= ON_SEA_WATER_SHARE)
 
 
 def sample_protected(chunks: gpd.GeoDataFrame, path: Path,
@@ -487,7 +557,16 @@ def sample_protected(chunks: gpd.GeoDataFrame, path: Path,
         print(f"NOTE: {path.name} missing; c_protected = 0 "
               f"(run protected.py with PAD-US to enable it)")
         return np.zeros(len(chunks))
-    landmark = read_aligned(chunks, path, "protected.py")["landmark"].to_numpy().astype(float)
+    pr = read_aligned(chunks, path, "protected.py")
+    landmark = pr["landmark"].to_numpy().astype(float)
+    if "landmark_near" in pr.columns:
+        # L: within DIST["green"] of a landmark, not only inside one. max() is the
+        # measured definition; inside implies near except at a projection's rounding.
+        landmark = np.maximum(landmark, pr["landmark_near"].to_numpy().astype(float))
+    else:
+        print(f"NOTE: {path.name} has no landmark_near column; landmark credit only "
+              f"inside the polygon (re-run protected.py to credit roads within "
+              f"{DIST['green']:.0f} m)")
     if built is None:
         print(f"NOTE: tree_cover.parquet has no built column, so a city park cannot "
               f"be told from a national one; c_protected = 0 (re-run landcover.py)")
@@ -630,7 +709,7 @@ def main(processed_dir: str, cache: bool = True):
 
     near_water = water.near(geoms, DIST["water"])
     mid_water = water.near(geoms, DIST["water_mid"])
-    chunks["c_water"] = np.where(near_water, 1.0, np.where(mid_water, 0.45, 0.0))
+    chunks["c_water"] = np.where(near_water, 1.0, np.where(mid_water, WATER_MID, 0.0))
     chunks["c_coast"] = near_flags(coast_tree, geoms, DIST["coast"]).astype(float)
     # Forest: OSM's designated green polygons and WorldCover's measured tree
     # cover, half each. OSM green records land *designation*, not vegetation, so
@@ -647,7 +726,7 @@ def main(processed_dir: str, cache: bool = True):
     # permanently on for a user who set the slider to zero. See
     # docs/geodata-sources-findings.md.
     green_flag = green.near(geoms, DIST["green"]).astype(float)
-    tree, desert, built = sample_cover(chunks, d / "tree_cover.parquet")
+    tree, desert, built, shares = sample_cover(chunks, d / "tree_cover.parquet")
     # Desert and rock share forest's slot rather than taking a weight of their
     # own: a canyon road is to Utah what a wooded road is to Vermont, and max()
     # adds no weight mass and leaves the forest/park slider whole. In New England
@@ -660,6 +739,15 @@ def main(processed_dir: str, cache: bool = True):
     chunks["c_relief"] = sample_relief(chunks, d / "relief.tif")
     chunks["c_grand"] = sample_grand(chunks, d / "range3k.tif")
     chunks["c_protected"] = sample_protected(chunks, d / "protected.parquet", built)
+    # The scenery additions V and S2, each by max() into its existing column (see
+    # ON_SEA_WATER_SHARE). L is inside sample_protected.
+    chunks["c_grand"] = np.maximum(chunks["c_grand"],
+                                   sample_vista(chunks, d / "prom10k.tif", built, shares))
+    if shares is not None and coast_tree is not None:
+        mids = chunks.geometry.interpolate(0.5, normalized=True).values
+        sea = sea_as_water(near_flags(coast_tree, mids, DIST["water"]),
+                           near_flags(coast_tree, mids, DIST["water_mid"]), shares["water_1k"])
+        chunks["c_water"] = np.maximum(chunks["c_water"], sea)
 
     # Townscape: full credit inside a retail/commercial district or close to a
     # town-center node, tapering to partial credit across the town's wider orbit.

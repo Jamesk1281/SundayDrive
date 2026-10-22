@@ -121,6 +121,7 @@ def _build_one(c: dict, region: regions.Region, d: Path):
     steps = [
         ("extract", [*stage, "-", "extract", str(pbf), str(d)], "roads.parquet"),
         ("elevation", [*stage, bbox, "elevation", str(d), "11"], "relief.tif"),
+        # terrain.py writes prom10k.tif first and range3k.tif last, so this marks both.
         ("terrain", [*stage, "-", "terrain", str(d)], "range3k.tif"),
         ("landcover", [*stage, "-", "landcover", str(d)], "tree_cover.parquet"),
         ("protected", [*stage, "-", "protected", str(d), c["landmarks"]], "protected.parquet"),

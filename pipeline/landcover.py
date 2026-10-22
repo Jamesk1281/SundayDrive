@@ -12,7 +12,8 @@ docs/geodata-sources-findings.md and docs/geodata-peer-review-verdict.md.
 Reads ESA WorldCover v200 2021 (10 m, CC-BY 4.0, global) and writes:
 
   data/processed/tree_cover.parquet   lon, lat, tree fraction per chunk, and
-                                      the desert-and-rock fraction within ~1 km
+                                      the desert-and-rock, built, tree, water and
+                                      mangrove fractions within ~1 km
 
 score.py joins it into `c_forest = max(0.5 * c_green + 0.5 * tree, desert)`.
 The desert half is the national extension measured in
@@ -30,9 +31,10 @@ Massachusetts' largest, 757 MB for Maine's. Peak RSS was 1.9 GB for
 Massachusetts, most of it the chunked road frame rather than the raster. That is
 the opposite cost shape to elevation.py, whose in-RAM float64 mosaic plus max/min
 filters is already 5.6 GB for New England and grows with every state added.
-There is no mosaic, no filter pass and no coverage guard here. The desert count
-holds one boolean copy of the window alongside it for a moment, so a tile
-covered corner to corner now peaks near 2.6 GB rather than 1.3 GB.
+There is no mosaic, no filter pass and no coverage guard here. The ~1 km box
+counts hold one uint8 code per pixel of the window alongside it for a moment, so
+a tile covered corner to corner peaks near 2.6 GB rather than 1.3 GB, however
+many ~1 km shares are written (BOX_CODES).
 
 Usage: python landcover.py <processed_dir> [--stream]
 
@@ -80,6 +82,29 @@ DESERT_CLASSES = (20, 60, 70, 100)
 # All 108 km of New England landmark road with this box over 30% built were urban
 # parks of that kind; Utah had none, Colorado 11 km.
 BUILT_CLASS = 50
+
+# Three more shares of the same ~1 km box, for the scenery additions measured in
+# docs/national-scenery-types-verdict.md and built in docs/national-scenery-additions.md.
+# score.py reads them as follows:
+#   tree_1k, mangrove_1k  with built, what is *not* open land, for distant relief (V).
+#                         This is the 1 km box's tree share, not the 100 m `tree` above:
+#                         the two differ everywhere, and V was measured on this one.
+#   water_1k              permanent water, for the sea as water (S2): a road counts as
+#                         on the sea only where at least half its box is water.
+# A box reaching a cell WorldCover omits (all ocean) counts those pixels as water.
+WATER_CLASS = 80
+MANGROVE_CLASS = 95
+
+# The ~1 km box counts every class above from one small code per pixel, rather than one
+# boolean copy of the window per class: a tile read corner to corner is 1.3 GB, and one
+# copy per class would add 1.3 GB for each share this stage writes.
+BOX_CODES = {"desert": 1, "built": 2, "tree_1k": 3, "water_1k": 4, "mangrove_1k": 5}
+_BOX_LUT = np.zeros(256, dtype=np.uint8)
+_BOX_LUT[list(DESERT_CLASSES)] = BOX_CODES["desert"]
+_BOX_LUT[BUILT_CLASS] = BOX_CODES["built"]
+_BOX_LUT[TREE_CLASS] = BOX_CODES["tree_1k"]
+_BOX_LUT[WATER_CLASS] = BOX_CODES["water_1k"]
+_BOX_LUT[MANGROVE_CLASS] = BOX_CODES["mangrove_1k"]
 # The tile grid: 3-degree cells on a 1/12000-degree pixel, named for their
 # SOUTH-WEST corner. That naming is the trap in this file. Deriving the tile
 # with ceil() instead of floor() sends every point three degrees east, where it
@@ -239,8 +264,17 @@ def _clip_boxes(r0, r1, c0, c1):
 
 def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
                  stream: bool) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Tree fraction of each point's ~100 m ground box, and the desert-and-rock
-    and built-up fractions of its ~1 km box, from one read of each tile.
+    """Tree fraction of each point's ~100 m box, and the desert-and-rock and
+    built-up fractions of its ~1 km box (sample_shares has the rest)."""
+    s = sample_shares(lon, lat, cache, stream)
+    return s["tree"], s["desert"], s["built"]
+
+
+def sample_shares(lon: np.ndarray, lat: np.ndarray, cache: Path,
+                  stream: bool) -> dict[str, np.ndarray]:
+    """Tree fraction of each point's ~100 m ground box, and the desert-and-rock,
+    built-up, tree, water and mangrove fractions of its ~1 km box (BOX_CODES),
+    from one read of each tile.
 
     Points are converted to a global pixel index before anything else, so a
     sample box that straddles a tile edge is counted from both tiles rather than
@@ -252,7 +286,8 @@ def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
     so the window bounding the desert boxes in a tile covers both. The one new
     case is a desert box reaching into a cell WorldCover omits because it is all
     ocean, which a 1 km box near the coast can do and a 100 m one never has. Those
-    pixels count as water (not desert); a tree box reaching one still stops the run.
+    pixels count as water (not desert), in water_1k too; a tree box reaching one
+    still stops the run.
     """
     n = len(lon)
     # Global pixel grid. Every WorldCover tile is a 36000-pixel cell of this one
@@ -273,9 +308,10 @@ def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
 
     tree_n = np.zeros(n, dtype=np.int64)
     total_n = np.zeros(n, dtype=np.int64)
-    desert_n = np.zeros(n, dtype=np.int64)
-    built_n = np.zeros(n, dtype=np.int64)
+    # One count per BOX_CODES value (column 0 is every other class).
+    box_n = np.zeros((n, len(BOX_CODES) + 1), dtype=np.int64)
     d_total_n = np.zeros(n, dtype=np.int64)
+    water = BOX_CODES["water_1k"]
     order = sorted(big)
     print(f"{n:,} midpoints across {len(order)} WorldCover tile(s): "
           f"{', '.join(tile_name(*k) for k in order)}")
@@ -298,6 +334,7 @@ def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
                 raise
             for i, (br0, br1, bc0, bc1) in bitems.items():
                 d_total_n[i] += (br1 - br0 + 1) * (bc1 - bc0 + 1)
+                box_n[i, water] += (br1 - br0 + 1) * (bc1 - bc0 + 1)
             print(f"  {tile}: absent from WorldCover (all ocean); "
                   f"{len(bitems):,} desert boxes reach it, counted as water")
             continue
@@ -309,15 +346,14 @@ def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
             w = arr[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1]
             tree_n[i] += int((w == TREE_CLASS).sum())
             total_n[i] += w.size
-        desert = np.isin(arr, DESERT_CLASSES)
-        built = arr == BUILT_CLASS
+        codes = _BOX_LUT[arr]
         del arr
+        k = box_n.shape[1]
         for i, (br0, br1, bc0, bc1) in bitems.items():
-            w = desert[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1]
-            desert_n[i] += int(w.sum())
-            built_n[i] += int(built[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1].sum())
+            w = codes[br0 - rlo:br1 - rlo + 1, bc0 - clo:bc1 - clo + 1]
+            box_n[i] += np.bincount(w.ravel(), minlength=k)
             d_total_n[i] += w.size
-        del desert, built
+        del codes
 
     # Every pixel of every box has to have been read from somewhere. This is the
     # assertion that fires if a tile is mis-indexed, mis-clipped, or missing --
@@ -332,9 +368,10 @@ def sample_cover(lon: np.ndarray, lat: np.ndarray, cache: Path,
                 f"of {want[i]} px). A box reaching into a tile that was never "
                 f"opened, or a tile index off by one cell.")
 
-    return ((tree_n / total_n).astype(np.float32),
-            (desert_n / d_total_n).astype(np.float32),
-            (built_n / d_total_n).astype(np.float32))
+    out = {"tree": (tree_n / total_n).astype(np.float32)}
+    for name, code in BOX_CODES.items():
+        out[name] = (box_n[:, code] / d_total_n).astype(np.float32)
+    return out
 
 
 def sample_tree_fraction(lon: np.ndarray, lat: np.ndarray, cache: Path,
@@ -357,11 +394,11 @@ def main(processed_dir: str, stream: bool = False):
     lon, lat = mids.x.to_numpy(), mids.y.to_numpy()
     print(f"{len(roads):,} ways -> {len(chunks):,} chunks in {time.time() - t0:.0f}s")
 
-    tree, desert, built = sample_cover(lon, lat, cache, stream)
+    shares = sample_shares(lon, lat, cache, stream)
+    tree, desert = shares["tree"], shares["desert"]
 
     out_path = d / "tree_cover.parquet"
-    pd.DataFrame({"lon": lon, "lat": lat, "tree": tree, "desert": desert,
-                  "built": built}).to_parquet(out_path)
+    pd.DataFrame({"lon": lon, "lat": lat, **shares}).to_parquet(out_path)
     print(f"wrote {out_path} ({len(tree):,} chunks) in {time.time() - t0:.0f}s total")
 
     # Length-weighted, because a value is only as important as the kilometres it
