@@ -22,11 +22,11 @@ import pytest
 import shapely
 from pyproj import Transformer
 
-from closures import WINTER, conditional_windows, gate_windows, way_windows
+from closures import WINTER, conditional_windows, gate_windows, too_rough, way_windows
 from common import CRS_METERS, in_window
 from conftest import DATA, ROOT, ROUTER_DATA
 from looper import LoopPlanner
-from router import Router, SeasonalClosures
+from router import ClosedToCars, Router, SeasonalClosures
 
 # The dates the brief's checks are written against. Lincoln Gap closes on
 # Oct 15 and everything else in New England on Nov 1 or later, so Oct 20 has
@@ -543,6 +543,158 @@ class TestFordsOnMajorRoads:
 
 def by_id_of(ways, indexes):
     return [ways[i]["way_id"] for i in indexes]
+
+
+def _scan_extract(tmp_path, ways, watch=None):
+    """Run the real osmium pass over a hand-written extract of `ways`, each
+    (way id, tags) as three nodes of its own: the k-th way's are k*10, k*10+1
+    and k*10+2."""
+    from closures import scan
+    xml = ['<?xml version="1.0"?>', '<osm version="0.6">']
+    for k in range(1, len(ways) + 1):
+        for i in range(3):
+            xml.append(f'<node id="{k * 10 + i}" version="1" '
+                       f'lat="{33.0 + i * 0.001}" lon="{-110.0 + k * 0.01}"/>')
+    for k, (way_id, tags) in enumerate(ways, 1):
+        xml.append(f'<way id="{way_id}" version="1">'
+                   + "".join(f'<nd ref="{k * 10 + i}"/>' for i in range(3))
+                   + "".join(f'<tag k="{k}" v="{v}"/>' for k, v in tags.items())
+                   + "</way>")
+    xml.append("</osm>")
+    path = tmp_path / "extract.osm"
+    path.write_text("\n".join(xml))
+    return scan(str(path), watch)
+
+
+# ------------------------------------------- permit on major roads (D1)
+
+class TestParkEntryPermits:
+    """Rocky Mountain National Park's timed-entry roads stay open. The class
+    rule the decision proposed would also have opened Camp Pendleton, Fort
+    Benning and the Air Force Academy, so the escape hatch was taken: a list
+    of way ids, and `permit` closes everything else as before
+    (docs/national-data-decisions.md, D1)."""
+
+    TRAIL_RIDGE = {"highway": "secondary", "name": "Trail Ridge Road", "ref": "US 34",
+                   "access": "permit", "vehicle": "permit",
+                   "access:conditional": "no @ Oct 14th - May 31st"}
+
+    def test_permit_is_still_a_closed_value_on_every_class(self):
+        """Neither the vocabulary nor the class rule changed: off major roads
+        `permit` is logging, tribal and military roads."""
+        from common import CLOSED_TO_CARS, closed_to_cars
+        assert "permit" in CLOSED_TO_CARS
+        for highway in TestFordsOnMajorRoads.MAJOR + TestFordsOnMajorRoads.MINOR:
+            assert closed_to_cars({"highway": highway, "access": "permit"}) == "access=permit"
+
+    def test_trail_ridge_and_the_park_entrance_are_listed(self):
+        from closures import PERMIT_REOPENED, permit_reopened
+        assert len(PERMIT_REOPENED) == 47
+        assert permit_reopened(329057779, "vehicle=permit")      # Trail Ridge, 16.9 km
+        assert permit_reopened(328388433, "vehicle=permit")      # Park Entrance Road
+
+    def test_only_a_permit_is_reopened(self):
+        from closures import permit_reopened
+        assert not permit_reopened(329057779, "motor_vehicle=no")
+        assert not permit_reopened(329057779, None)
+        assert not permit_reopened(682274218, "access=permit")   # Stuart Mesa Road
+
+    def test_the_scan_opens_the_listed_ways_and_keeps_their_season(self, tmp_path):
+        """Through the real osmium pass: a listed way is open all year and
+        closed in its own window; the same tags on another id, which is how
+        Camp Pendleton's Stuart Mesa Road reads, stay closed."""
+        found = _scan_extract(tmp_path, [
+            (329057779, self.TRAIL_RIDGE),
+            (682274218, {"highway": "secondary", "name": "Stuart Mesa Road",
+                         "access": "permit", "surface": "paved"}),
+            (1, {**self.TRAIL_RIDGE}),
+        ])
+        closes = {w["way_id"]: w["closes"] for w in found.ways}
+        assert closes == {682274218: "access=permit", 1: "vehicle=permit"}
+        assert [c["way_id"] for c in found.closed] == [329057779, 1]
+        assert dict(found.record["permits left open, park entry"]) == {
+            "Trail Ridge Road US 34": 1}
+
+
+# ----------------------------------------- smoothness on paved roads (D2)
+
+class TestSmoothnessOnPavedRoads:
+    """`smoothness` of `very_bad` or worse closes a way only when it is not
+    paved: `surface` SEALED, or no surface on a motorway, trunk or primary
+    road or link. `4wd_only=yes` closes every class
+    (docs/national-data-decisions.md, D2)."""
+
+    PAVED_BY_DEFAULT = ["motorway", "motorway_link", "trunk", "trunk_link",
+                        "primary", "primary_link"]
+
+    def test_the_default_classes(self):
+        from closures import PAVED_BY_DEFAULT
+        assert PAVED_BY_DEFAULT == set(self.PAVED_BY_DEFAULT)
+
+    @pytest.mark.parametrize("smoothness", ["very_bad", "horrible", "very_horrible",
+                                            "impassable"])
+    @pytest.mark.parametrize("highway", ["trunk", "secondary", "residential", "track"])
+    def test_a_sealed_surface_stays_open(self, smoothness, highway):
+        from common import SEALED
+        for surface in SEALED:
+            assert too_rough({"highway": highway, "surface": surface,
+                              "smoothness": smoothness}) == []
+
+    @pytest.mark.parametrize("highway", PAVED_BY_DEFAULT)
+    def test_no_surface_on_a_major_road_counts_as_paved(self, highway):
+        assert too_rough({"highway": highway, "smoothness": "horrible"}) == []
+
+    @pytest.mark.parametrize("highway", ["secondary", "secondary_link", "tertiary",
+                                         "unclassified", "residential", "track", ""])
+    def test_no_surface_elsewhere_is_not_paved(self, highway):
+        """Defaulting every class to paved would reopen Shafer Trail."""
+        tags = {"smoothness": "very_bad", **({"highway": highway} if highway else {})}
+        assert too_rough(tags) == ["smoothness=very_bad"]
+
+    @pytest.mark.parametrize("surface", ["gravel", "dirt", "unpaved", "compacted",
+                                         "ground", "metal", "wood"])
+    def test_an_unsealed_surface_closes_any_class(self, surface):
+        assert too_rough({"highway": "primary", "surface": surface,
+                          "smoothness": "very_bad"}) == ["smoothness=very_bad"]
+
+    @pytest.mark.parametrize("highway", ["motorway", "primary", "residential"])
+    def test_4wd_only_still_closes_a_paved_road(self, highway):
+        assert too_rough({"highway": highway, "surface": "asphalt",
+                          "4wd_only": "yes", "smoothness": "horrible"}) == ["4wd_only=yes"]
+
+    @pytest.mark.parametrize("way_id,tags", [
+        (1513246614, {"highway": "trunk", "ref": "US 12", "surface": "asphalt",
+                      "smoothness": "very_bad"}),
+        (1513246616, {"highway": "trunk", "ref": "US 12", "surface": "asphalt",
+                      "smoothness": "horrible"}),
+        (102189476, {"highway": "primary", "ref": "US 6;US 322", "surface": "asphalt",
+                     "name": "Superior Avenue East", "smoothness": "very_bad"}),
+    ])
+    def test_the_three_mis_tags_open(self, way_id, tags):
+        """US 12 by White Pass and Superior Avenue in Cleveland, with their
+        tags in the PBF of 2026-10-17."""
+        assert too_rough(tags) == []
+
+    def test_shafer_trail_stays_closed(self):
+        """CR 142 in Canyonlands: a secondary road tagged gravel."""
+        assert too_rough({"highway": "secondary", "ref": "CR 142", "surface": "gravel",
+                          "smoothness": "very_bad"}) == ["smoothness=very_bad"]
+
+    def test_the_scan_closes_only_the_unpaved_rough_ways(self, tmp_path):
+        """Through the real osmium pass."""
+        found = _scan_extract(tmp_path, [
+            (5, {"highway": "trunk", "surface": "asphalt", "smoothness": "horrible"}),
+            (6, {"highway": "primary", "smoothness": "very_bad"}),
+            (7, {"highway": "secondary", "smoothness": "very_bad"}),
+            (8, {"highway": "primary", "surface": "gravel", "smoothness": "very_bad"}),
+            (9, {"highway": "residential", "surface": "asphalt", "4wd_only": "yes"}),
+        ])
+        assert found.drivable == 5
+        assert {w["way_id"]: (w["closes"], w["kind"]) for w in found.ways} == {
+            7: ("smoothness=very_bad", "rough"), 8: ("smoothness=very_bad", "rough"),
+            9: ("4wd_only=yes", "rough")}
+        assert dict(found.record["rough left open, paved"]) == {
+            "highway=trunk, surface=asphalt": 1, "highway=primary, surface=None": 1}
 
 
 # ---------------------------------------------------------------- the calendar
@@ -1245,7 +1397,8 @@ class TestNpsDescriptions:
         assert windows == [windows_table["_parks"]["GRTE"]["window"]]
 
     def test_the_permit_rule_is_left_alone(self, windows_table):
-        """The permit rule is the owner's open decision."""
+        """A park that says "Permit Required" is not closed for the season.
+        The permit rule on ways is docs/national-data-decisions.md, D1."""
         from winter_closures import nps_windows
         assert nps_windows({"UNITCODE": "REDW", "SEASONAL": "Yes",
                             "SEASDESC": "Permit Required"}, windows_table)[0] == []
@@ -1393,6 +1546,124 @@ class TestTheTableRoads:
         assert list(rows[0]) == SEASONAL_COLUMNS
         assert rows[0]["rule"] == "edge" and rows[0]["node_id"] == -1
         assert report["mvum"] == (1, pytest.approx(0.5))
+
+
+# ------------------------------- MVUM roads with no car designation (D5)
+
+class TestMvumNoCarDesignation:
+    """An MVUM road designated for no full-size highway-legal class closes to
+    cars all year, unless the OSM edge is major, ref'd as a US or state
+    route, or paved: those are a different road the 15 m match picked up
+    (docs/national-data-decisions.md, D5)."""
+
+    @pytest.mark.parametrize("symbol", ["1", "2", "3", "4", " 3 "])
+    def test_the_maps_own_legend_designates_a_car(self, symbol):
+        """Roads open to all vehicles, or to highway-legal vehicles only:
+        427 mi carry these symbols with every class field empty."""
+        from winter_closures import mvum_car_designated
+        assert mvum_car_designated({"symbol": symbol})
+
+    @pytest.mark.parametrize("vehicle", ["passengervehicle", "highclearancevehicle",
+                                         "truck", "bus", "motorhome"])
+    def test_any_full_size_class_designates_a_car(self, vehicle):
+        """Prescott and Chattahoochee-Oconee fill truck and bus and leave
+        the passenger and high-clearance fields empty: 3,096 mi."""
+        from winter_closures import mvum_car_designated
+        assert mvum_car_designated({"symbol": "11", vehicle: "open"})
+        assert mvum_car_designated({"symbol": "12", vehicle: " Open "})
+
+    @pytest.mark.parametrize("vehicles", [
+        {}, {"atv": "open", "motorcycle": "open"},
+        {"fourwd_gt50inches": "open", "twowd_gt50inches": "open",
+         "other_ohv_gt50inches": "open"},
+        {"fourwd_gt50inches": "open"}, {"passengervehicle": "closed"},
+    ])
+    @pytest.mark.parametrize("symbol", ["11", "12", "", None])
+    def test_ohv_and_4wd_only_is_no_car(self, vehicles, symbol):
+        """4WD over 50 inches is 4WD-only, as `4wd_only=yes` is."""
+        from winter_closures import mvum_car_designated
+        assert not mvum_car_designated({"symbol": symbol, **vehicles})
+
+    @pytest.mark.parametrize("ref,yes", [
+        ("US 34", True), ("I 70", True), ("I-25", True), ("CO 14", True),
+        ("SR 410", True), ("State Highway 310", True), ("NM 4;FR 602C", True),
+        ("FR 602C", False), ("CR 142", False), ("NF 37", False), ("FS 107", False),
+        ("BLM 142", False), ("", False), (None, False), ("CO RD 12", False),
+    ])
+    def test_a_us_or_state_ref(self, ref, yes):
+        from winter_closures import state_ref
+        assert state_ref(ref) is yes
+
+    def test_the_class_and_ref_exceptions(self):
+        from winter_closures import no_car_exception
+        for highway in ["motorway", "trunk_link", "primary", "primary_link"]:
+            assert no_car_exception(highway, "") == f"highway={highway}"
+        assert no_car_exception("secondary", "WY 296") == "ref=WY 296"
+        assert no_car_exception("secondary", "FR 100") == ""
+        assert no_car_exception("track", None) == ""
+        assert no_car_exception(None, None) == ""
+
+    def _mvum(self):
+        """A special-designation ATV road along the south edge and a
+        passenger road along the north one."""
+        return _frame([_SOUTH, _NORTH], objectid=[11, 12], id=["0110", "0111"],
+                      forestname=["Bridger-Teton National Forest"] * 2,
+                      symbol=["11", "11"], atv=["open", None],
+                      passengervehicle=[None, "open"],
+                      passengervehicle_datesopen=[None, "01/01-12/31"])
+
+    def test_federal_rows_finds_the_candidates(self):
+        from winter_closures import federal_rows
+        g = _graph().assign(highway=["unclassified"] * 3, ref=["", "", ""])
+        _, report = federal_rows(g, self._mvum(), None)
+        assert report["no_car"] == [{"edge": 0, "line": 0, "exception": ""}]
+        g = g.assign(highway=["primary", "unclassified", "unclassified"])
+        _, report = federal_rows(g, self._mvum(), None)
+        assert report["no_car"] == [{"edge": 0, "line": 0, "exception": "highway=primary"}]
+
+    def test_a_graph_without_class_columns_has_no_exceptions(self):
+        from winter_closures import federal_rows
+        _, report = federal_rows(_graph(), self._mvum(), None)
+        assert report["no_car"] == [{"edge": 0, "line": 0, "exception": ""}]
+
+    def test_the_rows_and_the_paved_exception(self):
+        from closures import CLOSED_TO_CARS_COLUMNS, join_no_car
+        mvum = self._mvum()
+        rows, kept = join_no_car([{"edge": 0, "line": 0, "exception": ""}], mvum, [], _graph())
+        assert list(rows.columns) == CLOSED_TO_CARS_COLUMNS
+        r = rows.iloc[0]
+        assert (r["edge"], r["rule"], r["kind"], r["osm_type"], r["osm_id"]) == (
+            0, "edge", "mvum", "mvum", 11)
+        assert r["tag"] == ("mvum no car designation (Bridger-Teton National Forest, "
+                            "MVUM id 0110)")
+        assert np.isnan(r["at_m"]) and len(kept) == 0
+        sealed = [{"way_id": 5, "name": "", "refs": [1, 2],
+                   "coords": [(-107.0, 38.5), (-107.0, 38.5045)]}]
+        rows, kept = join_no_car([{"edge": 0, "line": 0, "exception": ""}], mvum,
+                                 sealed, _graph())
+        assert len(rows) == 0
+        assert list(kept["why"]) == ["surface sealed in OSM"]
+        rows, kept = join_no_car([{"edge": 0, "line": 0, "exception": "ref=US 26"}],
+                                 mvum, [], _graph())
+        assert len(rows) == 0 and list(kept["why"]) == ["ref=US 26"]
+
+    def test_the_router_closes_an_mvum_row_whole(self):
+        from closures import join_no_car
+        rows, _ = join_no_car([{"edge": 0, "line": 0, "exception": ""}], self._mvum(),
+                              [], _graph())
+        closed = ClosedToCars(rows, np.array([1, 2, 3]), np.array([2, 4, 5]))
+        assert list(closed.edges) == [0] and list(closed.whole) == [0]
+
+    def test_the_scan_collects_only_sealed_ways_through_a_watched_node(self, tmp_path):
+        found = _scan_extract(tmp_path, [
+            (1, {"highway": "unclassified", "surface": "asphalt"}),
+            (2, {"highway": "unclassified", "surface": "asphalt"}),
+            (3, {"highway": "unclassified", "surface": "gravel"}),
+            (4, {"highway": "unclassified"}),
+        ], watch={11, 31, 41})
+        assert [w["way_id"] for w in found.sealed] == [1]
+        assert _scan_extract(tmp_path, [(1, {"highway": "residential",
+                                             "surface": "paved"})]).sealed == []
 
 
 # The New England graph against the agencies' layers. New England changes only

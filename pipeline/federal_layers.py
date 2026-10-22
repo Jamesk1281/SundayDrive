@@ -9,7 +9,11 @@ missing:
   mvum_roads.parquet   the Forest Service's Motor Vehicle Use Map roads, with
                        the dates each is open to passenger vehicles
                        (`passengervehicle_datesopen`, e.g. `04/01-11/30`) and
-                       to high-clearance vehicles;
+                       to high-clearance vehicles, and which other vehicle
+                       classes each is designated for (truck, bus, motorhome,
+                       4WD and 2WD over 50 inches, OHVs), which decide
+                       whether a car may use it at all
+                       (docs/national-data-decisions.md, D5);
   nps_roads.parquet    NPS Public Roads, with `SEASONAL` (Yes, No, Unknown)
                        and the free-text `SEASDESC`.
 
@@ -43,9 +47,12 @@ NPS = ("https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/"
 
 LAYERS = {
     "mvum_roads": (MVUM, "objectid", (
-        "objectid,id,name,forestname,districtname,jurisdiction,symbol,seasonal,"
-        "passengervehicle,passengervehicle_datesopen,highclearancevehicle,"
-        "highclearancevehicle_datesopen,operationalmaintlevel,surfacetype,gis_miles")),
+        "objectid,id,name,forestname,districtname,jurisdiction,symbol,mvum_symbol_name,"
+        "seasonal,passengervehicle,passengervehicle_datesopen,highclearancevehicle,"
+        "highclearancevehicle_datesopen,truck,truck_datesopen,bus,bus_datesopen,"
+        "motorhome,motorhome_datesopen,fourwd_gt50inches,fourwd_gt50_datesopen,"
+        "twowd_gt50inches,twowd_gt50_datesopen,other_ohv_gt50inches,atv,motorcycle,"
+        "operationalmaintlevel,surfacetype,gis_miles")),
     "nps_roads": (NPS, "OBJECTID", (
         "OBJECTID,UNITCODE,UNITNAME,RDNAME,RDSTATUS,RDCLASS,RDSURFACE,SEASONAL,"
         "SEASDESC,OPENTOPUBLIC,PUBLICDISPLAY")),

@@ -67,24 +67,14 @@ NUMBERED = re.compile(r"^(I|US) \d{1,3}[A-Z]?$")
 HERE = Path(__file__).resolve().parent
 LEGS = HERE / "legs.json"
 
-# The legs that fail once fords on paved major roads are open, with why: each
-# is in docs/review-fixes-data.md, "What the check still finds". Keyed by
-# `key`. They were the seven of data/pack-us's 22 failures that no ford
-# closes; the other 15 were fords.
-TRAIL_RIDGE = ("Trail Ridge Road, US 34 through Rocky Mountain National Park: "
-               "vehicle=permit, closed by the permit rule, which stands")
-US_12 = ("US 12 just east of White Pass, WA: two short ways (1513246614, 1513246616) "
-         "tagged smoothness=very_bad and horrible on a trunk road")
-KNOWN = {
-    "US 12 46.656363,-121.307402": US_12,
-    "US 12 46.706069,-120.890641": US_12,
-    "US 322 41.500065,-81.692886": ("US 6/US 322, Superior Avenue East in Cleveland: "
-                                    "way 102189476, 180 m, smoothness=very_bad"),
-    "US 34 40.090221,-105.957838": TRAIL_RIDGE,
-    "US 34 40.402683,-105.847874": TRAIL_RIDGE,
-    "US 34 40.409768,-105.160900": TRAIL_RIDGE,
-    "US 34 40.405298,-105.625031": TRAIL_RIDGE,
-}
+# The legs allowed to fail, with why, keyed by `key`. Empty: the seven that
+# failed once fords on paved major roads were open (Trail Ridge four times,
+# US 12 at White Pass twice, US 322 in Cleveland once;
+# docs/review-fixes-data.md) all pass since Trail Ridge's park-entry permit
+# and the smoothness rule on paved roads were settled
+# (docs/national-data-decisions.md, D1 and D2): 11,414 of 11,414 on
+# data/pack-us-next.
+KNOWN: dict[str, str] = {}
 
 
 def refs_of(value) -> list[str]:

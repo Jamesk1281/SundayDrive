@@ -31,7 +31,8 @@ standing on an open road; routes, loops and reroutes drove through them
                               at_m, name, length_m
 
 `rule` is "edge" where the edge is closed both ways, by its way's tags or by a
-barrier or ford standing on it (`kind` says which: way, ford, rough, barrier), and "through" where a barrier stands on the
+barrier or ford standing on it, or by MVUM (`kind` says which: way, ford, rough,
+barrier, mvum), and "through" where a barrier stands on the
 node at which two edges meet end to end: each side stays open up to it and only
 driving through is forbidden. `at_m` is a barrier's distance from `u` along the
 edge, which `Router.snap` compares with a point's own to keep a driver on their
@@ -63,12 +64,17 @@ Everything else closes nothing here; see `conditional_windows` for which
 conditions those are and why. A gate closes for the season by the same car
 conditionals, on the node (`gate_windows`).
 
-A way is closed to cars all year when `closed_to_cars` (common.py) says so, it
+A way is closed to cars all year when `closed_to_cars` (common.py) says so,
+except Rocky Mountain National Park's timed-entry roads (`permit_reopened`), it
 is a ford (`ford=yes`) that `ford_closes` closes, which is every ford but one
 on a paved major road (docs/review-fixes-data.md), or it is too rough for a car (`too_rough`:
-`4wd_only=yes`, or `smoothness` of `very_bad` or worse), and a node closes the road it stands on when
+`4wd_only=yes`, or `smoothness` of `very_bad` or worse on an unpaved way), and a node closes the road it stands on when
 `barrier_closes` says so for that way. Where that node stands decides what is closed; see
-`join_closed_to_cars`.
+`join_closed_to_cars`. And a forest road closes to cars all year when the
+Forest Service's MVUM designates it for no full-size highway-legal vehicle,
+unless the OSM edge is major, ref'd as a US or state route, or paved
+(`join_no_car`; docs/national-data-decisions.md, D5). Those rows are `kind`
+and `osm_type` "mvum".
 
 Usage: python closures.py <input.osm.pbf> <processed_dir> [<out_dir> [<federal_dir>]]
 """
@@ -377,20 +383,68 @@ def gate_windows(tags, way=None) -> dict:
     return {w: [f"barrier={barrier}, {t}" for t in found[w]] for w in found}
 
 
+# Rocky Mountain National Park's timed-entry roads, which `vehicle=permit`
+# closed all year: Trail Ridge Road (US 34; 31 ways) and Park Entrance Road
+# (US 36; 16 ways), by their ids in Geofabrik's US extract of 2026-10-17. The
+# permit is a reservation to enter the park, not a closed road, so these
+# stay open, and their winter windows (OSM's own `access:conditional`, and
+# the NPS layer's dated description) still close them for the season. A list rather than a
+# class rule, because `permit` on the same major classes is also Camp
+# Pendleton, Fort Benning, Fort Sill and the Air Force Academy
+# (docs/national-data-decisions.md, D1). A way OSM later splits or renumbers
+# falls out of the list and closes again, which is the safe side.
+PERMIT_REOPENED = frozenset({
+    # Trail Ridge Road, US 34
+    6147016, 6170582, 6170584, 174615105, 174615106, 301545131, 308279184,
+    328388445, 328471511, 328471514, 328885633, 328885645, 329057774, 329057775,
+    329057776, 329057777, 329057779, 329058494, 329058497, 329059071, 456529757,
+    727646558, 727646559, 834038569, 834038570, 977025414, 977025415, 977025418,
+    1105411383, 1105411384, 1409641713,
+    # Park Entrance Road, US 36 (Beaver Meadows)
+    6165156, 6168904, 328388424, 328388428, 328388429, 328388431, 328388433,
+    328388437, 328388438, 328388439, 328388442, 328388443, 328388446, 977025416,
+    977025417, 1483799057,
+})
+
+
+def permit_reopened(way_id, tag) -> bool:
+    """Whether `closed_to_cars`' `tag` on way `way_id` is a park's entry
+    reservation that leaves the road open (PERMIT_REOPENED)."""
+    return bool(tag) and tag.endswith("=permit") and way_id in PERMIT_REOPENED
+
+
 # `smoothness` values at which a road is closed to cars, as fords are: a
 # consumer car app should not plan one (decided 2026-10-18; `bad` stays
 # open). docs/safety-quick-fixes.md has what they close.
 ROUGH_SMOOTHNESS = frozenset({"very_bad", "horrible", "very_horrible", "impassable"})
 
+# The classes a way with no `surface` counts as paved on, for the smoothness
+# rule. A track or an unclassified road with no surface is not paved: Shafer
+# Trail would reopen (docs/national-data-decisions.md, D2).
+PAVED_BY_DEFAULT = frozenset({"motorway", "motorway_link", "trunk", "trunk_link",
+                              "primary", "primary_link"})
+
+
+def paved(tags) -> bool:
+    """Whether a way with these tags is paved, for the smoothness rule: its
+    `surface` is SEALED, or it has none and its class is PAVED_BY_DEFAULT."""
+    surface = (tags.get("surface") or "").strip().lower()
+    if surface:
+        return surface in SEALED
+    return (tags.get("highway") or "").strip().lower() in PAVED_BY_DEFAULT
+
 
 def too_rough(tags) -> list:
     """The tags that close a way with these tags to cars as too rough for
-    one: `4wd_only=yes`, or `smoothness` of `very_bad` or worse."""
+    one: `4wd_only=yes`, or `smoothness` of `very_bad` or worse on a way that
+    is not `paved`. A potholed paved highway is unpleasant, but a car can
+    drive it: US 12 by White Pass and Superior Avenue in Cleveland were shut
+    by it (decided 2026-10-21; docs/national-data-decisions.md, D2)."""
     found = []
     if (tags.get("4wd_only") or "").strip().lower() == "yes":
         found.append("4wd_only=yes")
     smoothness = (tags.get("smoothness") or "").strip().lower()
-    if smoothness in ROUGH_SMOOTHNESS:
+    if smoothness in ROUGH_SMOOTHNESS and not paved(tags):
         found.append(f"smoothness={smoothness}")
     return found
 
@@ -432,7 +486,7 @@ KNOWN_OPEN = {"yes", "permissive", "designated", "discouraged", "unknown"} | LOC
 GATES = {"gate", "lift_gate", "swing_gate"}
 
 
-def scan(pbf_path: str):
+def scan(pbf_path: str, watch=None):
     """Everything both tables are made from, in one pass over the PBF.
 
     Returns a SimpleNamespace of:
@@ -452,6 +506,11 @@ def scan(pbf_path: str):
                  for every node on one that `gate_windows` says closes for
                  the season;
       unpaved    the drivable ways `tiger_unpaved` counts as unpaved;
+      sealed     the drivable ways with a SEALED `surface` that pass through
+                 a node in `watch`, a set of OSM node ids: the ends of the
+                 edges an MVUM road with no car designation would close,
+                 which stay open where OSM says they are paved
+                 (docs/national-data-decisions.md, D5);
       record     counts of what was found and left alone on purpose, for
                  docs/closed-roads.md and docs/safety-quick-fixes.md.
 
@@ -476,12 +535,14 @@ def scan(pbf_path: str):
             self.barriers = {}
             self.gates = {}
             self.unpaved = []
+            self.sealed = []
             self.counted = set()
             self.record = {key: Counter() for key in (
                 "dropped but open", "local access", "unrecognised",
                 "left open", "timed gates", "barrier car conditionals",
                 "tiger:cfcc A5x left paved",
-                "fords left open on paved major roads")}
+                "fords left open on paved major roads",
+                "permits left open, park entry", "rough left open, paved")}
 
         def node(self, n):
             if n.location.valid():
@@ -523,6 +584,12 @@ def scan(pbf_path: str):
                 })
             self._all_year(w, tags, points)
             self._unpaved(w, tags)
+            if (watch and (tags.get("surface") or "").strip().lower() in SEALED
+                    and any(n.ref in watch for n in w.nodes)):
+                points = points or _points(w)
+                self.sealed.append({"way_id": w.id, "name": tags.get("name", ""),
+                                    "refs": [p[0] for p in points],
+                                    "coords": [(p[1], p[2]) for p in points]})
 
         def _unpaved(self, w, tags):
             found = tiger_unpaved(tags)
@@ -544,6 +611,10 @@ def scan(pbf_path: str):
         def _all_year(self, w, tags, points):
             closes = []
             tag = closed_to_cars(tags)
+            if permit_reopened(w.id, tag):
+                self.record["permits left open, park entry"][
+                    f"{tags.get('name', '')} {tags.get('ref', '')}".strip()] += 1
+                tag = None
             if tag:
                 closes.append(tag)
             if (tags.get("ford") or "").strip().lower() == "yes":
@@ -554,6 +625,10 @@ def scan(pbf_path: str):
                         f"way, highway={tags.get('highway')}"] += 1
             rough = too_rough(tags)
             closes += rough
+            smoothness = (tags.get("smoothness") or "").strip().lower()
+            if smoothness in ROUGH_SMOOTHNESS and paved(tags):
+                self.record["rough left open, paved"][
+                    f"highway={tags.get('highway')}, surface={tags.get('surface')}"] += 1
             found = car_access(tags)
             if found is not None and found[1] in LOCAL_ACCESS:
                 self.record["local access"][f"{found[0]}={found[1]}"] += 1
@@ -635,7 +710,7 @@ def scan(pbf_path: str):
     h.apply_file(pbf_path, locations=True, idx="flex_mem", filters=[tagged])
     return SimpleNamespace(drivable=h.drivable, closed=h.closed, skipped=h.skipped,
                            ways=h.ways, barriers=h.barriers, gates=h.gates,
-                           unpaved=h.unpaved, record=h.record)
+                           unpaved=h.unpaved, sealed=h.sealed, record=h.record)
 
 
 
@@ -915,9 +990,11 @@ def federal_dir_for(pbf_path: str, given: str = None) -> Path:
     return beside if beside.exists() else FEDERAL_DIR
 
 
-def join_federal(edges: gpd.GeoDataFrame, federal_dir=None) -> pd.DataFrame:
+def join_federal(edges: gpd.GeoDataFrame, federal_dir=None):
     """The seasonal rows from the agencies that run the roads, and the table
-    of windows for the high passes and parks (winter_closures.py).
+    of windows for the high passes and parks (winter_closures.py), and the
+    MVUM roads with no car designation: (seasonal table, (candidates, MVUM
+    frame)), the candidates as `winter_closures.no_car_edges` gives them.
 
     Reads mvum_roads.parquet and nps_roads.parquet from `federal_dir`
     (FEDERAL_DIR unless given; `main` passes `federal_dir_for`). A missing
@@ -951,7 +1028,42 @@ def join_federal(edges: gpd.GeoDataFrame, federal_dir=None) -> pd.DataFrame:
         for key, (km, why) in sorted(report[kind].items()):
             print(f"  {key:28s} {km:7.1f} km" if why is None
                   else f"  {key:28s} not placed: {why}")
-    return _seasonal_table(pd.DataFrame(rows, columns=SEASONAL_COLUMNS))
+    return (_seasonal_table(pd.DataFrame(rows, columns=SEASONAL_COLUMNS)),
+            (report["no_car"], frames["mvum_roads"]))
+
+
+def join_no_car(candidates, mvum, sealed, edges: gpd.GeoDataFrame):
+    """closed_to_cars rows for the MVUM roads with no full-size highway-legal
+    designation, and the edges left open, with why.
+
+    A candidate stays open when its class or ref says so (its `exception`)
+    or when a way with a SEALED surface runs along it (`sealed`, from the
+    scan, matched as `_way_edges` matches). Either is a sign the 15 m match
+    picked up a different road. Rows are `kind` and `osm_type` "mvum", with
+    the MVUM layer's objectid as `osm_id` (docs/national-data-decisions.md, D5).
+    """
+    paved = {r for _, r in _way_edges(sealed, edges)} if sealed else set()
+    u, v = edges["u"].to_numpy(), edges["v"].to_numpy()
+    length = edges["length_m"].to_numpy()
+    names = (edges["name"].fillna("").to_numpy() if "name" in edges.columns
+             else np.full(len(edges), ""))
+    rows, kept = [], []
+    for c in candidates:
+        r = c["edge"]
+        m = mvum.iloc[c["line"]]
+        why = c["exception"] or ("surface sealed in OSM" if r in paved else "")
+        tag = (f"mvum no car designation ({m.get('forestname') or ''}, "
+               f"MVUM id {m.get('id') or ''})")
+        if why:
+            kept.append({"edge": r, "why": why, "tag": tag, "name": names[r],
+                         "length_m": float(length[r])})
+            continue
+        rows.append({"edge": r, "u": int(u[r]), "v": int(v[r]), "rule": "edge",
+                     "kind": "mvum", "osm_type": "mvum", "osm_id": int(m["objectid"]),
+                     "tag": tag, "at_m": np.nan, "name": names[r],
+                     "length_m": float(length[r])})
+    return (pd.DataFrame(rows, columns=CLOSED_TO_CARS_COLUMNS),
+            pd.DataFrame(kept, columns=["edge", "why", "tag", "name", "length_m"]))
 
 
 def main(pbf_path: str, processed_dir: str, out_dir: str = None,
@@ -963,7 +1075,18 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
     d = Path(processed_dir)
     out = Path(out_dir or processed_dir)
     t0 = time.time()
-    found = scan(pbf_path)
+
+    import pyarrow.parquet as pq
+    columns = ["u", "v", "length_m", "score", "name", "geometry"]
+    names = pq.ParquetFile(d / "graph_edges.parquet").schema_arrow.names
+    columns += [c for c in ("unpaved_frac", "highway", "ref") if c in names]
+    edges = gpd.read_parquet(d / "graph_edges.parquet", columns=columns)
+    # The agencies' layers first, so the scan can look for paved OSM ways
+    # along the edges MVUM would close to cars.
+    by_agency, (no_car, mvum) = join_federal(edges, federal_dir_for(pbf_path, federal_dir))
+    watch = {int(x) for c in no_car if not c["exception"]
+             for x in (edges["u"].iat[c["edge"]], edges["v"].iat[c["edge"]])}
+    found = scan(pbf_path, watch)
     drivable, closed, skipped = found.drivable, found.closed, found.skipped
     print(f"scanned in {time.time() - t0:.0f}s: {drivable:,} drivable ways, "
           f"{len(closed):,} of them closed for part of the year")
@@ -974,14 +1097,8 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
         verdict = "matches" if control == drivable else "DOES NOT MATCH"
         print(f"control: roads.parquet has {control:,} ways, which {verdict} the scan")
 
-    import pyarrow.parquet as pq
-    columns = ["u", "v", "length_m", "score", "name", "geometry"]
-    if "unpaved_frac" in pq.ParquetFile(d / "graph_edges.parquet").schema_arrow.names:
-        columns.append("unpaved_frac")
-    edges = gpd.read_parquet(d / "graph_edges.parquet", columns=columns)
     by_way = join(closed, edges)
     by_gate, gates_left = join_gates(found.ways, found.gates, edges)
-    by_agency = join_federal(edges, federal_dir_for(pbf_path, federal_dir))
     table = _seasonal_table(pd.concat([by_way, by_gate, by_agency], ignore_index=True))
     table.to_parquet(out / "seasonal_closures.parquet", index=False)
 
@@ -1018,8 +1135,14 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
           f"in {time.time() - t0:.0f}s")
 
     cars, left = join_closed_to_cars(found.ways, found.barriers, edges)
+    by_mvum, kept = (join_no_car(no_car, mvum, found.sealed, edges) if no_car
+                     else (pd.DataFrame(columns=CLOSED_TO_CARS_COLUMNS), None))
+    if len(by_mvum):
+        cars = (pd.concat([cars, by_mvum.astype(cars.dtypes.to_dict())], ignore_index=True)
+                .sort_values(["edge", "rule", "at_m", "osm_id"]).reset_index(drop=True))
     cars.to_parquet(out / "closed_to_cars.parquet", index=False)
     _report(found, cars, left)
+    _report_no_car(by_mvum, kept)
     print(f"wrote closed_to_cars.parquet ({len(cars):,} rows) "
           f"in {time.time() - t0:.0f}s")
 
@@ -1058,6 +1181,19 @@ def _report_gates(gates, table, left):
         print(f"  {len(ids):5,} {LEFT_ALONE[where]}, left alone")
     for window, group in table.groupby(list(CLOSURE_WINDOW)):
         print(f"  closed {_window_label(window):>17}: {group['node_id'].nunique():4,} gates")
+
+
+def _report_no_car(rows, kept):
+    """What the MVUM no-car rule closes and leaves open: D5's counts."""
+    shut = rows.drop_duplicates("edge")
+    print(f"closed to cars by MVUM, no full-size highway-legal designation: "
+          f"{len(shut):,} edges ({shut['length_m'].sum() / 1000:.1f} km)")
+    if kept is not None and len(kept):
+        print(f"  left open as a different road: {kept['edge'].nunique():,} edges "
+              f"({kept.drop_duplicates('edge')['length_m'].sum() / 1000:.1f} km)")
+        for why, group in kept.groupby(kept["why"].str.split("=").str[0]):
+            print(f"    {why:24s} {len(group):5,} edges "
+                  f"{group['length_m'].sum() / 1000:7.1f} km")
 
 
 def _report(found, cars, left):
