@@ -81,6 +81,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/national-scenery-types-brief.md` | `git show d59c345:docs/national-scenery-types-brief.md` | [national-scenery-types-verdict.md](national-scenery-types-verdict.md), with the scripts and results in `tools/scenery_types/` |
 | `docs/national-data-decisions-brief.md` | `git show 6f3a275:docs/national-data-decisions-brief.md` | [national-data-decisions.md](national-data-decisions.md) |
 | `docs/seasonal-road-risk-brief.md` | `git show 8ed1082:docs/seasonal-road-risk-brief.md` | [seasonal-road-risk-verdict.md](seasonal-road-risk-verdict.md), with the scripts and results in `tools/seasonal_risk/` |
+| `docs/scenery-additions-build-brief.md` | `git show 7e9d763:docs/scenery-additions-build-brief.md` | [national-scenery-additions.md](national-scenery-additions.md), with the checks in `tools/scenery_additions/` |
 | `docs/safety-quick-fixes-brief.md` | `git show 93cf704:docs/safety-quick-fixes-brief.md` | [safety-quick-fixes.md](safety-quick-fixes.md) |
 | `docs/national-marketing-brief.md` | `git show 426c2e5:docs/national-marketing-brief.md` | [marketing-plan.md](marketing-plan.md), rewritten for a national first launch |
 | `docs/western-landcover-brief.md` | `git show 06ae07f:docs/western-landcover-brief.md` | [western-landcover-verdict.md](western-landcover-verdict.md), with the scripts and results in `tools/western_landcover/` (on `usa`) |
