@@ -1,0 +1,136 @@
+candidate,region,road,km_moved,mean_change,region_km_moved,share_urban_or_motorway
+"V slot (R10, 300-900 m)",ne,,183.073,0.358,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Main Street,75.364,0.397,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,River Road,51.848,0.393,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Vermont Route 102,41.469,0.388,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Daniel Webster Highway,34.756,0.360,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,North Road,28.941,0.417,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Vermont Route 100,28.269,0.450,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Vermont Route 30,27.402,0.521,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,North Main Street,21.532,0.382,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,U.S. Route 5,19.542,0.359,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Main Road,19.446,0.351,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Vermont Route 116,18.174,0.419,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Middle Road,17.385,0.451,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,Vermont Route 15,17.354,0.464,4366.785,0.025
+"V slot (R10, 300-900 m)",ne,U.S. Route 5 North,16.665,0.399,4366.785,0.025
+S1 sea as water,ne,,207.587,1.629,5382.887,0.155
+S1 sea as water,ne,Main Street,46.399,1.557,5382.887,0.155
+S1 sea as water,ne,Shore Road,35.708,1.921,5382.887,0.155
+S1 sea as water,ne,Main Road,25.587,1.516,5382.887,0.155
+S1 sea as water,ne,River Road,24.392,1.535,5382.887,0.155
+S1 sea as water,ne,Ocean Avenue,22.212,2.104,5382.887,0.155
+S1 sea as water,ne,Water Street,18.163,2.042,5382.887,0.155
+S1 sea as water,ne,Lighthouse Road,16.178,2.137,5382.887,0.155
+S1 sea as water,ne,Washington Street,15.508,1.543,5382.887,0.155
+S1 sea as water,ne,Atlantic Avenue,15.461,1.529,5382.887,0.155
+S1 sea as water,ne,Commercial Street,12.931,2.164,5382.887,0.155
+S1 sea as water,ne,Newbury Neck Road,11.572,1.392,5382.887,0.155
+S1 sea as water,ne,Bay Road,11.185,1.551,5382.887,0.155
+S1 sea as water,ne,East Shore Road,11.131,1.755,5382.887,0.155
+S1 sea as water,ne,East Side Road,10.581,1.564,5382.887,0.155
+"S2 sea as water, on the sea only",ne,,26.694,2.264,544.172,0.045
+"S2 sea as water, on the sea only",ne,Lighthouse Road,9.285,2.578,544.172,0.045
+"S2 sea as water, on the sea only",ne,Ocean Avenue,6.674,2.443,544.172,0.045
+"S2 sea as water, on the sea only",ne,Nahant Road,6.170,2.560,544.172,0.045
+"S2 sea as water, on the sea only",ne,Gurnet Road,5.989,2.640,544.172,0.045
+"S2 sea as water, on the sea only",ne,Shore Road,4.165,2.528,544.172,0.045
+"S2 sea as water, on the sea only",ne,Nantasket Avenue,3.737,2.346,544.172,0.045
+"S2 sea as water, on the sea only",ne,Main Street,3.409,2.274,544.172,0.045
+"S2 sea as water, on the sea only",ne,Atlantic Avenue,2.829,1.889,544.172,0.045
+"S2 sea as water, on the sea only",ne,Ryder Way,2.653,2.470,544.172,0.045
+"S2 sea as water, on the sea only",ne,Newport Bridge,2.286,1.656,544.172,0.045
+"S2 sea as water, on the sea only",ne,Water Street,2.038,2.158,544.172,0.045
+"S2 sea as water, on the sea only",ne,Beach Avenue,1.976,2.333,544.172,0.045
+"S2 sea as water, on the sea only",ne,Mashnee Road,1.967,2.112,544.172,0.045
+"S2 sea as water, on the sea only",ne,Sunshine Road,1.807,2.342,544.172,0.045
+L landmark within 80 m,ne,,71.912,0.821,1069.091,0.086
+L landmark within 80 m,ne,Yankee Division Highway,19.436,0.755,1069.091,0.086
+L landmark within 80 m,ne,Main Street,11.949,0.829,1069.091,0.086
+L landmark within 80 m,ne,Mountain Road,8.825,0.831,1069.091,0.086
+L landmark within 80 m,ne,Grand Army of the Republic Highway,8.698,0.840,1069.091,0.086
+L landmark within 80 m,ne,Wilbur Cross Parkway,6.459,0.840,1069.091,0.086
+L landmark within 80 m,ne,River Road,6.347,0.827,1069.091,0.086
+L landmark within 80 m,ne,Massachusetts Turnpike,6.339,0.840,1069.091,0.086
+L landmark within 80 m,ne,Route 6,5.894,0.840,1069.091,0.086
+L landmark within 80 m,ne,Ocean Boulevard,5.814,0.822,1069.091,0.086
+L landmark within 80 m,ne,Ocean View Drive,5.802,0.840,1069.091,0.086
+L landmark within 80 m,ne,West Street,4.692,0.840,1069.091,0.086
+L landmark within 80 m,ne,Baring Road,4.615,0.840,1069.091,0.086
+L landmark within 80 m,ne,Concord Turnpike,4.487,0.825,1069.091,0.086
+L landmark within 80 m,ne,Route 7,4.390,0.787,1069.091,0.086
+V+S2+L,ne,,281.978,0.660,5964.371,0.038
+V+S2+L,ne,Main Street,89.926,0.531,5964.371,0.038
+V+S2+L,ne,River Road,57.604,0.447,5964.371,0.038
+V+S2+L,ne,Vermont Route 102,42.265,0.413,5964.371,0.038
+V+S2+L,ne,Daniel Webster Highway,35.519,0.371,5964.371,0.038
+V+S2+L,ne,North Road,30.804,0.465,5964.371,0.038
+V+S2+L,ne,Vermont Route 100,28.526,0.455,5964.371,0.038
+V+S2+L,ne,Vermont Route 30,27.402,0.521,5964.371,0.038
+V+S2+L,ne,North Main Street,25.581,0.459,5964.371,0.038
+V+S2+L,ne,Main Road,21.579,0.493,5964.371,0.038
+V+S2+L,ne,U.S. Route 5,19.542,0.359,5964.371,0.038
+V+S2+L,ne,Yankee Division Highway,19.436,0.755,5964.371,0.038
+V+S2+L,ne,Middle Road,19.209,0.508,5964.371,0.038
+V+S2+L,ne,Mountain Road,18.503,0.603,5964.371,0.038
+V+S2+L,ne,U.S. Route 2,18.339,0.415,5964.371,0.038
+S1 sea as water,fl,,542.087,1.503,7636.299,0.495
+S1 sea as water,fl,Overseas Highway,144.479,1.870,7636.299,0.495
+S1 sea as water,fl,Gulf Boulevard,41.979,1.844,7636.299,0.495
+S1 sea as water,fl,South Atlantic Avenue,39.702,1.738,7636.299,0.495
+S1 sea as water,fl,Tamiami Trail,33.024,1.370,7636.299,0.495
+S1 sea as water,fl,South Ocean Boulevard,27.978,2.031,7636.299,0.495
+S1 sea as water,fl,Courtney Campbell Causeway,25.856,2.487,7636.299,0.495
+S1 sea as water,fl,South Ocean Drive,23.114,1.436,7636.299,0.495
+S1 sea as water,fl,South Indian River Drive,23.063,2.206,7636.299,0.495
+S1 sea as water,fl,North Ocean Boulevard,22.655,1.602,7636.299,0.495
+S1 sea as water,fl,Collins Avenue,22.278,1.760,7636.299,0.495
+S1 sea as water,fl,Dixie Highway,21.782,1.529,7636.299,0.495
+S1 sea as water,fl,Bayshore Drive,20.238,1.829,7636.299,0.495
+S1 sea as water,fl,Bayshore Boulevard,19.798,2.368,7636.299,0.495
+S1 sea as water,fl,Federal Highway,17.214,1.268,7636.299,0.495
+"S2 sea as water, on the sea only",fl,,139.951,1.818,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Overseas Highway,68.318,2.064,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Gulf Boulevard,26.383,1.693,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Courtney Campbell Causeway,25.856,2.487,1417.032,0.228
+"S2 sea as water, on the sea only",fl,South Ocean Boulevard,18.418,2.243,1417.032,0.228
+"S2 sea as water, on the sea only",fl,South Indian River Drive,18.297,1.191,1417.032,0.228
+"S2 sea as water, on the sea only",fl,J Earle Bowden Way,15.426,0.686,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Sunshine Skyway Bridge,15.246,1.745,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Dixie Highway,12.355,1.521,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Apollo Beach Road,10.045,0.576,1417.032,0.228
+"S2 sea as water, on the sea only",fl,South Ocean Drive,9.767,1.662,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Manasota Key Road,9.185,1.989,1417.032,0.228
+"S2 sea as water, on the sea only",fl,South Ponte Vedra Boulevard,9.062,1.364,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Heckscher Drive,8.719,1.013,1417.032,0.228
+"S2 sea as water, on the sea only",fl,Rickenbacker Causeway,8.701,2.355,1417.032,0.228
+L landmark within 80 m,fl,,191.191,0.657,1302.571,0.079
+L landmark within 80 m,fl,Overseas Highway,86.817,0.798,1302.571,0.079
+L landmark within 80 m,fl,Alligator Alley,82.178,0.822,1302.571,0.079
+L landmark within 80 m,fl,Tamiami Trail East,57.269,0.825,1302.571,0.079
+L landmark within 80 m,fl,Turner River Road,32.395,0.685,1302.571,0.079
+L landmark within 80 m,fl,Dixie Highway,25.553,0.840,1302.571,0.079
+L landmark within 80 m,fl,Loop Road,20.102,0.695,1302.571,0.079
+L landmark within 80 m,fl,Southwest 8th Street,18.312,0.696,1302.571,0.079
+L landmark within 80 m,fl,Forest Road 50,16.507,0.698,1302.571,0.079
+L landmark within 80 m,fl,State Road 72,15.977,0.840,1302.571,0.079
+L landmark within 80 m,fl,Buccaneer Trail,13.784,0.780,1302.571,0.079
+L landmark within 80 m,fl,Southeast Federal Highway,13.698,0.840,1302.571,0.079
+L landmark within 80 m,fl,Wagon Wheel Road,12.277,0.765,1302.571,0.079
+L landmark within 80 m,fl,New Seven Mile Bridge,10.511,0.342,1302.571,0.079
+L landmark within 80 m,fl,Econfina River Road,9.736,0.336,1302.571,0.079
+V+S2+L,fl,,326.645,1.162,2606.109,0.163
+V+S2+L,fl,Overseas Highway,117.453,1.803,2606.109,0.163
+V+S2+L,fl,Alligator Alley,82.178,0.822,2606.109,0.163
+V+S2+L,fl,Tamiami Trail East,57.269,0.825,2606.109,0.163
+V+S2+L,fl,Turner River Road,32.395,0.685,2606.109,0.163
+V+S2+L,fl,Gulf Boulevard,27.758,1.652,2606.109,0.163
+V+S2+L,fl,Courtney Campbell Causeway,25.856,2.487,2606.109,0.163
+V+S2+L,fl,Dixie Highway,25.553,1.576,2606.109,0.163
+V+S2+L,fl,Loop Road,20.102,0.695,2606.109,0.163
+V+S2+L,fl,South Ocean Boulevard,18.418,2.243,2606.109,0.163
+V+S2+L,fl,Southwest 8th Street,18.312,0.696,2606.109,0.163
+V+S2+L,fl,South Indian River Drive,18.297,1.191,2606.109,0.163
+V+S2+L,fl,Forest Road 50,16.507,0.698,2606.109,0.163
+V+S2+L,fl,State Road 72,15.977,0.840,2606.109,0.163
+V+S2+L,fl,J Earle Bowden Way,15.426,0.736,2606.109,0.163
