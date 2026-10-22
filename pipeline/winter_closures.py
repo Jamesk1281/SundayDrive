@@ -141,6 +141,66 @@ def mvum_windows(row):
     return [], "no dates"
 
 
+# The MVUM vehicle classes that are full-size and highway legal: a car, an
+# SUV or light truck, a truck over 10,000 lb, a bus and a motorhome, each
+# "licensed to operate on public roads" in the layer's own metadata. Under
+# the Travel Management Rule (36 CFR 212.51) a Forest Service road may be
+# driven only by the classes its MVUM designates, so a road designated for
+# none of these is not a road for a car: ATV, motorcycle, OHV or 4WD only.
+# Four-wheel drive over 50 inches is not one, as `4wd_only=yes` closes a
+# road; nor is two-wheel drive over 50 inches, which the metadata does not
+# call highway legal (docs/national-data-decisions.md, D5).
+MVUM_CAR_CLASSES = ("passengervehicle", "highclearancevehicle", "truck", "bus",
+                    "motorhome")
+
+# MVUM's symbols for a road open to every vehicle or to highway-legal
+# vehicles, yearlong or seasonal: the map's own legend designates a car on
+# these whatever the class fields hold, and some forests fill only the
+# symbol. 11 and 12 are "special designation", where the classes decide.
+MVUM_CAR_SYMBOLS = frozenset({"1", "2", "3", "4"})
+
+
+def mvum_car_designated(row) -> bool:
+    """Whether one MVUM road is designated for a full-size highway-legal
+    vehicle: its symbol says so (MVUM_CAR_SYMBOLS) or one of
+    MVUM_CAR_CLASSES is `open`."""
+    if (row.get("symbol") or "").strip() in MVUM_CAR_SYMBOLS:
+        return True
+    return any((row.get(c) or "").strip().lower() == "open" for c in MVUM_CAR_CLASSES)
+
+
+# The classes on which an MVUM road with no car designation is taken for a
+# different road the 15 m match picked up, and left open, as is an edge with
+# a US or state ref or a paved one (`no_car_exception`).
+MAJOR_CLASSES = frozenset({"motorway", "motorway_link", "trunk", "trunk_link",
+                           "primary", "primary_link"})
+
+_STATES = ("AL AZ AR CA CO CT DE DC FL GA ID IL IN IA KS KY LA ME MD MA MI MN MS MO "
+           "MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY")
+# A ref naming an interstate, a US route or a state route: "I 70", "US 34",
+# "CO 14", "SR 410", "State Highway 310". "FR 602C", "CR 142" and "NF 37"
+# are not, and no state's postal code is FR, FS, NF or CR.
+STATE_REF = re.compile(rf"^(?:I|US|SR|SH|STATE(?: (?:ROUTE|HIGHWAY|ROAD))?|"
+                       rf"{'|'.join(_STATES.split())})[ -]?\d", re.IGNORECASE)
+
+
+def state_ref(ref) -> bool:
+    """Whether any part of a `;`-separated ref is an interstate, US or state
+    route (STATE_REF)."""
+    return any(STATE_REF.match(part.strip()) for part in (ref or "").split(";"))
+
+
+def no_car_exception(highway, ref) -> str:
+    """Why an edge an MVUM road with no car designation runs along stays
+    open, by its own class and ref, or "" when it closes."""
+    highway = (highway or "").strip().lower()
+    if highway in MAJOR_CLASSES:
+        return f"highway={highway}"
+    if state_ref(ref):
+        return f"ref={ref}"
+    return ""
+
+
 # -------------------------------------------------------------------- NPS
 
 def _norm(text) -> str:
@@ -369,9 +429,13 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
         if have is None or level < have[0]:
             found[edge][window] = (level, tag)
 
+    report["no_car"] = []
     if mvum is not None and len(mvum):
-        windows, how = zip(*(mvum_windows(r) for r in mvum.to_dict("records")))
-        closed = closed_by_lines(match_lines(edges.geometry, mvum.geometry), windows)
+        records = mvum.to_dict("records")
+        windows, how = zip(*(mvum_windows(r) for r in records))
+        match = match_lines(edges.geometry, mvum.geometry)
+        closed = closed_by_lines(match, windows)
+        report["no_car"] = no_car_edges(edges, records, match)
         for edge, by_window in closed.items():
             for window, lines in by_window.items():
                 r = mvum.iloc[lines[0]]
@@ -427,6 +491,32 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
                 "rule": "edge", "node_id": -1, "at_m": np.nan,
             })
     return rows, report
+
+
+def no_car_edges(edges, records, match):
+    """The edges MVUM roads with no full-size highway-legal designation
+    close to cars all year, before the paved check closures.py makes.
+
+    `records` are the MVUM rows and `match` their `match_lines` with
+    `edges`. An edge closes when such roads cover MIN_SHARE of it, as a
+    seasonal edge does, and each line is given the share of it the line
+    covers. Returns dicts of edge, line (the longest share), and
+    `exception`, `no_car_exception`'s reason or "" (D5,
+    docs/national-data-decisions.md).
+    """
+    if not len(match):
+        return []
+    no_car = [() if mvum_car_designated(r) else (ALL_YEAR,) for r in records]
+    highway = (edges["highway"].to_numpy() if "highway" in edges.columns
+               else np.full(len(edges), ""))
+    ref = edges["ref"].to_numpy() if "ref" in edges.columns else np.full(len(edges), "")
+    share = dict(zip(zip(match["edge"], match["line"]), match["share"]))
+    out = []
+    for edge, by_window in closed_by_lines(match, no_car).items():
+        line = max(by_window[ALL_YEAR], key=lambda i: share[(edge, i)])
+        out.append({"edge": edge, "line": line,
+                    "exception": no_car_exception(highway[edge], ref[edge])})
+    return out
 
 
 def _km(closed, length):

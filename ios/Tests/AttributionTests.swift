@@ -123,7 +123,7 @@ final class AttributionTests: XCTestCase {
 
     // MARK: - Nothing is silently missing
 
-    /// Each of the three datasets the app is actually built from has to be in
+    /// Each of the datasets the app is actually built from has to be in
     /// the list the screen renders — an entry that exists but is not in `all` is
     /// attribution that reaches nobody.
     func test_every_source_the_app_uses_is_on_the_screen() {
@@ -133,6 +133,24 @@ final class AttributionTests: XCTestCase {
         XCTAssertTrue(names.contains { $0.contains("Terrain Tiles") }, "Got: \(names)")
         // The national scoring's landmark credit (docs/app-goes-national.md).
         XCTAssertTrue(names.contains { $0.contains("PAD-US") }, "Got: \(names)")
+        // The two federal layers that close roads (docs/national-data-decisions.md, D4).
+        XCTAssertTrue(names.contains { $0.contains("Forest Service") && $0.contains("MVUM") },
+                      "Got: \(names)")
+        XCTAssertTrue(names.contains("National Park Service Public Roads"), "Got: \(names)")
+    }
+
+    /// The federal closure layers are credited by agency and dataset, in
+    /// their own citation, and carry no licence line: neither states one,
+    /// and "public domain" stays off the screen
+    /// (`test_the_terrain_aggregate_is_never_called_public_domain`).
+    func test_the_federal_closure_layers_are_credited_to_their_agencies() {
+        XCTAssertEqual(DataSources.forestServiceRoads.credit, ["U.S. Forest Service, MVUM Roads."])
+        XCTAssertEqual(DataSources.parkRoads.credit,
+                       ["National Park Service, National Park Service Public Roads."])
+        XCTAssertNil(DataSources.forestServiceRoads.licence)
+        XCTAssertNil(DataSources.parkRoads.licence)
+        XCTAssertEqual(DataSources.forestServiceRoads.url.host, "data.fs.usda.gov")
+        XCTAssertEqual(DataSources.parkRoads.url.host, "mapservices.nps.gov")
     }
 
     /// Every entry needs somewhere to read the licence and the data's own

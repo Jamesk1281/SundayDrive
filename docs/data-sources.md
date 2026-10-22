@@ -27,16 +27,20 @@ not change the app's credit line.
 
 ## Winter closures (the `usa` branch)
 
-Since 2026-10-18, `pipeline/closures.py` also reads two federal road layers to
-close park and forest roads for the season
-([`winter-closures-national.md`](winter-closures-national.md)). Only rows of
-`seasonal_closures.parquet` reach the server; nothing from either layer is drawn
-or shown in the app.
+Since 2026-10-18, `pipeline/closures.py` also reads two federal road layers
+to close park and forest roads for the season
+([`winter-closures-national.md`](winter-closures-national.md)). Since
+2026-10-21 MVUM also closes to cars all year the forest roads designated for no
+full-size highway-legal vehicle
+([`national-data-decisions.md`](national-data-decisions.md), D5). Only rows of
+`seasonal_closures.parquet` and `closed_to_cars.parquet` reach the server.
+Nothing from either layer is drawn on the map, and both agencies are credited
+in the app's About screen (`ios/Sources/AboutView.swift`).
 
 | Source | Used for | Licence |
 | --- | --- | --- |
-| [USFS Motor Vehicle Use Map roads](https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_01/MapServer/1) | passenger-vehicle season of Forest Service roads | **to confirm.** `tools/us_map_data/results/README.md` records CC BY 4.0; the service itself states no licence (read 2026-10-18). If CC BY 4.0 holds, the app's credit line needs "U.S. Forest Service" (`ios/Sources/AboutView.swift`, not changed here) |
-| [NPS Public Roads](https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Roads/MapServer/0) | seasonal park roads | public domain (US federal government work) |
+| [USFS Motor Vehicle Use Map roads](https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_01/MapServer/1) | passenger-vehicle season of Forest Service roads, and the roads no car may drive | public domain (US federal government work). The layer's metadata, [S_USA.Road_MVUM.xml](https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Road_MVUM.xml) on the FS Geodata Clearinghouse (published 2025-05-13, read 2026-10-21), gives access constraints "None" and use constraints that are a disclaimer only, with no licence and no required credit. The service states none either. The CC BY 4.0 that `tools/us_map_data/results/README.md` records is borne out by neither. Credited anyway as "U.S. Forest Service, MVUM Roads." |
+| [NPS Public Roads](https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Roads/MapServer/0) | seasonal park roads | public domain (US federal government work). The service's copyright text names the National Park Service and no licence (read 2026-10-21). Credited anyway as "National Park Service, National Park Service Public Roads." |
 
 The basemap the routes are drawn on is Apple's, via MapKit, which renders its own
 attribution.

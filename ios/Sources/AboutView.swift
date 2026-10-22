@@ -68,7 +68,8 @@ enum DataSources {
     /// openstreetmap.org/copyright".
     static let openStreetMapCopyrightURL = URL(string: "https://www.openstreetmap.org/copyright")!
 
-    static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, protectedAreas, appleMaps]
+    static let all: [DataSource] = [openStreetMap, worldCover, terrainTiles, protectedAreas,
+                                    forestServiceRoads, parkRoads, appleMaps]
 
     /// The route-guidance notice, **verbatim and non-negotiable**.
     ///
@@ -213,6 +214,37 @@ enum DataSources {
         // can never be read as one.
         licence: nil,
         url: URL(string: "https://doi.org/10.5066/P96WBCHS")!
+    )
+
+    /// The Forest Service's Motor Vehicle Use Map roads: which forest roads
+    /// close for the season, and which no car may drive at all, in
+    /// `pipeline/winter_closures.py`.
+    ///
+    /// The layer's metadata (S_USA.Road_MVUM.xml on the FS Geodata
+    /// Clearinghouse, read 2026-10-21) states no licence, only a disclaimer,
+    /// so it is a US federal government work and no credit is owed. It is
+    /// credited because it decides where routes go. Neither agency publishes
+    /// a credit line, so each line here is the dataset's own citation, its
+    /// originator and title (docs/national-data-decisions.md, D4). No licence
+    /// line, for the reason PAD-US has none.
+    static let forestServiceRoads = DataSource(
+        role: "Which forest roads a car may drive, and when",
+        name: "USDA Forest Service Motor Vehicle Use Map (MVUM) Roads",
+        credit: ["U.S. Forest Service, MVUM Roads."],
+        licence: nil,
+        url: URL(string: "https://data.fs.usda.gov/geodata/edw/datasets.php")!
+    )
+
+    /// NPS Public Roads: which park roads close for winter, in
+    /// `pipeline/winter_closures.py`. A US federal government work, as
+    /// MVUM is (docs/data-sources.md). The line is the service's own title
+    /// and originator.
+    static let parkRoads = DataSource(
+        role: "Which park roads close for winter",
+        name: "National Park Service Public Roads",
+        credit: ["National Park Service, National Park Service Public Roads."],
+        licence: nil,
+        url: URL(string: "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Roads/MapServer")!
     )
 
     /// The basemap under the route lines. MapKit draws Apple's own attribution
