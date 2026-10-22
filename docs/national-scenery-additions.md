@@ -1,9 +1,10 @@
 # The scenery additions V, S2 and L, built into the pipeline
 
-**Status:** built and reproduced 2026-10-22 on `claude/scenery-additions`, off `usa` at
-`37bc5c1`. The code, its tests and the two scratch reproductions are done. The national
-rebuild into `data/processed-us-next` and `data/pack-us-next` is **not** done: it waits on
-the master session's go-ahead (§5). No file under `data/` was written.
+**Status:** built, reproduced and rebuilt nationally on 2026-10-22, on
+`claude/scenery-additions` (off `usa` at `37bc5c1`). The national data is in
+`data/processed-us-next` and `data/pack-us-next`, and `data/pack-us-next.done` is written.
+The swap into `processed-us` and `pack-us` is the master session's. Nothing under
+`data/processed-us`, `data/pack-us` or `data/processed-ne` was written.
 
 [`docs/national-scenery-types-verdict.md`](national-scenery-types-verdict.md) measured three
 terms offline in `tools/scenery_types/` and recommended shipping them together, and the
@@ -21,6 +22,13 @@ reproduces what was measured. It does.
   - 56 marks score 7 or more, as in the study.
 - **Utah** (scratch copy of the study's own Utah build, §4): 12.26% of km at 7 or more
   (study 12.28%), mean 4.761 (4.763), and the byway proxy within ecoregion 0.4980 (0.4973).
+- **Nationally** (§6): the share of km at 7 or more goes from 4.89% to 5.28%. Utah,
+  Nevada and Arizona gain the most (+3.4, +3.3 and +2.5 points); the plains do not move.
+  Icon km at 7 or more go from 37.6% to 41.6%, and control km stay at 0.04%. The graph, the
+  closures and the routes are unchanged: 11,414 of 11,414 continuity legs pass, and
+  `tests/test_national_routes.py` passes 11 of 11.
+- **Death Valley's CA 190 reaches 77.6% of km at 7 or more, not the study's 96%.** The
+  study's 96% was an artefact of its piece method, and the build is right (§6).
 - **The one residual is V's open-land box.** The 10 km prominence is identical to the
   study's on every chunk. The pipeline counts open land in `landcover.py`'s own ~1 km
   ground box, which the brief named. The study counted it in 9 × 11 aligned blocks of
@@ -208,7 +216,7 @@ V moves more than half of Utah's km by more than 0.25. That is what V is for: op
 under distant relief is most of Utah. It is not a New England risk, and New England is the
 check that has marks.
 
-## 5. Cost, and what the national rebuild needs
+## 5. Cost
 
 Measured stage by stage on the two scratch copies (`/usr/bin/time -l`):
 
@@ -229,34 +237,158 @@ comparable. Notes on the measurements:
 - **New England's `protected.py` wall time was the machine stalling,** during chunking:
   72 s of CPU in 538 s. The 80 m query itself took 8 s.
 
-**The national rebuild is not run.** It is the national build's region stages for every
-region, about 10.7 process-hours (verdict §7). Then come the stitch, the sidecars and the
-pack, into `data/processed-us-next` and `data/pack-us-next`, at `--jobs 2`. Before it
-starts:
+### The national rebuild
 
-- **The master session's go-ahead.** The seasonal-risk study must have released the
-  national pack. The six data decisions' pending `-next` data, including
-  `data/raw/federal-next` → `data/raw/federal`, must be swapped in, because `closures.py`
-  reads `data/raw/federal/mvum_roads.parquet`. That swap also frees the `-next` names this
-  rebuild writes to.
-- **Disk.** On 2026-10-22 the volume had 29 GB free. A rebuild needs about 32 GB:
-  - a fresh region work directory, about 10 GB, like `data/national/build` without `raw/`.
-    It has to be a new directory, because `build.py` skips every region whose
-    `part_edges.parquet` exists. Its `raw/` can be linked to the existing caches;
-  - `processed-us-next`, about 11 GB;
-  - `pack-us-next`, about 11 GB.
+The run was the master session's go-ahead, at 02:27–08:40 on 2026-10-22, alone on the
+Mac. It took these steps:
 
-  Something has to be freed first.
+1. The 51 regions into a fresh `data/national/build-next` (its `raw/` a link to
+   `data/national/build/raw`, so no tile was fetched), at `--jobs 2`.
+2. `stitch.py`, then `sidecars.py` with `SUNDAYDRIVE_FEDERAL=data/raw/federal`.
+3. `tools/national_audit/pack_next.py` against `data/pack-us`, which writes as clones the
+   arrays that did not change.
 
-## 6. Open
+| step | wall | peak |
+|---|---|---|
+| regions, 51 | 4 h 50 min; 9.54 process-hours (E1: 10.71) | 11.46 GB (east Texas, graph) |
+| stitch | 1,718 s | 11.76 GB |
+| sidecars | 2,951 s | 7.59 GB |
+| pack | 245 s | 14.15 GB |
+| continuity check | 283 s | 11.65 GB |
 
-- The national rebuild and everything after it in the brief's "Done looks like", item 3:
-  - the -next pair and `.done`;
-  - the continuity check at 11,414 of 11,414 legs;
-  - `tests/test_national_routes.py` on the -next pack;
-  - the icons and controls re-measured on the real build;
-  - the national and per-state share of km at 7 or more, before and after.
-- Nothing else: the suite on `processed-ne` is green (§2).
+Per stage over all regions, against E1's build:
+
+- landcover: 1.00 process-hours (E1 1.52), peak 8.58 GB (E1 10.82 GB, South Dakota);
+- terrain: 0.92 process-hours (E1 0.77), peak 5.83 GB (E1 5.25). Montana's terrain stage
+  went from 3.82 GB to 5.83 GB, which is the prominence array the verdict predicted.
+
+Disk used: `build-next` 10 GB, `processed-us-next` 11 GB, and the pack's 5 new arrays. The
+volume went from 53 GB free to 27 GB.
+
+## 6. The national data
+
+**Only the scores changed:**
+
+- **The graph:** `processed-us-next` has the same 25,849,861 edges and 20,023,955 nodes as
+  `processed-us`. `per_region.csv` is byte-identical.
+- **The border proof holds.** 0 of 2,159,473 ways that two regions both built are split
+  differently. Copies of an edge built on both sides of a border differ by more than 0.25
+  on 1.34% of edges, up from 1.29%: the same projection and ring-edge noise, now on three
+  more columns.
+- **The sidecars** are row for row the six decisions' (`closed_to_cars` 70,830,
+  `seasonal_closures` 13,588, `osm_unpaved` 19,237, `state_road_class` 49,697).
+- **The pack** has 20,186,991 routing nodes, as `pack-us`. It wrote 5 arrays new, all
+  scores: `_score`, `base_score`, `_breakdown`, and `comp.0` (water's slider column;
+  `c_grand` and `c_protected` are baseline terms with no slider). The other 87 were
+  cloned from `pack-us`.
+- **The routes:**
+  - `continuity.py check data/processed-us-next data/pack-us-next`: 11,414 of 11,414
+    legs pass;
+  - `SUNDAYDRIVE_PACK=data/pack-us-next pytest tests/test_national_routes.py`: 11 passed.
+
+**Share of km at 7 or more, per state,** before (`processed-us`, E1) and after
+(`processed-us-next`). From `tools/scenery_additions/national.py`; the full table is
+`results/national_states.csv`.
+
+| state | km ≥ 7 before | after | change | mean before | after |
+|---|---:|---:|---:|---:|---:|
+| **US** | 4.89% | 5.28% | +0.39 | 3.63 | 3.68 |
+| UT | 8.43% | 11.83% | +3.40 | 4.34 | 4.78 |
+| NV | 2.83% | 6.17% | +3.33 | 3.95 | 4.59 |
+| AZ | 3.56% | 6.08% | +2.52 | 3.92 | 4.23 |
+| CO | 8.32% | 9.98% | +1.66 | 3.85 | 4.02 |
+| ID | 15.55% | 16.92% | +1.36 | 4.40 | 4.66 |
+| VT | 20.04% | 21.32% | +1.29 | 5.53 | 5.62 |
+| CA | 9.90% | 11.18% | +1.27 | 4.05 | 4.23 |
+| OR | 19.98% | 21.21% | +1.23 | 5.01 | 5.17 |
+| WY | 3.29% | 4.42% | +1.14 | 3.42 | 3.59 |
+| WA | 16.88% | 18.01% | +1.14 | 4.71 | 4.82 |
+| MT | 9.07% | 10.06% | +0.98 | 3.58 | 3.77 |
+| NM | 3.14% | 3.94% | +0.80 | 3.53 | 3.71 |
+| NH | 15.52% | 16.28% | +0.76 | 5.25 | 5.30 |
+| WV | 34.43% | 34.96% | +0.53 | 6.47 | 6.50 |
+| VA | 8.07% | 8.56% | +0.49 | 4.41 | 4.46 |
+| ME | 8.66% | 9.15% | +0.49 | 4.61 | 4.63 |
+| RI | 15.13% | 15.50% | +0.37 | 5.16 | 5.17 |
+| MA | 10.51% | 10.88% | +0.37 | 4.72 | 4.73 |
+| TN | 5.73% | 6.00% | +0.27 | 4.20 | 4.23 |
+| NY | 7.70% | 7.94% | +0.25 | 4.22 | 4.24 |
+| NC | 5.16% | 5.39% | +0.23 | 3.87 | 3.89 |
+| DE | 5.92% | 6.15% | +0.23 | 4.12 | 4.13 |
+| FL | 3.94% | 4.16% | +0.22 | 4.09 | 4.10 |
+| NJ | 9.16% | 9.37% | +0.21 | 4.53 | 4.54 |
+| CT | 10.89% | 11.09% | +0.20 | 4.78 | 4.79 |
+| PA | 9.53% | 9.71% | +0.18 | 4.69 | 4.71 |
+| MD | 9.84% | 10.00% | +0.17 | 4.61 | 4.62 |
+| AR | 2.07% | 2.16% | +0.09 | 3.55 | 3.56 |
+| TX | 0.98% | 1.06% | +0.08 | 3.01 | 3.02 |
+| GA | 2.34% | 2.40% | +0.07 | 3.72 | 3.73 |
+| KY | 6.03% | 6.08% | +0.05 | 4.12 | 4.12 |
+| WI | 3.63% | 3.67% | +0.05 | 3.69 | 3.69 |
+| OH | 4.13% | 4.17% | +0.04 | 3.69 | 3.69 |
+| SC | 2.45% | 2.49% | +0.04 | 3.73 | 3.74 |
+| SD | 0.56% | 0.59% | +0.03 | 2.39 | 2.40 |
+| AL | 2.82% | 2.85% | +0.03 | 3.96 | 3.96 |
+| MO | 2.42% | 2.45% | +0.03 | 3.46 | 3.47 |
+| MN | 1.89% | 1.91% | +0.02 | 3.03 | 3.03 |
+| MI | 2.21% | 2.23% | +0.02 | 3.31 | 3.32 |
+| IA | 0.72% | 0.74% | +0.01 | 2.49 | 2.49 |
+| IL | 1.06% | 1.07% | +0.01 | 2.84 | 2.84 |
+| OK | 0.57% | 0.58% | +0.01 | 2.62 | 2.63 |
+| IN | 1.69% | 1.70% | +0.01 | 3.02 | 3.02 |
+| LA | 0.72% | 0.72% | +0.01 | 3.21 | 3.21 |
+| MS | 0.65% | 0.65% | +0.01 | 3.37 | 3.37 |
+| KS | 0.39% | 0.39% | +0.00 | 2.39 | 2.39 |
+| ND | 0.15% | 0.15% | +0.00 | 2.30 | 2.30 |
+| NE | 0.32% | 0.32% | +0.00 | 2.64 | 2.64 |
+| DC | 4.10% | 4.10% | +0.00 | 3.59 | 3.59 |
+
+The West gains where V has open land under mountains. The coasts gain a little from S2 and
+L. The plains and the Midwest move by hundredths. New England moves by +0.2 to +1.3 points:
+Vermont gains most, from V on its valley roads, which is the verdict's §4 mover list.
+
+**The pinned icons and controls on the real build** (`results/national_icons.csv`),
+against the study's V+S2+L prediction (`tools/scenery_types/results/icons.csv`):
+
+| | E1 | built | study |
+|---|---:|---:|---:|
+| icon km at 7 or more | 37.59% | **41.64%** | 42.4% |
+| control km at 7 or more | 0.04% | **0.04%** | 0.04% |
+| worst control mean | 3.52 (Bell Road) | **3.67 (US 6 Delta–Eureka)** | 3.66 (US 6) |
+
+Of the 38 pinned roads, 33 come out exactly as the study predicted, to 0.01 points. The
+largest differences:
+
+| road | E1 | built | study | why |
+|---|---:|---:|---:|---|
+| CA 190 Death Valley | 33.6% | **77.6%** | 96.3% | below |
+| Overseas Highway | 15.6% | **38.5%** | 40.0% | the same artefact, smaller |
+| NC 12 Outer Banks | 52.8% | **59.0%** | 58.4% | S2's box and coast distance |
+| UT 12 | 37.2% | **47.4%** | 47.2% | V's box |
+| Valley of Fire | 21.8% | **36.4%** | 36.4% | |
+| US 163 Monument Valley | 4.6% | **9.4%** | 9.4% | |
+| Tamiami Trail, Big Cypress | 4.3% (mean 3.92) | **6.1% (mean 4.69)** | 6.1% (4.68) | |
+
+**CA 190 is the study's error, not the build's.** One 29.2 km edge east of Furnace Creek
+holds 18.6% of the road's pinned km. It scores 6.935 in the build and 7.006 in the study.
+The study cut pinned edges into 400 m pieces but knew the shipped components only as edge
+averages, and applied each candidate's `max()` piece by piece (verdict §10). The edge's
+averaged `c_protected` is 0.092, and 12.3% of its pieces are within 80 m of the park. So
+the study gave every piece max(0.092, its own flag), counting the inside stretches twice.
+The pipeline takes the `max()` chunk by chunk, before the edge average, which is the
+definition. The road's mean is the same (7.65 built, 7.66 study): 30 km of it sits between
+6.9 and 7.0.
+
+## 7. Open
+
+- **The swap is the master session's:** `processed-us-next` → `processed-us` and
+  `pack-us-next` → `pack-us`.
+- `data/national/build-next` (10 GB) holds the new region parts. It is the input for any
+  re-stitch of this build, and `data/national/build` holds E1's. Which to keep after the
+  swap is the master session's call.
+- `tools/scenery_types` and `tools/scenery_additions/check.py` read the study's chunk tables
+  and marks under `SundayDrive-scratch/western-landcover`. They still resolve; deleting
+  `reg/`, `ut/`, `co/` or `marks.pkl` there would stop either check from being re-run.
 
 Figures derived from OpenStreetMap are © OpenStreetMap contributors, ODbL. ESA WorldCover
 2021 is CC BY 4.0. PAD-US is US federal data. The marks are the owner's, and only
