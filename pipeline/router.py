@@ -576,6 +576,9 @@ class SeasonalClosures:
             for k in group[list(CLOSURE_WINDOW)].to_numpy():
                 self._through[tuple(int(x) for x in k)].add(int(osm_id))
         self.n_edges = len(np.unique(rows[shut]))
+        # Every edge with a row of any rule: what a route's seasonal stretches
+        # are made of (`Router.seasonal_stretches`).
+        self.seasonal_edges = np.unique(rows[inside])
         self.n_ways = int(table.loc[shut & (node < 0), "way_id"].nunique())
         self.n_gates = int(pd.unique(node[node >= 0]).size)
         self.km = float(table[shut].drop_duplicates("edge")["length_m"].sum() / 1000.0)
@@ -3276,7 +3279,8 @@ class Router:
     def route(self, src_idx: int, dst_idx: int, pref: float, weights: dict = None,
               heading: float | None = None, avoid_unpaved: float = 1.0,
               on: date | None = None, origin: tuple[float, float] | None = None,
-              keep_ahead: bool = False, bound: float | None = None):
+              keep_ahead: bool = False, bound: float | None = None,
+              avoid: np.ndarray | None = None):
         """The cheapest route from `src_idx` to `dst_idx`.
 
         `origin` is where the driver is, as (lat, lon), and `heading` which way
@@ -3286,6 +3290,9 @@ class Router:
         when the cheapest route turns around, so any other request is untouched.
         See `_keep_ahead`. `bound` is `_cheapest`'s: the cost, under this
         request's prices, of a legal route the caller already has (`cost_of`).
+        `avoid` is sorted directed slots closed for this request on top of
+        everything else (`avoid_slots`): the seasonal stretches a driver has
+        turned away from (docs/seasonal-road-policy.md, P5).
         """
         # Scored once, then used for both jobs: choosing the route and reporting
         # it. They used to disagree — the router optimized the live re-blend
@@ -3297,6 +3304,8 @@ class Router:
         # `_edge_scores`' and `_weights`' own arithmetic.
         # `on` closes the roads shut for the season that day; see `_weights`.
         metric = self.metric(pref, weights, avoid_unpaved, on)
+        if avoid is not None and len(avoid):
+            metric = metric.blocking(avoid)
         # A junction split for turn restrictions stands at several indices, one
         # per approach that forbids something. Any of them is a legitimate place
         # to *arrive* — the restriction is on continuing through, and a route
@@ -3357,6 +3366,65 @@ class Router:
         if ahead.minutes - turnaround.minutes > TURN_BACK_CAP_MIN:
             return turnaround
         return ahead
+
+    def seasonal_stretches(self, result) -> list:
+        """The seasonal stretches `result` drives: each maximal run of
+        consecutive route edges that has any row in seasonal_closures, as its
+        edge rows, whether each is driven u -> v (`forward`), and the metres
+        along the route where the run begins and ends. Empty with no table.
+
+        What the app needs to rule a stretch out of its later reroutes once
+        the driver turns away from it (`avoid_slots`; docs/seasonal-road-policy.md,
+        P5). Per direction, so a reroute from a car already on the stretch,
+        facing back the way it came, can still drive off it that way.
+        """
+        if self.closures is None or result is None or not len(result.edges):
+            return []
+        rows = result.edges.index.to_numpy().astype(np.int64)
+        hit = _members_of(self.closures.seasonal_edges, rows)[1]
+        if not hit.any():
+            return []
+        lengths = result.edges["length_m"].to_numpy(float)
+        ends = np.concatenate([[0.0], np.cumsum(lengths)])
+        out, i = [], 0
+        while i < len(rows):
+            if not hit[i]:
+                i += 1
+                continue
+            j = i
+            while j + 1 < len(rows) and hit[j + 1]:
+                j += 1
+            run = range(i, j + 1)
+            out.append({"edges": [int(rows[k]) for k in run],
+                        "forward": [self._driven_forward(int(rows[k]), result.edge_coords[k])
+                                    if k < len(result.edge_coords) else True for k in run],
+                        "from_m": round(float(ends[i]), 1),
+                        "to_m": round(float(ends[j + 1]), 1)})
+            i = j + 1
+        return out
+
+    def _driven_forward(self, edge: int, coords) -> bool:
+        """Whether `coords`, an edge as a route drives it (all of it, or a
+        lead-in's part), runs from its `u` end toward its `v` end: whether it
+        ends nearer the stored line's last point than its first."""
+        line = self.lines.coords(edge)
+        end = np.asarray(coords)[-1]
+        return bool(np.hypot(*(end - line[-1])) <= np.hypot(*(end - line[0])))
+
+    def avoid_slots(self, edges) -> np.ndarray:
+        """The sorted directed slots of `edges`, given as (edge row, forward)
+        pairs: each edge in the direction named, u -> v when `forward`, with
+        every copy turn restrictions made of it. Rows outside the graph are
+        dropped. What `route(avoid=)` closes (docs/seasonal-road-policy.md, P5).
+        """
+        out = []
+        for e, forward in edges:
+            e = int(e)
+            if not 0 <= e < self.m:
+                continue
+            out.extend(int(k) for k in self._members((self._edge_order, self._edge_start), e)
+                       if bool(self.flip[k]) != bool(forward))
+        return np.array(sorted(set(out)), dtype=np.int64)
 
     def _turn_back_slots(self, strip, heading: float) -> np.ndarray:
         """Directed slots whose road runs through `strip` heading back, at

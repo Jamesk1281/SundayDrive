@@ -5,6 +5,7 @@ Loads the routing graph once at startup and serves:
                                             [&avoid_unpaved=0..2]
                  [&w_<type>=...][&options=1]
                  [&leave=LAT,LON,DEG][&rejoin=LAT,LON,DEG]
+                 [&avoid_edges=ROW,-ROW,...&avoid_pack=FINGERPRINT]
                               -> {"fastest": <GeoJSON Feature>,
                                   "scenic":  <GeoJSON Feature>,
                                   ["options": {"default": i, "menu": [...]}]}
@@ -57,6 +58,13 @@ other plan or loop is computing; otherwise the reply is today's, with no
 them at pref 1, fastest roads either side. They are how the app fetches an
 option in full and how it reroutes one mid-drive.
 
+`avoid_edges` closes, for this request only, the seasonal stretches a driver
+has turned away from: edge rows as each Feature's `seasonal` stretches list
+them, a leading minus for one driven v -> u, with `avoid_pack` the fingerprint
+those rows belong to. A fingerprint that is not this graph's is ignored, never
+refused: a redeploy mid-drive must not fail a driver (`_parse_avoid`,
+docs/seasonal-road-policy.md).
+
 Every route and loop avoids the roads OpenStreetMap marks closed for the season
 on the day of the request, judged on every date the contiguous US is on at that
 moment (router.region_today, pipeline/closures.py). When the only way to a
@@ -76,6 +84,7 @@ With SUNDAYDRIVE_PACK set, the graph is mapped from that pack
 """
 
 import hashlib
+import json
 import math
 import os
 import sys
@@ -95,6 +104,7 @@ from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
 from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED,  # noqa: E402
                     MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, START_MAX_M, Router,
                     region_today)
+from router import _sources as _router_sources  # noqa: E402
 import options as route_options  # noqa: E402
 
 # How far a user may push a single beauty type. 0 ignores it; the upper bound
@@ -349,8 +359,25 @@ def _pack_fingerprint():
     return hashlib.sha256((Path(PACK) / "manifest.json").read_bytes()).hexdigest()
 
 
+def _edges_fingerprint():
+    """What the edge rows in a route's `seasonal` stretches belong to: the
+    pack's fingerprint, or with no pack the same thing for the parquets the
+    graph was built from (`router._sources`), so a stretch's rows are never
+    read against another graph's."""
+    if PACK_FINGERPRINT is not None:
+        return PACK_FINGERPRINT
+    sources = json.dumps(_router_sources(PROCESSED), sort_keys=True)
+    return hashlib.sha256(sources.encode()).hexdigest()
+
+
 COMMIT = _commit()
 PACK_FINGERPRINT = _pack_fingerprint()
+EDGES_FINGERPRINT = _edges_fingerprint()
+
+# The most edges one request may close with `avoid_edges`; any past it are
+# dropped, never refused. A stretch is tens to a few hundred edges, and the
+# app sends its newest first (docs/seasonal-road-policy.md, "The cap").
+MAX_AVOID_EDGES = 2000
 
 
 class BadInput(ValueError):
@@ -455,6 +482,41 @@ def _parse_declined_uturn(args):
     what every client built before this sends. docs/reroute-uturn.md.
     """
     return args.get("declined_uturn", "") in ("1", "true")
+
+
+def _parse_avoid(args):
+    """The directed slots this request closes on top of everything else, or
+    None: the seasonal stretches the driver has turned away from, which the
+    app sends with every reroute until arrival (P5, docs/seasonal-road-policy.md).
+
+    `avoid_edges` is edge rows separated by commas, as a route's `seasonal`
+    stretches list them, each driven u -> v unless it has a leading minus
+    ("-0" is row 0 driven v -> u). `avoid_pack` is the fingerprint they came
+    with. Never a 400, because the app holds a stretch for hours and the box
+    can be redeployed in between: a fingerprint that is not this graph's is
+    ignored and logged, and so is a token that is not a row. At most
+    MAX_AVOID_EDGES are honoured, the first ones sent.
+    """
+    raw = (args.get("avoid_edges") or "").strip()
+    if not raw:
+        return None
+    if args.get("avoid_pack", "") != EDGES_FINGERPRINT:
+        print(f"avoid_edges ignored: avoid_pack {args.get('avoid_pack', '')[:12]!r} is "
+              f"not this graph's {EDGES_FINGERPRINT[:12]!r}", flush=True)
+        return None
+    edges = []
+    for token in raw.split(","):
+        token = token.strip()
+        forward = not token.startswith("-")
+        digits = token.lstrip("-")
+        if digits.isdigit():
+            edges.append((int(digits), forward))
+    if len(edges) > MAX_AVOID_EDGES:
+        print(f"avoid_edges: {len(edges):,} sent, the first {MAX_AVOID_EDGES:,} kept",
+              flush=True)
+        edges = edges[:MAX_AVOID_EDGES]
+    slots = ROUTER.avoid_slots(edges)
+    return slots if len(slots) else None
 
 
 def _parse_avoid_unpaved(args):
@@ -570,13 +632,14 @@ def api_route():
     except BadInput as bad:
         return _error(400, BAD_INPUT, bad.sentence)
     with _computing() as alone:
+        avoid = _parse_avoid(args)
         return _route(a, b, pref, avoid_unpaved, heading, declined_uturn,
                       weights, via, leave, rejoin,
-                      want_options and ROUTE_OPTIONS and alone)
+                      want_options and ROUTE_OPTIONS and alone, avoid)
 
 
 def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
-           leave, rejoin, with_options):
+           leave, rejoin, with_options, avoid=None):
     day = _today()
 
     # A moving car (a heading or a declined U-turn) is somewhere a parked one
@@ -663,10 +726,10 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         # guard sees a driver and gives way.
         with REJOIN_LOCK:
             fastest = REJOINER.resume(s, w, t, 0.0, weights, avoid_unpaved,
-                                      on=day)
+                                      on=day, avoid=avoid)
             scenic = (fastest if pref == 0.0
                       else REJOINER.resume(s, w, t, pref, weights,
-                                           avoid_unpaved, on=day))
+                                           avoid_unpaved, on=day, avoid=avoid))
             # Asked again with nothing closed only when it failed, so the
             # common case pays nothing for the better message.
             closed = ((fastest is None or scenic is None)
@@ -691,19 +754,19 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
             return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
         scenic = _no_worse_than_fastest(fastest, scenic)
         fastest, scenic = _led(lead, weights, fastest, scenic)
-        return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
+        return jsonify(fastest=_feature(fastest), scenic=_feature(scenic))
 
     # The menu of in-between routes, for a plan. Never for a reroute, which
     # carries a heading or a declined U-turn or switch points, and never when
     # anything else is computing: `plan` returns None the moment another
     # request arrives, and the reply below is today's.
     if (with_options and heading is None and not declined_uturn
-            and leave is None and rejoin is None):
+            and leave is None and rejoin is None and avoid is None):
         plan = route_options.plan(ROUTER, s, t, weights, avoid_unpaved,
                                   on=day, abort=_not_alone)
         if plan is not None:
-            return jsonify(fastest=plan.fastest.geojson(),
-                           scenic=route_options.feature(plan.scenic),
+            return jsonify(fastest=_feature(plan.fastest),
+                           scenic=_feature(plan.scenic, route_options.feature(plan.scenic)),
                            options=plan.options_json())
 
     # One option of a menu, in full: fetched when the driver settles on it,
@@ -712,26 +775,28 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         try:
             scenic = route_options.spliced_route(
                 ROUTER, s, t, leave, rejoin, weights, avoid_unpaved, on=day,
-                heading=heading, origin=a, keep_ahead=declined_uturn)
+                heading=heading, origin=a, keep_ahead=declined_uturn,
+                avoid=avoid)
         except route_options.SwitchPointNotFound:
             # A graph rebuilt under a plan. The stretch's road has gone, so
             # the nearest thing to the driver's choice is the scenic route;
             # an error here would leave a driver mid-drive with nothing.
             scenic = ROUTER.route(s, t, pref, weights, heading=heading,
                                   avoid_unpaved=avoid_unpaved, on=day,
-                                  origin=a, keep_ahead=declined_uturn)
+                                  origin=a, keep_ahead=declined_uturn,
+                                  avoid=avoid)
         # The scenic route is a legal drive, so what it costs at pref 0 bounds
         # the fastest one's search (`Router.route(bound=)`): exact, and it
         # stops the search well short of the corridor's far side.
         fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
                                avoid_unpaved=avoid_unpaved, on=day, origin=a,
-                               keep_ahead=declined_uturn,
+                               keep_ahead=declined_uturn, avoid=avoid,
                                bound=_bound(scenic, weights, avoid_unpaved, day))
         if fastest is not None and scenic is not None:
             scenic = _no_worse_than_fastest(fastest, scenic)
             fastest, scenic = _led(lead, weights, fastest, scenic)
-            return jsonify(fastest=fastest.geojson(),
-                           scenic=route_options.feature(scenic))
+            return jsonify(fastest=_feature(fastest),
+                           scenic=_feature(scenic, route_options.feature(scenic)))
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
             return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
@@ -741,13 +806,16 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # Both arms, so a driver who declined a U-turn and then tapped "fastest"
     # is not handed the same U-turn on the fast roads. docs/reroute-uturn.md.
     # Scenic first, so its route can bound the fastest arm's search.
+    # `avoid` closes the stretches the driver turned away from in both arms.
+    # The scenic route avoids them, so its cost at pref 0 is still a legal
+    # route's and still bounds the fastest arm exactly.
     scenic = (None if pref == 0.0
               else ROUTER.route(s, t, pref, weights, heading=heading,
                                 avoid_unpaved=avoid_unpaved, on=day, origin=a,
-                                keep_ahead=declined_uturn))
+                                keep_ahead=declined_uturn, avoid=avoid))
     fastest = ROUTER.route(s, t, 0.0, weights, heading=heading,
                            avoid_unpaved=avoid_unpaved, on=day, origin=a,
-                           keep_ahead=declined_uturn,
+                           keep_ahead=declined_uturn, avoid=avoid,
                            bound=_bound(scenic, weights, avoid_unpaved, day))
     if pref == 0.0:
         scenic = fastest
@@ -760,7 +828,20 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
     scenic = _no_worse_than_fastest(fastest, scenic)
     fastest, scenic = _led(lead, weights, fastest, scenic)
-    return jsonify(fastest=fastest.geojson(), scenic=scenic.geojson())
+    return jsonify(fastest=_feature(fastest), scenic=_feature(scenic))
+
+
+def _feature(result, feature=None):
+    """`result` as a GeoJSON Feature (`feature`, when the caller built it),
+    with the seasonal stretches it drives in `seasonal`: each one's edge
+    rows, the way each is driven, where along the route it runs, and the
+    fingerprint the rows belong to. The app keeps the ones the driver turns
+    away from and sends them back as `avoid_edges` (docs/seasonal-road-policy.md)."""
+    feature = feature if feature is not None else result.geojson()
+    feature["properties"]["seasonal"] = [
+        dict(stretch, pack=EDGES_FINGERPRINT)
+        for stretch in ROUTER.seasonal_stretches(result)]
+    return feature
 
 
 def _led(lead, weights, *results):
@@ -891,7 +972,7 @@ def _loop(start, target_km, pref, weights, sector, avoid_unpaved, day,
                 f"{share}% of this one doubles back. Try a longer distance.")
 
     body = dict(
-        loop=loop.route.geojson(),
+        loop=_feature(loop.route),
         meta={
             "target_km": round(float(loop.target_km), 1),
             "km": round(float(loop.km), 1),
@@ -993,7 +1074,8 @@ def index():
             "/api/route": ("from=LAT,LON&to=LAT,LON[&pref=0..1][&via=LAT,LON]"
                            "[&avoid_unpaved=0..2]"
                            "[&w_<type>=0..4][&options=1]"
-                           "[&leave=LAT,LON,DEG][&rejoin=LAT,LON,DEG]"),
+                           "[&leave=LAT,LON,DEG][&rejoin=LAT,LON,DEG]"
+                           "[&avoid_edges=ROW,-ROW,...&avoid_pack=FINGERPRINT]"),
             "/api/loop": (f"from=LAT,LON&km={MIN_TARGET_KM:.0f}..{MAX_TARGET_KM:.0f}"
                           "[&sector=NE][&pref=0..1][&w_<type>=0..4]"
                           "[&avoid_unpaved=0..2]"),
