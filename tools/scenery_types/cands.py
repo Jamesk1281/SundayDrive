@@ -34,6 +34,13 @@ The constants, and what each is set by analogy with:
      C-add: S, plus vista, wetland and rock as terms of their own at the weight of the
      slot each would otherwise share (grand 0.10, forest 0.18, relief 0.16).
      C-slots: S + W1 + V + R, each in its natural slot.
+  L  (this study's own candidate, added 2026-10-22 after the S0 icon breakdown and before
+     it was scored.) Landmark credit within DIST["green"] (80 m) of a PAD-US landmark
+     polygon, the reach score.py already gives "next to a park", with the same built-land
+     gate. Why: PAD-US cuts road rights-of-way out of its fee polygons, so US 41 through
+     Big Cypress National Preserve is inside the preserve for 9% of its length and within
+     80 m of it for 98%, and scores c_protected 0.07 of 1. No other candidate touches it.
+     Feature d_landmark: metres to the nearest landmark polygon (landmarks.py).
 """
 import sys
 from pathlib import Path
@@ -87,6 +94,10 @@ def pastoral(F, relief_full=S.RELIEF_FULL):
     return np.clip(f(F, "grass_1k") + f(F, "crop_1k"), 0, 1) * (1 - f(F, "built_1k")) * rel
 
 
+def landmark(F, dist=S.DIST["green"]):
+    return ((f(F, "d_landmark") <= dist) & (f(F, "built_1k") <= S.PROTECTED_BUILT_MAX)).astype(float)
+
+
 def raw(F, spec):
     """spec: a dict of switches (see CANDIDATES). Returns the raw score."""
     c = {k: f(F, k) for k in BASE}
@@ -111,6 +122,8 @@ def raw(F, spec):
         c["c_relief"] = np.maximum(c["c_relief"], rock(F, **spec["rock"]))
     if "pastoral" in spec:
         c["c_forest"] = np.maximum(c["c_forest"], pastoral(F, **spec["pastoral"]))
+    if "landmark" in spec:
+        c["c_protected"] = np.maximum(c["c_protected"], landmark(F, **spec["landmark"]))
     if spec.get("cmax"):
         c["c_forest"] = np.maximum.reduce([c["c_forest"], wet(F), rock(F), vista(F)])
     if spec.get("cadd"):
@@ -140,6 +153,12 @@ CANDIDATES = {
     "C-max one landscape slot + S1": dict(sea={}, cmax=True),
     "C-add separate terms + S1": dict(sea={}, cadd=True),
     "S1+W1": dict(sea={}, wet=dict(mode="forest")),
+    # combinations of the passing terms, and L (no new constants)
+    "V+S1": dict(vista={}, sea={}),
+    "V+S2": dict(vista={}, sea=dict(on_sea=True)),
+    "L landmark within 80 m": dict(landmark={}),
+    "V+S2+L": dict(vista={}, sea=dict(on_sea=True), landmark={}),
+    "V+S1+L": dict(vista={}, sea={}, landmark={}),
 }
 
 # Sweeps: each constant moved around its hand-set value, the others held.
@@ -157,5 +176,7 @@ for lvl in (0.45, 1.0):
     SWEEPS[f"W2 level {lvl}"] = dict(wet=dict(mode="water", level=lvl))
 for full in (25.0, RF_ROCK, 60.0):
     SWEEPS[f"R full at {full:.0f} m"] = dict(rock=dict(full=full))
+for d in (40.0, 80.0, 200.0):
+    SWEEPS[f"L within {d:.0f} m"] = dict(landmark=dict(dist=d))
 for rf in (33.0, 50.0, 100.0):
     SWEEPS[f"P relief full {rf:.0f} m"] = dict(pastoral=dict(relief_full=rf))
