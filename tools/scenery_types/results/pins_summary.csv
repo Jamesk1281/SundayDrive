@@ -1,0 +1,39 @@
+road,kind,label,ways,edges,km,lon0,lat0,lon1,lat1,pieces
+us163_monument_valley,icon,"US 163, Monument Valley (Kayenta to Mexican Hat)",27,66,73.5,-110.261,36.708,-109.857,37.158,1
+valley_of_fire,icon,Valley of Fire Highway (I-15 to Northshore Road),19,22,37.7,-114.76,36.406,-114.434,36.5,1
+overseas_highway,icon,"Overseas Highway, US 1, Key Largo to Key West",559,1130,223.9,-81.804,24.551,-80.374,25.19,1
+tamiami_big_cypress,icon,"US 41 Tamiami Trail, Carnestown to Forty Mile Bend",86,97,59.1,-81.368,25.764,-80.83,25.912,1
+badlands_sd240,icon,"Badlands Loop Road, SD 240",36,48,59.3,-102.24,43.747,-101.9,43.987,2
+needles_sd87,icon,"Needles Highway, SD 87",15,19,22.1,-103.563,43.768,-103.435,43.843,3
+million_dollar_us550,icon,"Million Dollar Highway, US 550 Ouray to Silverton",27,43,40.8,-107.726,37.801,-107.65,38.03,1
+ut12,icon,"UT 12, Panguitch junction to Torrey",133,200,198.8,-112.377,37.559,-111.328,38.293,1
+ut128,icon,"UT 128 along the Colorado River, Moab to Cisco",25,30,71.7,-109.575,38.602,-109.287,38.944,1
+ut9_zion_mt_carmel,icon,"Zion-Mount Carmel Highway, UT 9, Canyon Junction to Mount Carmel Junction",31,46,32.1,-112.95,37.211,-112.682,37.262,1
+ca190_death_valley,icon,CA 190 through Death Valley (Panamint Valley to Death Valley Junction),24,38,156.5,-117.543,36.327,-116.568,36.64,1
+ca1_big_sur,icon,"CA 1 through Big Sur, Carmel River to San Carpoforo Creek",89,131,120.9,-121.938,35.782,-121.329,36.532,1
+tioga_ca120,icon,"Tioga Road, CA 120, Crane Flat to Tioga Pass",27,30,77.8,-119.804,37.753,-119.256,37.924,4
+historic_columbia_river_hwy,icon,Historic Columbia River Highway (both drivable segments),79,113,38.4,-122.41,45.516,-122.046,45.6,1
+chuckanut_drive,icon,"Chuckanut Drive, SR 11, Burlington to Fairhaven",50,87,34.4,-122.502,48.485,-122.337,48.718,2
+beartooth_us212,icon,"Beartooth Highway, US 212, Red Lodge to the Northeast Entrance",107,174,110.2,-109.998,44.921,-109.246,45.2,4
+blue_ridge_parkway,icon,Blue Ridge Parkway,495,678,682.4,-83.301,35.402,-78.858,38.031,19
+skyline_drive,icon,"Skyline Drive, Shenandoah National Park",130,143,170.1,-78.859,38.032,-78.18,38.907,1
+cherohala_skyway,icon,Cherohala Skyway,14,29,66.9,-84.301,35.321,-83.977,35.384,1
+natchez_trace_parkway,icon,Natchez Trace Parkway,668,947,717.7,-91.37,31.545,-86.975,36.037,1
+nc12_outer_banks,icon,"NC 12 on the Outer Banks, Corolla to Ocracoke",115,597,175.8,-75.987,35.106,-75.466,36.381,2
+tx_hill_country_rm335_336_337,icon,"Texas Hill Country RM 335, 336 and 337",41,194,181.3,-100.067,29.67,-99.255,30.077,3
+flint_hills_k177,icon,"Flint Hills Scenic Byway, K-177 Council Grove to Cassoday",59,119,77.6,-96.639,38.041,-96.488,38.669,1
+sandhills_n2,icon,"Sandhills Journey, NE 2, Grand Island to Alliance",141,486,455.3,-102.879,40.887,-98.335,42.097,2
+palouse_scenic_byway,icon,"Palouse Scenic Byway (SR 26, 27, 194, 271, 272, 278, US 195)",303,556,333.8,-118.224,46.474,-117.042,47.452,2
+i15_barstow_primm,control,"I-15, Barstow to Primm",251,312,365.6,-117.025,34.886,-115.388,35.615,2
+i10_tonopah_quartzsite,control,"I-10, Tonopah to Quartzsite",248,277,246.8,-114.232,33.496,-112.932,33.679,2
+us6_delta_eureka,control,"US 6, Delta to Eureka",48,95,86.6,-112.598,39.349,-112.101,39.961,1
+i40_amarillo,control,I-40 through Amarillo,130,178,51.4,-101.977,35.187,-101.701,35.195,2
+i80_grand_island_north_platte,control,"I-80, Grand Island to North Platte",120,195,444.2,-100.766,40.669,-98.331,41.111,2
+i70_east_of_denver,control,I-70 east of Denver (E-470 to the Kansas line),452,459,518.7,-104.729,39.261,-102.06,39.74,2
+us287_colorado_plains,control,US 287 on the Colorado plains (Limon to Oklahoma),500,673,335.2,-103.7,37.0,-102.526,39.268,2
+i75_ocala_tampa,control,"I-75, Ocala to Tampa",273,296,293.6,-82.395,28.001,-82.087,29.197,2
+i4_orlando,control,I-4 through Orlando,270,276,66.8,-81.483,28.402,-81.375,28.649,2
+bell_road_phoenix,control,"Bell Road, Phoenix",1264,1425,108.6,-112.45,33.638,-111.852,33.641,4
+westheimer_houston,control,"Westheimer Road, Houston",472,728,56.8,-95.692,29.707,-95.382,29.745,1
+i95_nj_turnpike,control,I-95 on the New Jersey Turnpike,685,724,353.2,-74.724,40.104,-74.01,40.866,8
+i635_lbj,control,"I-635 LBJ Freeway, Dallas",407,424,109.1,-96.998,32.7,-96.612,32.926,2

@@ -1,0 +1,201 @@
+candidate,region,mean,km7
+S0 shipped E1,ne,4.897,13.373
+"V slot (R10, 300-900 m)",ne,4.916,13.660
+"V-add (R10, +0.10)",ne,4.918,13.708
+S1 sea as water,ne,4.934,14.406
+"S2 sea as water, on the sea only",ne,4.902,13.524
+W1 wetland in forest slot,ne,4.898,13.383
+W2 wetland as mid water,ne,4.899,13.391
+R rock texture,ne,4.897,13.373
+P pastoral (priced only),ne,4.909,13.417
+C-slots S1+W1+V+R,ne,4.954,14.705
+C-max one landscape slot + S1,ne,4.941,14.461
+C-add separate terms + S1,ne,4.968,15.008
+S1+W1,ne,4.935,14.417
+V+S1,ne,4.953,14.693
+V+S2,ne,4.921,13.810
+L landmark within 80 m,ne,4.901,13.456
+V+S2+L,ne,4.925,13.894
+V+S1+L,ne,4.957,14.772
+V slot R5 150-450 m,ne,4.931,13.906
+V slot R5 300-900 m,ne,4.903,13.471
+V slot R5 450-1350 m,ne,4.898,13.394
+V slot R10 150-450 m,ne,4.960,14.288
+V slot R10 300-900 m,ne,4.916,13.660
+V slot R10 450-1350 m,ne,4.903,13.470
+V slot R15 150-450 m,ne,4.981,14.541
+V slot R15 300-900 m,ne,4.928,13.824
+V slot R15 450-1350 m,ne,4.909,13.548
+V-add w0.05,ne,4.908,13.535
+V-add w0.10,ne,4.918,13.708
+V-add w0.15,ne,4.929,13.882
+V-add w0.20,ne,4.939,14.067
+S1 distances x0.5,ne,4.915,13.851
+S1 distances x1.0,ne,4.934,14.406
+S1 distances x2.0,ne,4.970,15.392
+S2 on the sea at 35% water,ne,4.912,13.804
+S2 on the sea at 50% water,ne,4.902,13.524
+S2 on the sea at 65% water,ne,4.899,13.413
+W1 full at 50% wet,ne,4.899,13.411
+W1 full at 100% wet,ne,4.898,13.383
+W2 level 0.45,ne,4.899,13.391
+W2 level 1.0,ne,4.902,13.416
+R full at 25 m,ne,4.897,13.373
+R full at 38 m,ne,4.897,13.373
+R full at 60 m,ne,4.897,13.373
+L within 40 m,ne,4.900,13.432
+L within 80 m,ne,4.901,13.456
+L within 200 m,ne,4.905,13.544
+P relief full 33 m,ne,4.935,13.503
+P relief full 50 m,ne,4.925,13.472
+P relief full 100 m,ne,4.909,13.417
+S0 shipped E1,co,3.848,8.744
+"V slot (R10, 300-900 m)",co,4.016,10.258
+"V-add (R10, +0.10)",co,4.047,11.109
+S1 sea as water,co,3.848,8.744
+"S2 sea as water, on the sea only",co,3.848,8.744
+W1 wetland in forest slot,co,3.848,8.744
+W2 wetland as mid water,co,3.848,8.744
+R rock texture,co,3.848,8.746
+P pastoral (priced only),co,4.057,9.631
+C-slots S1+W1+V+R,co,4.016,10.260
+C-max one landscape slot + S1,co,4.045,10.108
+C-add separate terms + S1,co,4.067,11.390
+S1+W1,co,3.848,8.744
+V+S1,co,4.016,10.258
+V+S2,co,4.016,10.258
+L landmark within 80 m,co,3.851,8.818
+V+S2+L,co,4.020,10.337
+V+S1+L,co,4.020,10.337
+V slot R5 150-450 m,co,4.010,10.354
+V slot R5 300-900 m,co,3.911,9.410
+V slot R5 450-1350 m,co,3.869,8.943
+V slot R10 150-450 m,co,4.115,10.899
+V slot R10 300-900 m,co,4.016,10.258
+V slot R10 450-1350 m,co,3.942,9.561
+V slot R15 150-450 m,co,4.181,11.115
+V slot R15 300-900 m,co,4.092,10.698
+V slot R15 450-1350 m,co,4.013,10.082
+V-add w0.05,co,3.948,9.831
+V-add w0.10,co,4.047,11.109
+V-add w0.15,co,4.147,12.515
+V-add w0.20,co,4.245,14.190
+S1 distances x0.5,co,3.848,8.744
+S1 distances x1.0,co,3.848,8.744
+S1 distances x2.0,co,3.848,8.744
+S2 on the sea at 35% water,co,3.848,8.744
+S2 on the sea at 50% water,co,3.848,8.744
+S2 on the sea at 65% water,co,3.848,8.744
+W1 full at 50% wet,co,3.848,8.744
+W1 full at 100% wet,co,3.848,8.744
+W2 level 0.45,co,3.848,8.744
+W2 level 1.0,co,3.848,8.744
+R full at 25 m,co,3.848,8.748
+R full at 38 m,co,3.848,8.746
+R full at 60 m,co,3.848,8.745
+L within 40 m,co,3.850,8.797
+L within 80 m,co,3.851,8.818
+L within 200 m,co,3.854,8.885
+P relief full 33 m,co,4.360,10.242
+P relief full 50 m,co,4.230,10.041
+P relief full 100 m,co,4.057,9.631
+S0 shipped E1,ut,4.326,8.983
+"V slot (R10, 300-900 m)",ut,4.752,12.000
+"V-add (R10, +0.10)",ut,4.804,13.297
+S1 sea as water,ut,4.326,8.983
+"S2 sea as water, on the sea only",ut,4.326,8.983
+W1 wetland in forest slot,ut,4.326,8.983
+W2 wetland as mid water,ut,4.326,8.983
+R rock texture,ut,4.330,9.057
+P pastoral (priced only),ut,4.470,10.427
+C-slots S1+W1+V+R,ut,4.755,12.096
+C-max one landscape slot + S1,ut,4.766,11.380
+C-add separate terms + S1,ut,4.910,15.717
+S1+W1,ut,4.326,8.983
+V+S1,ut,4.752,12.000
+V+S2,ut,4.752,12.000
+L landmark within 80 m,ut,4.337,9.244
+V+S2+L,ut,4.763,12.282
+V+S1+L,ut,4.763,12.282
+V slot R5 150-450 m,ut,4.745,12.831
+V slot R5 300-900 m,ut,4.517,10.352
+V slot R5 450-1350 m,ut,4.406,9.399
+V slot R10 150-450 m,ut,4.931,14.300
+V slot R10 300-900 m,ut,4.752,12.000
+V slot R10 450-1350 m,ut,4.596,10.495
+V slot R15 150-450 m,ut,4.996,15.070
+V slot R15 300-900 m,ut,4.870,13.088
+V slot R15 450-1350 m,ut,4.731,11.504
+V-add w0.05,ut,4.565,10.944
+V-add w0.10,ut,4.804,13.297
+V-add w0.15,ut,5.044,16.307
+V-add w0.20,ut,5.284,19.859
+S1 distances x0.5,ut,4.326,8.983
+S1 distances x1.0,ut,4.326,8.983
+S1 distances x2.0,ut,4.326,8.983
+S2 on the sea at 35% water,ut,4.326,8.983
+S2 on the sea at 50% water,ut,4.326,8.983
+S2 on the sea at 65% water,ut,4.326,8.983
+W1 full at 50% wet,ut,4.326,8.983
+W1 full at 100% wet,ut,4.326,8.983
+W2 level 0.45,ut,4.326,8.983
+W2 level 1.0,ut,4.326,8.983
+R full at 25 m,ut,4.341,9.242
+R full at 38 m,ut,4.330,9.057
+R full at 60 m,ut,4.326,8.991
+L within 40 m,ut,4.336,9.206
+L within 80 m,ut,4.337,9.244
+L within 200 m,ut,4.341,9.315
+P relief full 33 m,ut,4.620,10.864
+P relief full 50 m,ut,4.564,10.759
+P relief full 100 m,ut,4.470,10.427
+S0 shipped E1,fl,4.094,3.945
+"V slot (R10, 300-900 m)",fl,4.094,3.945
+"V-add (R10, +0.10)",fl,4.094,3.945
+S1 sea as water,fl,4.143,4.942
+"S2 sea as water, on the sea only",fl,4.103,4.153
+W1 wetland in forest slot,fl,4.107,4.010
+W2 wetland as mid water,fl,4.100,3.961
+R rock texture,fl,4.094,3.945
+P pastoral (priced only),fl,4.096,3.948
+C-slots S1+W1+V+R,fl,4.156,5.031
+C-max one landscape slot + S1,fl,4.156,5.031
+C-add separate terms + S1,fl,4.187,5.451
+S1+W1,fl,4.156,5.031
+V+S1,fl,4.143,4.942
+V+S2,fl,4.103,4.153
+L landmark within 80 m,fl,4.097,3.982
+V+S2+L,fl,4.107,4.199
+V+S1+L,fl,4.146,4.991
+V slot R5 150-450 m,fl,4.095,3.963
+V slot R5 300-900 m,fl,4.094,3.945
+V slot R5 450-1350 m,fl,4.094,3.945
+V slot R10 150-450 m,fl,4.098,3.985
+V slot R10 300-900 m,fl,4.094,3.945
+V slot R10 450-1350 m,fl,4.094,3.945
+V slot R15 150-450 m,fl,4.101,4.004
+V slot R15 300-900 m,fl,4.094,3.945
+V slot R15 450-1350 m,fl,4.094,3.945
+V-add w0.05,fl,4.094,3.945
+V-add w0.10,fl,4.094,3.945
+V-add w0.15,fl,4.094,3.945
+V-add w0.20,fl,4.094,3.945
+S1 distances x0.5,fl,4.124,4.506
+S1 distances x1.0,fl,4.143,4.942
+S1 distances x2.0,fl,4.178,5.755
+S2 on the sea at 35% water,fl,4.115,4.424
+S2 on the sea at 50% water,fl,4.103,4.153
+S2 on the sea at 65% water,fl,4.098,4.010
+W1 full at 50% wet,fl,4.127,4.178
+W1 full at 100% wet,fl,4.107,4.010
+W2 level 0.45,fl,4.100,3.961
+W2 level 1.0,fl,4.108,4.010
+R full at 25 m,fl,4.094,3.945
+R full at 38 m,fl,4.094,3.945
+R full at 60 m,fl,4.094,3.945
+L within 40 m,fl,4.097,3.971
+L within 80 m,fl,4.097,3.982
+L within 200 m,fl,4.099,4.004
+P relief full 33 m,fl,4.106,3.961
+P relief full 50 m,fl,4.100,3.953
+P relief full 100 m,fl,4.096,3.948

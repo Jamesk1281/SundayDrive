@@ -1,0 +1,251 @@
+candidate,region,auc_eco,auc
+S0 shipped E1,ne,0.5743,0.6292
+S0 shipped E1,co,0.5952,0.7428
+S0 shipped E1,ut,0.4887,0.5930
+S0 shipped E1,fl,0.6139,0.5970
+S0 shipped E1,pooled,0.5576,
+"V slot (R10, 300-900 m)",ne,0.5747,0.6328
+"V slot (R10, 300-900 m)",co,0.5929,0.7644
+"V slot (R10, 300-900 m)",ut,0.4974,0.5844
+"V slot (R10, 300-900 m)",fl,0.6139,0.5970
+"V slot (R10, 300-900 m)",pooled,0.5608,
+"V-add (R10, +0.10)",ne,0.5756,0.6339
+"V-add (R10, +0.10)",co,0.6011,0.7693
+"V-add (R10, +0.10)",ut,0.5021,0.5892
+"V-add (R10, +0.10)",fl,0.6139,0.5970
+"V-add (R10, +0.10)",pooled,0.5641,
+S1 sea as water,ne,0.5760,0.6357
+S1 sea as water,co,0.5952,0.7428
+S1 sea as water,ut,0.4887,0.5930
+S1 sea as water,fl,0.6492,0.6611
+S1 sea as water,pooled,0.5707,
+"S2 sea as water, on the sea only",ne,0.5743,0.6293
+"S2 sea as water, on the sea only",co,0.5952,0.7428
+"S2 sea as water, on the sea only",ut,0.4887,0.5930
+"S2 sea as water, on the sea only",fl,0.6202,0.6228
+"S2 sea as water, on the sea only",pooled,0.5599,
+W1 wetland in forest slot,ne,0.5743,0.6291
+W1 wetland in forest slot,co,0.5952,0.7428
+W1 wetland in forest slot,ut,0.4887,0.5930
+W1 wetland in forest slot,fl,0.6128,0.5947
+W1 wetland in forest slot,pooled,0.5572,
+W2 wetland as mid water,ne,0.5743,0.6291
+W2 wetland as mid water,co,0.5952,0.7428
+W2 wetland as mid water,ut,0.4887,0.5930
+W2 wetland as mid water,fl,0.6147,0.6011
+W2 wetland as mid water,pooled,0.5579,
+R rock texture,ne,0.5743,0.6292
+R rock texture,co,0.5952,0.7429
+R rock texture,ut,0.4877,0.5928
+R rock texture,fl,0.6139,0.5970
+R rock texture,pooled,0.5573,
+P pastoral (priced only),ne,0.5728,0.6283
+P pastoral (priced only),co,0.5861,0.7422
+P pastoral (priced only),ut,0.4828,0.5922
+P pastoral (priced only),fl,0.6137,0.5968
+P pastoral (priced only),pooled,0.5536,
+C-slots S1+W1+V+R,ne,0.5762,0.6390
+C-slots S1+W1+V+R,co,0.5930,0.7646
+C-slots S1+W1+V+R,ut,0.4965,0.5842
+C-slots S1+W1+V+R,fl,0.6485,0.6591
+C-slots S1+W1+V+R,pooled,0.5732,
+C-max one landscape slot + S1,ne,0.5753,0.6362
+C-max one landscape slot + S1,co,0.5905,0.7665
+C-max one landscape slot + S1,ut,0.4822,0.5627
+C-max one landscape slot + S1,fl,0.6485,0.6591
+C-max one landscape slot + S1,pooled,0.5669,
+C-add separate terms + S1,ne,0.5767,0.6393
+C-add separate terms + S1,co,0.6020,0.7706
+C-add separate terms + S1,ut,0.5038,0.5965
+C-add separate terms + S1,fl,0.6518,0.6629
+C-add separate terms + S1,pooled,0.5789,
+S1+W1,ne,0.5759,0.6356
+S1+W1,co,0.5952,0.7428
+S1+W1,ut,0.4887,0.5930
+S1+W1,fl,0.6485,0.6591
+S1+W1,pooled,0.5704,
+V+S1,ne,0.5763,0.6391
+V+S1,co,0.5929,0.7644
+V+S1,ut,0.4974,0.5844
+V+S1,fl,0.6492,0.6611
+V+S1,pooled,0.5738,
+V+S2,ne,0.5746,0.6328
+V+S2,co,0.5929,0.7644
+V+S2,ut,0.4974,0.5844
+V+S2,fl,0.6202,0.6228
+V+S2,pooled,0.5631,
+L landmark within 80 m,ne,0.5746,0.6296
+L landmark within 80 m,co,0.5992,0.7462
+L landmark within 80 m,ut,0.4886,0.5930
+L landmark within 80 m,fl,0.6246,0.6168
+L landmark within 80 m,pooled,0.5622,
+V+S2+L,ne,0.5748,0.6331
+V+S2+L,co,0.5973,0.7676
+V+S2+L,ut,0.4973,0.5845
+V+S2+L,fl,0.6300,0.6382
+V+S2+L,pooled,0.5674,
+V+S1+L,ne,0.5764,0.6392
+V+S1+L,co,0.5973,0.7676
+V+S1+L,ut,0.4973,0.5845
+V+S1+L,fl,0.6582,0.6738
+V+S1+L,pooled,0.5778,
+V slot R5 150-450 m,ne,0.5727,0.6328
+V slot R5 150-450 m,co,0.5897,0.7619
+V slot R5 150-450 m,ut,0.4982,0.5945
+V slot R5 150-450 m,fl,0.6138,0.5972
+V slot R5 150-450 m,pooled,0.5604,
+V slot R5 300-900 m,ne,0.5750,0.6312
+V slot R5 300-900 m,co,0.5924,0.7503
+V slot R5 300-900 m,ut,0.4911,0.5866
+V slot R5 300-900 m,fl,0.6139,0.5970
+V slot R5 300-900 m,pooled,0.5582,
+V slot R5 450-1350 m,ne,0.5746,0.6298
+V slot R5 450-1350 m,co,0.5950,0.7451
+V slot R5 450-1350 m,ut,0.4890,0.5877
+V slot R5 450-1350 m,fl,0.6139,0.5970
+V slot R5 450-1350 m,pooled,0.5578,
+V slot R10 150-450 m,ne,0.5708,0.6343
+V slot R10 150-450 m,co,0.5949,0.7691
+V slot R10 150-450 m,ut,0.4939,0.5957
+V slot R10 150-450 m,fl,0.6138,0.5976
+V slot R10 150-450 m,pooled,0.5594,
+V slot R10 300-900 m,ne,0.5747,0.6328
+V slot R10 300-900 m,co,0.5929,0.7644
+V slot R10 300-900 m,ut,0.4974,0.5844
+V slot R10 300-900 m,fl,0.6139,0.5970
+V slot R10 300-900 m,pooled,0.5608,
+V slot R10 450-1350 m,ne,0.5748,0.6306
+V slot R10 450-1350 m,co,0.5962,0.7562
+V slot R10 450-1350 m,ut,0.4912,0.5774
+V slot R10 450-1350 m,fl,0.6139,0.5970
+V slot R10 450-1350 m,pooled,0.5589,
+V slot R15 150-450 m,ne,0.5703,0.6346
+V slot R15 150-450 m,co,0.5935,0.7658
+V slot R15 150-450 m,ut,0.4874,0.5980
+V slot R15 150-450 m,fl,0.6137,0.5979
+V slot R15 150-450 m,pooled,0.5565,
+V slot R15 300-900 m,ne,0.5735,0.6332
+V slot R15 300-900 m,co,0.5952,0.7680
+V slot R15 300-900 m,ut,0.4986,0.5907
+V slot R15 300-900 m,fl,0.6139,0.5970
+V slot R15 300-900 m,pooled,0.5616,
+V slot R15 450-1350 m,ne,0.5744,0.6310
+V slot R15 450-1350 m,co,0.5962,0.7614
+V slot R15 450-1350 m,ut,0.4953,0.5788
+V slot R15 450-1350 m,fl,0.6139,0.5970
+V slot R15 450-1350 m,pooled,0.5605,
+V-add w0.05,ne,0.5750,0.6316
+V-add w0.05,co,0.5989,0.7567
+V-add w0.05,ut,0.4952,0.5910
+V-add w0.05,fl,0.6139,0.5970
+V-add w0.05,pooled,0.5609,
+V-add w0.10,ne,0.5756,0.6339
+V-add w0.10,co,0.6011,0.7693
+V-add w0.10,ut,0.5021,0.5892
+V-add w0.10,fl,0.6139,0.5970
+V-add w0.10,pooled,0.5641,
+V-add w0.15,ne,0.5761,0.6361
+V-add w0.15,co,0.6020,0.7795
+V-add w0.15,ut,0.5092,0.5869
+V-add w0.15,fl,0.6139,0.5970
+V-add w0.15,pooled,0.5672,
+V-add w0.20,ne,0.5766,0.6383
+V-add w0.20,co,0.6020,0.7864
+V-add w0.20,ut,0.5154,0.5841
+V-add w0.20,fl,0.6139,0.5970
+V-add w0.20,pooled,0.5697,
+S1 distances x0.5,ne,0.5751,0.6324
+S1 distances x0.5,co,0.5952,0.7428
+S1 distances x0.5,ut,0.4887,0.5930
+S1 distances x0.5,fl,0.6399,0.6457
+S1 distances x0.5,pooled,0.5672,
+S1 distances x1.0,ne,0.5760,0.6357
+S1 distances x1.0,co,0.5952,0.7428
+S1 distances x1.0,ut,0.4887,0.5930
+S1 distances x1.0,fl,0.6492,0.6611
+S1 distances x1.0,pooled,0.5707,
+S1 distances x2.0,ne,0.5778,0.6428
+S1 distances x2.0,co,0.5952,0.7428
+S1 distances x2.0,ut,0.4887,0.5930
+S1 distances x2.0,fl,0.6547,0.6746
+S1 distances x2.0,pooled,0.5728,
+S2 on the sea at 35% water,ne,0.5744,0.6300
+S2 on the sea at 35% water,co,0.5952,0.7428
+S2 on the sea at 35% water,ut,0.4887,0.5930
+S2 on the sea at 35% water,fl,0.6448,0.6504
+S2 on the sea at 35% water,pooled,0.5689,
+S2 on the sea at 50% water,ne,0.5743,0.6293
+S2 on the sea at 50% water,co,0.5952,0.7428
+S2 on the sea at 50% water,ut,0.4887,0.5930
+S2 on the sea at 50% water,fl,0.6202,0.6228
+S2 on the sea at 50% water,pooled,0.5599,
+S2 on the sea at 65% water,ne,0.5743,0.6292
+S2 on the sea at 65% water,co,0.5952,0.7428
+S2 on the sea at 65% water,ut,0.4887,0.5930
+S2 on the sea at 65% water,fl,0.6163,0.6142
+S2 on the sea at 65% water,pooled,0.5585,
+W1 full at 50% wet,ne,0.5741,0.6288
+W1 full at 50% wet,co,0.5952,0.7428
+W1 full at 50% wet,ut,0.4887,0.5930
+W1 full at 50% wet,fl,0.6129,0.5965
+W1 full at 50% wet,pooled,0.5572,
+W1 full at 100% wet,ne,0.5743,0.6291
+W1 full at 100% wet,co,0.5952,0.7428
+W1 full at 100% wet,ut,0.4887,0.5930
+W1 full at 100% wet,fl,0.6128,0.5947
+W1 full at 100% wet,pooled,0.5572,
+W2 level 0.45,ne,0.5743,0.6291
+W2 level 0.45,co,0.5952,0.7428
+W2 level 0.45,ut,0.4887,0.5930
+W2 level 0.45,fl,0.6147,0.6011
+W2 level 0.45,pooled,0.5579,
+W2 level 1.0,ne,0.5741,0.6290
+W2 level 1.0,co,0.5952,0.7428
+W2 level 1.0,ut,0.4887,0.5930
+W2 level 1.0,fl,0.6158,0.6057
+W2 level 1.0,pooled,0.5583,
+R full at 25 m,ne,0.5743,0.6292
+R full at 25 m,co,0.5952,0.7430
+R full at 25 m,ut,0.4857,0.5924
+R full at 25 m,fl,0.6139,0.5970
+R full at 25 m,pooled,0.5564,
+R full at 38 m,ne,0.5743,0.6292
+R full at 38 m,co,0.5952,0.7429
+R full at 38 m,ut,0.4877,0.5928
+R full at 38 m,fl,0.6139,0.5970
+R full at 38 m,pooled,0.5573,
+R full at 60 m,ne,0.5743,0.6292
+R full at 60 m,co,0.5952,0.7428
+R full at 60 m,ut,0.4885,0.5929
+R full at 60 m,fl,0.6139,0.5970
+R full at 60 m,pooled,0.5576,
+L within 40 m,ne,0.5743,0.6295
+L within 40 m,co,0.5967,0.7448
+L within 40 m,ut,0.4881,0.5927
+L within 40 m,fl,0.6243,0.6154
+L within 40 m,pooled,0.5615,
+L within 80 m,ne,0.5746,0.6296
+L within 80 m,co,0.5992,0.7462
+L within 80 m,ut,0.4886,0.5930
+L within 80 m,fl,0.6246,0.6168
+L within 80 m,pooled,0.5622,
+L within 200 m,ne,0.5758,0.6307
+L within 200 m,co,0.5997,0.7466
+L within 200 m,ut,0.4899,0.5942
+L within 200 m,fl,0.6259,0.6204
+L within 200 m,pooled,0.5633,
+P relief full 33 m,ne,0.5716,0.6271
+P relief full 33 m,co,0.5783,0.7360
+P relief full 33 m,ut,0.4685,0.5815
+P relief full 33 m,fl,0.6121,0.5953
+P relief full 33 m,pooled,0.5458,
+P relief full 50 m,ne,0.5715,0.6274
+P relief full 50 m,co,0.5818,0.7405
+P relief full 50 m,ut,0.4746,0.5861
+P relief full 50 m,fl,0.6131,0.5962
+P relief full 50 m,pooled,0.5492,
+P relief full 100 m,ne,0.5728,0.6283
+P relief full 100 m,co,0.5861,0.7422
+P relief full 100 m,ut,0.4828,0.5922
+P relief full 100 m,fl,0.6137,0.5968
+P relief full 100 m,pooled,0.5536,
