@@ -6,6 +6,22 @@ import Foundation
 /// static members because it holds no state — it's just a namespace.
 enum RouteService {
 
+    /// The seasonal stretches a reroute closes: `avoid_edges` and the
+    /// `avoid_pack` fingerprint they came with (docs/seasonal-road-policy.md).
+    struct SeasonalAvoid: Equatable, Sendable {
+        let pack: String
+        let tokens: [String]
+    }
+
+    /// The avoid set of the reroute being asked in this task, or nil.
+    ///
+    /// Task-local rather than one more argument on every fetcher seam, so the
+    /// stubs every reroute test installs are untouched: `NavigationModel`
+    /// sets it around whichever fetcher a reroute uses, and `route(...)`
+    /// reads it as its default. A planning request runs outside it and sends
+    /// nothing.
+    @TaskLocal static var avoiding: SeasonalAvoid?
+
     /// Where the backend lives, in order of precedence:
     ///
     ///   1. `SUNDAYDRIVE_API` in the environment — for developing against a
@@ -161,6 +177,8 @@ enum RouteService {
     ///     reply's `scenic` that option in full: fastest to `leave`, scenic to
     ///     `rejoin`, fastest home. How an option is fetched when the driver
     ///     settles on it, and how a drive on one is rerouted by legs.
+    ///   - avoid: seasonal stretches the driver turned away from, closed for
+    ///     this request. Defaults to `avoiding`, which a reroute sets.
     static func route(
         from start: CLLocationCoordinate2D,
         to end: CLLocationCoordinate2D,
@@ -171,12 +189,13 @@ enum RouteService {
         declinedUTurn: Bool = false,
         options: Bool = false,
         leave: SwitchPoint? = nil,
-        rejoin: SwitchPoint? = nil
+        rejoin: SwitchPoint? = nil,
+        avoid: SeasonalAvoid? = RouteService.avoiding
     ) async throws -> RouteResponse {
         try await send(routeRequest(from: start, to: end, via: via, pref: pref,
                                     weights: weights, heading: heading,
                                     declinedUTurn: declinedUTurn, options: options,
-                                    leave: leave, rejoin: rejoin))
+                                    leave: leave, rejoin: rejoin, avoid: avoid))
     }
 
     /// The request `route(...)` sends, built without sending it so the one
@@ -193,6 +212,7 @@ enum RouteService {
         options: Bool = false,
         leave: SwitchPoint? = nil,
         rejoin: SwitchPoint? = nil,
+        avoid: SeasonalAvoid? = nil,
         base: String = baseURL
     ) -> URLRequest {
         // The body: from=lat,lon&to=lat,lon&pref=0.50&w_coast=...
@@ -213,6 +233,10 @@ enum RouteService {
         if options { items.append(URLQueryItem(name: "options", value: "1")) }
         if let leave { items.append(URLQueryItem(name: "leave", value: leave.parameter)) }
         if let rejoin { items.append(URLQueryItem(name: "rejoin", value: rejoin.parameter)) }
+        if let avoid, !avoid.tokens.isEmpty {
+            items.append(URLQueryItem(name: "avoid_edges", value: avoid.tokens.joined(separator: ",")))
+            items.append(URLQueryItem(name: "avoid_pack", value: avoid.pack))
+        }
         return formRequest("\(base)/api/route", items)
     }
 
