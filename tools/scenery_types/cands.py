@@ -81,7 +81,9 @@ def rock(F, full=RF_ROCK):
 
 
 def pastoral(F, relief_full=S.RELIEF_FULL):
-    rel = f(F, "c_relief") if relief_full == S.RELIEF_FULL else np.clip(f(F, "relief750") / relief_full, 0, 1)
+    # Exact from the capped c_relief for any relief_full <= RELIEF_FULL, which is all pieces carry.
+    assert relief_full <= S.RELIEF_FULL
+    rel = np.clip(f(F, "c_relief") * S.RELIEF_FULL / relief_full, 0, 1)
     return np.clip(f(F, "grass_1k") + f(F, "crop_1k"), 0, 1) * (1 - f(F, "built_1k")) * rel
 
 
@@ -155,5 +157,5 @@ for lvl in (0.45, 1.0):
     SWEEPS[f"W2 level {lvl}"] = dict(wet=dict(mode="water", level=lvl))
 for full in (25.0, RF_ROCK, 60.0):
     SWEEPS[f"R full at {full:.0f} m"] = dict(rock=dict(full=full))
-for rf in (50.0, 100.0, 200.0):
+for rf in (33.0, 50.0, 100.0):
     SWEEPS[f"P relief full {rf:.0f} m"] = dict(pastoral=dict(relief_full=rf))
