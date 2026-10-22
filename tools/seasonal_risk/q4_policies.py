@@ -25,6 +25,7 @@ and every day of a year (trips spread evenly over the year):
 """
 
 import json
+import os
 import sys
 from itertools import product
 from pathlib import Path
@@ -36,7 +37,10 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import windows as W   # noqa: E402
 
-DATA = Path("/Users/james./Desktop/myapps/SundayDrive/data/processed-us")
+# The served table unless SUNDAYDRIVE_DATA names another (the rebuilt one,
+# docs/seasonal-road-policy.md).
+DATA = Path(os.environ.get("SUNDAYDRIVE_DATA",
+                           "/Users/james./Desktop/myapps/SundayDrive/data/processed-us"))
 DAYS = W.DAYS
 # The miss curves are indexed by a signed distance from our P0 window's end,
 # k = -HALF..HALF: negative is a day the P0 window keeps shut, which only a

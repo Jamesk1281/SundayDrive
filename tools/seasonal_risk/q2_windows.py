@@ -19,6 +19,7 @@ window cannot miss on its own ten seasons, so only the other seasons test it.
   python q2_windows.py      ->  q2_misses.csv, and a summary on stdout
 """
 
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -31,7 +32,10 @@ sys.path.insert(0, str(HERE))
 import roads as R            # noqa: E402
 import windows as W          # noqa: E402
 
-DATA = Path("/Users/james./Desktop/myapps/SundayDrive/data/processed-us")
+# The served table unless SUNDAYDRIVE_DATA names another (the rebuilt one,
+# docs/seasonal-road-policy.md).
+DATA = Path(os.environ.get("SUNDAYDRIVE_DATA",
+                           "/Users/james./Desktop/myapps/SundayDrive/data/processed-us"))
 
 # Q2 road -> (roads.py key, extra row filter). Crater Lake's two halves and
 # Old Fall River Road are Q2-only.
