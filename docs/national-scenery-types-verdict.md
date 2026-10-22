@@ -4,7 +4,8 @@
 `claude/national-scenery-types`. Nothing under `pipeline/`, `server/`, `ios/` or `data/`
 changed. Every figure comes from a script in [`tools/scenery_types/`](../tools/scenery_types/README.md)
 and its output in `tools/scenery_types/results/`, unless the text says otherwise. It answers
-`docs/national-scenery-types-brief.md`, "the brief" below, which is deleted when this merges.
+`docs/national-scenery-types-brief.md`, "the brief" below. It was deleted when this merged; read it with
+`git show d59c345:docs/national-scenery-types-brief.md`.
 What ships is the owner's call. This recommends and builds nothing.
 
 ## The verdict

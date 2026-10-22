@@ -1,6 +1,6 @@
 """The pre-registered icon and dull-control roads, bounded to the named stretch.
 
-Written 2026-10-21 from docs/national-scenery-types-brief.md's two lists, before
+Written 2026-10-21 from the brief's two lists (git show d59c345:docs/national-scenery-types-brief.md), before
 any candidate was computed. Do not edit after scores are seen. pin.py turns each
 definition into OSM way ids (pins.csv); the bbox stays part of the pin, because a
 way can run past the end of a stretch, so an edge counts only if its way is pinned
