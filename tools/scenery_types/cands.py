@@ -71,11 +71,11 @@ def vista(F, R=V_R, v0=V0, v1=V1):
     return open_land(F) * np.clip((p - v0) / (v1 - v0), 0, 1)
 
 
-def sea(F, near=S.DIST["water"], mid=S.DIST["water_mid"], on_sea=False):
+def sea(F, near=S.DIST["water"], mid=S.DIST["water_mid"], on_sea=False, share=ON_SEA_WATER_SHARE):
     d = f(F, "d_coast")
     s = np.where(d <= near, 1.0, np.where(d <= mid, WET_MID, 0.0))
     if on_sea:
-        s = s * (f(F, "water_1k") >= ON_SEA_WATER_SHARE)
+        s = s * (f(F, "water_1k") >= share)
     return s
 
 
@@ -170,6 +170,8 @@ for w in (0.05, 0.10, 0.15, 0.20):
     SWEEPS[f"V-add w{w:.2f}"] = dict(vista=dict(mode="add", w=w))
 for k in (0.5, 1.0, 2.0):
     SWEEPS[f"S1 distances x{k}"] = dict(sea=dict(near=S.DIST["water"] * k, mid=S.DIST["water_mid"] * k))
+for sh in (0.35, 0.5, 0.65):   # added after the first run: S2's threshold had no sweep
+    SWEEPS[f"S2 on the sea at {sh:.0%} water"] = dict(sea=dict(on_sea=True, share=sh))
 for sat in (0.5, 1.0):
     SWEEPS[f"W1 full at {sat:.0%} wet"] = dict(wet=dict(mode="forest", sat=sat))
 for lvl in (0.45, 1.0):
