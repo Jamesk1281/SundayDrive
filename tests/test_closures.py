@@ -1952,11 +1952,23 @@ class TestTheDefaultGivesWay:
                         self._row(1, WINTER, "winter_service=no"))
         assert self._windows(t, 1) == {WINTER}
 
-    def test_a_gate_between_two_edges_is_its_own_closure(self):
-        t = self._table(self._row(0, (10, 15, 5, 15), "motor_vehicle:conditional=no @ (Oct 15-May 15)"),
-                        self._row(0, WINTER, "barrier=gate, motor_vehicle:conditional=no @ winter",
-                                  rule="through", node_id=99))
-        assert (t["rule"] == "through").sum() == 1
+    def _gate(self, a, b, node=99):
+        tag = "barrier=lift_gate, access:conditional=no @ winter"
+        return [self._row(a, WINTER, tag, rule="through", node_id=node),
+                self._row(b, WINTER, tag, rule="through", node_id=node)]
+
+    def test_a_gate_beside_a_dated_edge_gives_way_whole(self):
+        """The Ross Dam gate: between the North Cascades table's last edge
+        and the next, both of its rows go, or it would hold the crossing to
+        Jun 14 against the table's May 15."""
+        t = self._table(self._row(0, (11, 3, 5, 15), "table north_cascades: https://wsdot.wa.gov"),
+                        *self._gate(0, 1))
+        assert (t["rule"] == "through").sum() == 0
+        assert len(self.dropped) == 2
+
+    def test_a_gate_between_guesses_stands(self):
+        t = self._table(self._row(0, WINTER, "seasonal=yes"), *self._gate(0, 1))
+        assert (t["rule"] == "through").sum() == 2
 
     def test_a_dated_window_that_equals_the_default_is_dated(self):
         from closures import row_source

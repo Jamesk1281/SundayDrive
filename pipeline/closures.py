@@ -895,8 +895,12 @@ def seasonal_rows(*parts) -> pd.DataFrame:
     window, so it never decided; with the margin it would, and the dated and
     table windows take no margin (docs/seasonal-road-policy.md, "The default
     gives way"). Where an edge has only guesses, the default and
-    UNKNOWN_SEASON, every row stands. Gates between two edges ("through")
-    are their own closure and neither drop nor are dropped.
+    UNKNOWN_SEASON, every row stands. A gate between two edges ("through")
+    gives way as a whole when either of its edges has a dated window: the
+    Ross Dam gate at the North Cascades Highway's west end, `no @ winter`
+    between the table's last edge and the next, would otherwise hold the
+    crossing to Jun 14 against the table's May 15. Its rows only ever go
+    together, since the router reads a gate as the two edges it joins.
 
     Returns (table, the rows that gave way).
     """
@@ -908,8 +912,11 @@ def seasonal_rows(*parts) -> pd.DataFrame:
                        zip(table["tag"], table[list(CLOSURE_WINDOW)].to_numpy())])
     edge_rule = (table["rule"] == "edge").to_numpy()
     dated = np.isin(source, ("osm_dated", "table", "agency_dated")) & edge_rule
-    drop = ((source == "osm_default") & edge_rule
-            & table["edge"].isin(table.loc[dated, "edge"]).to_numpy())
+    on_dated = table["edge"].isin(table.loc[dated, "edge"]).to_numpy()
+    default = source == "osm_default"
+    gate = (table["rule"] == "through").to_numpy() & default
+    gates = table.loc[gate & on_dated, "node_id"].unique()
+    drop = (default & edge_rule & on_dated) | (gate & table["node_id"].isin(gates).to_numpy())
     return table[~drop].reset_index(drop=True), table[drop].reset_index(drop=True)
 
 
