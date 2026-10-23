@@ -8,6 +8,12 @@ England launch plan it replaces (L = Thursday 22 October 2026, written
 that date. Facts carried over from the 2026-09-29 check and not re-read are
 marked *(re-check)*.
 
+**Re-based 2026-10-23 relative to approval** ([`national-copy.md`](national-copy.md)
+§9). The owner no longer sets submission or launch dates (2026-10-20): the
+timeline (§7) runs from approval, and the only calendar dates left are hard
+external ones (the domain's expiry, Thanksgiving, #30DayMapChallenge,
+Memorial Day and foliage 2027). A server gate now sits before submission.
+
 **What changed on 2026-10-18, decided by the owner:**
 
 1. **The New England-only app will never be public.** The first App Store
@@ -35,10 +41,11 @@ the App Store; this one gets people to it.
 
 ## 0. The plan on one page
 
-1. **Launch on a Thursday in early November: target Thursday 5 November
-   2026** (L). The app's launch doesn't depend on a season any more. Only two
-   hooks are dated: #30DayMapChallenge (all of November) and Thanksgiving
-   weekend (26–29 November) (§7).
+1. **Launch on the first Thursday after approval and a passing go/no-go**
+   (L). There is no target date. The app's launch doesn't depend on a season
+   any more. Only two hooks are dated: #30DayMapChallenge (all of November)
+   and Thanksgiving weekend (26–29 November), and each is spent only if L
+   comes before it (§7).
 2. **Spend the national, non-seasonal one-shots now; hold the New England
    seasonal ones.** At launch, use what works in any month: Northeastern's
    channels, Apple's featuring nomination, the national scenery map, Show HN,
@@ -63,18 +70,21 @@ the App Store; this one gets people to it.
    "Beautiful roads wherever you are" earns one-star reviews. Say plainly that
    flat country scores low, and get the app to say it too (§3.4, §5.10).
 6. **Before anything goes out:** renew `jameskouvlis.com` (it expires **28
-   October**, a week before L), and load-test the national build on the box
-   (§7.3).
+   October 2026**, a hard date), and pass the server gate: the national
+   server deployed, answering from 10+ states, watched by a monitor that
+   plans a route, with the snap-cap fix in. App Review tests against
+   production, so the gate comes before submission (§7.1).
 
-**If you only do five things:** renew the domain; file the featuring
-nomination this week; post the national map in November; answer every comment
+**If you only do five things:** renew the domain; deploy the national server
+before you submit; post the national map after L; answer every comment
 honestly, including "it's flat here"; and keep filming New England for spring.
 
 ### Terms used below
 
 | term | meaning |
 |---|---|
-| **L** | Launch day: the day the app goes live on the App Store. L−7 is a week before, L+30 a month after |
+| **G, S, A** | The server gate (the national server live and checked), submission, and approval, in that order (§7.1). None has a target date |
+| **L** | Launch day: the day the app goes live on the App Store, the first Thursday after A and a passing go/no-go. L−1 is the day before, L+30 a month after |
 | **Mark** | One rating of a stretch of road, made by a driver during a test drive. The scenery score has only ever been checked against your own New England marks |
 | **The national scale** | Scores mean the same everywhere: a 7 in Kansas is as good as a 7 in Vermont |
 | **ASO** | App Store Optimization: the name, subtitle, keywords, screenshots and video that decide whether people find you in App Store search and install |
@@ -365,9 +375,9 @@ group is a post about nothing.
 
 | when | the hook | to whom |
 |---|---|---|
-| L (November 2026) | "A Northeastern freshman scored every road in America for scenery" | Northeastern Global News, *The Huntington News* (tips at huntnewsnu.com/tips), NUMedia |
+| L | "A Northeastern freshman scored every road in America for scenery" | Northeastern Global News, *The Huntington News* (tips at huntnewsnu.com/tips), NUMedia |
 | L to L+14 | The national map, and a free, private, native app | MacStories and 9to5Mac (tips) *(re-check)* |
-| Thanksgiving week (23–25 Nov) | "The scenic way home for Thanksgiving, by an algorithm" | Boston.com, Universal Hub, Axios Boston: one pitch, Boston-angled |
+| Thanksgiving week (23–25 Nov), only if L is before it | "The scenic way home for Thanksgiving, by an algorithm" | Boston.com, Universal Hub, Axios Boston: one pitch, Boston-angled |
 | Winter | "We scored every official scenic byway in New England. Here's how they rank." Rank them with `c_scenic_tag` left out, since that component *is* the byway designation (`pipeline/score.py`) | New England press, byway organizations |
 | Memorial Day 2027 (29–31 May) | "The summer drives an algorithm picked" | New England press: WCVB's *Chronicle*, WBUR, GBH, *Yankee*, *Seven Days*, VTDigger, NHPR, *Down East*, CT Public, *The Providence Journal* *(re-check)* |
 | September 2027 | Foliage, with a season of users behind it | the same list |
@@ -412,9 +422,9 @@ calendars)*.
 | tool | what to do | when |
 |---|---|---|
 | **Landing page** | Replace the redirect in `site/index.html`: what it is, 3 screenshots, "iPhone · free", the national map, the App Store badge, the press kit, credits and contact. **It is also the Support URL App Store Connect requires.** It loads nothing external | before S |
-| **Keywords** | **100 bytes**, nothing from the name ("sunday", "drive") or subtitle ("scenic", "route"), no competitor names. State names no longer earn their bytes. A national candidate, 96 bytes: `backroads,loop,byway,curvy,road,trip,foliage,fall,leaf,peeping,canyon,mountain,pass,country,park`. Re-measure before pasting. The New England draft in [`app-store-listing.md`](app-store-listing.md) §3 grew from the 2026-09-29 candidate and needs this national version | before S |
-| **Screenshots and preview video** | The trade ("Scenic adds 12 min"), a loop, the road. Caption the place, from New England footage | before S |
-| **Featuring nomination** | App Store Connect → Featuring Nominations → *App Launch*, **at least 2 weeks before L**. For L = 5 November, that's **by Thursday 22 October**. The story: a freshman, open data, one scale for a whole country *(re-check that the form accepts it before the build is submitted)* | this week |
+| **Keywords** | **100 bytes**, nothing from the name ("sunday", "drive") or subtitle ("scenic", "route"), no competitor names, no state names, nothing seasonal. The national set is in [`app-store-listing.md`](app-store-listing.md) §3 (100 bytes, measured 2026-10-23). It grew from this plan's 96-byte candidate with `foliage,fall,leaf,peeping` taken out; they go on a foliage custom product page later. Re-measure before pasting | before S |
+| **Screenshots and preview video** | The trade ("Scenic adds 18 min"), a loop, the road. The national set is four shots from Colorado, Utah, California and North Carolina (`national-copy.md` §6). A preview video can use New England footage, captioned with the place | before S |
+| **Featuring nomination** | App Store Connect → Featuring Nominations → *App Launch*, **at least 2 weeks before L**. The 22 October deadline for the old 5 November target has passed, and whether it was filed is not known: **the owner's to answer** (`national-copy.md` §8). If not filed, file it at S with the publish date at least two weeks out. The story: a freshman, open data, one scale for a whole country. The national text is [`app-store-listing.md`](app-store-listing.md) §6 | at S at the latest |
 | **Manual release** | "Manually release this version", so approval doesn't mean launch | at S |
 | **Promotional text** | 170 characters, **editable any time without review**, so it's the seasonal field. November: maps and the holiday. Spring: the back roads reopening. Fall: color | at L, then seasonally |
 | **Custom product pages** | Up to 70, and they can carry keywords *(re-check)*. Later: a *loops* page and a *New England foliage* page. Their keywords come out of the same 100 bytes | spring 2027 |
@@ -563,16 +573,39 @@ the lists carry the account, and they need no travel.
 
 ---
 
-## 7. The timeline, relative to L
+## 7. The timeline, relative to approval
+
+There are no target dates (owner, 2026-10-20). Each milestone waits on the one
+before it, and the only calendar dates are hard external ones: the domain
+expires **28 October 2026**, #30DayMapChallenge runs through **November**,
+Thanksgiving weekend is **26–29 November**, and the 2027 seasons (Memorial
+Day, foliage) are what they are.
 
 ### 7.1 The milestones
 
-| code | milestone | depends on | target |
-|---|---|---|---|
-| **M** | Apple Developer Program membership | **done**, 2026-10-03; renews about 3 October 2027 | — |
-| **S** | App Store submission, manual release | the national build, the release plan's checklist (`app-store-submission.md` §8) | by Thu 29 Oct |
-| **A** | Approved | App Review, usually a day or two *(re-check)* | about Mon 2 Nov |
-| **L** | **Launch: a manual release, on a Thursday** | A, plus the go/no-go (§7.3) | **Thu 5 Nov 2026** |
+| code | milestone | depends on |
+|---|---|---|
+| **M** | Apple Developer Program membership | **done**, 2026-10-03; renews about 3 October 2027 |
+| **D** | The domain renewed | nothing. **Hard date: 28 October 2026**, or the API, every installed build and the contact addresses stop working |
+| **G** | **The server gate** (below) | D, and the national data deployed to the box |
+| **S** | App Store submission, manual release | G, the national build, the release plan's checklist (`app-store-submission.md` §8) |
+| **A** | Approved | App Review, usually a day or two *(re-check)* |
+| **L** | **Launch: a manual release, on a Thursday** | the first Thursday after A **and** a passing go/no-go (§7.3) |
+
+**The server gate (G), before S.** App Review tests against production, and
+production serves the New England build until the owner deploys the national
+one. A reviewer in Cupertino on today's production gets "outside the covered
+road network". So S waits until all four hold:
+
+1. **The national server is deployed on the box**, and `api/health` reports
+   `region` "the contiguous United States" with the national pack fingerprint.
+2. **Routes are answered from 10+ states**, through the public hostname, not
+   only from New England: at least the review notes' Cupertino trip and loop
+   (`app-store-submission.md` §5), and a route each in nine more states.
+3. **A latency monitor plans a route**, not just `api/health`, so a server
+   that is up but too slow or too swapped to route is caught.
+4. **The snap-cap fix is deployed**: one request far from any road must not
+   tie up the server (outside review #4, P-3, 2026-10-23).
 
 **Why Thursday:** the app is for weekends. The first weekend after L is when
 people use it.
@@ -581,92 +614,121 @@ people use it.
 
 | one-shot | seasonal? | spend it |
 |---|---|---|
-| Apple featuring nomination (*App Launch*) | no | for L; file by Thu 22 Oct |
+| Apple featuring nomination (*App Launch*) | no | at least two weeks before L; filed status unknown (§5.7) |
 | Northeastern's channels | no | L |
 | r/SideProject, r/iOSProgramming, r/boston, r/massachusetts launch posts | no | L to L+3, days apart |
 | Tech press tips | no | L+1 |
-| The national map on r/dataisbeautiful and r/MapPorn | no, but November has #30DayMapChallenge | L+3 to L+20, days apart |
+| The national map on r/dataisbeautiful and r/MapPorn | no, but November has #30DayMapChallenge | L+3 to L+20, days apart; in the challenge only if that falls in November |
 | Show HN | no | a weekday in L+5 to L+14 |
 | OSM community (weeklyOSM, OSM US) | no | L+7 to L+21 |
-| Boston press, Thanksgiving angle | yes: Thanksgiving, 26–29 Nov | pitch Mon 23 – Tue 24 Nov |
+| Boston press, Thanksgiving angle | yes: Thanksgiving, 26–29 Nov | pitch Mon 23 – Tue 24 Nov, only if L is before then; otherwise drop it |
 | r/vermont, r/newhampshire, r/maine, r/Connecticut, r/RhodeIsland launch posts | yes: their roads close in winter | Memorial Day 2027 |
 | New England foliage Facebook groups | yes | foliage 2027 |
 | New England regional press (TV, radio, magazines) | yes | Memorial Day 2027, then foliage 2027 |
 | *App Enhancements* nomination | — | the first real update, filed 2 weeks ahead |
 
-### 7.3 The go/no-go check at L−7 (Thursday 29 October)
+### 7.3 The go/no-go check, at A
 
-Launch on the planned Thursday only if **all six** hold:
+Run it the day the app is approved. L is the first Thursday after it passes,
+and only if **all ten** hold:
 
-1. The app is submitted, early enough that a normal review lands before L−1.
+1. **The app is approved** (A), with "Manually release this version" set.
 2. **The load test passed on the national build**, and the rate limit is on.
    The New England numbers in [`load-test-oracle.md`](load-test-oracle.md)
    don't carry over: the graph is bigger.
-3. **The domain is renewed.** It expires Wednesday 28 October, the day before
-   this check.
+3. **The domain is renewed.** It expires 28 October 2026.
 4. No known crash on TestFlight.
 5. The landing page and campaign links are live.
 6. **No national copy carries a New England number** (listing, screenshots,
-   press kit, drafted posts, checked against §3.4), and flat country is
-   covered by the low-scenery message or the "what it doesn't do" line (§5.10,
-   item 2).
+   press kit, drafted posts, checked against §3.4).
+   `tests/test_no_new_england_claims.py` covers the listing, the review
+   notes, the support and privacy pages and the captions; the press kit and
+   the drafted posts are checked by hand. Flat country is covered by the
+   low-scenery message or the "what it doesn't do" line (§5.10, item 2),
+   which is still the owner's open decision.
+7. **The server's region matches the app.** Production's `api/health` says
+   "the contiguous United States", and its pack fingerprint is the one the
+   submitted build was tested against. A New England server behind a
+   national app refuses every driver outside six states.
+8. **The review notes still hold.** The Cupertino trip and loop in
+   `app-store-submission.md` §5 come back from production as the notes say.
+9. **The privacy policy is the national one**, live at the URL in App Store
+   Connect: four uses of location, the covered area, the current effective
+   date (`site/privacy/index.html`).
+10. **The featuring text is the national one** (`app-store-listing.md` §6),
+    whether or not the nomination was filed.
 
-**If one fails:** move L a week, to Thursday 12 November. Nothing in the
-launch is seasonal except #30DayMapChallenge (all November) and Thanksgiving.
-**If L slips past Thanksgiving:** launch when ready, spend the non-seasonal
-one-shots (the map, Show HN, OSM, Northeastern), and drop the Thanksgiving
-pitch. The spring and fall plans don't move.
+**If one fails:** fix it and run the check again; L is the first Thursday
+after it passes. Nothing in the launch is seasonal except #30DayMapChallenge
+(all November) and Thanksgiving. **If L falls after Thanksgiving:** spend the
+non-seasonal one-shots (the map, Show HN, OSM, Northeastern) and drop the
+Thanksgiving pitch. The spring and fall plans don't move.
 
 ### 7.4 Phase by phase
 
-**Phase 0: this week and next (now to S)**
+**Phase 0: now to G**
 
-- [ ] **Renew `jameskouvlis.com` before 28 October.**
-- [ ] **File the featuring nomination by 22 October** (§5.7).
+- [ ] **Renew `jameskouvlis.com` before 28 October 2026.**
+- [ ] **Find out whether the featuring nomination was filed** (§5.7). If not,
+      file it at S.
 - [ ] Claim the handles on all three platforms (§12, item 3).
 - [ ] Build the landing page, with the press kit and the national map.
 - [ ] Make the national map image (credits in the image).
-- [ ] Draft the listing against §3.4: national keywords, screenshots and the
-      flat-country line.
+- [ ] Sign off the national listing, captions and keywords
+      (`national-copy.md` §8).
 - [ ] Film the last color in southern New England, from public starting
-      points.
+      points, if there is any left.
 
-**Phase 1: submission to launch (S to L−1)**
+**Phase 1: the server gate (G)**
 
-- [ ] TestFlight: invited friends, or the public link if §12 item 1 says it
-      isn't "public".
+- [ ] Deploy the national server and the snap-cap fix to the box
+      (`server/DEPLOY-oracle.md`).
+- [ ] Route from 10+ states through the public hostname, the review notes'
+      trip and loop among them.
+- [ ] Point a monitor at a route request, not only `api/health`.
 - [ ] **Run the load test on the national build** and set the Cloudflare rate
       limit (`server/DEPLOY-oracle.md`, Part 11; method in
-      [`load-test-oracle.md`](load-test-oracle.md)).
+      [`load-test-oracle.md`](load-test-oracle.md)). It is go/no-go item 2,
+      and it is cheapest to run here, while nothing depends on the box.
+
+**Phase 2: submission to approval (S to A)**
+
+- [ ] Submit, with "Manually release this version".
+- [ ] TestFlight: invited friends, or the public link if §12 item 1 says it
+      isn't "public".
 - [ ] Campaign links, one per channel.
 - [ ] Draft every launch post and the two pitches. Message the subreddit
       moderators.
-- [ ] **L−7: the go/no-go check (§7.3).**
+
+**Phase 3: approval to launch (A to L)**
+
+- [ ] **The go/no-go check (§7.3)**, the day of A.
 - [ ] L−1, pre-flight: `api/health`, the box's memory, the rate limit, the
       domain, the listing, every link.
 
-**Phase 2: launch week (L to L+7, about 10 hours)**
+**Phase 4: launch week (L to L+7, about 10 hours)**
 
 | day | what |
 |---|---|
-| **L (Thu 5 Nov)**, 8 am Eastern | Release. Wait for the listing to go live in the US store. Search "sunday drive" and note the rank |
+| **L (a Thursday)**, 8 am Eastern | Release. Wait for the listing to go live in the US store. Search "sunday drive" and note the rank |
 | L, 11 am | Your accounts, Northeastern's channels, r/SideProject. Reply to everything for two hours. Check Cloudflare and the box hourly |
 | L+1 (Fri) | r/boston; tech-press tips. Tell testers it's live and ask for an honest rating, never five stars, never with anything in return |
 | L+2 to L+3 (weekend) | One drive, filmed |
 | L+4 (Mon) | r/massachusetts or r/iOSProgramming |
 | L+7 | First numbers (§9) |
 
-**Phase 3: November (L+8 to L+30)**
+**Phase 5: the month after (L+8 to L+30)**
 
 - [ ] The national map on r/dataisbeautiful, then r/MapPorn days later, and in
-      #30DayMapChallenge.
+      #30DayMapChallenge if it is still November.
 - [ ] Show HN, on a weekday morning.
 - [ ] The OSM community.
-- [ ] Thanksgiving: the Boston pitch on 23–24 November, promotional text for
-      the holiday, and a "scenic way home" short.
+- [ ] Thanksgiving, if L is before 23 November: the Boston pitch on 23–24
+      November, promotional text for the holiday
+      (`app-store-listing.md` §1), and a "scenic way home" short.
 - [ ] 1–2 posts a week from footage.
 
-**Phase 4: winter (December to March)**
+**Phase 6: winter (December to March)**
 
 - [ ] 1–2 posts a week, or fewer. The YouTube backlog from October footage.
 - [ ] The New England byway ranking (§5.5).
@@ -679,14 +741,14 @@ pitch. The spring and fall plans don't move.
 
 | when | beat |
 |---|---|
-| mid-February 2027 | Featuring nomination (*App Enhancements*) for a spring update |
-| **29–31 May 2027** | **The spring opener** (Memorial Day): northern state-sub launch posts, New England press, the weekly loop resumes |
-| mid-June 2027 | Featuring nomination for foliage, 3 months ahead |
-| **mid-September to early November 2027** | **Foliage 2027:** foliage groups, regional press, an in-app event if seasonal content exists |
+| two weeks before the spring update | Featuring nomination (*App Enhancements*) |
+| **Memorial Day weekend 2027** | **The spring opener:** northern state-sub launch posts, New England press, the weekly loop resumes |
+| three months before foliage | Featuring nomination for foliage |
+| **Foliage 2027** (mid-September to early November) | Foliage groups, regional press, an in-app event if seasonal content exists |
 
-**Verdict:** a short, national launch built on the map and the builder's
-story; a quiet winter; and the New England plan, mostly intact, from Memorial
-Day.
+**Verdict:** a server that answers for the country before anyone reviews the
+app; a short, national launch built on the map and the builder's story; a
+quiet winter; and the New England plan, mostly intact, from Memorial Day.
 
 ---
 
@@ -752,9 +814,10 @@ converted; the ratings count; any review about boredom or detours.
 
 | risk | likelihood | mitigation |
 |---|---|---|
-| **The domain lapses on 28 October**, a week before L, taking the API and the privacy contact with it | certain if ignored | Renew this week |
+| **The domain lapses on 28 October 2026**, taking the API and the privacy contact with it | certain if ignored | Renew before then (§7.1, D) |
 | **Plains users get detours that buy nothing, and say so** | high | Go/no-go item 6; decision rule 3; never "near you" copy |
-| **A New England number leaks into national copy** | medium | §3.4; go/no-go item 6 |
+| **A New England number leaks into national copy** | medium | §3.4; go/no-go item 6; `tests/test_no_new_england_claims.py` |
+| **App Review meets the New England server** | certain if submitted before G | The server gate before S (§7.1); go/no-go item 7 |
 | **The server meets national traffic untested** | medium | Go/no-go item 2; staggered posts; the stop-posting rule (§8) |
 | **A listed road is closed, 4WD-only or private** | medium outside New England | §6.3 step 7 |
 | **A November launch meets an off-season audience** | certain | Launch on the map and the builder's story; hold New England's seasonal one-shots for May |
@@ -789,8 +852,10 @@ converted; the ratings count; any review about boredom or detours.
 1. **Does a public TestFlight link count as "public"?** It matters only for
    the week before L. Leaning: it doesn't matter enough to use; invited
    testers are enough.
-2. **L = Thursday 5 November, or 12 November?** 5 November needs the featuring
-   nomination filed by 22 October and submission by 29 October.
+2. **Was the featuring nomination filed?** It was due by 22 October for the
+   old 5 November target. If it was, its publish date needs moving to the
+   real L; if not, file it at S (§5.7). There is no launch date to decide any
+   more: L follows approval (§7).
 3. **Claim the handles now?** An hour, and it protects the name. Recommended.
    You create the accounts; this plan creates none.
 4. **On camera or not?** A face helps building-in-public posts. Voice-over and
@@ -878,17 +943,20 @@ filed before the build is submitted; the 2027 club calendars.
 
 ---
 
-## 15. This week (18–25 October 2026)
+## 15. Next, before submission (as of 2026-10-23)
 
-1. **Renew `jameskouvlis.com`** before Wednesday 28 October. About $23. The
-   API and every installed build depend on it. (10 minutes)
-2. **File the featuring nomination** for Thursday 5 November, by Thursday 22
-   October (§5.7). (30 minutes)
-3. **Claim the handles** on TikTok, Instagram and YouTube, the same day
+1. **Renew `jameskouvlis.com`** before Wednesday 28 October 2026. About $23.
+   The API and every installed build depend on it. (10 minutes)
+2. **Say whether the featuring nomination was filed** (§5.7, §12 item 2).
+   (5 minutes)
+3. **Deploy the national server and the snap-cap fix**, and route from 10+
+   states through the public hostname: the server gate (§7.1). Nothing is
+   submitted before it holds.
+4. **Sign off the national copy**: listing, keywords, captions, review notes,
+   support and privacy pages (`national-copy.md` §8).
+5. **Claim the handles** on TikTok, Instagram and YouTube, the same day
    (§12, item 3). (30 minutes)
-4. **Make the national map image**, with the OpenStreetMap credit in the
+6. **Make the national map image**, with the OpenStreetMap credit in the
    image. It is the launch's best post. (1–2 hours)
-5. **Film one late-color drive** in southern New England, from a public
-   starting point, if you're driving anyway.
 
-About 3 hours. Nothing gets posted until L.
+Nothing gets posted until L.
