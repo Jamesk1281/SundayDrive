@@ -883,19 +883,28 @@ def row_source(tag: str, window) -> str:
     return "osm_dated"
 
 
+# The day a dated window has to close for it to be a statement about winter,
+# and so to replace the undated default beside it (`seasonal_rows`).
+WINTER_EVIDENCE_DAY = (1, 15)
+
+
 def seasonal_rows(*parts) -> pd.DataFrame:
     """The seasonal table from its parts (way, gate and agency rows), with
     the undated default giving way to a dated window on its own edge.
 
-    On an edge with any dated window, an OSM-dated conditional, a table row
-    or an agency's own dates, the edge's `osm_default` rows are dropped: the
-    specific beats the general, as a table road replaces its park's window on
+    On an edge with a dated winter, an OSM-dated conditional, a table row or
+    an agency's own dates whose window covers WINTER_EVIDENCE_DAY (Jan 15),
+    the edge's `osm_default` rows are dropped: the specific beats the
+    general, as a table road replaces its park's window on
     its own edges (docs/winter-closures-national.md, decision 4). Before
     WINTER's spring margin the default ended Apr 30, before every dated
     window, so it never decided; with the margin it would, and the dated and
     table windows take no margin (docs/seasonal-road-policy.md, "The default
-    gives way"). Where an edge has only guesses, the default and
-    UNKNOWN_SEASON, every row stands. A gate between two edges ("through")
+    gives way"). A dated window for another season, MVUM's `07/26-04/30`
+    (open all winter, shut May to July) or `no @ (Apr 1-Oct 31)`, says
+    nothing about winter, so beside one the default stands: dropping it would
+    open the road all winter, the unsafe side. Where an edge has only
+    guesses, the default and UNKNOWN_SEASON, every row stands. A gate between two edges ("through")
     gives way as a whole when either of its edges has a dated window: the
     Ross Dam gate at the North Cascades Highway's west end, `no @ winter`
     between the table's last edge and the next, would otherwise hold the
@@ -911,7 +920,9 @@ def seasonal_rows(*parts) -> pd.DataFrame:
     source = np.array([row_source(t, w) for t, w in
                        zip(table["tag"], table[list(CLOSURE_WINDOW)].to_numpy())])
     edge_rule = (table["rule"] == "edge").to_numpy()
-    dated = np.isin(source, ("osm_dated", "table", "agency_dated")) & edge_rule
+    winter = np.array([in_window(tuple(int(x) for x in w), WINTER_EVIDENCE_DAY)
+                       for w in table[list(CLOSURE_WINDOW)].to_numpy()])
+    dated = np.isin(source, ("osm_dated", "table", "agency_dated")) & edge_rule & winter
     on_dated = table["edge"].isin(table.loc[dated, "edge"]).to_numpy()
     default = source == "osm_default"
     gate = (table["rule"] == "through").to_numpy() & default

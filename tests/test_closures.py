@@ -1938,6 +1938,25 @@ class TestTheDefaultGivesWay:
                         self._row(0, (12, 8, 4, 7), tag))
         assert self._windows(t, 0) == {(12, 8, 4, 7)}
 
+    @pytest.mark.parametrize("window,tag", [
+        ((5, 1, 7, 25), "mvum passengervehicle_datesopen=07/26-04/30 (Carson National Forest, MVUM id 80)"),
+        ((4, 1, 10, 31), "access:conditional=no @ (Apr 1-Oct 31)"),
+    ])
+    def test_a_dated_window_for_another_season_leaves_the_winter(self, window, tag):
+        """Open all winter by its own dates, so they say nothing about it:
+        the undated winter beside it stands, or the road opens all winter."""
+        t = self._table(self._row(0, window, tag), self._row(0, WINTER, "seasonal=yes"))
+        assert self._windows(t, 0) == {window, WINTER}
+        assert len(self.dropped) == 0
+
+    def test_the_evidence_day_is_jan_15(self):
+        from closures import WINTER_EVIDENCE_DAY
+        assert WINTER_EVIDENCE_DAY == (1, 15)
+        # Closed Jan 16 - Mar 31: misses the day, so the default stands.
+        t = self._table(self._row(0, (1, 16, 3, 31), "motor_vehicle:conditional=no @ (Jan 16-Mar 31)"),
+                        self._row(0, WINTER, "winter_service=no"))
+        assert self._windows(t, 0) == {(1, 16, 3, 31), WINTER}
+
     def test_guesses_alone_all_stand(self):
         """The default beside an unknown season, or alone: nothing is dated,
         so nothing gives way."""
