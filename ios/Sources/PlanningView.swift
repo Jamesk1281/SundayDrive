@@ -57,7 +57,7 @@ struct PlanningView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PlanningMap(model: model, stage: stage, camera: $camera)
+            PlanningMap(model: model, stage: stage, camera: $camera, topInset: topInset)
                 .frame(height: mapHeight)
                 .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 22,
                                                   bottomTrailingRadius: 22))

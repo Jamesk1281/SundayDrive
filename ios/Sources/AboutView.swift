@@ -35,6 +35,10 @@ struct DataSource: Identifiable {
     /// information, including origin and licence of the data"), and good
     /// practice for the rest.
     let url: URL
+    /// A further line a licence asks for beyond the credit, and where it
+    /// points. Only OpenStreetMap has one (ODbL §4.6, `DataSources.odblMethod`).
+    var notice: String? = nil
+    var noticeURL: URL? = nil
 
     var id: String { name }
 }
@@ -119,6 +123,14 @@ enum DataSources {
     /// `docs/licensing-and-attribution.md` before building any
     /// download-a-region-for-offline-use feature.)
     ///
+    /// No share-alike is not no obligation, though. The routes are produced
+    /// *from* that Derivative Database, and ODbL §4.6 asks anyone who
+    /// publicly uses such a Produced Work to offer recipients the derivative
+    /// database itself, or "the method of making the alterations". The public
+    /// repository is that method: `pipeline/` builds the graph from the
+    /// Geofabrik extracts. So the entry carries `odblMethod` and a link to it
+    /// (docs/national-copy.md, "ODbL §4.6").
+    ///
     /// Both credit lines are acceptable forms per the guideline: "Attribution
     /// must be to 'OpenStreetMap'" and "The historical forms of attribution
     /// '© OpenStreetMap contributors' or '© OpenStreetMap' are acceptable."
@@ -136,8 +148,17 @@ enum DataSources {
         credit: ["© OpenStreetMap contributors",
                  "Extracts processed by Geofabrik GmbH"],
         licence: "Open Database License (ODbL) 1.0",
-        url: openStreetMapCopyrightURL
+        url: openStreetMapCopyrightURL,
+        notice: odblMethod,
+        noticeURL: sourceCodeURL
     )
+
+    /// The §4.6 offer, in a line: what was changed, and where the method is.
+    static let odblMethod = "Routes are planned on a modified copy of this data. "
+        + "How it is modified is public, in the app’s source code:"
+
+    /// The public repository, which holds the method `odblMethod` offers.
+    static let sourceCodeURL = URL(string: "https://github.com/Jamesk1281/SundayDrive")!
 
     /// ESA WorldCover v200 (2021) — half of `c_forest` at `pipeline/score.py`,
     /// and forest carries 0.18 of the 1.14 of total scenery weight, so this is
@@ -453,6 +474,19 @@ struct AboutView: View {
                 Text(Self.linkLabel(source.url))
                     .font(.system(size: 12))
                     .foregroundStyle(Color.amberText)
+            }
+
+            if let notice = source.notice, let url = source.noticeURL {
+                Text(notice)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+                Link(destination: url) {
+                    Text(Self.linkLabel(url))
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.amberText)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

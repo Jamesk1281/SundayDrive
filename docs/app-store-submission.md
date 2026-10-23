@@ -1,12 +1,11 @@
 # App Store Connect answers
 
-> **2026-10-18: the New England build will not be submitted.** The owner
-> decided that the first App Store release is the national app (the 48
-> contiguous states and DC), due within weeks. Most answers here
-> (the EULA, the privacy label, export compliance) do not depend on region
-> and carry over; anything that names New England is to be re-answered for
-> the national build. The timeline is [`marketing-plan.md`](marketing-plan.md)
-> §7. The national version of this document is later work.
+> **2026-10-23: the build to submit is the national one** (the 48 contiguous
+> states and DC). Most answers here (the EULA, the privacy label, export
+> compliance) do not depend on region and carry over unchanged. §5's region
+> note was rewritten for the national build on 2026-10-23
+> ([`national-copy.md`](national-copy.md) §3). The timeline is
+> [`marketing-plan.md`](marketing-plan.md) §7, relative to approval.
 
 **Status, 2026-10-04: nothing has been submitted or uploaded.** The Developer
 Program membership was accepted on 2026-10-03. The owner decided on 2026-09-19
@@ -356,33 +355,54 @@ for drive recordings. Recording is switched off for launch (2026-10-04,
 `DriveTrace.isEnabled`), so the folder stays empty; the keys are left in so
 turning recording back on needs no plist change.
 
-**Why does it only work in New England?** (`pre-submission-review-verdict.md`
-AR-1.) Each road's scenery score is computed from regional open data, so
-coverage is the six New England states. A reviewer is almost certainly
-outside them, and the app now says so itself (`docs/new-england-only-brief.md`):
-- **At launch**, after "Before you drive" and the location prompt, a phone
-  outside New England gets a full-screen notice, **This won't work from
-  here**. "Got it" dismisses it, and nothing is blocked. The check runs on the
-  phone; the location is not sent anywhere for it.
-- **My Location**, in Directions and Loop, says "You're outside New England,
-  so this can't start from your location. Type a New England town as your
-  start." It sends nothing to the server.
-- **Home's Loop row** reads "Type a New England town to start", and opens the
-  loop page with the start field ready.
-- **Search** only offers and accepts New England places.
+**Where does it work?** Coverage is the 48 contiguous states and Washington,
+DC. A reviewer in Cupertino is **inside** it, so My Location and Loop work
+where they sit, and nothing below needs a typed start. The figures were
+measured on 2026-10-23 on a local server running the national build, at this
+branch's head ([`national-copy.md`](national-copy.md) §3). They are what
+production will answer **once the national server is deployed**, which is a
+gate before submission (`marketing-plan.md` §7.1), so check them against
+production on the day.
 
-So give the reviewer the two ways in that work from anywhere:
-- **Directions:** type **Concord, MA** as the start and **Rockport, MA** as
-  the destination. On 2026-10-04 production returned both arms in 0.8 s:
-  fastest 77 km in 53 min, scenic 75 km in 100 min with 24 km of beautiful
-  road.
-- **Loop:** type **Kent, CT** into "Start and finish here". On 2026-10-04 the
-  default 40 km loop came back as 38 km in 52 min, 27 km of it beautiful and
-  1.4 km driven twice, with five directions to try.
-  - Not Stowe, VT. Its default loop climbs VT 108 to Smugglers' Notch and
-    comes back the same way, 19 of 41 km twice, and that road is closed from
-    November to April (verdict C-1). Kent's nearest seasonal road is 32 km
-    away.
+Paste this into the App Review notes (it is under 4,000 bytes; §5's other
+answers above go with it):
+
+```text
+WHERE IT WORKS
+Sunday Drive covers the 48 contiguous states and Washington, DC. In Cupertino, My Location and Loop work where you are.
+
+TO TRY DIRECTIONS
+Directions, start "My Location" (or type Apple Park), destination Boulder Creek, CA. Both routes come back: the fastest is 28 mi in 42 min with 15 mi of beautiful road; the scenic one is 28 mi in 48 min with 23 mi. The card reads "Scenic adds 6 min and turns 15 mi of beautiful road into 23 mi". Drag the slider toward Fastest or Scenic to change the trade.
+
+TO TRY A LOOP
+Home, Loop, start from My Location. At the default length, from Apple Park, it is a 26 mi loop in 69 min, 4 mi of it beautiful and 0.9 mi driven twice; the compass offers the other directions that hold a loop that long. Drag the length slider to about 50 mi and it heads south into the Santa Cruz Mountains: 45 mi in 98 min, 30 mi of it beautiful.
+
+FROM OUTSIDE THE US
+At launch, a phone outside the covered area gets a notice, "This won't work from here", which "Got it" dismisses. Nothing is blocked: typing a US town as the start works from anywhere. A place outside the area, typed into search, is refused with the reason. The check runs on the phone and sends the location nowhere.
+
+LIMITS THE APP STATES
+Directions go up to 310 miles in a straight line. San Francisco to Los Angeles is refused with "That trip is 348 miles in a straight line. Sunday Drive plans drives of up to 310 miles, so pick a stop along the way and plan it in two parts."
+```
+
+What each line rests on:
+- Every request was sent as the app sends it: a POST form body, `pref`
+  0.50 (where the slider starts, `RouteModel.pref`), and the default scenery
+  weights (every type 1.00, town centers 0.00, `BeautyType.all`).
+- **The trip**, Apple Park (37.3349, −122.0090) to Boulder Creek
+  (37.1261, −122.1222): fastest 44.7 km, 42.2 min, 23.9 km beautiful; scenic
+  45.0 km, 48.4 min, 36.6 km beautiful. Neither arm crosses a seasonal
+  stretch. The sentence is `RouteComparison.summary` on those figures.
+- **The loop**, 40 km requested (the app's default, `LoopModel.targetKm`):
+  41.6 km, 68.6 min, 5.9 km beautiful, 1.4 km repeated, heading W; 7 of 8
+  compass directions hold a loop. At 80 km (the slider reads "50 mi"):
+  72.5 km, 98.4 min, 48.7 km beautiful, 0.4 km repeated, heading S, all 8
+  directions. This start's loop limit is 400 km.
+- **Outside**, `OutsideCoverageView` and `Coverage.notCovered`. A start in
+  Toronto sent to the server anyway is refused with "Sunday Drive covers the
+  contiguous United States, and that point is outside it."
+  (`OUTSIDE_COVERAGE`).
+- **The cap**, `TRIP_TOO_LONG` from the server: 559.6 km between the snapped
+  ends, cap 500 km.
 - Attach a short screen recording of a real drive.
 
 **Age rating.** No user-generated content visible to others, no web view, no
@@ -466,8 +486,8 @@ server's snapped endpoint instead. It changes the trace format that
 | 10 | Bundle ID, version, territories | **Decided** (§6) |
 | 11 | Team and bundle ID | **Done** (§6). The membership kept Team ID `28ZU5P5GC3`, and `app.sundaydrive` is registered to it. Refresh Xcode's account so it stops treating the team as free |
 | 12 | Support URL | **Built** (`site/index.html`, merged 2026-10-04): `https://jamesk1281.github.io/SundayDrive/`, live once `main` is pushed |
-| 13 | App Review notes and screen recording | **Open** (§5). Must exist before the first submission *and* before external TestFlight, whose beta review has the same problem |
+| 13 | App Review notes and screen recording | **Notes drafted** (§5, national, 2026-10-23); re-check their figures against production once the national server is deployed. **Screen recording open.** Both must exist before the first submission *and* before external TestFlight, whose beta review has the same problem |
 | 14 | Mac and Vision Pro availability | **Untick both.** iPhone apps are offered on Apple Silicon Macs and Apple Vision Pro by default. Pricing and Availability → "iPhone and iPad Apps on Apple Silicon Macs", and the Apple Vision Pro section |
 | 15 | Accessibility Nutrition Label | Optional. **Do not claim Larger Text.** No text in the app follows Dynamic Type yet (verdict K-5) |
-| 16 | Screenshots | **Open.** 6.9" (1320 × 2868), from a **freshly created** simulator, because the unit tests leave fake settings and drive traces in the app (verdict K-3). Take them after the dial headline fix (verdict C-3) |
+| 16 | Screenshots | **National set built** 2026-10-23 (`app-store-screenshots/captioned`, `national-copy.md` §6): 6.9" (1320 × 2868), from a **freshly created** simulator, because the unit tests leave fake settings and drive traces in the app (verdict K-3). Owner sign-off open |
 | 17 | Category, age rating, copyright, release option | **Open.** Navigation / Travel; the age-rating questionnaire; `2026 <legal name>`; **Manually release this version** |

@@ -88,6 +88,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/western-landcover-brief.md` | `git show 06ae07f:docs/western-landcover-brief.md` | [western-landcover-verdict.md](western-landcover-verdict.md), with the scripts and results in `tools/western_landcover/` (on `usa`) |
 | `docs/national-launch-brief.md` | `git show cfeb688:docs/national-launch-brief.md` | four units, on `usa`: [national-build.md](national-build.md), [router-at-us-scale.md](router-at-us-scale.md), [app-goes-national.md](app-goes-national.md), [winter-closures-national.md](winter-closures-national.md) |
 | `docs/review-fixes-brief.md` | `git show 042a470:docs/review-fixes-brief.md` | four units, on `usa`: [review-fixes-router.md](review-fixes-router.md), [review-fixes-data.md](review-fixes-data.md), [review-fixes-app.md](review-fixes-app.md), [review-fixes-deploy.md](review-fixes-deploy.md). The 2026-10-20 outside review it quotes stayed out of the repo by the owner's decision |
+| `docs/national-copy-brief.md` | `git show 42e4808:docs/national-copy-brief.md` | on `usa`: [national-copy.md](national-copy.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
 
 ## Briefs kept out of history
 

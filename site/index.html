@@ -67,7 +67,7 @@
 <h1>Sunday Drive</h1>
 <p class="meta">Support</p>
 
-<p>Sunday Drive is a free iPhone app (iOS 17 or later) that plans the scenic way to somewhere, or a loop from where you are, in the six New England states: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island and Vermont. Every road is scored for scenery from open data. No account, no ads, no tracking, and it is <a href="https://github.com/Jamesk1281/SundayDrive">open source</a>.</p>
+<p>Sunday Drive is a free iPhone app (iOS 17 or later) that plans the scenic way to somewhere, or a loop from where you are, anywhere in the 48 contiguous states and Washington, DC. Every road is scored for scenery from open data, on one scale. No account, no ads, no tracking, and it is <a href="https://github.com/Jamesk1281/SundayDrive">open source</a>.</p>
 
 <div class="contact">
 <h2>Contact</h2>
@@ -77,8 +77,14 @@
 
 <h2>Common questions</h2>
 
-<h3>It says it only works in New England</h3>
-<p>Sunday Drive covers the six New England states only, and if you open it anywhere else it says so. <strong>Directions</strong> and <strong>Loop</strong> both work from anywhere when you type a New England town as the start, so you can plan a trip before you go. Only <strong>My Location</strong> needs you to be in New England.</p>
+<h3>It says it won't work from here</h3>
+<p>Sunday Drive covers the 48 contiguous states and Washington, DC, and if you open it anywhere else it says so. <strong>Directions</strong> and <strong>Loop</strong> both work from anywhere when you type a town in those states as the start, so you can plan a trip before you go. Only <strong>My Location</strong> needs you to be inside them.</p>
+
+<h3>It won't plan a long trip</h3>
+<p>Directions go up to 310 miles in a straight line. For a longer trip, pick a stop along the way and plan it in two parts. Loops have their own limit, which is lower in a dense city than in open country, and the loop slider shows it.</p>
+
+<h3>Why do some places have so much more beautiful road?</h3>
+<p>Every road is scored on one scale, so a road counts as beautiful at the same score in every state. Some places have far more of it than others. The route card shows how many miles of beautiful road each route has, so you can see what the scenic way buys before you take it.</p>
 
 <h3>It asks for Precise Location</h3>
 <p>Turn-by-turn guidance needs your precise position. With Precise Location off, starting a drive asks to use it for that drive. If you decline, the app cannot navigate, and it says so. You can turn Precise Location on in Settings, under Sunday Drive → Location.</p>
@@ -99,16 +105,35 @@
 </ul>
 
 <h2>Data credits</h2>
+<!--
+  The same sources, names and credit lines as the app's Sources screen,
+  DataSources.all in ios/Sources/AboutView.swift, word for word.
+  tests/test_support_page.py checks every line against that file.
+-->
 <ul class="credits">
-  <li>Map data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
-    <span class="licence">Open Database License (ODbL) 1.0</span></li>
+  <li><a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+    <span>© OpenStreetMap contributors</span>
+    <span>Extracts processed by Geofabrik GmbH</span>
+    <span class="licence">Open Database License (ODbL) 1.0</span>
+    <span>Routes are planned on a modified copy of this data. How it is modified is public, in the app’s source code: <a href="https://github.com/Jamesk1281/SundayDrive">github.com/Jamesk1281/SundayDrive</a></span></li>
   <li><a href="https://esa-worldcover.org">ESA WorldCover 10 m 2021 v200</a>
     <span>© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium</span>
     <span class="licence">Creative Commons Attribution 4.0 International (CC BY 4.0)</span></li>
-  <li><a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles (AWS Open Data, formerly Mapzen)</a></li>
-  <li>Basemap and place search © Apple Inc. and its data providers, credited on the map itself.</li>
+  <li><a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles (AWS Open Data, formerly Mapzen)</a>
+    <span>United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey.</span>
+    <span>Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration</span>
+    <span>Canada terrain data contains information licensed under the Open Government Licence – Canada;</span>
+    <span>Mexico terrain data source: INEGI, Continental relief, 2016;</span></li>
+  <li><a href="https://doi.org/10.5066/P96WBCHS">Protected Areas Database of the United States (PAD-US) 4.1</a>
+    <span>U.S. Geological Survey (USGS) Gap Analysis Project (GAP), 2024, Protected Areas Database of the United States (PAD-US) 4.1: U.S. Geological Survey data release, https://doi.org/10.5066/P96WBCHS.</span></li>
+  <li><a href="https://data.fs.usda.gov/geodata/edw/datasets.php">USDA Forest Service Motor Vehicle Use Map (MVUM) Roads</a>
+    <span>U.S. Forest Service, MVUM Roads.</span></li>
+  <li><a href="https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Roads/MapServer">National Park Service Public Roads</a>
+    <span>National Park Service, National Park Service Public Roads.</span></li>
+  <li><a href="https://www.apple.com/legal/internet-services/maps/">Apple Maps</a>
+    <span>Basemap and place search © Apple Inc. and its data providers, credited on the map itself.</span></li>
 </ul>
-<p>The full credits for OpenStreetMap and Terrain Tiles are on the app's <strong>Sources</strong> screen.</p>
+<p>The same credits are on the app's <strong>Sources</strong> screen.</p>
 
 <!--
   App Store badge: added once the app has an App Store ID. Download the

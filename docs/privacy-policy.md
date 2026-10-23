@@ -23,6 +23,10 @@
   `StoreKit` import that asks for the system's rating sheet.
 - TestFlight builds record drives again, 2026-10-08 (§3), by owner decision:
   disclosed here and by the recording dot, with no consent step.
+- The national build, 2026-10-23 (`docs/national-copy.md` §5): the area
+  check covers the 48 contiguous states and DC instead of New England, and
+  the launch camera is a fourth use of location (§2, item 1), on the phone,
+  nothing sent. The purpose string already named it.
 
 **It goes out without a lawyer, by owner decision** (`release-plan.md` §8,
 decision 3, 2026-09-19). What makes a privacy policy dangerous is asserting
@@ -95,28 +99,39 @@ searched for.
 
 ## 2. Location
 
-**The app uses your location for three things**, and the purpose string names
-all three, because App Review Guideline 5.1.1(ii) asks it to describe the use
+**The app uses your location for four things**, and the purpose string names
+all four, because App Review Guideline 5.1.1(ii) asks it to describe the use
 "clearly and completely":
 
-1. **Planning a drive or a loop from where you are.** My Location in Directions
+1. **Showing the map where you are.** When the launch check (item 3) finds the
+   phone inside the covered area, the home map moves from the whole country
+   to a box around the fix (`RouteModel.launchFix`, `RouteModel.swift:357`;
+   `PlanningView.swift:128`; `MKCoordinateRegion.home(around:)`,
+   `Region.swift:57`). It is the same rough fix the check already took, it
+   stays on the phone, and the app sends it nowhere. It does not move if the
+   user has already set a start. Apple's map then loads the area on screen,
+   as it does for anywhere the user scrolls (§2.1(b)). This is a use the
+   national build added, because a camera on the whole country ranks search
+   results from Kansas (`docs/app-goes-national.md` §2.4).
+2. **Planning a drive or a loop from where you are.** My Location in Directions
    (`RouteModel.useMyLocation`) and the Loop row on Home
    (`LoopModel.useMyLocation`, called from `HomeView`) each take one fix
    through `LocationManager.currentLocation()`. This is usually where the
    permission prompt first appears: while planning, not driving.
-2. **Checking that you are in New England**, so that the app can warn someone
-   outside it that it cannot plan from where they are. **The check runs on the
-   phone and sends the location nowhere.** It tests the fix against an outline
-   of the six states built into the app, with no network call and no
-   geocoding (`NewEngland.contains`, `NewEngland.swift:29`, over the outline
-   in `NewEnglandBoundary.swift`, which `tools/build_new_england_boundary.py`
+3. **Checking that you are in the area the app covers**, the 48 contiguous
+   states and Washington, DC, so that the app can warn someone outside it that
+   it cannot plan from where they are. **The check runs on the phone and sends
+   the location nowhere.** It tests the fix against an outline of the covered
+   area built into the app, with no network call and no geocoding
+   (`Coverage.contains`, `Coverage.swift:34`, over the outline in
+   `CoverageBoundary.swift`, which `ios/scripts/build_coverage_boundary.py`
    generates from public-domain Census boundaries). The fix comes from
-   `LocationManager.roughLocation()` (`LocationManager.swift:375`), which never
+   `LocationManager.roughLocation()` (`LocationManager.swift:382`), which never
    asks for precise location. It is also why the prompt can appear at first
    launch: the app asks once, after the "Before you drive" notice
-   (`ContentView.swift:72`, then `RouteModel.checkWhereabouts`,
-   `RouteModel.swift:266`).
-3. **Turn-by-turn guidance while you drive** (`LocationManager.start()`,
+   (`ContentView.swift:76`, then `RouteModel.checkWhereabouts`,
+   `RouteModel.swift:346`).
+4. **Turn-by-turn guidance while you drive** (`LocationManager.start()`,
    `LocationManager.swift:207-226`), in the background too (below).
 
 It requests *when in use* authorization only (`LocationManager.swift:209`,
@@ -156,8 +171,8 @@ is also the most precise location iOS will give an app.
 
 ### 2.1 Where location goes
 
-Two destinations, and no others. The New England check (§2, item 2) adds none,
-because it runs on the phone. *(This said "three" until 2026-10-04: the third
+Two destinations, and no others. The launch camera and the area check (§2,
+items 1 and 3) add none, because they run on the phone. *(This said "three" until 2026-10-04: the third
 was a recorded drive's file on the phone, and the page dropped it when
 recording was switched off, but this line did not.)*
 
@@ -426,9 +441,9 @@ Re-check it if any of these change, because each one is load-bearing above:
   against the defaults.
 - **`requestAlwaysAuthorization`, or dropping the background location
   indicator.** §2 describes when-in-use with a visible blue bar.
-- **Any network call in the New England check**, reverse geocoding included.
-  §2, §2.1 and the published page all say the check sends the location
-  nowhere.
+- **Any network call in the area check or the launch camera**, reverse
+  geocoding included. §2, §2.1 and the published page all say they send the
+  location nowhere.
 - **A new use of location.** The purpose string has to name it (§2), and the
   page quotes the string.
 - **Anything new stored by `RatingPrompt`.** §1 and the published page say

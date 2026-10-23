@@ -146,7 +146,7 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertEqual(c.extraMinutes, 1)
         XCTAssertFalse(c.isSameDrive, "it costs a minute, so it is not the same drive")
         XCTAssertFalse(c.summary.contains("raises"), c.summary)
-        XCTAssertTrue(c.summary.contains("leaves scenery at **5.3**"), c.summary)
+        XCTAssertTrue(c.summary.contains("for no more scenery: **5.3** either way"), c.summary)
         XCTAssertTrue(c.summary.contains("**1 min**"), c.summary)
     }
 
@@ -248,7 +248,7 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertEqual(c.extraMinutes, 1)
         XCTAssertFalse(c.beautifulMilesMove, "4.2 and 4.4 mi both print 4")
         XCTAssertEqual(c.summary,
-                       "Scenic adds **1 min** and leaves beautiful road at **4 mi**")
+                       "Scenic adds **1 min** for no more beautiful road: **4 mi** either way")
     }
 
     func test_a_different_route_that_ties_on_miles_and_costs_nothing() {
@@ -352,6 +352,14 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertEqual(c.headlineGain, 8)
     }
 
+    /// The bars overlap, so they are drawn as shares of the route and the
+    /// caption says a mile can count twice: on Denver → Estes Park their
+    /// miles summed to 108 on a 64 mi route (docs/national-copy.md).
+    func test_the_breakdown_says_its_rows_overlap() {
+        let caption = SceneryBreakdown.caption(routeKm: 102.9)
+        XCTAssertEqual(caption, "Out of 64 mi. A mile beside water and forest counts in both.")
+    }
+
     func test_minutes_that_buy_no_more_beautiful_road_never_read_plus_zero() {
         // The cards tie at 4 mi, so "+1 min · +0 mi" would advertise a gain of
         // nothing. The sentence says the minute leaves the count where it was.
@@ -362,7 +370,7 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertEqual(c.extraMinutes, 1)
         XCTAssertNil(c.headlineGain)
         XCTAssertEqual(String(c.attributedSummary.characters),
-                       "Scenic adds 1 min and leaves beautiful road at 4 mi")
+                       "Scenic adds 1 min for no more beautiful road: 4 mi either way")
     }
 
     func test_a_cut_is_neither_a_negative_gain_nor_clamped_to_zero() {

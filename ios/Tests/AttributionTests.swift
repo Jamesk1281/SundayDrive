@@ -62,6 +62,17 @@ final class AttributionTests: XCTestCase {
         XCTAssertTrue(licence.contains("ODbL"), "Got: \(licence)")
     }
 
+    /// ODbL §4.6: a Produced Work from a Derivative Database owes recipients
+    /// the database or "the method of making the alterations", and the public
+    /// repository is that method (docs/national-copy.md, "ODbL §4.6").
+    func test_the_osm_entry_offers_the_method_of_making_the_alterations() {
+        let osm = DataSources.openStreetMap
+        XCTAssertEqual(osm.notice, DataSources.odblMethod)
+        XCTAssertTrue(DataSources.odblMethod.contains("modified"), DataSources.odblMethod)
+        XCTAssertEqual(osm.noticeURL?.absoluteString, "https://github.com/Jamesk1281/SundayDrive")
+        XCTAssertEqual(AboutView.linkLabel(osm.noticeURL!), "github.com/Jamesk1281/SundayDrive")
+    }
+
     /// ESA's prescribed CC-BY line for v200/2021 — the version
     /// `pipeline/landcover.py` fetches. The consortium words this per version,
     /// so the year appearing twice is not a typo to be deduplicated.
