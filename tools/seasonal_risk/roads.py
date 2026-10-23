@@ -54,7 +54,10 @@ ROADS = {
                            ends=((48.5290, -121.4410), (48.4779, -120.1862)),  # Marblemount, Winthrop
                            ),
     "crater_lake": dict(label="Crater Lake Rim Drive", ten=True,
-                        match=lambda t: t.tag.str.contains("CRLA"),
+                        # The park's window, and since docs/seasonal-road-policy.md
+                        # fix 2 the two rims' own table rows.
+                        match=lambda t: (t.tag.str.contains("CRLA")
+                                         | t.tag.str.startswith("table crater_lake")),
                         bbox=(-122.3, 42.8, -121.95, 43.1),
                         ends=((42.8966, -122.1336), (43.0870, -122.1150))),     # park HQ, north entrance
     # --- Q2's wider sample
