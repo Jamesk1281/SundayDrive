@@ -336,11 +336,19 @@
    ],
    "source": "https://mt-washington.com/hours-dates-of-operation",
    "accessed": "2026-10-18",
-   "basis": "2026 drive-yourself calendar: weekends only Apr 25 - May 22, daily May 23 - Nov 1, and Oct 19 - Nov 1 marked late season to a lower cutoff. Read at the longer ends: closed Oct 19 to May 22, since a weekday or a summit drive is closed in both. OSM's seasonal=no_snow keeps it closed Nov 1 - Apr 30 besides",
+   "basis": "2026 drive-yourself calendar: weekends only Apr 25 - May 22, daily May 23 - Nov 1, and Oct 19 - Nov 1 marked late season to a lower cutoff. Read at the longer ends: closed Oct 19 to May 22, since a weekday or a summit drive is closed in both. OSM's seasonal=no_snow keeps it closed Nov 1 - Apr 30 besides. The second and third waypoints sit one on each half of the one-way pair near the base, so the path covers both directions (docs/seasonal-road-policy.md, \"The default gives way\")",
    "waypoints": [
     [
      -71.2259,
      44.28925
+    ],
+    [
+     -71.22842,
+     44.28946
+    ],
+    [
+     -71.22842,
+     44.28955
     ],
     [
      -71.26095,

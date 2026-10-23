@@ -858,6 +858,61 @@ def join_gates(ways, gates, edges: gpd.GeoDataFrame):
     return _seasonal_table(rows), left
 
 
+# The prefixes `tag` carries on the agencies' rows (winter_closures.federal_rows):
+# a table window, an unknown season, and the agencies' own dates.
+_TABLE_TAGS = ("table ", "nps park")
+_UNKNOWN_TAGS = ("nps seasonal, no dates", "mvum seasonal, no readable")
+_AGENCY_TAGS = ("mvum", "nps description")
+_DATED_IN_TAG = re.compile(rf"@\s*\(?[^)]*\b{_MONTH}", re.IGNORECASE)
+
+
+def row_source(tag: str, window) -> str:
+    """Which source wrote a seasonal row, by its `tag` and window: "table",
+    "unknown", "agency_dated", or OSM's "osm_default" (the undated winter,
+    WINTER) or "osm_dated" (a conditional with its own dates). The same
+    classes as tools/seasonal_risk/windows.py."""
+    tag = tag or ""
+    if tag.startswith(_TABLE_TAGS):
+        return "table"
+    if tag.startswith(_UNKNOWN_TAGS):
+        return "unknown"
+    if tag.startswith(_AGENCY_TAGS):
+        return "agency_dated"
+    if tuple(int(x) for x in window) == WINTER and not _DATED_IN_TAG.search(tag):
+        return "osm_default"
+    return "osm_dated"
+
+
+def seasonal_rows(*parts) -> pd.DataFrame:
+    """The seasonal table from its parts (way, gate and agency rows), with
+    the undated default giving way to a dated window on its own edge.
+
+    On an edge with any dated window, an OSM-dated conditional, a table row
+    or an agency's own dates, the edge's `osm_default` rows are dropped: the
+    specific beats the general, as a table road replaces its park's window on
+    its own edges (docs/winter-closures-national.md, decision 4). Before
+    WINTER's spring margin the default ended Apr 30, before every dated
+    window, so it never decided; with the margin it would, and the dated and
+    table windows take no margin (docs/seasonal-road-policy.md, "The default
+    gives way"). Where an edge has only guesses, the default and
+    UNKNOWN_SEASON, every row stands. Gates between two edges ("through")
+    are their own closure and neither drop nor are dropped.
+
+    Returns (table, the rows that gave way).
+    """
+    table = _seasonal_table(pd.concat([p for p in parts if len(p)], ignore_index=True)
+                            if any(len(p) for p in parts) else parts[0])
+    if not len(table):
+        return table, table
+    source = np.array([row_source(t, w) for t, w in
+                       zip(table["tag"], table[list(CLOSURE_WINDOW)].to_numpy())])
+    edge_rule = (table["rule"] == "edge").to_numpy()
+    dated = np.isin(source, ("osm_dated", "table", "agency_dated")) & edge_rule
+    drop = ((source == "osm_default") & edge_rule
+            & table["edge"].isin(table.loc[dated, "edge"]).to_numpy())
+    return table[~drop].reset_index(drop=True), table[drop].reset_index(drop=True)
+
+
 def _seasonal_table(rows) -> pd.DataFrame:
     """Seasonal rows as the table, sorted, with each row once."""
     table = rows if isinstance(rows, pd.DataFrame) else pd.DataFrame(
@@ -1152,8 +1207,11 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
 
     by_way = join(closed, edges)
     by_gate, gates_left = join_gates(found.ways, found.gates, edges)
-    table = _seasonal_table(pd.concat([by_way, by_gate, by_agency], ignore_index=True))
+    table, dropped = seasonal_rows(by_way, by_gate, by_agency)
     table.to_parquet(out / "seasonal_closures.parquet", index=False)
+    print(f"undated winter giving way to a dated window on its edge: {len(dropped):,} rows, "
+          f"{dropped['edge'].nunique():,} edges, "
+          f"{dropped.drop_duplicates('edge')['length_m'].sum() / 1000:.1f} km")
 
     unique = by_way.drop_duplicates("edge")
     km = unique["length_m"].sum() / 1000.0
