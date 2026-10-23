@@ -104,6 +104,30 @@ def enters(result, closed: set) -> bool:
     return bool(set(int(x) for x in result.edges.index) & closed)
 
 
+def entered(h, result, closed: set, avoid) -> dict:
+    """Why a reroute sent with the avoid set still enters the closed road:
+    the closed edges it drives as "row" (u -> v) or "-row" (v -> u), which of
+    them the avoid set named in that direction, which in the other, and
+    which not at all; and how far into the route the first one is."""
+    if result is None:
+        return {}
+    tokens = set(avoid[0].split(",")) if avoid else set()
+    hit, at = [], None
+    run = 0.0
+    for k, (e, length) in enumerate(zip(result.edges.index, result.edges["length_m"])):
+        e = int(e)
+        if e in closed:
+            fwd = h.ROUTER._driven_forward(e, result.edge_coords[k])
+            hit.append(("" if fwd else "-") + str(e))
+            at = run if at is None else at
+        run += float(length)
+    flip = lambda t: t[1:] if t.startswith("-") else "-" + t
+    return {"entered": " ".join(hit), "entered_first_m": at,
+            "entered_as_avoided": sum(t in tokens for t in hit),
+            "entered_reversed": sum(t not in tokens and flip(t) in tokens for t in hit),
+            "entered_unlisted": sum(t not in tokens and flip(t) not in tokens for t in hit)}
+
+
 def backtrack_m(result, approach_edges: list) -> float:
     """Metres the route drives back over the approach before leaving it."""
     seen = set(approach_edges)
@@ -221,7 +245,8 @@ def run_case(h, W, case, day, rows_out, replay=True):
                              "sends_back": r5 is not None and enters(r5, closed),
                              "minutes": r5.minutes if r5 is not None else None,
                              "km": r5.km if r5 is not None else None,
-                             "marked": avoid is not None})
+                             "marked": avoid is not None,
+                             **entered(h, r5, closed, avoid)})
         if at_gate is None:
             at_gate = back_in
         if at_junction is None and along >= row["backtrack_km"]:
