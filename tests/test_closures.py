@@ -850,9 +850,16 @@ class TestTheTable:
     def test_every_closure_is_a_winter_closure(self, table):
         """What a parser regression would break first: Baxter Boulevard's
         Sunday rule read as May-Sep, or a 2022 construction date read as
-        every summer, would put a window over July."""
-        windows = table[["start_month", "start_day", "end_month",
-                         "end_day"]].drop_duplicates().to_numpy()
+        every summer, would put a window over July.
+
+        OSM's rows only. The agencies' rows can close outside winter, and
+        rightly: White Mountain NF's MVUM road 65 is open to cars
+        `06/15-09/04,09/18-11/30`, so its Sep 5-17 gap, with the agency's 7
+        days each side, closes Aug 29 - Sep 24 (docs/seasonal-road-policy.md).
+        That is agency data, not a parser reading a summer into OSM's tags."""
+        osm = table[~table["tag"].fillna("").str.startswith(("mvum ", "nps "))]
+        windows = osm[["start_month", "start_day", "end_month",
+                       "end_day"]].drop_duplicates().to_numpy()
         for w in windows:
             assert _closed_on(w, JANUARY), w
             assert not _closed_on(w, JULY), w
@@ -863,11 +870,13 @@ class TestTheTable:
             return set(map(tuple, rows[["start_month", "start_day",
                                         "end_month", "end_day"]].to_numpy()))
         assert (10, 15, 5, 15) in windows("Lincoln Gap Road")
-        # VT-108's own dates, and the Auto Road's undated winter, before or
-        # after the spring margin: a processed-ne built before it still
-        # holds Apr 30 (docs/seasonal-road-policy.md).
         assert WINTER_TAGGED in windows("Vermont Route 108 South")
-        assert windows("Mount Washington Auto Road") & {WINTER, WINTER_TAGGED}
+        # The Auto Road's table window, and nothing else: its
+        # `seasonal=no_snow` gives way to the dated window on every edge
+        # (docs/seasonal-road-policy.md, "The default gives way").
+        auto_road = windows("Mount Washington Auto Road")
+        assert auto_road == {(10, 19, 5, 22)}
+        assert not auto_road & {WINTER, WINTER_TAGGED}
         assert (11, 1, 5, 31) in windows("Hurricane Mountain Road")
         # Evans Notch carries a route number and no name.
         assert (table["ref"] == "ME 113").any()
