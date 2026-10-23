@@ -52,29 +52,36 @@ SUBTITLE = "The scenic route, on purpose"
 PAPER = "#FFF8EC"
 ROUTE = "#F2A25A"
 
-# (raw capture, headline with the accent in *stars*, the line under it, and
-# optionally a photo behind it: (file in photos/, CSS object-position)).
-# The photos are the owner's own, from drives on 2026-10-06, re-encoded with
-# no metadata at all, because a phone photo's EXIF carries where it was taken.
-# Claims follow docs/app-store-listing.md: the trade is against the app's own
-# fastest route, "best-scoring" not "most beautiful", and New England is said
-# in the first frame because only the first three show in search. The accent
-# always takes the second line, so the three headers line up side by side.
+# (raw capture, headline with the accent in *stars*, the line under it, the
+# place the capture shows, and optionally a photo behind it: (file in photos/,
+# CSS object-position)). The photos are the owner's own, from drives on
+# 2026-10-06, re-encoded with no metadata at all, because a phone photo's EXIF
+# carries where it was taken. They are New England roads behind the
+# headline, decoration and not a claim: the place line under each phone says
+# where the capture is. Claims follow docs/app-store-listing.md: the trade is
+# against the app's own fastest route, nothing is "best", and the coverage is
+# said in the first frame because only the first three show in search. The
+# accent always takes the second line, so the three headers line up side by
+# side. The captures and their figures are in docs/national-copy.md §6.
 SHOTS = [
     ("1-route-comparison.jpg",
      "Trade minutes for *the view*",
-     "Every road in New England is scored for scenery. One slider sets what the view is worth to you.",
+     "Every road in the contiguous US, scored for scenery on one scale. One slider sets what the view is worth.",
+     "Denver to Idaho Springs, Colorado",
      ("french-king-gorge.jpg", "50% 50%")),  # the Connecticut River from Route 2
     ("2-loop.jpg",
      "Nowhere to be? *Take a loop.*",
-     "Pick how long you have. It plans a round trip over the best-scoring roads nearby, and brings you home."),
+     "Pick how long you have. It plans a round trip over roads it scores well, and brings you home.",
+     "A loop from Moab, Utah"),
     ("3-driving.jpg",
      "Every turn, *out loud*",
      "Spoken directions, the next turn always on screen, and a new route if you miss one.",
+     "Highway 1, Big Sur, California",
      ("gravel-road.jpg", "50% 50%")),  # cropped to the road: no dashboard, no roof edge
-    ("4-home.jpg",
-     "Somewhere, or *nowhere at all*",
-     "Search for a destination, or loop from where you are. Free, with no account and no ads."),
+    ("4-tune.jpg",
+     "More of what *you like*",
+     "Drag toward what you'd rather drive past. Routes update in the background as you drag.",
+     "Asheville to Blowing Rock, North Carolina"),
 ]
 
 
@@ -108,7 +115,7 @@ def phone_html(src, screen_w, left, top, style=""):
             f'<img src="{src.as_uri()}" style="height:{screen_h}px;border-radius:{radius}px"></div>')
 
 
-def screenshot_page(raw, headline, sub, photo=None):
+def screenshot_page(raw, headline, sub, place, photo=None):
     # The whole phone fits under the header, 110 px clear of the foot. With a
     # photo, it fills the page and an ink wash behind the header keeps the
     # type readable against sky.
@@ -131,12 +138,15 @@ body{{font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;color:{hea
 h1{{margin:0;font-size:128px;line-height:1.02;font-weight:800;letter-spacing:-0.025em}}
 h1 em{{font-style:normal;color:{accent};display:block}}
 p{{margin:34px 0 0;font-size:50px;line-height:1.3;font-weight:500;color:{sub_color};letter-spacing:-0.005em}}
+.place{{position:absolute;left:0;right:0;bottom:0;height:{foot}px;display:flex;align-items:center;justify-content:center;
+  font-size:36px;font-weight:600;color:{sub_color};z-index:2;{"text-shadow:0 2px 12px rgba(20,14,10,.6)" if photo else ""}}}
 {phone_css()}
 .phone{{z-index:1}}
 </style></head><body>
 {backdrop}
 <div class="head"><h1>{headline_html(headline)}</h1><p>{html.escape(sub)}</p></div>
 {phone_html(HERE / raw, screen_w, left, top)}
+<div class="place">{html.escape(place)}</div>
 </body></html>"""
 
 
@@ -179,7 +189,7 @@ p b{{color:{INK};font-weight:700}}
 # pricing ("Free"), URLs and other platforms, and the store already shows the
 # icon, name and subtitle beside them, so these lead with the headline.
 STORE_COPY = (f'<h1>Trade minutes for <em>the view</em></h1>'
-              f'<p>Every road in New England, scored for scenery.</p>')
+              f'<p>Every road in the contiguous US, scored for scenery.</p>')
 
 # (file, width, height, copy, front phone, side phones, phones' centre x,
 #  text left, text width, type scale). Focal content stays inside the middle
@@ -189,7 +199,7 @@ PROMOS = [
     # Social and landing page; not an App Store asset, so it may say "Free".
     ("header-banner.jpg", 2400, 1200,
      f'<img src="{ICON.as_uri()}"><h1>{NAME}</h1><h2>{SUBTITLE}</h2>'
-     f'<p>Every road in New England, scored for scenery.<br><b>Free on iPhone.</b> No account, no ads.</p>',
+     f'<p>Every road in the contiguous US, scored for scenery.<br><b>Free on iPhone.</b> No account, no ads.</p>',
      500, 430, 1750, 150, 900, 1.0),
     # App Store Connect, Header: 21:9 at 3840 x 1646.
     ("app-store-header-3840x1646.png", 3840, 1646, STORE_COPY,
@@ -289,9 +299,9 @@ def _chrome(profile, src, out_png, width, height, scale):
 def main():
     OUT.mkdir(exist_ok=True)
     finished = []
-    for raw, headline, sub, *photo in SHOTS:
+    for raw, headline, sub, place, *photo in SHOTS:
         png = OUT / (pathlib.Path(raw).stem + ".png")
-        render(screenshot_page(raw, headline, sub, *photo), png, W, H)
+        render(screenshot_page(raw, headline, sub, place, *photo), png, W, H)
         jpg = png.with_suffix(".jpg")
         subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "92",
                         str(png), "--out", str(jpg)], check=True, capture_output=True)
