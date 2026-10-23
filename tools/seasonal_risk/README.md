@@ -37,6 +37,16 @@ $PY q4_policies.py --default-curve pooled
 $PY q4_choose.py && $PY q4_choose.py _pooled
 ```
 
+`q3_turnaround.py --real-p5` also asks each replayed reroute with the
+`avoid_edges` the app would send, the built P5. Each `P5 built` row says which
+closed edges it entered and whether the avoid set named them
+(docs/seasonal-road-policy.md).
+
+`built/` is the whole study re-run on the rebuilt pair of
+docs/seasonal-road-policy.md (`SUNDAYDRIVE_DATA=data/processed-us-next
+SUNDAYDRIVE_PACK=data/pack-us-next`, run from a copy of this directory so
+the verdict's CSVs here stay as they were). In it, Q4's P0 is the build.
+
 Run the national steps one process at a time, and check `memory_pressure`
 first: the Mac is shared with sessions holding national data. Never measure
 on the real date. Every run names its own.

@@ -130,7 +130,10 @@ MVUM's dated seasonal roads, weighted by miles; 86.6% of those miles fall
 wholly inside it.
 
 **The generic winter is not widened.** Nov 1 – Apr 30 still applies to every
-OSM tag, and only a sourced road, park or MVUM date adds days to it. The
+OSM tag, and only a sourced road, park or MVUM date adds days to it.
+(Superseded by docs/seasonal-road-policy.md: an undated tag now closes to
+Jun 14, unknown seasons and agency dates 7 days longer at each end, and the
+undated winter gives way to a dated winter on its own edge.) The
 Kancamagus has no row before or after.
 
 ## The window table
