@@ -249,8 +249,11 @@ struct RouteComparison {
             // Past `isSameDrive` this is either time spent for no more good
             // road, or — when the mean moved but the whole miles did not — a
             // genuinely different route that happens to tie on the count.
+            // "No more" leads, because "adds 9 min and leaves beautiful road
+            // at 11 mi" read as a gain on Denver → Estes Park
+            // (docs/national-copy.md, "The zero-gain headline").
             return extraMinutes > 0
-                ? "Scenic adds **\(extraMinutes) min** and leaves beautiful road at \(to)"
+                ? "Scenic adds **\(extraMinutes) min** for no more beautiful road: \(to) either way"
                 : "A different route with the same \(to) of beautiful road, at no extra time"
         }
         // "turns A into B" reads in both directions, and the fall gets a word
@@ -271,8 +274,8 @@ struct RouteComparison {
         let scores = "**\(printedFastestScore)** → **\(printedScenicScore)**"
         // Past `isSameDrive`, a score that has not moved implies added minutes.
         if !scoreMoves {
-            return "Scenic adds **\(extraMinutes) min** and leaves scenery "
-                + "at **\(printedScenicScore)**"
+            return "Scenic adds **\(extraMinutes) min** for no more scenery: "
+                + "**\(printedScenicScore)** either way"
         }
         let verb = scenicScore > fastestScore ? "raises" : "**lowers**"
         if extraMinutes <= 0 {
@@ -284,6 +287,38 @@ struct RouteComparison {
     /// `summary` with its markdown bold resolved, for display.
     var attributedSummary: AttributedString {
         (try? AttributedString(markdown: summary)) ?? AttributedString(summary)
+    }
+}
+
+/// The *What you'll pass* rows, each drawn as a share of the whole route.
+///
+/// The rows overlap: a road through woods beside a lake counts under forest
+/// and under water. Scaled to the longest row, as they were, the bars read as
+/// slices of one drive, and their miles summed to 108 on a 64 mi route
+/// (docs/national-copy.md, "What you'll pass"). Scaled to the route, a full
+/// bar is the whole drive, and the caption says the rows can add up to more.
+struct SceneryBreakdown: View {
+    let rows: [(label: String, km: Double)]
+    let routeKm: Double
+
+    /// The line under the bars. Whole miles from `wholeMilesFromKm`, the rule
+    /// every other mile figure on these cards follows.
+    static func caption(routeKm: Double) -> String {
+        "Out of \(routeKm.wholeMilesFromKm) mi. A mile beside water and forest counts in both."
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            ForEach(rows, id: \.label) { row in
+                SceneryBar(key: row.label, km: row.km, maxKm: max(routeKm, row.km, 1))
+            }
+            if !rows.isEmpty {
+                Text(Self.caption(routeKm: routeKm))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }
 

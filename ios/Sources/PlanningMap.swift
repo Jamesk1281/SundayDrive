@@ -19,13 +19,20 @@ struct PlanningMap: View {
     @Bindable var model: RouteModel
     let stage: PlanStage
     @Binding var camera: MapCameraPosition
+    /// How much of the card's top runs under the status bar and the Dynamic
+    /// Island, read by `PlanningView` outside its `ignoresSafeArea`. In here
+    /// the map sees a top inset of 0, which is why `.mapControls` drew the
+    /// locate button over the battery and Wi-Fi icons.
+    var topInset: CGFloat = 0
 
     /// The camera as `RouteArrows` needs it; nil until it first settles.
     @State private var arrowFrame: RouteArrows.Frame?
+    /// Ties the controls drawn in the overlay below to this map.
+    @Namespace private var mapScope
 
     var body: some View {
         MapReader { proxy in
-            Map(position: $camera) {
+            Map(position: $camera, scope: mapScope) {
                 switch stage {
                 case .home:
                     // Nothing drawn: the home screen's map answers "where am I",
@@ -74,7 +81,10 @@ struct PlanningMap: View {
                 }
                 UserAnnotation()
             }
-            .mapControls { MapUserLocationButton() }
+            // No controls inside the map: it would place them against a top
+            // inset of 0, under the status bar. They are drawn in the overlay
+            // below instead (docs/national-copy.md, "The locate button").
+            .mapControls {}
             // Rank search results around whatever the user is looking at. Apple's
             // search sorts by distance from this region's center, so without it
             // every search is answered from the middle of the state.
@@ -84,6 +94,22 @@ struct PlanningMap: View {
                 arrowFrame = RouteArrows.Frame(proxy: proxy, context: context)
             }
         }
+        // Top-right, where MapKit puts them, but below the status bar. Apple's
+        // logo and Legal link are bottom-left, so nothing here can reach them.
+        .overlay(alignment: .topTrailing) {
+            VStack(spacing: 8) {
+                // Outside `.mapControls` the button is a bare glyph, so it
+                // gets the platter MapKit would have drawn under it.
+                MapUserLocationButton(scope: mapScope)
+                    .frame(width: 44, height: 44)
+                    .background(.regularMaterial,
+                                in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                MapCompass(scope: mapScope)
+            }
+            .padding(.top, topInset + 8)
+            .padding(.trailing, 8)
+        }
+        .mapScope(mapScope)
     }
 
     /// A start pin, as a dot rather than a balloon. A balloon's tip points at

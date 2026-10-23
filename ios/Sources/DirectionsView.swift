@@ -147,19 +147,14 @@ struct DirectionsView: View {
     // MARK: - What you'll pass
 
     private func breakdown(_ response: RouteResponse) -> some View {
-        let rows = response.scenic.properties.sceneryBreakdown
-        let maxKm = max(1, rows.map(\.km).max() ?? 1)
+        let props = response.scenic.properties
         return VStack(alignment: .leading, spacing: 9) {
             HStack(spacing: 10) {
                 Text("What you’ll pass").sectionLabel()
                 Spacer(minLength: 6)
                 TasteChip(weights: model.weights) { showingTaste = true }
             }
-            VStack(spacing: 7) {
-                ForEach(rows, id: \.label) { row in
-                    SceneryBar(key: row.label, km: row.km, maxKm: maxKm)
-                }
-            }
+            SceneryBreakdown(rows: props.sceneryBreakdown, routeKm: props.km)
         }
     }
 }
