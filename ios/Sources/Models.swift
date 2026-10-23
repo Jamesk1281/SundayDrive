@@ -260,6 +260,14 @@ struct RouteProps: Decodable {
     /// same reason as `beautiful_km`: a backend that predates it leaves it
     /// off, and nil is then "not a U-turn", which is today's behaviour.
     let turnaround_m: Double?
+    /// The stretches of road this route drives that close for part of the
+    /// year, in the order driven. `NavigationModel` keeps the ones the driver
+    /// turns away from and sends them with every later reroute, so the
+    /// replacement does not send them back to a gate they found shut
+    /// (docs/seasonal-road-policy.md). Optional for the same reason as
+    /// `beautiful_km`: nil from a backend that predates it, which is today's
+    /// behaviour.
+    var seasonal: [SeasonalStretch]? = nil
     /// The switch points of a spliced route — one of the menu's in-between
     /// options, or its reroute — and nil on every other route. What lets
     /// `NavigationModel` reroute the plan by legs instead of throwing it away
@@ -280,5 +288,29 @@ struct RouteProps: Decodable {
             guard let km = scenery_km[key], km.wholeMilesFromKm > 0 else { return nil }
             return (key, km)
         }
+    }
+}
+
+/// One run of consecutive route edges that close for part of the year, as the
+/// server lists it: the edge rows, whether each is driven u -> v, where along
+/// the route the run begins and ends, and the fingerprint the rows belong to.
+/// Rows are only meaningful to the graph that wrote them, so they travel with
+/// `pack`, and a server on another graph ignores them.
+struct SeasonalStretch: Decodable, Equatable {
+    let edges: [Int]
+    let forward: [Bool]
+    let from_m: Double
+    let to_m: Double
+    let pack: String
+
+    /// The `avoid_edges` tokens that close this stretch the way the route
+    /// drove it: the row, with a leading minus when it was driven v -> u.
+    var tokens: [String] {
+        zip(edges, forward).map { edge, forward in forward ? "\(edge)" : "-\(edge)" }
+    }
+
+    /// The same road, whichever route listed it and wherever along it.
+    func sameRoad(as other: SeasonalStretch) -> Bool {
+        pack == other.pack && edges == other.edges && forward == other.forward
     }
 }

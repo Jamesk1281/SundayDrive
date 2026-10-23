@@ -30,6 +30,10 @@ exception is precedence among the table's own windows: a road's window
 replaces its park's on the edges they share, because it is the more specific
 of two sourced statements (`federal_rows`).
 
+**The guesses get a margin.** UNKNOWN_SEASON and the agencies' own dates close
+7 days longer at each end as their rows are written (UNKNOWN_MARGIN_DAYS,
+AGENCY_MARGIN_DAYS); the table's windows take none (docs/seasonal-road-policy.md).
+
 docs/winter-closures-national.md has the decisions, the sources and what each
 one closes.
 """
@@ -74,6 +78,17 @@ SNAP_M = 150.0
 # roads, weighted by miles (docs/winter-closures-national.md, "Unknown
 # seasons").
 UNKNOWN_SEASON = (10, 1, 6, 30)
+
+# Days each source's windows are widened by, (before its start, after its
+# end), as their rows are written (`federal_rows`). The two that guess or
+# report without a record behind them close 7 days longer at each end:
+# UNKNOWN_SEASON, and the dates MVUM and NPS descriptions give, which no
+# published actual date was found to check (docs/seasonal-road-risk-verdict.md,
+# "Recommended policy"). The table's own windows take none: the longest of ten
+# seasons already stays shut a median 20-30 days after the road opens, and a
+# margin on top would count that bias twice. docs/seasonal-road-policy.md.
+UNKNOWN_MARGIN_DAYS = (7, 7)
+AGENCY_MARGIN_DAYS = (7, 7)
 
 # A whole year, for a road its agency says is closed to cars all year.
 ALL_YEAR = (1, 1, 12, 31)
@@ -433,6 +448,8 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
     if mvum is not None and len(mvum):
         records = mvum.to_dict("records")
         windows, how = zip(*(mvum_windows(r) for r in records))
+        windows = [_with_margin(w, h, "seasonal, no readable dates")
+                   for w, h in zip(windows, how)]
         match = match_lines(edges.geometry, mvum.geometry)
         closed = closed_by_lines(match, windows)
         report["no_car"] = no_car_edges(edges, records, match)
@@ -449,6 +466,9 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
     if nps is not None and len(nps):
         records = nps.to_dict("records")
         windows, how = zip(*(nps_windows(r, table) for r in records))
+        # A park's window is the table's and keeps it as it is.
+        windows = [w if h.startswith("park ") else _with_margin(w, h, "seasonal, no dates")
+                   for w, h in zip(windows, how)]
         closed = closed_by_lines(match_lines(edges.geometry, nps.geometry), windows)
         for edge, by_window in closed.items():
             for window, lines in by_window.items():
@@ -464,8 +484,10 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
 
     # The table's roads, and its parks' open roads, by waypoints.
     report["roads"], report["exceptions"] = {}, {}
+    paths = {}
     for road in table["roads"]:
         on, why = path_edges(edges, road["waypoints"])
+        paths[road["id"]] = on
         report["roads"][road["id"]] = (length[on].sum() / 1000.0, why)
         for edge in on:
             # A table road replaces its park's window on its edges.
@@ -480,6 +502,8 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
                 for w in [w for w, (lvl, _) in found[edge].items() if lvl == 2]:
                     del found[edge][w]
 
+    report["unknown_beside_table"] = unknown_beside(paths, found, u, v, length, names)
+
     rows = []
     for edge, by_window in found.items():
         for window, (_, tag) in by_window.items():
@@ -491,6 +515,40 @@ def federal_rows(edges, mvum=None, nps=None, table=None):
                 "rule": "edge", "node_id": -1, "at_m": np.nan,
             })
     return rows, report
+
+
+def unknown_beside(paths, found, u, v, length, names):
+    """Every UNKNOWN_SEASON row on an edge that meets a table road's path
+    without being on it: where a stray seasonal flag a step off the table's
+    waypoints can close a road the table dates, as one 30 m edge closed the
+    North Cascades Highway to July 1 (docs/seasonal-road-risk-verdict.md,
+    "Defects found", 1). A report: it closes and opens nothing, and its hits
+    are listed in docs/seasonal-road-policy.md for a person to judge.
+
+    Returns dicts of road, edge, name, km and tag.
+    """
+    unknown = {e: tag for e, by_window in found.items()
+               for _, tag in by_window.values()
+               if tag.startswith(("nps seasonal, no dates", "mvum seasonal, no readable"))}
+    out = []
+    for road, on in paths.items():
+        on = set(on)
+        ends = {int(x) for e in on for x in (u[e], v[e])}
+        for e, tag in unknown.items():
+            if e not in on and (int(u[e]) in ends or int(v[e]) in ends):
+                out.append({"road": road, "edge": int(e), "name": names[e],
+                            "km": float(length[e]) / 1000.0, "tag": tag})
+    return out
+
+
+def _with_margin(windows, how, unknown_how):
+    """An agency line's `windows` with its source's margin: UNKNOWN_SEASON's
+    when `how` is `unknown_how`, the agency's own dates' otherwise."""
+    from closures import widen
+    if not windows:
+        return windows
+    before, after = UNKNOWN_MARGIN_DAYS if how == unknown_how else AGENCY_MARGIN_DAYS
+    return widen(windows, before, after)
 
 
 def no_car_edges(edges, records, match):

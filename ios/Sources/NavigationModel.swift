@@ -955,6 +955,7 @@ final class NavigationModel {
         wrongWayDetectedAt = now()
         wrongWayBackAtDetection = wrongWayBackMeters
         trace?.phase("wrongway")
+        noteTurnedAway(at: wrongWayTurnBackAlong ?? travelled)
         // Once per episode, decision D3: on the fix that opens it. The banner
         // holds the words, and the replacement speaks next. The words are
         // decision D9, (a): an instruction, kept for the driver who really has
@@ -973,6 +974,47 @@ final class NavigationModel {
         } else {
             voice?.announceRecovery("Turn around when possible.")
         }
+    }
+
+    // MARK: - Seasonal stretches turned away from
+
+    /// The seasonal stretches the driver has turned away from on this drive,
+    /// newest first. Sent with every reroute from then until arrival, plain,
+    /// keeping ahead, by legs or round a loop, so the replacement does not
+    /// send them back to a road they found shut: 93% of reroutes from a
+    /// closed gate did (docs/seasonal-road-risk-verdict.md, Q3). No button
+    /// and no notice; docs/seasonal-road-policy.md.
+    private(set) var turnedAway: [SeasonalStretch] = []
+
+    /// How far ahead along the route a seasonal stretch may start and still
+    /// count as the one a wrong-way episode turned away from: the 90th
+    /// percentile of the gate approaches in the study (25.2 km,
+    /// tools/seasonal_risk/q3_cases.csv). Generous on purpose: a false
+    /// positive costs only that stretch's scenery for the rest of the trip.
+    static let turnedAwayAheadMeters: Double = 25_000
+
+    /// A wrong-way episode has opened `along` metres along the route: every
+    /// seasonal stretch the car is on, or that starts within
+    /// `turnedAwayAheadMeters` ahead, is one the driver turned away from.
+    private func noteTurnedAway(at along: Double) {
+        for stretch in route.properties.seasonal ?? []
+        where stretch.from_m - Self.turnedAwayAheadMeters <= along && along <= stretch.to_m
+            && !turnedAway.contains(where: { $0.sameRoad(as: stretch) }) {
+            turnedAway.insert(stretch, at: 0)
+            trace?.phase("turned_away")
+        }
+    }
+
+    /// What a reroute closes: the stretches turned away from that belong to
+    /// the newest one's graph, newest first and each edge once. Older ones,
+    /// from a graph the server has since been redeployed off, would be
+    /// ignored there anyway.
+    var seasonalAvoid: RouteService.SeasonalAvoid? {
+        guard let pack = turnedAway.first?.pack else { return nil }
+        var seen = Set<String>()
+        let tokens = turnedAway.filter { $0.pack == pack }
+            .flatMap(\.tokens).filter { seen.insert($0).inserted }
+        return RouteService.SeasonalAvoid(pack: pack, tokens: tokens)
     }
 
     /// The episode has run 30 s or 300 m: the banner gives way to the
@@ -2057,19 +2099,23 @@ final class NavigationModel {
         var reply: RouteResponse?
         var thrown: Error?
         do {
-            if let via {
-                reply = try await fetchLoopResume(origin.coordinate, via, destination,
-                                                  askedPref, weights, askedHeading)
-            } else if let askedLegs {
-                reply = try await fetchLegs(origin.coordinate, destination, weights,
-                                            askedHeading, askedLegs.leave,
-                                            askedLegs.rejoin, askedDeclined)
-            } else if askedDeclined {
-                reply = try await fetchRouteKeepingAhead(origin.coordinate, destination,
-                                                         askedPref, weights, askedHeading)
-            } else {
-                reply = try await fetchRoute(origin.coordinate, destination,
-                                             askedPref, weights, askedHeading)
+            // Whichever seam answers, the stretches turned away from go with it
+            // (`RouteService.avoiding`).
+            reply = try await RouteService.$avoiding.withValue(seasonalAvoid) {
+                if let via {
+                    return try await fetchLoopResume(origin.coordinate, via, destination,
+                                                     askedPref, weights, askedHeading)
+                } else if let askedLegs {
+                    return try await fetchLegs(origin.coordinate, destination, weights,
+                                               askedHeading, askedLegs.leave,
+                                               askedLegs.rejoin, askedDeclined)
+                } else if askedDeclined {
+                    return try await fetchRouteKeepingAhead(origin.coordinate, destination,
+                                                            askedPref, weights, askedHeading)
+                } else {
+                    return try await fetchRoute(origin.coordinate, destination,
+                                                askedPref, weights, askedHeading)
+                }
             }
         } catch {
             thrown = error

@@ -1,0 +1,1421 @@
+case,road,day,shoulder,policy,along_km,status,code,declined_uturn,sends_back,minutes,km,marked,entered,entered_first_m,entered_as_avoided,entered_reversed,entered_unlisted
+beartooth:ab,beartooth,2026-05-28,spring,P5,0.03,200,,False,False,287.7030726214116,332.9519554387761,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P0,0.03,200,,True,True,69.74824695066195,102.66747339282001,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,0.03,200,,False,False,287.66934844244804,332.9218787798885,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,0.563,200,,True,True,70.39617278860578,103.03404635157516,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,0.563,200,,False,False,286.90384099107325,332.38805174141845,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,1.0,200,,True,True,71.02965887299794,103.43759625586803,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,1.0,200,,False,False,286.2155224875749,331.9495719183355,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,2.0,200,,False,True,74.49550491147005,107.30951458874729,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,2.0,200,,False,False,285.1674189121119,330.9468051095906,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,5.0,200,,True,True,75.04314197874939,107.76061325504389,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,5.0,200,,False,False,282.4999423016536,327.94065525108766,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,10.0,200,,False,True,82.56119176445367,115.83141435841664,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,10.0,200,,False,False,277.5284758277743,322.9279195538346,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,20.0,200,,False,True,91.56823744539389,126.14529654929639,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,20.0,200,,False,False,268.79188803056934,312.9241591800147,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,40.0,200,,False,True,111.12184285418164,148.56653107090852,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,40.0,200,,False,False,251.3215048677534,292.8916613420519,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-05-28,spring,P0,80.0,200,,True,True,150.467136681315,183.54715296308643,,,,,,
+beartooth:ab,beartooth,2026-05-28,spring,P5 built,80.0,200,,False,False,207.83191043665724,252.8381196017304,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P5,0.03,200,,False,False,287.7030726214116,332.9519554387761,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P0,0.03,200,,True,True,69.74824695066195,102.66747339282001,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,0.03,200,,False,False,287.66934844244804,332.9218787798885,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,0.563,200,,True,True,70.39617278860578,103.03404635157516,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,0.563,200,,False,False,286.90384099107325,332.38805174141845,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,1.0,200,,True,True,71.02965887299794,103.43759625586803,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,1.0,200,,False,False,286.2155224875749,331.9495719183355,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,2.0,200,,False,True,74.49550491147005,107.30951458874729,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,2.0,200,,False,False,285.1674189121119,330.9468051095906,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,5.0,200,,True,True,75.04314197874939,107.76061325504389,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,5.0,200,,False,False,282.4999423016536,327.94065525108766,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,10.0,200,,False,True,82.56119176445367,115.83141435841664,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,10.0,200,,False,False,277.5284758277743,322.9279195538346,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,20.0,200,,False,True,91.56823744539389,126.14529654929639,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,20.0,200,,False,False,268.79188803056934,312.9241591800147,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,40.0,200,,False,True,111.12184285418164,148.56653107090852,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,40.0,200,,False,False,251.3215048677534,292.8916613420519,True,,,0.0,0.0,0.0
+beartooth:ab,beartooth,2026-10-11,autumn,P0,80.0,200,,True,True,150.467136681315,183.54715296308643,,,,,,
+beartooth:ab,beartooth,2026-10-11,autumn,P5 built,80.0,200,,False,False,207.83191043665724,252.8381196017304,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P5,0.03,200,,False,False,295.6350081396855,346.91882345183717,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P0,0.03,200,,True,True,59.47971098028658,87.66718470172871,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,0.03,200,,False,False,295.61817155473676,346.88879228500673,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,1.0,200,,True,True,59.15795877942565,87.09328007371072,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,1.0,200,,False,False,295.0734564803589,345.91719208677927,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,2.0,200,,True,True,59.836501773178256,88.30358714661281,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,2.0,200,,False,False,294.5113303510305,344.91453604810044,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,5.0,200,,True,True,61.883052730784755,91.953989732523,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,5.0,200,,False,False,292.8258426700943,341.9081566730151,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,10.0,200,,False,True,66.21141414399516,98.81058691471608,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,10.0,200,,False,False,289.7990334653849,336.9064198719896,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,15.841,200,,False,True,73.39622710708123,106.22730080164095,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,15.841,200,,False,False,285.4641779663642,331.06281208571954,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,20.0,200,,True,True,73.29075668626126,106.12877385019162,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,20.0,200,,False,False,281.0062927046898,326.89840427043873,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,40.0,200,,False,True,97.08724423834498,128.66093858083352,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,40.0,200,,False,False,259.6597604578536,306.8582139034583,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-05-28,spring,P0,80.0,200,,False,True,109.52475145372061,105.20615109100375,,,,,,
+beartooth:ba,beartooth,2026-05-28,spring,P5 built,80.0,200,,False,False,230.58151789876496,266.85381686913576,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P5,0.03,200,,False,False,295.6350081396855,346.91882345183717,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P0,0.03,200,,True,True,59.47971098028658,87.66718470172871,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,0.03,200,,False,False,295.61817155473676,346.88879228500673,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,1.0,200,,True,True,59.15795877942565,87.09328007371072,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,1.0,200,,False,False,295.0734564803589,345.91719208677927,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,2.0,200,,True,True,59.836501773178256,88.30358714661281,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,2.0,200,,False,False,294.5113303510305,344.91453604810044,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,5.0,200,,True,True,61.883052730784755,91.953989732523,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,5.0,200,,False,False,292.8258426700943,341.9081566730151,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,10.0,200,,False,True,66.21141414399516,98.81058691471608,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,10.0,200,,False,False,289.7990334653849,336.9064198719896,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,15.841,200,,False,True,73.39622710708123,106.22730080164095,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,15.841,200,,False,False,285.4641779663642,331.06281208571954,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,20.0,200,,True,True,73.29075668626126,106.12877385019162,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,20.0,200,,False,False,281.0062927046898,326.89840427043873,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,40.0,200,,False,True,97.08724423834498,128.66093858083352,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,40.0,200,,False,False,259.6597604578536,306.8582139034583,True,,,0.0,0.0,0.0
+beartooth:ba,beartooth,2026-10-11,autumn,P0,80.0,200,,False,True,109.52475145372061,105.20615109100375,,,,,,
+beartooth:ba,beartooth,2026-10-11,autumn,P5 built,80.0,200,,False,False,230.58151789876496,266.85381686913576,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P5,0.03,200,,False,False,111.57311759125982,153.8770381702609,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P0,0.03,200,,False,True,79.56465280695568,66.09439589591707,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,0.03,200,,False,False,111.53940723597906,153.8469738399222,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,1.0,200,,True,True,78.47631010964635,65.12376553319673,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,1.0,200,,False,False,110.45106453866973,152.8763434772019,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,2.0,200,,False,True,99.67447031919814,86.620148424625,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,2.0,200,,False,False,109.44205472757709,151.8756965046484,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,5.0,200,,False,True,96.69170839011106,83.61671213648397,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,5.0,200,,False,False,106.45929279849,148.87226021650736,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,10.0,200,,False,True,91.71759188632616,78.6081186368743,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,10.0,200,,False,False,101.4851762947051,143.86366671689768,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,15.63,200,,True,True,94.34731533622123,80.24422897078445,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,15.63,200,,False,False,95.53966533942715,138.2276210197309,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,20.0,200,,True,False,91.50739402947707,133.84900466261055,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,20.0,200,,False,False,91.50739402947707,133.84900466261055,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,40.0,200,,False,True,112.41080714458836,111.12791242358985,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,40.0,200,,False,False,80.27385617224067,113.81190981746954,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-07-13,spring,P0,80.0,200,,False,False,56.92421833298176,73.75716917045484,,,,,,
+gtsr:ab,gtsr,2026-07-13,spring,P5 built,80.0,200,,False,False,56.92421833298176,73.75716917045484,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P5,0.03,200,,False,False,111.57311759125982,153.8770381702609,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P0,0.03,200,,False,True,79.56465280695568,66.09439589591707,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,0.03,200,,False,False,111.53940723597906,153.8469738399222,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,1.0,200,,True,True,78.47631010964635,65.12376553319673,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,1.0,200,,False,False,110.45106453866973,152.8763434772019,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,2.0,200,,False,True,99.67447031919814,86.620148424625,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,2.0,200,,False,False,109.44205472757709,151.8756965046484,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,5.0,200,,False,True,96.69170839011106,83.61671213648397,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,5.0,200,,False,False,106.45929279849,148.87226021650736,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,10.0,200,,False,True,91.71759188632616,78.6081186368743,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,10.0,200,,False,False,101.4851762947051,143.86366671689768,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,15.63,200,,True,True,94.34731533622123,80.24422897078445,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,15.63,200,,False,False,95.53966533942715,138.2276210197309,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,20.0,200,,True,False,91.50739402947707,133.84900466261055,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,20.0,200,,False,False,91.50739402947707,133.84900466261055,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,40.0,200,,False,True,112.41080714458836,111.12791242358985,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,40.0,200,,False,False,80.27385617224067,113.81190981746954,True,,,0.0,0.0,0.0
+gtsr:ab,gtsr,2026-09-24,autumn,P0,80.0,200,,False,False,56.92421833298176,73.75716917045484,,,,,,
+gtsr:ab,gtsr,2026-09-24,autumn,P5 built,80.0,200,,False,False,56.92421833298176,73.75716917045484,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P5,0.03,200,,False,False,94.49055745629308,137.51251615652387,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P0,0.03,200,,True,False,94.44334594710479,137.4824409891542,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,0.03,200,,False,False,94.44334594710479,137.4824409891542,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,0.876,200,,True,False,93.11891452866683,136.63499907483686,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,0.876,200,,False,False,93.11891452866683,136.63499907483686,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,1.0,200,,True,False,93.01031553911533,136.51047352762237,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,1.0,200,,False,False,93.01031553911533,136.51047352762237,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,2.0,200,,True,False,92.37400409152754,135.50919163270626,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,2.0,200,,False,False,92.37400409152754,135.50919163270626,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,5.0,200,,False,True,98.32558242143459,86.95628766880169,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,5.0,200,,False,False,90.69109459694741,132.50741093038118,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,10.0,200,,False,True,101.42171684996005,92.47881672296853,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,10.0,200,,False,False,87.88170297096764,127.49634075976354,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,20.0,200,,False,True,108.46234908074976,105.03708799698337,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,20.0,200,,False,False,82.26731626114908,117.48204246552972,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,40.0,200,,False,False,61.844788895924616,97.4585572183083,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,40.0,200,,False,False,61.844788895924616,97.4585572183083,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-07-13,spring,P0,80.0,200,,False,False,33.52757683294728,57.405401523840254,,,,,,
+gtsr:ba,gtsr,2026-07-13,spring,P5 built,80.0,200,,False,False,33.52757683294728,57.405401523840254,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P5,0.03,200,,False,False,94.49055745629308,137.51251615652387,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P0,0.03,200,,True,False,94.44334594710479,137.4824409891542,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,0.03,200,,False,False,94.44334594710479,137.4824409891542,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,0.876,200,,True,False,93.11891452866683,136.63499907483686,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,0.876,200,,False,False,93.11891452866683,136.63499907483686,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,1.0,200,,True,False,93.01031553911533,136.51047352762237,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,1.0,200,,False,False,93.01031553911533,136.51047352762237,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,2.0,200,,True,False,92.37400409152754,135.50919163270626,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,2.0,200,,False,False,92.37400409152754,135.50919163270626,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,5.0,200,,False,True,98.32558242143459,86.95628766880169,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,5.0,200,,False,False,90.69109459694741,132.50741093038118,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,10.0,200,,False,True,101.42171684996005,92.47881672296853,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,10.0,200,,False,False,87.88170297096764,127.49634075976354,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,20.0,200,,False,True,108.46234908074976,105.03708799698337,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,20.0,200,,False,False,82.26731626114908,117.48204246552972,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,40.0,200,,False,False,61.844788895924616,97.4585572183083,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,40.0,200,,False,False,61.844788895924616,97.4585572183083,True,,,0.0,0.0,0.0
+gtsr:ba,gtsr,2026-09-24,autumn,P0,80.0,200,,False,False,33.52757683294728,57.405401523840254,,,,,,
+gtsr:ba,gtsr,2026-09-24,autumn,P5 built,80.0,200,,False,False,33.52757683294728,57.405401523840254,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P5,0.03,200,,False,False,396.99399622841634,478.42167606511947,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P0,0.03,200,,False,True,106.1116177418821,106.61029847719611,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,0.03,200,,False,False,396.9705028743624,478.3917441028757,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,1.0,200,,False,True,105.35172360481286,105.64214711967658,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,1.0,200,,False,False,396.21060873729317,477.42359274535613,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,2.0,200,,True,True,104.56835907744409,104.64409305713332,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,2.0,200,,False,False,395.4272442099244,476.42553868281294,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,5.0,200,,True,True,107.23630740014987,107.75454839715105,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,5.0,200,,False,False,392.8460150328166,473.4255688097018,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,10.0,200,,False,True,115.4835564441784,118.2620453868936,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,10.0,200,,False,False,388.9204725586634,468.4241888937969,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,19.486,200,,True,True,118.51438252515165,120.23166116055836,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,19.486,200,,False,False,381.32193365792136,458.93320162406354,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,20.0,200,,True,True,117.91876479634354,121.06988645858175,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,20.0,200,,False,False,380.8434590722453,458.4192737438257,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,40.0,200,,True,True,130.99826382522684,140.93375503490424,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,40.0,200,,False,False,367.5573187966791,438.4463766228965,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-06-11,spring,P0,80.0,200,,False,True,161.32669170994035,189.51256299462838,,,,,,
+tioga:ab,tioga,2026-06-11,spring,P5 built,80.0,200,,False,False,342.5648628141104,398.48182963769904,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P5,0.03,200,,False,False,271.92356804387316,311.8439831201021,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P0,0.03,200,,False,True,106.1116177418821,106.61029847719611,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,0.03,200,,False,False,271.90007468981923,311.81405115785833,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,1.0,200,,False,True,105.35172360481286,105.64214711967658,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,1.0,200,,False,False,271.14018055275005,310.8458998003388,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,2.0,200,,True,True,104.56835907744409,104.64409305713332,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,2.0,200,,False,False,270.35681602538125,309.8478457377956,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,5.0,200,,True,True,107.23630740014987,107.75454839715105,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,5.0,200,,False,False,267.77558684827346,306.8478758646844,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,10.0,200,,False,True,115.4835564441784,118.2620453868936,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,10.0,200,,False,False,263.85004437412033,301.84649594877953,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,19.486,200,,True,True,118.51438252515165,120.23166116055836,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,19.486,200,,False,False,256.2515054733782,292.35550867904624,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,20.0,200,,True,True,117.91876479634354,121.06988645858175,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,20.0,200,,False,False,255.7730308877022,291.84158079880837,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,40.0,200,,True,True,130.99826382522684,140.93375503490424,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,40.0,200,,False,False,242.48689061213602,271.8686836778792,True,,,0.0,0.0,0.0
+tioga:ab,tioga,2026-10-31,autumn,P0,80.0,200,,False,True,161.32669170994035,189.51256299462838,,,,,,
+tioga:ab,tioga,2026-10-31,autumn,P5 built,80.0,200,,False,False,217.4944346295673,231.90413669268176,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P5,0.03,200,,True,False,350.8221791584544,432.21627223727086,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P0,0.03,200,,True,True,88.12806891566163,95.54427352503728,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,0.03,200,,True,False,350.7749960750672,432.1862151780011,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,0.383,200,,False,True,91.34082489247271,97.59089680359358,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,0.383,200,,False,False,350.2201628086566,431.83276951111895,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,1.0,200,,True,True,90.37259792209879,96.97410677322839,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,1.0,200,,False,False,349.25193583828263,431.2159794807538,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,2.0,200,,False,True,98.43801099667026,105.4243943496979,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,2.0,200,,False,False,348.0456180730526,430.21606776106336,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,5.0,200,,False,True,95.49486865820482,102.4246004454068,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,5.0,200,,False,False,345.1024757345872,427.2162738567722,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,10.0,200,,False,True,101.98254324329694,109.03715411602917,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,10.0,200,,False,False,340.1963424308083,422.21570402840666,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,20.0,200,,False,True,109.33935984331866,118.12101867871819,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,20.0,200,,False,False,331.0276831919914,412.21767117710056,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,40.0,200,,True,True,132.65530507523798,141.38374357480723,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,40.0,200,,False,False,316.7444556090378,392.20020025637024,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-06-11,spring,P0,80.0,200,,True,True,161.5396497786562,179.94437004807864,,,,,,
+tioga:ba,tioga,2026-06-11,spring,P5 built,80.0,200,,False,False,283.67267623986,352.1693895839462,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P5,0.03,200,,True,False,225.19106294839858,265.57558557727793,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P0,0.03,200,,True,True,88.12806891566163,95.54427352503728,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,0.03,200,,True,False,225.14387986501134,265.5455285180082,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,0.383,200,,False,True,91.34082489247271,97.59089680359358,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,0.383,200,,False,False,224.5890465986007,265.1920828511261,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,1.0,200,,True,True,90.37259792209879,96.97410677322839,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,1.0,200,,False,False,223.6208196282268,264.57529282076086,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,2.0,200,,False,True,98.43801099667026,105.4243943496979,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,2.0,200,,False,False,222.42681261327286,263.54819957797935,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,5.0,200,,False,True,95.49486865820482,102.4246004454068,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,5.0,200,,False,False,219.48367027480742,260.54840567368825,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,10.0,200,,False,True,101.98254324329694,109.03715411602917,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,10.0,200,,False,False,214.5775369710285,255.54783584532265,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,20.0,200,,False,True,109.33935984331866,118.12101867871819,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,20.0,200,,False,False,205.40887773221175,245.54980299401657,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,40.0,200,,True,True,132.65530507523798,141.38374357480723,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,40.0,200,,False,False,191.1256501492581,225.53233207328626,True,,,0.0,0.0,0.0
+tioga:ba,tioga,2026-10-31,autumn,P0,80.0,200,,True,True,178.22838371268418,179.756193425834,,,,,,
+tioga:ba,tioga,2026-10-31,autumn,P5 built,80.0,200,,False,False,140.35827859173742,185.55987173371693,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5,0.03,200,,False,False,231.13011388945228,226.1835705117478,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,0.03,200,,True,True,90.10049962416394,81.86643013830448,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,0.03,200,,False,False,231.0979419455761,226.15351655417683,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,1.0,200,,True,True,89.05989410641868,80.89433115047743,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,1.0,200,,False,False,230.05733642783082,225.18141756634978,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,2.0,200,,True,True,79.76778233138701,73.56336431327485,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,2.0,200,,False,False,228.9847452040721,224.17943859815517,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,5.0,200,,True,True,84.77404607714561,76.89063478313153,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,5.0,200,,False,False,225.77148839855778,221.17772119900386,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,5.297,200,,True,True,84.39517897023781,76.59288299757239,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,5.297,200,,False,False,225.39262129164996,220.87996941344474,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,10.0,200,,False,True,79.34651209816037,72.83662739212353,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,10.0,200,,False,False,218.8065238747899,216.1731076313172,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,20.0,200,,True,True,90.7282744826324,83.1895955143798,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,20.0,200,,False,False,207.76734036864147,206.17673691989705,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,40.0,200,,False,True,111.48579551994496,106.39522791323493,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,40.0,200,,False,False,190.79277255712276,186.17741928083382,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P0,80.0,200,,True,True,145.08158035885862,142.75017248634663,,,,,,
+trail_ridge:ab,trail_ridge,2026-06-08,spring,P5 built,80.0,200,,False,False,153.54166973061092,146.16863503480997,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5,0.03,200,,False,False,231.13011388945228,226.1835705117478,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,0.03,200,,True,True,90.10049962416394,81.86643013830448,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,0.03,200,,False,False,231.0979419455761,226.15351655417683,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,1.0,200,,True,True,89.05989410641868,80.89433115047743,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,1.0,200,,False,False,230.05733642783082,225.18141756634978,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,2.0,200,,True,True,79.76778233138701,73.56336431327485,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,2.0,200,,False,False,228.9847452040721,224.17943859815517,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,5.0,200,,True,True,84.77404607714561,76.89063478313153,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,5.0,200,,False,False,225.77148839855778,221.17772119900386,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,5.297,200,,True,True,84.39517897023781,76.59288299757239,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,5.297,200,,False,False,225.39262129164996,220.87996941344474,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,10.0,200,,False,True,79.34651209816037,72.83662739212353,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,10.0,200,,False,False,218.8065238747899,216.1731076313172,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,20.0,200,,True,True,90.7282744826324,83.1895955143798,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,20.0,200,,False,False,207.76734036864147,206.17673691989705,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,40.0,200,,False,True,111.48579551994496,106.39522791323493,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,40.0,200,,False,False,190.79277255712276,186.17741928083382,True,,,0.0,0.0,0.0
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P0,80.0,200,,True,True,145.08158035885862,142.75017248634663,,,,,,
+trail_ridge:ab,trail_ridge,2026-09-30,autumn,P5 built,80.0,200,,False,False,153.54166973061092,146.16863503480997,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5,0.03,200,,False,False,224.99475606881253,220.74537914659658,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,0.03,200,,True,True,79.16701428024766,73.84443490257252,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,0.03,200,,False,False,224.92029403747983,220.7154204652203,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,1.0,200,,True,True,80.41038150569017,74.87387815354695,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,1.0,200,,False,False,223.64817670418057,219.74652249876095,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,2.0,200,,True,True,81.51056521053573,76.02061183009613,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,2.0,200,,False,False,222.64145989217667,218.74580063271196,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,2.955,200,,True,True,83.53829505482878,77.45741935200094,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,2.955,200,,False,False,221.7025926171161,217.7917444223782,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,5.0,200,,True,True,84.15744968485429,79.19265571851216,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,5.0,200,,False,False,220.0721130992863,215.74710677338152,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,10.0,200,,True,True,92.01884919371766,86.69448952913476,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,10.0,200,,False,False,289.8109049253094,254.9415175446653,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,20.0,200,,True,True,97.01528415786102,94.52038072943826,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,20.0,200,,False,False,208.618500873515,200.75324075069915,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,40.0,200,,True,True,118.2280827192839,114.16990673499264,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,40.0,200,,False,False,186.0346307126497,180.7481870465962,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P0,80.0,200,,False,False,145.76992457363468,140.75576232406456,,,,,,
+trail_ridge:ba,trail_ridge,2026-06-08,spring,P5 built,80.0,200,,False,False,145.76992457363468,140.75576232406456,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5,0.03,200,,False,False,224.99475606881253,220.74537914659658,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,0.03,200,,True,True,79.16701428024766,73.84443490257252,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,0.03,200,,False,False,224.92029403747983,220.7154204652203,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,1.0,200,,True,True,80.41038150569017,74.87387815354695,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,1.0,200,,False,False,223.64817670418057,219.74652249876095,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,2.0,200,,True,True,81.51056521053573,76.02061183009613,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,2.0,200,,False,False,222.64145989217667,218.74580063271196,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,2.955,200,,True,True,83.53829505482878,77.45741935200094,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,2.955,200,,False,False,221.7025926171161,217.7917444223782,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,5.0,200,,True,True,84.15744968485429,79.19265571851216,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,5.0,200,,False,False,220.0721130992863,215.74710677338152,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,10.0,200,,True,True,92.01884919371766,86.69448952913476,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,10.0,200,,False,False,289.8109049253094,254.9415175446653,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,20.0,200,,True,True,97.01528415786102,94.52038072943826,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,20.0,200,,False,False,208.618500873515,200.75324075069915,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,40.0,200,,True,True,118.2280827192839,114.16990673499264,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,40.0,200,,False,False,186.0346307126497,180.7481870465962,True,,,0.0,0.0,0.0
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P0,80.0,200,,False,False,145.76992457363468,140.75576232406456,,,,,,
+trail_ridge:ba,trail_ridge,2026-09-30,autumn,P5 built,80.0,200,,False,False,145.76992457363468,140.75576232406456,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P5,0.03,200,,False,False,57.281432035372696,52.12960415253567,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P0,0.03,200,,True,True,14.722439352905846,15.522407652097899,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,0.03,200,,False,False,57.25192652972226,52.09953070524214,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,1.0,200,,False,True,18.698438891283946,19.57493988025706,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,1.0,200,,False,False,56.29871714868324,51.12797331456397,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,2.0,200,,True,True,17.715732835065275,18.57331804273092,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,2.0,200,,False,False,55.31601109246458,50.12635147703783,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,5.0,200,,True,True,19.69420282521876,20.589870942234874,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,5.0,200,,False,False,52.368159179341525,47.12175734505638,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,10.0,200,,True,True,30.430853381863272,29.230408728670405,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,10.0,200,,False,False,47.1501271969219,42.112280202125405,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,12.721,200,,True,True,32.07924521120487,30.328154435542732,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,12.721,200,,False,False,43.17877814622727,39.385066926417736,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,20.0,200,,True,False,34.83126183689449,32.09332582098258,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,20.0,200,,False,False,34.83126183689449,32.09332582098258,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-05-01,spring,P0,40.0,200,,False,False,12.472182435333846,12.064609344788662,,,,,,
+vt108:ab,vt108,2026-05-01,spring,P5 built,40.0,200,,False,False,12.472182435333846,12.064609344788662,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P5,0.03,200,,False,False,57.281432035372696,52.12960415253567,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P0,0.03,200,,True,True,14.722439352905846,15.522407652097899,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,0.03,200,,False,False,57.25192652972226,52.09953070524214,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,1.0,200,,False,True,18.698438891283946,19.57493988025706,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,1.0,200,,False,False,56.29871714868324,51.12797331456397,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,2.0,200,,True,True,17.715732835065275,18.57331804273092,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,2.0,200,,False,False,55.31601109246458,50.12635147703783,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,5.0,200,,True,True,19.69420282521876,20.589870942234874,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,5.0,200,,False,False,52.368159179341525,47.12175734505638,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,10.0,200,,True,True,30.430853381863272,29.230408728670405,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,10.0,200,,False,False,47.1501271969219,42.112280202125405,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,12.721,200,,True,True,32.07924521120487,30.328154435542732,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,12.721,200,,False,False,43.17877814622727,39.385066926417736,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,20.0,200,,True,False,34.83126183689449,32.09332582098258,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,20.0,200,,False,False,34.83126183689449,32.09332582098258,True,,,0.0,0.0,0.0
+vt108:ab,vt108,2026-10-31,autumn,P0,40.0,200,,False,False,12.472182435333846,12.064609344788662,,,,,,
+vt108:ab,vt108,2026-10-31,autumn,P5 built,40.0,200,,False,False,12.472182435333846,12.064609344788662,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P5,0.03,200,,False,False,52.49983021442074,49.12473504997218,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P0,0.03,200,,True,True,20.548860317639768,19.74181166557879,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,0.03,200,,False,False,52.47624571300507,49.09468696044478,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,1.0,200,,True,True,20.698958809120207,19.933046274716435,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,1.0,200,,False,False,51.71401877791435,48.12356347633398,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,2.0,200,,True,True,22.29386816229005,20.533367446560703,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,2.0,200,,False,False,50.792650703273516,47.12203175803911,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,5.0,200,,True,True,36.03292758981744,31.365928075527968,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,5.0,200,,False,False,48.29197663334871,44.117600268141274,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,9.783,200,,True,True,29.128616131547187,28.40755169800839,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,9.783,200,,False,False,43.273966165045685,39.32876262899477,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,10.0,200,,True,True,29.7120012481911,29.015394112327915,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,10.0,200,,False,False,42.93307497458079,39.111604571894915,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,20.0,200,,True,False,32.84223238631511,29.08511066154083,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,20.0,200,,False,False,32.84223238631511,29.08511066154083,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-05-01,spring,P0,40.0,200,,False,False,10.478406871685133,9.0519605247213,,,,,,
+vt108:ba,vt108,2026-05-01,spring,P5 built,40.0,200,,False,False,10.478406871685133,9.0519605247213,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P5,0.03,200,,False,False,52.49983021442074,49.12473504997218,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P0,0.03,200,,True,True,20.548860317639768,19.74181166557879,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,0.03,200,,False,False,52.47624571300507,49.09468696044478,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,1.0,200,,True,True,20.698958809120207,19.933046274716435,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,1.0,200,,False,False,51.71401877791435,48.12356347633398,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,2.0,200,,True,True,22.29386816229005,20.533367446560703,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,2.0,200,,False,False,50.792650703273516,47.12203175803911,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,5.0,200,,True,True,36.03292758981744,31.365928075527968,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,5.0,200,,False,False,48.29197663334871,44.117600268141274,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,9.783,200,,True,True,29.128616131547187,28.40755169800839,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,9.783,200,,False,False,43.273966165045685,39.32876262899477,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,10.0,200,,True,True,29.7120012481911,29.015394112327915,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,10.0,200,,False,False,42.93307497458079,39.111604571894915,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,20.0,200,,True,False,32.84223238631511,29.08511066154083,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,20.0,200,,False,False,32.84223238631511,29.08511066154083,True,,,0.0,0.0,0.0
+vt108:ba,vt108,2026-10-31,autumn,P0,40.0,200,,False,False,10.478406871685133,9.0519605247213,,,,,,
+vt108:ba,vt108,2026-10-31,autumn,P5 built,40.0,200,,False,False,10.478406871685133,9.0519605247213,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5,0.03,200,,False,False,45.50367657154198,47.114159992728865,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,0.03,200,,True,True,11.97187407262492,10.382689743894936,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,0.03,200,,False,False,45.470037761653565,47.08415946961772,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,1.0,200,,True,True,13.58455222825914,11.820944796300994,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,1.0,200,,False,False,44.38045653427983,46.11242453304523,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,2.0,200,,True,True,13.484407152125097,11.731631152893497,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,2.0,200,,False,False,43.25582305846526,45.10942850867161,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,4.931,200,,True,True,22.744666387553877,17.601568257545484,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,4.931,200,,False,False,39.946555944938495,42.171426419455756,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,5.0,200,,True,True,22.669147824515775,17.532235640766093,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,5.0,200,,False,False,39.87103738190039,42.102093802676364,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,10.0,200,,True,False,35.27620671455022,37.1003860861807,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,10.0,200,,False,False,35.27620671455022,37.1003860861807,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,20.0,200,,False,False,25.5324185520414,27.084606887884867,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,20.0,200,,False,False,25.5324185520414,27.084606887884867,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P0,40.0,200,,False,False,8.113699352748634,7.052195115228051,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-05-16,spring,P5 built,40.0,200,,False,False,8.113699352748634,7.052195115228051,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5,0.03,200,,False,False,45.50367657154198,47.114159992728865,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,0.03,200,,True,True,11.97187407262492,10.382689743894936,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,0.03,200,,False,False,45.470037761653565,47.08415946961772,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,1.0,200,,True,True,13.58455222825914,11.820944796300994,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,1.0,200,,False,False,44.38045653427983,46.11242453304523,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,2.0,200,,True,True,13.484407152125097,11.731631152893497,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,2.0,200,,False,False,43.25582305846526,45.10942850867161,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,4.931,200,,True,True,22.744666387553877,17.601568257545484,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,4.931,200,,False,False,39.946555944938495,42.171426419455756,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,5.0,200,,True,True,22.669147824515775,17.532235640766093,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,5.0,200,,False,False,39.87103738190039,42.102093802676364,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,10.0,200,,True,False,35.27620671455022,37.1003860861807,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,10.0,200,,False,False,35.27620671455022,37.1003860861807,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,20.0,200,,False,False,25.5324185520414,27.084606887884867,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,20.0,200,,False,False,25.5324185520414,27.084606887884867,True,,,0.0,0.0,0.0
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P0,40.0,200,,False,False,8.113699352748634,7.052195115228051,,,,,,
+lincoln_gap:ab,lincoln_gap,2026-10-14,autumn,P5 built,40.0,200,,False,False,8.113699352748634,7.052195115228051,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5,0.03,200,,False,False,47.31518340510277,48.20939322135179,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,0.03,200,,False,True,14.67301979174507,12.83454611146606,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,0.03,200,,False,False,47.28150353734409,48.179356081083576,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,1.0,200,,False,True,13.583421668031473,11.862796106018173,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,1.0,200,,False,False,46.191905413630494,47.20760607563569,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,2.0,200,,True,True,12.45959564225765,10.860520199974813,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,2.0,200,,False,False,45.06807938785667,46.20533016959233,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,5.0,200,,True,True,28.027327755764862,23.09010652520625,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,5.0,200,,False,False,41.57366892189731,43.19896356915536,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,6.316,200,,True,True,17.621222662485728,14.958757535586992,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,6.316,200,,False,False,39.84938668087352,41.88085928781499,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,10.0,200,,True,True,26.982542832552102,21.738783514527277,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,10.0,200,,False,False,35.06926613952591,38.189656527580404,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,20.0,200,,False,False,26.35187581625634,28.171580627205667,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,20.0,200,,False,False,26.35187581625634,28.171580627205667,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P0,40.0,200,,False,False,7.297561005499068,8.138288171457477,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-05-16,spring,P5 built,40.0,200,,False,False,7.297561005499068,8.138288171457477,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5,0.03,200,,False,False,47.31518340510277,48.20939322135179,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,0.03,200,,False,True,14.67301979174507,12.83454611146606,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,0.03,200,,False,False,47.28150353734409,48.179356081083576,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,1.0,200,,False,True,13.583421668031473,11.862796106018173,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,1.0,200,,False,False,46.191905413630494,47.20760607563569,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,2.0,200,,True,True,12.45959564225765,10.860520199974813,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,2.0,200,,False,False,45.06807938785667,46.20533016959233,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,5.0,200,,True,True,28.027327755764862,23.09010652520625,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,5.0,200,,False,False,41.57366892189731,43.19896356915536,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,6.316,200,,True,True,17.621222662485728,14.958757535586992,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,6.316,200,,False,False,39.84938668087352,41.88085928781499,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,10.0,200,,True,True,26.982542832552102,21.738783514527277,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,10.0,200,,False,False,35.06926613952591,38.189656527580404,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,20.0,200,,False,False,26.35187581625634,28.171580627205667,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,20.0,200,,False,False,26.35187581625634,28.171580627205667,True,,,0.0,0.0,0.0
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P0,40.0,200,,False,False,7.297561005499068,8.138288171457477,,,,,,
+lincoln_gap:ba,lincoln_gap,2026-10-14,autumn,P5 built,40.0,200,,False,False,7.297561005499068,8.138288171457477,True,,,0.0,0.0,0.0
+mwar:ab,mwar,2026-05-23,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P0,0.03,200,,False,True,21.34113330514176,15.167455298004617,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-05-23,spring,P0,1.0,200,,True,True,20.64901562789599,14.1974752709045,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-05-23,spring,P0,2.0,200,,True,True,20.964833409085784,14.640083442937062,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-05-23,spring,P0,5.0,200,,True,True,23.437440091944232,18.105359906892083,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-05-23,spring,P0,10.0,200,,False,True,28.243331820007214,24.277915537414167,,,,,,
+mwar:ab,mwar,2026-05-23,spring,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P0,0.03,200,,False,True,21.34113330514176,15.167455298004617,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P0,1.0,200,,True,True,20.64901562789599,14.1974752709045,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P0,2.0,200,,True,True,20.964833409085784,14.640083442937062,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P0,5.0,200,,True,True,23.437440091944232,18.105359906892083,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P0,10.0,200,,False,True,28.243331820007214,24.277915537414167,,,,,,
+mwar:ab,mwar,2026-10-18,autumn,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+independence:ab,independence,2026-05-28,spring,P5,0.03,200,,False,False,234.81145553185553,223.26673351957905,,,,,,
+independence:ab,independence,2026-05-28,spring,P0,0.03,200,,True,True,57.52855282156568,50.64209550624971,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,0.03,200,,False,False,234.785245669074,223.23667985592377,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,1.0,200,,False,True,61.238385493674244,54.89599276142819,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,1.0,200,,False,False,233.93813079543284,222.2653315622675,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,2.0,200,,True,True,60.36684975161086,53.89664216299643,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,2.0,200,,False,False,233.06659505336944,221.26598096383574,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,5.0,200,,False,True,65.43104299889433,58.6050552836572,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,5.0,200,,False,False,230.3768986948786,218.2672928847184,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,8.581,200,,True,True,65.71618736169583,58.74130983577399,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,8.581,200,,False,False,226.24851572756668,214.68662491767938,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,10.0,200,,True,True,68.09259173457693,60.373635080856666,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,10.0,200,,False,False,224.0217968775869,213.26622513863686,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,20.0,200,,False,True,82.7225195771396,70.92395808862906,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,20.0,200,,False,False,214.0258546237463,203.2690778074912,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,40.0,200,,False,True,99.1578632738757,94.00111555876985,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,40.0,200,,False,False,197.99497956258185,183.26321834808508,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-05-28,spring,P0,80.0,200,,True,False,145.46582835975934,143.2638229254018,,,,,,
+independence:ab,independence,2026-05-28,spring,P5 built,80.0,200,,False,False,145.46582835975934,143.2638229254018,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P5,0.03,200,,False,False,234.81145553185553,223.26673351957905,,,,,,
+independence:ab,independence,2026-10-24,autumn,P0,0.03,200,,True,True,57.52855282156568,50.64209550624971,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,0.03,200,,False,False,234.785245669074,223.23667985592377,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,1.0,200,,False,True,61.238385493674244,54.89599276142819,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,1.0,200,,False,False,233.93813079543284,222.2653315622675,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,2.0,200,,True,True,60.36684975161086,53.89664216299643,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,2.0,200,,False,False,233.06659505336944,221.26598096383574,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,5.0,200,,False,True,65.43104299889433,58.6050552836572,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,5.0,200,,False,False,230.3768986948786,218.2672928847184,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,8.581,200,,True,True,65.71618736169583,58.74130983577399,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,8.581,200,,False,False,226.24851572756668,214.68662491767938,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,10.0,200,,True,True,68.09259173457693,60.373635080856666,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,10.0,200,,False,False,224.0217968775869,213.26622513863686,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,20.0,200,,False,True,82.7225195771396,70.92395808862906,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,20.0,200,,False,False,214.0258546237463,203.2690778074912,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,40.0,200,,False,True,99.1578632738757,94.00111555876985,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,40.0,200,,False,False,197.99497956258185,183.26321834808508,True,,,0.0,0.0,0.0
+independence:ab,independence,2026-10-24,autumn,P0,80.0,200,,True,False,145.46582835975934,143.2638229254018,,,,,,
+independence:ab,independence,2026-10-24,autumn,P5 built,80.0,200,,False,False,145.46582835975934,143.2638229254018,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P5,0.03,200,,False,False,235.4052351528376,224.53388722282648,,,,,,
+independence:ba,independence,2026-05-28,spring,P0,0.03,200,,False,True,66.26819831115682,59.076236946407796,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,0.03,200,,False,False,235.37901623964908,224.50382318147896,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,1.0,200,,False,True,65.42094390558951,58.10472865780561,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,1.0,200,,False,False,234.53176183408175,223.5323148928768,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,2.0,200,,False,True,64.54704941397038,57.10267338799169,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,2.0,200,,False,False,233.6578673424626,222.53025962306288,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,5.0,200,,True,True,61.926147778796626,54.097404078736915,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,5.0,200,,False,False,231.03696570728883,219.52499031380808,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,10.0,200,,True,True,66.70789537988153,59.240290507447526,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,10.0,200,,False,False,226.51765715751293,214.5234193459139,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,10.856,200,,True,True,67.7654767445943,60.04874430435377,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,10.856,200,,False,False,225.39585059208895,213.66586946136414,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,20.0,200,,True,True,75.33586648434371,69.1743789335969,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,20.0,200,,False,False,218.575728504606,204.5126496092942,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,40.0,200,,False,True,90.61647633765708,91.19683694242057,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,40.0,200,,False,False,204.80396712051834,184.53220026201797,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-05-28,spring,P0,80.0,200,,False,True,142.07590651445582,129.90622745324947,,,,,,
+independence:ba,independence,2026-05-28,spring,P5 built,80.0,200,,False,False,163.09189368569054,144.5630984686301,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P5,0.03,200,,False,False,235.4052351528376,224.53388722282648,,,,,,
+independence:ba,independence,2026-10-24,autumn,P0,0.03,200,,False,True,66.26819831115682,59.076236946407796,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,0.03,200,,False,False,235.37901623964908,224.50382318147896,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,1.0,200,,False,True,65.42094390558951,58.10472865780561,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,1.0,200,,False,False,234.53176183408175,223.5323148928768,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,2.0,200,,False,True,64.54704941397038,57.10267338799169,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,2.0,200,,False,False,233.6578673424626,222.53025962306288,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,5.0,200,,True,True,61.926147778796626,54.097404078736915,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,5.0,200,,False,False,231.03696570728883,219.52499031380808,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,10.0,200,,True,True,66.70789537988153,59.240290507447526,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,10.0,200,,False,False,226.51765715751293,214.5234193459139,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,10.856,200,,True,True,67.7654767445943,60.04874430435377,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,10.856,200,,False,False,225.39585059208895,213.66586946136414,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,20.0,200,,True,True,75.33586648434371,69.1743789335969,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,20.0,200,,False,False,218.575728504606,204.5126496092942,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,40.0,200,,False,True,90.61647633765708,91.19683694242057,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,40.0,200,,False,False,204.80396712051834,184.53220026201797,True,,,0.0,0.0,0.0
+independence:ba,independence,2026-10-24,autumn,P0,80.0,200,,False,True,142.07590651445582,129.90622745324947,,,,,,
+independence:ba,independence,2026-10-24,autumn,P5 built,80.0,200,,False,False,163.09189368569054,144.5630984686301,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P5,0.03,200,,False,False,414.73976617768915,498.17501554057344,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,0.03,200,,True,True,80.32750433509665,96.297317743878,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,0.03,200,,False,False,414.7075695784319,498.1449385507673,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,1.0,200,,True,True,79.84112344371643,95.84295692784697,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,1.0,200,,False,False,413.66810952915705,497.1739096214031,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,2.0,200,,False,True,82.9857302229116,99.9419010176364,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,2.0,200,,False,False,412.8090113640236,496.1718900534004,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,5.0,200,,False,True,84.22760839903152,101.52412936160222,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,5.0,200,,False,False,410.4511751560056,493.1678632893495,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,10.0,200,,True,True,87.62138978455427,105.84801330179246,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,10.0,200,,False,False,406.52182828821077,488.16163634451107,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,20.0,200,,False,True,96.7615734616604,116.61597480079396,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,20.0,200,,False,False,398.1629091318871,478.1393786674802,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,40.0,200,,True,True,111.85827659748549,134.6147307644736,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,40.0,200,,False,False,381.2755865235574,458.1089392709096,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,46.599,200,,True,True,117.88054109155384,141.172704597787,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,46.599,200,,False,False,375.27150484004017,451.5025649702336,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-05-16,spring,P0,80.0,200,,True,True,144.29341302074081,175.89369463376806,,,,,,
+north_cascades:ab,north_cascades,2026-05-16,spring,P5 built,80.0,200,,False,False,349.8398881841592,418.06299566834656,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5,0.03,200,,False,False,414.73976617768915,498.17501554057344,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,0.03,200,,True,True,80.32750433509665,96.297317743878,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,0.03,200,,False,False,414.7075695784319,498.1449385507673,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,1.0,200,,True,True,79.84112344371643,95.84295692784697,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,1.0,200,,False,False,413.66810952915705,497.1739096214031,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,2.0,200,,False,True,82.9857302229116,99.9419010176364,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,2.0,200,,False,False,412.8090113640236,496.1718900534004,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,5.0,200,,False,True,84.22760839903152,101.52412936160222,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,5.0,200,,False,False,410.4511751560056,493.1678632893495,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,10.0,200,,True,True,87.62138978455427,105.84801330179246,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,10.0,200,,False,False,406.52182828821077,488.16163634451107,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,20.0,200,,False,True,96.7615734616604,116.61597480079396,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,20.0,200,,False,False,398.1629091318871,478.1393786674802,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,40.0,200,,True,True,111.85827659748549,134.6147307644736,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,40.0,200,,False,False,381.2755865235574,458.1089392709096,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,46.599,200,,True,True,117.88054109155384,141.172704597787,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,46.599,200,,False,False,375.27150484004017,451.5025649702336,True,,,0.0,0.0,0.0
+north_cascades:ab,north_cascades,2026-11-02,autumn,P0,80.0,200,,True,True,144.29341302074081,175.89369463376806,,,,,,
+north_cascades:ab,north_cascades,2026-11-02,autumn,P5 built,80.0,200,,False,False,349.8398881841592,418.06299566834656,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P5,0.03,200,,False,False,399.7201929153184,488.0223376548167,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,0.03,200,,False,True,101.50211718242333,118.4582374379663,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,0.03,200,,False,False,399.70051113071975,487.99224670575194,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,1.0,200,,False,True,100.86576492654152,117.48533565545951,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,1.0,200,,False,False,399.06415887483786,487.0193449232451,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,2.0,200,,False,True,100.20982318967674,116.48248404439384,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,2.0,200,,False,False,398.4082171379731,486.0164933121795,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,5.0,200,,False,True,98.24205831676585,113.47402145985194,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,5.0,200,,False,False,396.4404522650622,483.00803072763756,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,10.0,200,,True,True,99.71515066982946,115.72619258495739,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,10.0,200,,False,False,393.16183080578446,477.99543490132726,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,20.0,200,,True,True,115.31613757811894,129.95091288634063,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,20.0,200,,False,False,386.6079422860118,467.9753716984368,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,35.894,200,,True,True,119.72961483710105,141.92776770449734,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,35.894,200,,False,False,375.1326642506159,452.04997502926193,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,40.0,200,,True,True,127.79393806252047,149.01911000388296,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,40.0,200,,False,False,370.15581787319206,447.94165504396415,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-05-16,spring,P0,80.0,200,,True,True,172.1697689568034,185.22700598439837,,,,,,
+north_cascades:ba,north_cascades,2026-05-16,spring,P5 built,80.0,200,,False,False,321.1209664856926,407.9098877790524,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5,0.03,200,,False,False,399.7201929153184,488.0223376548167,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,0.03,200,,False,True,101.50211718242333,118.4582374379663,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,0.03,200,,False,False,399.70051113071975,487.99224670575194,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,1.0,200,,False,True,100.86576492654152,117.48533565545951,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,1.0,200,,False,False,399.06415887483786,487.0193449232451,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,2.0,200,,False,True,100.20982318967674,116.48248404439384,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,2.0,200,,False,False,398.4082171379731,486.0164933121795,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,5.0,200,,False,True,98.24205831676585,113.47402145985194,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,5.0,200,,False,False,396.4404522650622,483.00803072763756,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,10.0,200,,True,True,99.71515066982946,115.72619258495739,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,10.0,200,,False,False,393.16183080578446,477.99543490132726,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,20.0,200,,True,True,115.31613757811894,129.95091288634063,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,20.0,200,,False,False,386.6079422860118,467.9753716984368,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,35.894,200,,True,True,119.72961483710105,141.92776770449734,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,35.894,200,,False,False,375.1326642506159,452.04997502926193,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,40.0,200,,True,True,127.79393806252047,149.01911000388296,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,40.0,200,,False,False,370.15581787319206,447.94165504396415,True,,,0.0,0.0,0.0
+north_cascades:ba,north_cascades,2026-11-02,autumn,P0,80.0,200,,True,True,172.1697689568034,185.22700598439837,,,,,,
+north_cascades:ba,north_cascades,2026-11-02,autumn,P5 built,80.0,200,,False,False,321.1209664856926,407.9098877790524,True,,,0.0,0.0,0.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P5,0.03,200,,False,False,62.8866463351976,79.40936528970707,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,0.03,200,,False,True,34.578560720813364,33.15283234950776,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,0.03,200,,False,True,62.70000051148975,79.28109059466225,True,-18717644,79158.79109787766,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,1.0,200,,False,True,33.49112163436685,32.183007865433666,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,1.0,200,,False,True,61.61256142504323,78.31126611058814,True,-18717644,78188.96661380355,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,2.0,200,,False,True,32.36905601870598,31.18230196809317,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,2.0,200,,False,True,60.49049580938237,77.31056021324765,True,-18717644,77188.26071646306,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,4.686,200,,False,True,37.363289742781205,36.62770500356979,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,4.686,200,,False,True,57.50679856960302,74.6244677510568,True,-18717644,74502.16825427223,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,5.0,200,,False,True,37.05477870548858,36.31325554015735,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,5.0,200,,False,True,57.198287532310395,74.31001828764434,True,-18717644,74187.71879085977,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,10.0,200,,True,True,35.57663575155037,34.69032884577344,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,10.0,200,,False,True,52.2766942118125,69.30789946537485,True,-18717644,69185.59996859026,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,20.0,200,,False,True,47.30962040694486,50.43581507920322,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,20.0,200,,False,True,44.54173597615776,59.29520167554545,True,-18717644,59172.902178760865,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-08-01,spring,P0,40.0,200,,False,True,28.171348012553278,39.26483653779454,,,,,,
+crater_lake:ab,crater_lake,2026-08-01,spring,P5 built,40.0,200,,False,True,28.171348012553278,39.26483653779454,True,-18717644,39142.537041009964,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5,0.03,200,,False,False,62.8866463351976,79.40936528970707,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,0.03,200,,False,True,34.578560720813364,33.15283234950776,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,0.03,200,,False,True,62.70000051148975,79.28109059466225,True,-18717644,79158.79109787766,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,1.0,200,,False,True,33.49112163436685,32.183007865433666,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,1.0,200,,False,True,61.61256142504323,78.31126611058814,True,-18717644,78188.96661380355,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,2.0,200,,False,True,32.36905601870598,31.18230196809317,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,2.0,200,,False,True,60.49049580938237,77.31056021324765,True,-18717644,77188.26071646306,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,4.686,200,,False,True,37.363289742781205,36.62770500356979,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,4.686,200,,False,True,57.50679856960302,74.6244677510568,True,-18717644,74502.16825427223,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,5.0,200,,False,True,37.05477870548858,36.31325554015735,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,5.0,200,,False,True,57.198287532310395,74.31001828764434,True,-18717644,74187.71879085977,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,10.0,200,,True,True,35.57663575155037,34.69032884577344,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,10.0,200,,False,True,52.2766942118125,69.30789946537485,True,-18717644,69185.59996859026,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,20.0,200,,False,True,47.30962040694486,50.43581507920322,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,20.0,200,,False,True,44.54173597615776,59.29520167554545,True,-18717644,59172.902178760865,0.0,0.0,1.0
+crater_lake:ab,crater_lake,2026-10-12,autumn,P0,40.0,200,,False,True,28.171348012553278,39.26483653779454,,,,,,
+crater_lake:ab,crater_lake,2026-10-12,autumn,P5 built,40.0,200,,False,True,28.171348012553278,39.26483653779454,True,-18717644,39142.537041009964,0.0,0.0,1.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P5,0.03,200,,False,False,57.85681801998687,74.92355109186747,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,0.03,200,,True,True,29.833188746172752,28.855898071710186,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,0.03,200,,False,False,57.80949151733127,74.8935776401856,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,0.2,200,,False,True,29.709433735303907,28.843388013983123,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,0.2,200,,False,False,57.61163974292496,74.72327362828894,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,1.0,200,,False,True,35.90195617604552,37.52200334539841,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,1.0,200,,False,False,57.040744547497944,73.92318289901404,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,2.0,200,,False,True,35.18792160321438,36.521307514219345,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,2.0,200,,False,False,56.32670997466679,72.92248706783496,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,5.0,200,,True,True,33.59311161271624,34.097036040416725,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,5.0,200,,False,False,54.18772998183142,69.92477737246429,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,10.0,200,,False,False,50.61450422534112,64.91701968896189,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,10.0,200,,False,False,50.61450422534112,64.91701968896189,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,20.0,200,,False,False,43.4636236501633,54.89529713781587,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,20.0,200,,False,False,43.4636236501633,54.89529713781587,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-08-01,spring,P0,40.0,200,,False,False,29.19302996725595,34.8955322100289,,,,,,
+crater_lake:ba,crater_lake,2026-08-01,spring,P5 built,40.0,200,,False,False,29.19302996725595,34.8955322100289,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5,0.03,200,,False,False,57.85681801998687,74.92355109186747,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,0.03,200,,True,True,29.833188746172752,28.855898071710186,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,0.03,200,,False,False,57.80949151733127,74.8935776401856,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,0.2,200,,False,True,29.709433735303907,28.843388013983123,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,0.2,200,,False,False,57.61163974292496,74.72327362828894,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,1.0,200,,False,True,35.90195617604552,37.52200334539841,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,1.0,200,,False,False,57.040744547497944,73.92318289901404,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,2.0,200,,False,True,35.18792160321438,36.521307514219345,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,2.0,200,,False,False,56.32670997466679,72.92248706783496,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,5.0,200,,True,True,33.59311161271624,34.097036040416725,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,5.0,200,,False,False,54.18772998183142,69.92477737246429,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,10.0,200,,False,False,50.61450422534112,64.91701968896189,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,10.0,200,,False,False,50.61450422534112,64.91701968896189,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,20.0,200,,False,False,43.4636236501633,54.89529713781587,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,20.0,200,,False,False,43.4636236501633,54.89529713781587,True,,,0.0,0.0,0.0
+crater_lake:ba,crater_lake,2026-10-12,autumn,P0,40.0,200,,False,False,29.19302996725595,34.8955322100289,,,,,,
+crater_lake:ba,crater_lake,2026-10-12,autumn,P5 built,40.0,200,,False,False,29.19302996725595,34.8955322100289,True,,,0.0,0.0,0.0
+sonora:ab,sonora,2026-06-13,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sonora:ab,sonora,2026-10-31,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sonora:ba,sonora,2026-06-13,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sonora:ba,sonora,2026-06-13,spring,P0,0.03,200,,True,True,53.53157531911667,58.81106252638713,,,,,,
+sonora:ba,sonora,2026-06-13,spring,P5 built,0.03,200,,False,True,259.325919869823,301.97096382166256,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,287018.630888395,0.0,0.0,9.0
+sonora:ba,sonora,2026-06-13,spring,P0,1.0,200,,True,True,54.74757586769064,60.80967478765306,,,,,,
+sonora:ba,sonora,2026-06-13,spring,P5 built,1.0,200,,True,True,260.2364459738036,303.77509642101626,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,288822.76348774857,0.0,0.0,9.0
+sonora:ba,sonora,2026-06-13,spring,P0,2.0,200,,False,True,57.58062099912101,64.69691556310174,,,,,,
+sonora:ba,sonora,2026-06-13,spring,P5 built,2.0,200,,False,True,263.06949110523396,307.6623371964649,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,292710.0042631973,0.0,0.0,9.0
+sonora:ba,sonora,2026-10-31,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sonora:ba,sonora,2026-10-31,autumn,P0,0.03,200,,True,True,53.53157531911667,58.81106252638713,,,,,,
+sonora:ba,sonora,2026-10-31,autumn,P5 built,0.03,200,,False,True,233.59352592352377,267.40527784493986,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,252452.94491167233,0.0,0.0,9.0
+sonora:ba,sonora,2026-10-31,autumn,P0,1.0,200,,True,True,54.74757586769064,60.80967478765306,,,,,,
+sonora:ba,sonora,2026-10-31,autumn,P5 built,1.0,200,,False,True,232.8582828290882,266.4359857836889,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,251483.6528504214,0.0,0.0,9.0
+sonora:ba,sonora,2026-10-31,autumn,P0,2.0,200,,False,True,57.58062099912101,64.69691556310174,,,,,,
+sonora:ba,sonora,2026-10-31,autumn,P5 built,2.0,200,,False,True,232.20526794320816,265.4376287753626,True,-2190218 -2190217 -2190216 -2190215 -2190214 -2190213 -2194830 -2194829 -2194828,250485.2958420951,0.0,0.0,9.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P5,0.03,200,,True,False,181.34657857553185,191.28722248923896,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,0.03,200,,True,True,43.24332940711148,57.86795057030401,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,0.03,200,,True,False,181.30635189159932,191.25728713194584,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,0.458,200,,True,True,43.84766985941056,58.49079009868802,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,0.458,200,,False,False,180.7855985450896,190.82910153660927,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,1.0,200,,True,True,44.822615283719685,59.40155161589677,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,1.0,200,,False,False,180.2048006551142,190.28653950772394,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,2.0,200,,False,True,47.48894055476531,61.89234380659856,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,2.0,200,,False,False,179.13514437408548,189.28730226519625,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,5.0,200,,True,True,49.83736806022229,64.08616650127964,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,5.0,200,,False,False,175.9249757348719,186.2884697280642,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,10.0,200,,False,True,56.06059565362331,69.89969827811508,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,10.0,200,,False,False,170.56971378474708,181.2857625229893,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,20.0,200,,False,True,68.04980709401744,81.09961996534992,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,20.0,200,,False,False,159.8649573793059,171.28573591423967,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,40.0,200,,False,True,95.91176627294055,103.22865307850793,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,40.0,200,,False,False,135.87821225153942,151.28457247591842,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-06-30,spring,P0,80.0,200,,False,False,83.59071375026721,111.2845478390545,,,,,,
+ebbetts:ab,ebbetts,2026-06-30,spring,P5 built,80.0,200,,False,False,83.59071375026721,111.2845478390545,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5,0.03,200,,True,False,181.34657857553185,191.28722248923896,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,0.03,200,,True,True,43.24332940711148,57.86795057030401,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,0.03,200,,True,False,181.30635189159932,191.25728713194584,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,0.458,200,,True,True,43.84766985941056,58.49079009868802,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,0.458,200,,False,False,180.7855985450896,190.82910153660927,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,1.0,200,,True,True,44.822615283719685,59.40155161589677,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,1.0,200,,False,False,180.2048006551142,190.28653950772394,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,2.0,200,,False,True,47.48894055476531,61.89234380659856,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,2.0,200,,False,False,179.13514437408548,189.28730226519625,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,5.0,200,,True,True,49.83736806022229,64.08616650127964,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,5.0,200,,False,False,175.9249757348719,186.2884697280642,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,10.0,200,,False,True,56.06059565362331,69.89969827811508,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,10.0,200,,False,False,170.56971378474708,181.2857625229893,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,20.0,200,,False,True,68.04980709401744,81.09961996534992,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,20.0,200,,False,False,159.8649573793059,171.28573591423967,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,40.0,200,,False,True,95.91176627294055,103.22865307850793,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,40.0,200,,False,False,135.87821225153942,151.28457247591842,True,,,0.0,0.0,0.0
+ebbetts:ab,ebbetts,2026-10-31,autumn,P0,80.0,200,,False,False,83.59071375026721,111.2845478390545,,,,,,
+ebbetts:ab,ebbetts,2026-10-31,autumn,P5 built,80.0,200,,False,False,83.59071375026721,111.2845478390545,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P5,0.03,200,,False,False,189.73242837619523,200.73397748714726,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,0.03,200,,True,True,39.939383419003455,51.78760264102134,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,0.03,200,,False,False,189.69675049797343,200.7040378010061,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,1.0,200,,False,True,44.94815770931353,58.83467331138395,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,1.0,200,,False,False,188.9860727723324,199.7354856895508,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,2.0,200,,False,True,44.23519836645761,57.83548437944298,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,2.0,200,,False,False,188.2731134294765,198.73629675760986,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,5.0,200,,True,True,44.048929927158404,57.574435324146016,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,5.0,200,,False,False,186.1322529403072,195.73595160884028,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,7.851,200,,True,True,45.7477526258046,59.525876439855644,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,7.851,200,,False,False,183.7940440289394,192.88635576851095,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,10.0,200,,False,True,50.11763442950301,65.34921928321047,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,10.0,200,,False,False,182.04592824468722,190.73940736516838,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,20.0,200,,True,True,56.62428208023163,72.95232089026948,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,20.0,200,,False,False,174.7832901259503,180.75025834778637,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,40.0,200,,True,True,69.3927102292293,92.36260033276916,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,40.0,200,,False,False,160.51630324818146,160.75554823807593,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-06-30,spring,P0,80.0,200,,False,True,100.37412965085022,134.25154322309706,,,,,,
+ebbetts:ba,ebbetts,2026-06-30,spring,P5 built,80.0,200,,False,False,130.88327331383672,120.75632860494673,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5,0.03,200,,False,False,189.73242837619523,200.73397748714726,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,0.03,200,,True,True,39.939383419003455,51.78760264102134,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,0.03,200,,False,False,189.69675049797343,200.7040378010061,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,1.0,200,,False,True,44.94815770931353,58.83467331138395,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,1.0,200,,False,False,188.9860727723324,199.7354856895508,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,2.0,200,,False,True,44.23519836645761,57.83548437944298,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,2.0,200,,False,False,188.2731134294765,198.73629675760986,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,5.0,200,,True,True,44.048929927158404,57.574435324146016,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,5.0,200,,False,False,186.1322529403072,195.73595160884028,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,7.851,200,,True,True,45.7477526258046,59.525876439855644,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,7.851,200,,False,False,183.7940440289394,192.88635576851095,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,10.0,200,,False,True,50.11763442950301,65.34921928321047,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,10.0,200,,False,False,182.04592824468722,190.73940736516838,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,20.0,200,,True,True,56.62428208023163,72.95232089026948,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,20.0,200,,False,False,174.7832901259503,180.75025834778637,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,40.0,200,,True,True,69.3927102292293,92.36260033276916,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,40.0,200,,False,False,160.51630324818146,160.75554823807593,True,,,0.0,0.0,0.0
+ebbetts:ba,ebbetts,2026-10-31,autumn,P0,80.0,200,,False,True,100.37412965085022,134.25154322309706,,,,,,
+ebbetts:ba,ebbetts,2026-10-31,autumn,P5 built,80.0,200,,False,False,130.88327331383672,120.75632860494673,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P5,0.03,200,,False,False,242.8936438474458,231.5565097313577,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P0,0.03,200,,True,True,80.98641058183695,101.99903023673933,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,0.03,200,,False,False,242.87010673639526,231.52652202003836,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,1.0,200,,True,True,83.23700586175673,103.46080714744713,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,1.0,200,,False,False,242.10905796167623,230.55689958391253,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,2.0,200,,True,True,84.12738981649416,103.86856698453045,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,2.0,200,,False,False,241.3242541312471,229.55701176171277,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,5.0,200,,True,True,84.83166093616948,107.22455569705235,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,5.0,200,,False,False,239.17546487506422,226.55758880525173,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,10.0,200,,True,True,88.76104177402625,112.73145294429257,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,10.0,200,,False,False,235.60449279686816,221.5529895773195,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,20.0,200,,True,True,95.85536350517627,122.67391014668874,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,20.0,200,,False,False,228.46815047468303,211.55164190676885,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,30.142,200,,False,True,123.90844952789438,138.77218988303707,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,30.142,200,,False,False,211.70123998508728,201.39287368632003,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,40.0,200,,False,True,142.34730386861094,149.5742853843068,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,40.0,200,,False,False,194.85505847909567,191.5238190207266,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-06-11,spring,P0,80.0,200,,False,False,126.49976097203299,151.47900723117235,,,,,,
+chinook:ab,chinook,2026-06-11,spring,P5 built,80.0,200,,False,False,126.49976097203299,151.47900723117235,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P5,0.03,200,,False,False,242.8936438474458,231.5565097313577,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P0,0.03,200,,True,True,80.98641058183695,101.99903023673933,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,0.03,200,,False,False,242.87010673639526,231.52652202003836,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,1.0,200,,True,True,83.23700586175673,103.46080714744713,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,1.0,200,,False,False,242.10905796167623,230.55689958391253,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,2.0,200,,True,True,84.12738981649416,103.86856698453045,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,2.0,200,,False,False,241.3242541312471,229.55701176171277,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,5.0,200,,True,True,84.83166093616948,107.22455569705235,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,5.0,200,,False,False,239.17546487506422,226.55758880525173,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,10.0,200,,True,True,88.76104177402625,112.73145294429257,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,10.0,200,,False,False,235.60449279686816,221.5529895773195,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,20.0,200,,True,True,95.85536350517627,122.67391014668874,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,20.0,200,,False,False,228.46815047468303,211.55164190676885,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,30.142,200,,False,True,123.90844952789438,138.77218988303707,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,30.142,200,,False,False,211.70123998508728,201.39287368632003,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,40.0,200,,False,True,142.34730386861094,149.5742853843068,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,40.0,200,,False,False,194.85505847909567,191.5238190207266,True,,,0.0,0.0,0.0
+chinook:ab,chinook,2026-10-23,autumn,P0,80.0,200,,False,False,126.49976097203299,151.47900723117235,,,,,,
+chinook:ab,chinook,2026-10-23,autumn,P5 built,80.0,200,,False,False,126.49976097203299,151.47900723117235,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P5,0.03,200,,False,False,320.32749382979216,338.34205611918134,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P0,0.03,200,,True,True,83.1921489562846,73.153971503012,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,0.03,200,,False,False,320.30389856553353,338.31199431713725,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,1.0,200,,True,True,85.46260019485146,76.0466645000632,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,1.0,200,,False,False,319.54110214924106,337.3401452793319,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,2.0,200,,False,True,86.32765414835875,77.14879586094698,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,2.0,200,,False,False,318.7547311454665,336.3382607829538,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,5.0,200,,True,True,87.35594465826276,78.43920667116416,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,5.0,200,,False,False,316.38004917781296,333.33246535008334,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,10.0,200,,True,True,92.2467366149695,84.67037314718593,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,10.0,200,,False,False,312.44936627721387,328.32453621817695,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,20.0,200,,True,True,99.31274430826707,93.67289679724837,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,20.0,200,,False,False,304.5824504808447,318.30160692289166,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,40.0,200,,False,True,119.82620792917496,121.58779784251222,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,40.0,200,,False,False,276.711664631992,236.8839648931094,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,67.012,200,,True,True,133.28309119552782,140.39751030481267,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,67.012,200,,True,False,239.83371814119207,225.66434918771637,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-06-11,spring,P0,80.0,200,,True,True,142.75153552581946,146.80478636225337,,,,,,
+chinook:ba,chinook,2026-06-11,spring,P5 built,80.0,200,,True,False,250.08547258348648,238.7257079955947,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P5,0.03,200,,False,False,320.32749382979216,338.34205611918134,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P0,0.03,200,,True,True,83.1921489562846,73.153971503012,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,0.03,200,,False,False,320.30389856553353,338.31199431713725,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,1.0,200,,True,True,85.46260019485146,76.0466645000632,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,1.0,200,,False,False,319.54110214924106,337.3401452793319,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,2.0,200,,False,True,86.32765414835875,77.14879586094698,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,2.0,200,,False,False,318.7547311454665,336.3382607829538,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,5.0,200,,True,True,87.35594465826276,78.43920667116416,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,5.0,200,,False,False,316.38004917781296,333.33246535008334,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,10.0,200,,True,True,92.2467366149695,84.67037314718593,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,10.0,200,,False,False,312.44936627721387,328.32453621817695,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,20.0,200,,True,True,99.31274430826707,93.67289679724837,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,20.0,200,,False,False,304.5824504808447,318.30160692289166,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,40.0,200,,False,True,119.82620792917496,121.58779784251222,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,40.0,200,,False,False,276.711664631992,236.8839648931094,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,67.012,200,,True,True,133.28309119552782,140.39751030481267,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,67.012,200,,True,False,239.83371814119207,225.66434918771637,True,,,0.0,0.0,0.0
+chinook:ba,chinook,2026-10-23,autumn,P0,80.0,200,,True,True,142.75153552581946,146.80478636225337,,,,,,
+chinook:ba,chinook,2026-10-23,autumn,P5 built,80.0,200,,True,False,250.08547258348648,238.7257079955947,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P5,0.03,200,,True,False,77.93301791358054,82.22683162864803,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P0,0.03,200,,True,True,35.616000221984336,29.924459813488703,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P0,0.782,200,,True,True,35.72142433828358,30.335777979835214,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,0.782,200,,False,False,76.53668057017525,81.44309395827656,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,1.0,200,,True,True,35.47577374398284,30.116696319216672,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,1.0,200,,False,False,76.29102997587452,81.22401229765802,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,2.0,200,,False,True,56.15983665477563,53.88023889544382,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,2.0,200,,False,False,75.376329588794,80.22123034425304,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,5.0,200,,False,True,53.53993192619291,50.87611269386697,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,5.0,200,,False,False,72.75642486021127,77.2171041426762,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,10.0,200,,False,True,49.16934599594941,45.864559576670096,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,10.0,200,,False,False,68.38583892996778,72.20555102547934,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,20.0,200,,True,False,58.98541716679043,62.18457770487586,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,20.0,200,,False,False,58.98541716679043,62.18457770487586,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,40.0,200,,False,False,40.36532861078743,42.1775614759783,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,40.0,200,,False,False,40.36532861078743,42.1775614759783,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-05-22,spring,P0,80.0,200,,False,False,2.048839994082159,2.120304148865048,,,,,,
+dunraven:ab,dunraven,2026-05-22,spring,P5 built,80.0,200,,False,False,2.048839994082159,2.120304148865048,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P5,0.03,200,,True,False,77.93301791358054,82.22683162864803,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P0,0.03,200,,True,True,35.616000221984336,29.924459813488703,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P0,0.782,200,,True,True,35.72142433828358,30.335777979835214,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,0.782,200,,False,False,76.53668057017525,81.44309395827656,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,1.0,200,,True,True,35.47577374398284,30.116696319216672,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,1.0,200,,False,False,76.29102997587452,81.22401229765802,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,2.0,200,,False,True,56.15983665477563,53.88023889544382,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,2.0,200,,False,False,75.376329588794,80.22123034425304,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,5.0,200,,False,True,53.53993192619291,50.87611269386697,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,5.0,200,,False,False,72.75642486021127,77.2171041426762,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,10.0,200,,False,True,49.16934599594941,45.864559576670096,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,10.0,200,,False,False,68.38583892996778,72.20555102547934,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,20.0,200,,True,False,58.98541716679043,62.18457770487586,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,20.0,200,,False,False,58.98541716679043,62.18457770487586,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,40.0,200,,False,False,40.36532861078743,42.1775614759783,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,40.0,200,,False,False,40.36532861078743,42.1775614759783,True,,,0.0,0.0,0.0
+dunraven:ab,dunraven,2026-10-11,autumn,P0,80.0,200,,False,False,2.048839994082159,2.120304148865048,,,,,,
+dunraven:ab,dunraven,2026-10-11,autumn,P5 built,80.0,200,,False,False,2.048839994082159,2.120304148865048,True,,,0.0,0.0,0.0
+dunraven:ba,dunraven,2026-05-22,spring,P5,0.03,200,,False,False,82.41648794761164,85.62869721297525,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P0,0.03,200,,False,True,34.95287310618737,28.844887231203664,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,0.03,200,,False,True,89.32815302405564,90.45927646554678,True,25830543,85292.87987501554,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,1.0,200,,True,True,33.429843559758154,27.87467108464622,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,1.0,200,,False,True,87.80512347762642,89.48906031898933,True,25830543,84322.6637284581,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,2.0,200,,False,True,36.419734805059306,30.715833122981003,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,2.0,200,,False,True,86.48651816709138,88.4877216586844,True,25830543,83321.32506815316,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,3.878,200,,True,True,35.76762538127916,30.13425416986091,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,3.878,200,,False,True,84.37766738402654,86.60695872845133,True,25830543,81440.56213792007,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,5.0,200,,True,True,38.21898836745448,32.84623941806638,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,5.0,200,,False,True,83.2481683849693,85.48233225017874,True,25830543,80315.93565964751,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,10.0,200,,False,True,54.17398028467595,51.14110668615999,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,10.0,200,,False,True,78.8818806196675,80.47570764422855,True,25830543,75309.3110536973,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,20.0,200,,True,False,63.18165232108402,65.59167626015892,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,20.0,200,,False,True,70.14040234083613,70.45225005378474,True,25830543,65285.853463253465,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,40.0,200,,False,False,42.77476427102431,45.562420128939046,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,40.0,200,,False,True,49.73351429077643,50.422993922564864,True,25830543,45256.597332033605,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-05-22,spring,P0,80.0,200,,False,False,5.446684149775081,5.524787210642611,,,,,,
+dunraven:ba,dunraven,2026-05-22,spring,P5 built,80.0,200,,False,True,12.405434169527188,10.385361004268422,True,25830543,5218.964413737162,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P5,0.03,200,,False,False,82.41648794761164,85.62869721297525,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P0,0.03,200,,False,True,34.95287310618737,28.844887231203664,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,0.03,200,,False,True,89.32815302405564,90.45927646554678,True,25830543,85292.87987501554,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,1.0,200,,True,True,33.429843559758154,27.87467108464622,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,1.0,200,,False,True,87.80512347762642,89.48906031898933,True,25830543,84322.6637284581,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,2.0,200,,False,True,36.419734805059306,30.715833122981003,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,2.0,200,,False,True,86.48651816709138,88.4877216586844,True,25830543,83321.32506815316,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,3.878,200,,True,True,35.76762538127916,30.13425416986091,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,3.878,200,,False,True,84.37766738402654,86.60695872845133,True,25830543,81440.56213792007,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,5.0,200,,True,True,38.21898836745448,32.84623941806638,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,5.0,200,,False,True,83.2481683849693,85.48233225017874,True,25830543,80315.93565964751,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,10.0,200,,False,True,54.17398028467595,51.14110668615999,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,10.0,200,,False,True,78.8818806196675,80.47570764422855,True,25830543,75309.3110536973,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,20.0,200,,True,False,63.18165232108402,65.59167626015892,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,20.0,200,,False,True,70.14040234083613,70.45225005378474,True,25830543,65285.853463253465,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,40.0,200,,False,False,42.77476427102431,45.562420128939046,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,40.0,200,,False,True,49.73351429077643,50.422993922564864,True,25830543,45256.597332033605,0.0,0.0,1.0
+dunraven:ba,dunraven,2026-10-11,autumn,P0,80.0,200,,False,False,5.446684149775081,5.524787210642611,,,,,,
+dunraven:ba,dunraven,2026-10-11,autumn,P5 built,80.0,200,,False,True,12.405434169527188,10.385361004268422,True,25830543,5218.964413737162,0.0,0.0,1.0
+lassen:ab,lassen,2026-07-26,spring,P5,0.03,200,,False,False,93.87975247870835,76.28252132735496,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P0,0.03,200,,True,True,71.18933312348499,67.80697148901632,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,0.03,200,,False,False,93.8440311384947,76.252545169359,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,1.0,200,,True,True,73.31236324350341,69.5885475980651,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,1.0,200,,False,False,92.68885107005546,75.28315656192707,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,2.0,200,,False,True,88.9715663026222,82.62445465765772,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,2.0,200,,False,False,91.48879723803364,74.28462471370422,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,5.0,200,,False,True,85.34288271757433,79.62776357452506,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,5.0,200,,False,False,87.86011365298579,71.28793363057154,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,10.0,200,,False,True,85.17887185694433,81.83277818340933,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,10.0,200,,False,False,82.55708258340653,66.29078143253199,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,16.438,200,,False,True,88.57609555101679,86.43104484074388,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,16.438,200,,False,False,77.84368908715065,59.8479463407217,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,20.0,200,,True,False,73.55037030671811,56.279901192137025,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,20.0,200,,False,False,73.55037030671811,56.279901192137025,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-07-26,spring,P0,40.0,200,,False,False,39.40273763952172,36.27507972127115,,,,,,
+lassen:ab,lassen,2026-07-26,spring,P5 built,40.0,200,,False,False,39.40273763952172,36.27507972127115,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P5,0.03,200,,False,False,93.87975247870835,76.28252132735496,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P0,0.03,200,,True,True,71.18933312348499,67.80697148901632,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,0.03,200,,False,False,93.8440311384947,76.252545169359,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,1.0,200,,True,True,73.31236324350341,69.5885475980651,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,1.0,200,,False,False,92.68885107005546,75.28315656192707,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,2.0,200,,False,True,88.9715663026222,82.62445465765772,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,2.0,200,,False,False,91.48879723803364,74.28462471370422,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,5.0,200,,False,True,85.34288271757433,79.62776357452506,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,5.0,200,,False,False,87.86011365298579,71.28793363057154,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,10.0,200,,False,True,85.17887185694433,81.83277818340933,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,10.0,200,,False,False,82.55708258340653,66.29078143253199,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,16.438,200,,False,True,88.57609555101679,86.43104484074388,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,16.438,200,,False,False,77.84368908715065,59.8479463407217,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,20.0,200,,True,False,73.55037030671811,56.279901192137025,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,20.0,200,,False,False,73.55037030671811,56.279901192137025,True,,,0.0,0.0,0.0
+lassen:ab,lassen,2026-10-20,autumn,P0,40.0,200,,False,False,39.40273763952172,36.27507972127115,,,,,,
+lassen:ab,lassen,2026-10-20,autumn,P5 built,40.0,200,,False,False,39.40273763952172,36.27507972127115,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P5,0.03,200,,False,False,65.04399605912411,40.78891510453644,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P0,0.03,200,,True,False,65.00818135139424,40.75886059563313,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,0.03,200,,False,False,65.00818135139424,40.75886059563313,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,1.0,200,,True,False,63.85062797323847,39.787480385797394,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,1.0,200,,False,False,63.85062797323847,39.787480385797394,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,2.0,200,,False,True,73.81866609747082,66.10231007000428,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,2.0,200,,False,False,62.582333985603945,38.787777028974276,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,2.08,200,,False,True,73.76172659611707,66.02251124260552,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,2.08,200,,False,False,62.52539448425019,38.7079782015755,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,5.0,200,,True,False,59.063903895279466,35.78593539801949,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,5.0,200,,False,False,59.063903895279466,35.78593539801949,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,10.0,200,,False,False,50.52832916867327,30.785511204016025,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,10.0,200,,False,False,50.52832916867327,30.785511204016025,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,20.0,200,,False,False,33.462472908653666,20.7877637450212,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,20.0,200,,False,False,33.462472908653666,20.7877637450212,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-07-26,spring,P0,40.0,200,,False,False,0.8185854879792159,0.777769308447189,,,,,,
+lassen:ba,lassen,2026-07-26,spring,P5 built,40.0,200,,False,False,0.8185854879792159,0.777769308447189,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P5,0.03,200,,False,False,65.04399605912411,40.78891510453644,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P0,0.03,200,,True,False,65.00818135139424,40.75886059563313,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,0.03,200,,False,False,65.00818135139424,40.75886059563313,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,1.0,200,,True,False,63.85062797323847,39.787480385797394,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,1.0,200,,False,False,63.85062797323847,39.787480385797394,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,2.0,200,,False,True,73.81866609747082,66.10231007000428,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,2.0,200,,False,False,62.582333985603945,38.787777028974276,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,2.08,200,,False,True,73.76172659611707,66.02251124260552,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,2.08,200,,False,False,62.52539448425019,38.7079782015755,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,5.0,200,,True,False,59.063903895279466,35.78593539801949,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,5.0,200,,False,False,59.063903895279466,35.78593539801949,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,10.0,200,,False,False,50.52832916867327,30.785511204016025,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,10.0,200,,False,False,50.52832916867327,30.785511204016025,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,20.0,200,,False,False,33.462472908653666,20.7877637450212,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,20.0,200,,False,False,33.462472908653666,20.7877637450212,True,,,0.0,0.0,0.0
+lassen:ba,lassen,2026-10-20,autumn,P0,40.0,200,,False,False,0.8185854879792159,0.777769308447189,,,,,,
+lassen:ba,lassen,2026-10-20,autumn,P5 built,40.0,200,,False,False,0.8185854879792159,0.777769308447189,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5,0.03,200,,False,False,103.02235720349043,89.43387949522106,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,0.03,200,,False,True,42.15569322565238,37.81162525891068,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,0.03,200,,False,False,102.98841498139754,89.40360837618566,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,1.0,200,,False,True,41.06608997737916,36.839870683162296,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,1.0,200,,False,False,101.89881173312432,88.43185380043728,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,2.0,200,,True,True,46.47494506840981,38.228354329925615,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,2.0,200,,True,True,108.12801850464491,90.43156326042056,True,24716268 24742220 24742221,5063.454352279914,0.0,3.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,4.571,200,,True,True,39.53192806501705,35.471639759989664,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,4.571,200,,False,False,97.88876288297843,84.8555214746303,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,5.0,200,,True,True,39.050636472444154,35.042403422732846,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,5.0,200,,True,False,97.40747129040554,84.42628513737347,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,10.0,200,,True,True,44.72313285914203,40.101377254194475,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,10.0,200,,False,False,91.7937566978809,79.41973541308028,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,20.0,200,,False,True,63.25688001393506,56.18644695540509,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,20.0,200,,False,False,80.06871891395714,69.40696266635159,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,40.0,200,,False,False,57.55759909684588,49.37390264333455,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,40.0,200,,False,False,57.55759909684588,49.37390264333455,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P0,80.0,200,,False,False,8.918217672502454,9.320149343927879,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-07-08,spring,P5 built,80.0,200,,False,False,8.918217672502454,9.320149343927879,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5,0.03,200,,False,False,103.02235720349043,89.43387949522106,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,0.03,200,,False,True,42.15569322565238,37.81162525891068,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,0.03,200,,False,False,102.98841498139754,89.40360837618566,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,1.0,200,,False,True,41.06608997737916,36.839870683162296,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,1.0,200,,False,False,101.89881173312432,88.43185380043728,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,2.0,200,,True,True,46.47494506840981,38.228354329925615,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,2.0,200,,True,True,108.12801850464491,90.43156326042056,True,24716268 24742220 24742221,5063.454352279914,0.0,3.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,4.571,200,,True,True,39.53192806501705,35.471639759989664,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,4.571,200,,False,False,97.88876288297843,84.8555214746303,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,5.0,200,,True,True,39.050636472444154,35.042403422732846,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,5.0,200,,True,False,97.40747129040554,84.42628513737347,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,10.0,200,,True,True,44.72313285914203,40.101377254194475,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,10.0,200,,False,False,91.7937566978809,79.41973541308028,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,20.0,200,,False,True,63.25688001393506,56.18644695540509,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,20.0,200,,False,False,80.06871891395714,69.40696266635159,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,40.0,200,,False,False,57.55759909684588,49.37390264333455,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,40.0,200,,False,False,57.55759909684588,49.37390264333455,True,,,0.0,0.0,0.0
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P0,80.0,200,,False,False,8.918217672502454,9.320149343927879,,,,,,
+stevens_canyon:ab,stevens_canyon,2026-09-23,autumn,P5 built,80.0,200,,False,False,8.918217672502454,9.320149343927879,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5,0.03,200,,False,False,105.09935988042179,91.27531140817553,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,0.03,200,,True,True,40.6565124309564,35.403915601412294,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,0.03,200,,False,False,105.07320649970939,91.24532250995308,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,1.0,200,,False,True,43.59088361225864,38.768626254715606,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,1.0,200,,False,False,104.22732231588299,90.27538539261872,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,2.0,200,,True,True,42.71892982163129,37.76879629891227,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,2.0,200,,False,False,103.35536852525564,89.27555543681537,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,3.033,200,,False,True,44.960786173702004,40.339431533831835,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,3.033,200,,False,False,102.45398128498569,88.24197547617042,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,5.0,200,,False,True,52.69058897133995,46.39657621869796,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,5.0,200,,False,False,100.62122891158559,86.27454261334046,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,10.0,200,,True,True,50.7714440401221,46.06078618517385,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,10.0,200,,False,False,95.24435688181168,81.2735868663395,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,20.0,200,,True,True,56.906898825149796,54.659423085094346,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,20.0,200,,False,False,88.10077305431638,71.26209046566979,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,40.0,200,,False,False,61.37166872385809,51.23975510212557,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,40.0,200,,False,False,61.37166872385809,51.23975510212557,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P0,80.0,200,,False,False,13.213420714732113,11.174447380087686,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-07-08,spring,P5 built,80.0,200,,False,False,13.213420714732113,11.174447380087686,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5,0.03,200,,False,False,105.09935988042179,91.27531140817553,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,0.03,200,,True,True,40.6565124309564,35.403915601412294,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,0.03,200,,False,False,105.07320649970939,91.24532250995308,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,1.0,200,,False,True,43.59088361225864,38.768626254715606,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,1.0,200,,False,False,104.22732231588299,90.27538539261872,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,2.0,200,,True,True,42.71892982163129,37.76879629891227,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,2.0,200,,False,False,103.35536852525564,89.27555543681537,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,3.033,200,,False,True,44.960786173702004,40.339431533831835,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,3.033,200,,False,False,102.45398128498569,88.24197547617042,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,5.0,200,,False,True,52.69058897133995,46.39657621869796,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,5.0,200,,False,False,100.62122891158559,86.27454261334046,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,10.0,200,,True,True,50.7714440401221,46.06078618517385,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,10.0,200,,False,False,95.24435688181168,81.2735868663395,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,20.0,200,,True,True,56.906898825149796,54.659423085094346,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,20.0,200,,False,False,88.10077305431638,71.26209046566979,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,40.0,200,,False,False,61.37166872385809,51.23975510212557,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,40.0,200,,False,False,61.37166872385809,51.23975510212557,True,,,0.0,0.0,0.0
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P0,80.0,200,,False,False,13.213420714732113,11.174447380087686,,,,,,
+stevens_canyon:ba,stevens_canyon,2026-09-23,autumn,P5 built,80.0,200,,False,False,13.213420714732113,11.174447380087686,True,,,0.0,0.0,0.0
+sunrise:ab,sunrise,2026-07-08,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,0.03,200,,True,True,28.732203039435074,24.716002808081203,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,1.0,200,,False,True,40.35626345350382,38.07423586652395,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,2.0,200,,False,True,39.484438835987895,37.07455402768238,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,5.0,200,,False,True,36.86857808844755,34.075064876176704,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,10.0,200,,True,True,37.9273554715437,35.844098486911804,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,20.0,200,,True,True,45.12717775081199,45.934411217185904,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,20.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P0,40.0,200,,False,True,79.74065732186625,69.99639767350995,,,,,,
+sunrise:ab,sunrise,2026-07-08,spring,P5 built,40.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,0.03,200,,True,True,28.732203039435074,24.716002808081203,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,1.0,200,,False,True,40.35626345350382,38.07423586652395,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,2.0,200,,False,True,39.484438835987895,37.07455402768238,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,5.0,200,,False,True,36.86857808844755,34.075064876176704,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,10.0,200,,True,True,37.9273554715437,35.844098486911804,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,20.0,200,,True,True,45.12717775081199,45.934411217185904,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,20.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P0,40.0,200,,False,True,79.74065732186625,69.99639767350995,,,,,,
+sunrise:ab,sunrise,2026-09-23,autumn,P5 built,40.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,0.03,200,,False,True,44.64399232225624,33.49706470919603,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,1.0,200,,False,True,43.37382888707339,32.52610541837687,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,2.0,200,,False,True,42.06575858017352,31.526168731216416,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,5.0,200,,True,True,38.140207892517545,28.525334502972083,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,10.0,200,,True,True,44.77374897987248,33.596255434395886,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P0,20.0,200,,True,True,62.37174617436398,49.44114739425192,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-05-31,spring,P5 built,20.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,0.03,200,,False,True,44.64399232225624,33.49706470919603,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,0.03,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,1.0,200,,False,True,43.37382888707339,32.52610541837687,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,1.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,2.0,200,,False,True,42.06575858017352,31.526168731216416,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,2.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,5.0,200,,True,True,38.140207892517545,28.525334502972083,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,5.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,10.0,200,,True,True,44.77374897987248,33.596255434395886,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,10.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P0,20.0,200,,True,True,62.37174617436398,49.44114739425192,,,,,,
+mt_blue_sky:ab,mt_blue_sky,2026-08-27,autumn,P5 built,20.0,404,CLOSED_FOR_SEASON,False,False,,,True,,,,,
+greylock:ab,greylock,2026-05-20,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+greylock:ab,greylock,2026-10-29,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5,0.03,200,,False,False,44.202060760540824,38.79130841610007,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,0.03,200,,True,True,27.298009349231556,16.558763450815665,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,0.03,200,,False,False,44.15084053150185,38.76130189858808,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,1.0,200,,True,False,42.571212600691425,37.78955087988552,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,1.0,200,,False,False,42.571212600691425,37.78955087988552,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,1.476,200,,False,False,41.81767377038799,37.31230962069334,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,1.476,200,,False,False,41.81767377038799,37.31230962069334,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,2.0,200,,False,False,40.98804032984632,36.78687510835029,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,2.0,200,,False,False,40.98804032984632,36.78687510835029,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,5.0,200,,False,False,36.238420578257774,33.77878259901087,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,5.0,200,,False,False,36.238420578257774,33.77878259901087,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,10.0,200,,False,False,30.823385403027203,28.764478011825133,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,10.0,200,,False,False,30.823385403027203,28.764478011825133,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P0,20.0,200,,False,False,20.825421229133223,18.754610516944886,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-06-15,spring,P5 built,20.0,200,,False,False,20.825421229133223,18.754610516944886,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5,0.03,200,,False,False,44.202060760540824,38.79130841610007,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,0.03,200,,True,True,27.298009349231556,16.558763450815665,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,0.03,200,,False,False,44.15084053150185,38.76130189858808,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,1.0,200,,True,False,42.571212600691425,37.78955087988552,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,1.0,200,,False,False,42.571212600691425,37.78955087988552,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,1.476,200,,False,False,41.81767377038799,37.31230962069334,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,1.476,200,,False,False,41.81767377038799,37.31230962069334,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,2.0,200,,False,False,40.98804032984632,36.78687510835029,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,2.0,200,,False,False,40.98804032984632,36.78687510835029,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,5.0,200,,False,False,36.238420578257774,33.77878259901087,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,5.0,200,,False,False,36.238420578257774,33.77878259901087,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,10.0,200,,False,False,30.823385403027203,28.764478011825133,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,10.0,200,,False,False,30.823385403027203,28.764478011825133,True,,,0.0,0.0,0.0
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P0,20.0,200,,False,False,20.825421229133223,18.754610516944886,,,,,,
+jefferson_notch:ab,jefferson_notch,2026-10-31,autumn,P5 built,20.0,200,,False,False,20.825421229133223,18.754610516944886,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5,0.03,200,,False,False,45.67667822894261,40.14853899469893,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,0.03,200,,False,True,31.731519803469933,19.776859314193917,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,0.03,200,,False,False,45.63623266442497,40.118440753770386,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,1.0,200,,False,True,30.423875686833615,18.80375415073039,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,1.0,200,,False,False,44.32858854778866,39.14533559030686,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,2.0,200,,True,True,29.075819179215927,17.800575432978228,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,2.0,200,,True,False,42.980532040170964,38.142156872554686,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,5.0,200,,False,True,25.032982130392853,14.792030862479056,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,5.0,200,,False,False,38.93769499134789,35.13361230205552,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,5.497,200,,True,False,38.268174463716996,34.635377442743525,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,5.497,200,,False,False,38.268174463716996,34.635377442743525,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,10.0,200,,True,False,32.20334586376033,30.12213415960911,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,10.0,200,,False,False,32.20334586376033,30.12213415960911,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P0,20.0,200,,False,False,22.621666248423267,20.09482223054834,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-06-15,spring,P5 built,20.0,200,,False,False,22.621666248423267,20.09482223054834,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5,0.03,200,,False,False,45.67667822894261,40.14853899469893,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,0.03,200,,False,True,31.731519803469933,19.776859314193917,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,0.03,200,,False,False,45.63623266442497,40.118440753770386,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,1.0,200,,False,True,30.423875686833615,18.80375415073039,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,1.0,200,,False,False,44.32858854778866,39.14533559030686,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,2.0,200,,True,True,29.075819179215927,17.800575432978228,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,2.0,200,,True,False,42.980532040170964,38.142156872554686,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,5.0,200,,False,True,25.032982130392853,14.792030862479056,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,5.0,200,,False,False,38.93769499134789,35.13361230205552,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,5.497,200,,True,False,38.268174463716996,34.635377442743525,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,5.497,200,,False,False,38.268174463716996,34.635377442743525,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,10.0,200,,True,False,32.20334586376033,30.12213415960911,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,10.0,200,,False,False,32.20334586376033,30.12213415960911,True,,,0.0,0.0,0.0
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P0,20.0,200,,False,False,22.621666248423267,20.09482223054834,,,,,,
+jefferson_notch:ba,jefferson_notch,2026-10-31,autumn,P5 built,20.0,200,,False,False,22.621666248423267,20.09482223054834,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P5,0.03,200,,False,False,72.84988685200611,74.84522945091175,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,0.03,200,,False,True,33.02564250733311,31.119486863740377,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,0.03,200,,False,False,72.81624777191314,74.81522868682067,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,1.0,200,,False,True,31.937177887007326,30.1487477648821,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,1.0,200,,False,False,71.72778315158735,73.8444895879624,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,2.0,200,,True,True,30.813782874040914,29.14685625441435,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,2.0,200,,False,False,70.60438813862095,72.84259807749464,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,2.974,200,,True,True,31.55484241235873,29.807764707471513,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,2.974,200,,False,False,69.37536192279877,71.86689891094144,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,5.0,200,,False,True,41.192291638233236,38.28245357306927,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,5.0,200,,False,False,67.0985829017961,69.83637042717126,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,10.0,200,,False,True,42.622210505374134,39.55771610949728,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,10.0,200,,False,False,61.47550335585228,64.8214686386279,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,20.0,200,,True,True,53.44521602210143,50.34047081237981,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,20.0,200,,False,False,51.70265237505986,54.795232100356394,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-06-15,spring,P0,40.0,200,,False,False,34.85107549355037,34.7818573397746,,,,,,
+evans_notch:ab,evans_notch,2026-06-15,spring,P5 built,40.0,200,,False,False,34.85107549355037,34.7818573397746,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5,0.03,200,,False,False,72.84988685200611,74.84522945091175,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,0.03,200,,False,True,33.02564250733311,31.119486863740377,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,0.03,200,,False,False,72.81624777191314,74.81522868682067,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,1.0,200,,False,True,31.937177887007326,30.1487477648821,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,1.0,200,,False,False,71.72778315158735,73.8444895879624,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,2.0,200,,True,True,30.813782874040914,29.14685625441435,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,2.0,200,,False,False,70.60438813862095,72.84259807749464,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,2.974,200,,True,True,31.55484241235873,29.807764707471513,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,2.974,200,,False,False,69.37536192279877,71.86689891094144,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,5.0,200,,False,True,41.192291638233236,38.28245357306927,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,5.0,200,,False,False,67.0985829017961,69.83637042717126,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,10.0,200,,False,True,42.622210505374134,39.55771610949728,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,10.0,200,,False,False,61.47550335585228,64.8214686386279,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,20.0,200,,True,True,53.44521602210143,50.34047081237981,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,20.0,200,,False,False,51.70265237505986,54.795232100356394,True,,,0.0,0.0,0.0
+evans_notch:ab,evans_notch,2026-10-31,autumn,P0,40.0,200,,False,False,34.85107549355037,34.7818573397746,,,,,,
+evans_notch:ab,evans_notch,2026-10-31,autumn,P5 built,40.0,200,,False,False,34.85107549355037,34.7818573397746,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P5,0.03,200,,False,False,75.28591310142832,67.82196283676572,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,0.03,200,,True,True,20.584631691660803,18.276708064949613,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,0.03,200,,False,False,75.25639755541906,67.79187915584987,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,1.0,200,,True,True,21.551488823436323,19.262175907368967,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,1.0,200,,False,False,74.304257634762,66.82141181124001,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,2.0,200,,True,True,24.40701642460072,22.172668607485644,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,2.0,200,,False,False,73.32282134596149,65.82108418246183,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,4.989,200,,True,True,26.342435480632354,23.645222738571988,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,4.989,200,,False,False,70.2426995803573,62.8311765122306,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,5.0,200,,True,True,26.323099528845525,23.633895093483538,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,5.0,200,,False,False,70.22336362857047,62.819848867142134,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,10.0,200,,True,True,35.536940373351506,29.031670188223288,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,10.0,200,,False,False,61.67312175651645,57.810832170430515,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,20.0,200,,True,False,45.279735420983826,47.7918460197223,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,20.0,200,,False,False,45.279735420983826,47.7918460197223,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-06-15,spring,P0,40.0,200,,False,False,27.384259576954992,27.763521089859488,,,,,,
+evans_notch:ba,evans_notch,2026-06-15,spring,P5 built,40.0,200,,False,False,27.384259576954992,27.763521089859488,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5,0.03,200,,False,False,75.28591310142832,67.82196283676572,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,0.03,200,,True,True,20.584631691660803,18.276708064949613,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,0.03,200,,False,False,75.25639755541906,67.79187915584987,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,1.0,200,,True,True,21.551488823436323,19.262175907368967,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,1.0,200,,False,False,74.304257634762,66.82141181124001,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,2.0,200,,True,True,24.40701642460072,22.172668607485644,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,2.0,200,,False,False,73.32282134596149,65.82108418246183,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,4.989,200,,True,True,26.342435480632354,23.645222738571988,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,4.989,200,,False,False,70.2426995803573,62.8311765122306,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,5.0,200,,True,True,26.323099528845525,23.633895093483538,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,5.0,200,,False,False,70.22336362857047,62.819848867142134,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,10.0,200,,True,True,35.536940373351506,29.031670188223288,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,10.0,200,,False,False,61.67312175651645,57.810832170430515,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,20.0,200,,True,False,45.279735420983826,47.7918460197223,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,20.0,200,,False,False,45.279735420983826,47.7918460197223,True,,,0.0,0.0,0.0
+evans_notch:ba,evans_notch,2026-10-31,autumn,P0,40.0,200,,False,False,27.384259576954992,27.763521089859488,,,,,,
+evans_notch:ba,evans_notch,2026-10-31,autumn,P5 built,40.0,200,,False,False,27.384259576954992,27.763521089859488,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5,0.03,200,,True,False,33.17700879527615,30.820464069324167,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,0.03,200,,True,False,33.14326129575021,30.79036661216591,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,0.03,200,,True,False,33.14326129575021,30.79036661216591,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,1.0,200,,True,True,27.03895496509643,14.02342590690642,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,1.0,200,,False,False,32.052149059852105,29.817266256995946,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,1.917,200,,True,True,26.556343498686324,13.785825949424149,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,1.917,200,,False,False,31.049689430288662,28.897541177364488,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,2.0,200,,True,True,30.347434961242143,17.05970933421454,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,2.0,200,,False,False,30.968542174133944,28.814831944725128,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,5.0,200,,False,True,27.615769721055255,14.438946556719383,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,5.0,200,,False,False,27.28569364051873,25.812304425494798,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,10.0,200,,False,False,21.076694579393713,20.809267926984248,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,10.0,200,,False,False,21.076694579393713,20.809267926984248,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P0,20.0,200,,False,False,10.880075877392738,10.790494100764318,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-06-01,spring,P5 built,20.0,200,,False,False,10.880075877392738,10.790494100764318,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5,0.03,200,,True,False,33.17700879527615,30.820464069324167,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,0.03,200,,True,False,33.14326129575021,30.79036661216591,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,0.03,200,,True,False,33.14326129575021,30.79036661216591,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,1.0,200,,True,True,27.03895496509643,14.02342590690642,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,1.0,200,,False,False,32.052149059852105,29.817266256995946,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,1.917,200,,True,True,26.556343498686324,13.785825949424149,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,1.917,200,,False,False,31.049689430288662,28.897541177364488,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,2.0,200,,True,True,30.347434961242143,17.05970933421454,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,2.0,200,,False,False,30.968542174133944,28.814831944725128,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,5.0,200,,False,True,27.615769721055255,14.438946556719383,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,5.0,200,,False,False,27.28569364051873,25.812304425494798,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,10.0,200,,False,False,21.076694579393713,20.809267926984248,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,10.0,200,,False,False,21.076694579393713,20.809267926984248,True,,,0.0,0.0,0.0
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P0,20.0,200,,False,False,10.880075877392738,10.790494100764318,,,,,,
+hurricane_mtn:ab,hurricane_mtn,2026-10-31,autumn,P5 built,20.0,200,,False,False,10.880075877392738,10.790494100764318,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5,0.03,200,,True,False,42.18050753419311,40.909569530632545,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,0.03,200,,True,True,24.28487212335296,11.394700813530282,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,0.03,200,,True,False,42.15108027612122,40.879575837079116,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,1.0,200,,True,True,25.37894164767156,12.509829717432654,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,1.0,200,,True,False,41.198764638577764,39.90892939326713,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,2.0,200,,False,True,28.184768296620426,15.36966478827158,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,2.0,200,,False,False,34.09805836300027,31.613701756631578,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,3.375,200,,True,True,27.31309190033295,14.481209783590769,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,3.375,200,,True,False,38.865117985216756,37.53036315335778,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,5.0,200,,False,True,31.18462858181996,18.424683452973774,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,5.0,200,,False,False,37.09791864819981,34.66872042133376,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,10.0,200,,False,True,37.61091966368693,25.51594463374951,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,10.0,200,,False,False,32.39791314197272,30.89798453306184,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,20.0,200,,False,False,23.460795034279826,20.893174980137314,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,20.0,200,,False,False,23.460795034279826,20.893174980137314,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P0,40.0,200,,False,False,1.3691185037217055,0.8671083856904136,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-06-01,spring,P5 built,40.0,200,,False,False,1.3691185037217055,0.8671083856904136,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5,0.03,200,,True,False,42.18050753419311,40.909569530632545,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,0.03,200,,True,True,24.28487212335296,11.394700813530282,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,0.03,200,,True,False,42.15108027612122,40.879575837079116,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,1.0,200,,True,True,25.37894164767156,12.509829717432654,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,1.0,200,,True,False,41.198764638577764,39.90892939326713,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,2.0,200,,False,True,28.184768296620426,15.36966478827158,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,2.0,200,,False,False,34.09805836300027,31.613701756631578,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,3.375,200,,True,True,27.31309190033295,14.481209783590769,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,3.375,200,,True,False,38.865117985216756,37.53036315335778,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,5.0,200,,False,True,31.18462858181996,18.424683452973774,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,5.0,200,,False,False,37.09791864819981,34.66872042133376,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,10.0,200,,False,True,37.61091966368693,25.51594463374951,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,10.0,200,,False,False,32.39791314197272,30.89798453306184,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,20.0,200,,False,False,23.460795034279826,20.893174980137314,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,20.0,200,,False,False,23.460795034279826,20.893174980137314,True,,,0.0,0.0,0.0
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P0,40.0,200,,False,False,1.3691185037217055,0.8671083856904136,,,,,,
+hurricane_mtn:ba,hurricane_mtn,2026-10-31,autumn,P5 built,40.0,200,,False,False,1.3691185037217055,0.8671083856904136,True,,,0.0,0.0,0.0
+kelley_stand:ab,kelley_stand,2026-06-15,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+kelley_stand:ab,kelley_stand,2026-10-31,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P0,0.03,200,,False,True,15.109366418472572,8.851570493488515,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5 built,0.03,200,,False,True,82.86291311180003,70.28503020439432,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,66553.2832429755,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P0,1.0,200,,True,True,13.449399543856646,7.879106566109351,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5 built,1.0,200,,False,True,81.20294623718411,69.31256627701515,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,65580.81931559635,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P0,2.0,200,,True,True,16.558407911658797,9.700467301580108,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5 built,2.0,200,,False,True,79.49230234212962,68.31041406182906,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,64578.66710041025,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P0,5.0,200,,True,True,20.26084959856914,11.869481056495088,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5 built,5.0,200,,False,True,74.36040716203247,65.3039788021555,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,61572.231840736684,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P0,10.0,200,,True,True,41.95727434723709,26.452050263639993,,,,,,
+kelley_stand:ba,kelley_stand,2026-06-15,spring,P5 built,10.0,200,,False,True,66.37853234973974,60.29736963875883,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,56565.62267734003,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5,0.03,404,NO_ROUTE_NEARBY,False,False,,,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P0,0.03,200,,False,True,15.109366418472572,8.851570493488515,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5 built,0.03,200,,False,True,82.86291311180003,70.28503020439432,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,66553.2832429755,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P0,1.0,200,,True,True,13.449399543856646,7.879106566109351,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5 built,1.0,200,,False,True,81.20294623718411,69.31256627701515,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,65580.81931559635,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P0,2.0,200,,True,True,16.558407911658797,9.700467301580108,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5 built,2.0,200,,False,True,79.49230234212962,68.31041406182906,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,64578.66710041025,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P0,5.0,200,,True,True,20.26084959856914,11.869481056495088,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5 built,5.0,200,,False,True,74.36040716203247,65.3039788021555,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,61572.231840736684,0.0,0.0,8.0
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P0,10.0,200,,True,True,41.95727434723709,26.452050263639993,,,,,,
+kelley_stand:ba,kelley_stand,2026-10-31,autumn,P5 built,10.0,200,,False,True,66.37853234973974,60.29736963875883,True,-24405311 -24408402 -24408401 -24405312 -24405313 -24405314 -24405315 -24405316,56565.62267734003,0.0,0.0,8.0
+baxter:ab,baxter,2026-06-15,spring,P5,0.03,200,,False,False,369.7594412384128,297.20560259784406,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P0,0.03,200,,True,True,63.974435721884895,66.41163845955775,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,0.03,200,,False,False,369.641450050632,297.175537007638,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,0.742,200,,False,True,100.17195947883623,84.52312044198298,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,0.742,200,,False,False,367.15220559261445,296.46114024936793,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,1.0,200,,False,True,99.66452738263253,84.26452069824326,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,1.0,200,,False,False,366.64477349641083,296.20254050562824,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,2.0,200,,False,True,97.69679283018674,83.2617152887761,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,2.0,200,,False,False,364.67703894396493,295.1997350961611,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,5.0,200,,False,True,91.78481429509208,80.2488271691475,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,5.0,200,,False,False,358.76506040887034,292.1868469765325,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,10.0,200,,False,True,151.79857039520172,110.83329761249514,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,10.0,200,,False,False,348.925795259538,287.1725180343141,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,20.0,200,,False,True,132.10964114763527,100.79934017065692,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,20.0,200,,False,False,329.23686601197153,277.13856059247587,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,40.0,200,,False,True,199.66318589732748,135.2262703780223,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,40.0,200,,False,False,289.8896184633726,257.08624579201955,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-06-15,spring,P0,80.0,200,,False,True,218.68363639746153,149.66216061787833,,,,,,
+baxter:ab,baxter,2026-06-15,spring,P5 built,80.0,200,,False,False,218.35162139439882,216.9209638035155,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P5,0.03,200,,False,False,369.7594412384128,297.20560259784406,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P0,0.03,200,,True,True,63.974435721884895,66.41163845955775,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,0.03,200,,False,False,369.641450050632,297.175537007638,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,0.742,200,,False,True,100.17195947883623,84.52312044198298,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,0.742,200,,False,False,367.15220559261445,296.46114024936793,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,1.0,200,,False,True,99.66452738263253,84.26452069824326,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,1.0,200,,False,False,366.64477349641083,296.20254050562824,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,2.0,200,,False,True,97.69679283018674,83.2617152887761,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,2.0,200,,False,False,364.67703894396493,295.1997350961611,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,5.0,200,,False,True,91.78481429509208,80.2488271691475,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,5.0,200,,False,False,358.76506040887034,292.1868469765325,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,10.0,200,,False,True,151.79857039520172,110.83329761249514,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,10.0,200,,False,False,348.925795259538,287.1725180343141,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,20.0,200,,False,True,132.10964114763527,100.79934017065692,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,20.0,200,,False,False,329.23686601197153,277.13856059247587,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,40.0,200,,False,True,199.66318589732748,135.2262703780223,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,40.0,200,,False,False,289.8896184633726,257.08624579201955,True,,,0.0,0.0,0.0
+baxter:ab,baxter,2026-10-31,autumn,P0,80.0,200,,False,True,218.68363639746153,149.66216061787833,,,,,,
+baxter:ab,baxter,2026-10-31,autumn,P5 built,80.0,200,,False,False,218.35162139439882,216.9209638035155,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P5,0.03,200,,False,False,341.32157604784146,249.40144822313323,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P0,0.03,200,,False,True,38.32686289071833,18.92341746262669,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,0.03,200,,False,False,341.24286394879994,249.37136302238372,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,1.0,200,,True,True,41.42684605133376,26.485695235776706,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,1.0,200,,True,False,335.65423632568036,246.97080396946288,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,2.0,200,,False,True,33.156773125678825,16.94731480029038,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,2.0,200,,False,False,336.0727741837604,247.39526036004742,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,2.297,200,,False,True,41.42723557896722,26.612469274209076,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,2.297,200,,False,False,335.6546258533138,247.0975780078952,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,5.0,200,,False,True,39.06529310570516,23.904136718016392,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,5.0,200,,False,False,333.29268338005176,244.3892454517025,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,10.0,200,,True,True,40.13662442069315,25.132583859171113,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,10.0,200,,False,False,328.9205016499661,239.37586250303661,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,20.0,200,,False,True,53.296446806200656,40.17300769394425,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,20.0,200,,False,False,320.1289290518246,229.34431303613331,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,40.0,200,,True,True,72.67440740036389,57.15096905343612,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,40.0,200,,False,False,300.0244348716461,209.27228684626604,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-06-15,spring,P0,80.0,200,,True,True,136.76682355550747,94.55875182953818,,,,,,
+baxter:ba,baxter,2026-06-15,spring,P5 built,80.0,200,,False,False,277.1971347466123,169.18690556407915,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P5,0.03,200,,False,False,341.32157604784146,249.40144822313323,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P0,0.03,200,,False,True,38.32686289071833,18.92341746262669,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,0.03,200,,False,False,341.24286394879994,249.37136302238372,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,1.0,200,,True,True,41.42684605133376,26.485695235776706,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,1.0,200,,True,False,335.65423632568036,246.97080396946288,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,2.0,200,,False,True,33.156773125678825,16.94731480029038,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,2.0,200,,False,False,336.0727741837604,247.39526036004742,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,2.297,200,,False,True,41.42723557896722,26.612469274209076,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,2.297,200,,False,False,335.6546258533138,247.0975780078952,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,5.0,200,,False,True,39.06529310570516,23.904136718016392,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,5.0,200,,False,False,333.29268338005176,244.3892454517025,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,10.0,200,,True,True,40.13662442069315,25.132583859171113,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,10.0,200,,False,False,328.9205016499661,239.37586250303661,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,20.0,200,,False,True,53.296446806200656,40.17300769394425,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,20.0,200,,False,False,320.1289290518246,229.34431303613331,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,40.0,200,,True,True,72.67440740036389,57.15096905343612,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,40.0,200,,False,False,300.0244348716461,209.27228684626604,True,,,0.0,0.0,0.0
+baxter:ba,baxter,2026-10-31,autumn,P0,80.0,200,,True,True,92.37670873131769,95.67565392476327,,,,,,
+baxter:ba,baxter,2026-10-31,autumn,P5 built,80.0,200,,False,False,277.1971347466123,169.18690556407915,True,,,0.0,0.0,0.0

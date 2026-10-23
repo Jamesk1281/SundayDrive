@@ -672,7 +672,7 @@ class LoopPlanner:
 
     def resume(self, src: int, via: int, dst: int, pref: float = 1.0,
                weights: dict = None, avoid_unpaved: float = 1.0,
-               on: date | None = None):
+               on: date | None = None, avoid=None):
         """A drive from `src` to `dst` that still goes round by way of `via`.
 
         What a loop's reroute needs, and it cannot be had from `route()`. A loop
@@ -690,10 +690,16 @@ class LoopPlanner:
         Returns a single `RouteResult`, so the caller cannot tell it was built
         from two searches and the turn-by-turn reads continuously across the
         waypoint.
+
+        `avoid` is `Router.route`'s: directed slots closed for this request,
+        the seasonal stretches the driver has turned away from. Nothing here
+        is cached, so no cache has to key on it (docs/seasonal-road-policy.md).
         """
         metric = self.router.metric(round(float(pref), 4),
                                     dict(_weights_key(weights)),
                                     round(float(avoid_unpaved), 4), on)
+        if avoid is not None and len(avoid):
+            metric = metric.blocking(avoid)
         out = self._leg(metric, int(src), int(via))
         if out is None:
             return None

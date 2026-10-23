@@ -19,6 +19,7 @@ window cannot miss on its own ten seasons, so only the other seasons test it.
   python q2_windows.py      ->  q2_misses.csv, and a summary on stdout
 """
 
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -31,7 +32,10 @@ sys.path.insert(0, str(HERE))
 import roads as R            # noqa: E402
 import windows as W          # noqa: E402
 
-DATA = Path("/Users/james./Desktop/myapps/SundayDrive/data/processed-us")
+# The served table unless SUNDAYDRIVE_DATA names another (the rebuilt one,
+# docs/seasonal-road-policy.md).
+DATA = Path(os.environ.get("SUNDAYDRIVE_DATA",
+                           "/Users/james./Desktop/myapps/SundayDrive/data/processed-us"))
 
 # Q2 road -> (roads.py key, extra row filter). Crater Lake's two halves and
 # Old Fall River Road are Q2-only.
@@ -39,8 +43,12 @@ Q2_ROADS = {
     "tioga": ("tioga", None), "gtsr": ("gtsr", None), "lassen": ("lassen", None),
     "trail_ridge": ("trail_ridge", None),
     "old_fall_river": (None, lambda t: t["name"] == "Old Fall River Road"),
-    "crater_lake_west": ("crater_lake", lambda t: t["name"].isin(["Rim Drive", "West Rim Drive", "North Entrance Road"])),
-    "crater_lake_east": ("crater_lake", lambda t: t["name"] == "East Rim Drive"),
+    # By the rims' own table rows where they exist (docs/seasonal-road-policy.md,
+    # fix 2): in the graph "Rim Drive" is part of the East rim's path.
+    "crater_lake_west": ("crater_lake", lambda t: t["tag"].str.startswith("table crater_lake_west")
+                         | t["name"].isin(["West Rim Drive", "North Entrance Road"])),
+    "crater_lake_east": ("crater_lake", lambda t: t["tag"].str.startswith("table crater_lake_east")
+                         | (t["name"] == "East Rim Drive")),
     "chinook": ("chinook", None), "north_cascades": ("north_cascades", None),
     "independence": ("independence", None), "vt108": ("vt108", None),
     "lincoln_gap": ("lincoln_gap", None), "greylock": ("greylock", None),

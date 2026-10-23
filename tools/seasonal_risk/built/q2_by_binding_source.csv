@@ -1,0 +1,11 @@
+end,bound_by,in_sample,road_seasons,roads,danger_seasons,danger_share,danger_days_per_season,lost_days_per_season,worst
+open,agency_dated,False,10,1,0,0.0,0.0,17.8,-14
+open,osm_dated,False,8,3,3,0.375,2.4,2.4,14
+open,table,False,102,10,10,0.098,1.2,19.3,41
+open,table,True,40,6,2,0.05,0.2,19.6,4
+open,unknown,False,3,2,0,0.0,0.0,33.7,-16
+close,osm_dated,False,13,3,0,0.0,0.0,21.4,0
+close,osm_dated+table,False,16,1,2,0.125,0.8,17.3,11
+close,table,False,69,9,9,0.13,0.9,14.6,22
+close,table,True,42,5,1,0.024,0.1,19.0,5
+close,unknown,False,2,2,0,0.0,0.0,17.0,-11

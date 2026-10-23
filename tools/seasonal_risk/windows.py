@@ -33,6 +33,9 @@ COLS = ["start_month", "start_day", "end_month", "end_day"]
 SOURCES = ["osm_dated", "osm_default", "unknown", "table", "agency_dated"]
 UNKNOWN_SEASON = (10, 1, 6, 30)
 WINTER = (11, 1, 4, 30)
+# WINTER as closures.py writes it since docs/seasonal-road-policy.md: with its
+# 45-day spring margin. Either is the undated default.
+WINTER_WIDENED = (11, 1, 6, 14)
 YEAR = 2026                      # a non-leap year: day-of-year 0..364
 DAYS = 365
 
@@ -51,7 +54,7 @@ def source(tag: str, window) -> str:
         return "agency_dated"
     # OSM. A conditional with dates is dated; the WINTER default is what an
     # undated winter/snow conditional, winter_service=no or seasonal=* get.
-    if w == WINTER and not _has_dates(tag):
+    if w in (WINTER, WINTER_WIDENED) and not _has_dates(tag):
         return "osm_default"
     return "osm_dated"
 

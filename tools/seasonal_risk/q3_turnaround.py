@@ -40,6 +40,9 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+# Replay the real P5 parameter beside P0 (`--real-p5`): the build's
+# measurement, docs/seasonal-road-policy.md.
+REAL_P5 = False
 ALONG_KM = (0.03, 1.0, 2.0, 5.0, 10.0, 20.0, 40.0, 80.0)
 PREF = 0.5
 
@@ -78,14 +81,16 @@ def walk_back(coords: np.ndarray, back_m: float):
     return (lat1, lon1), bearing(lat0, lon0, lat1, lon1), run
 
 
-def ask(h, pos, b, course):
+def ask(h, pos, b, course, avoid=None):
     """One reroute as the app asks it: plain, then with `declined_uturn` if
     the reply turns the driver round. (scenic result or None, status, json,
-    whether it was declined)."""
-    st, js, res = h.route(pos, b, pref=PREF, heading=course)
+    whether it was declined). `avoid` is P5's (avoid_edges, avoid_pack), sent
+    with both, as the app sends it with every reroute."""
+    st, js, res = h.route(pos, b, pref=PREF, heading=course, avoid=avoid)
     r = scenic(res) if st == 200 else None
     if r is not None and r.turns_around:
-        st, js, res = h.route(pos, b, pref=PREF, heading=course, declined_uturn=True)
+        st, js, res = h.route(pos, b, pref=PREF, heading=course, declined_uturn=True,
+                              avoid=avoid)
         r = scenic(res) if st == 200 else None
         return r, st, js, True
     return r, st, js, False
@@ -99,6 +104,30 @@ def enters(result, closed: set) -> bool:
     return bool(set(int(x) for x in result.edges.index) & closed)
 
 
+def entered(h, result, closed: set, avoid) -> dict:
+    """Why a reroute sent with the avoid set still enters the closed road:
+    the closed edges it drives as "row" (u -> v) or "-row" (v -> u), which of
+    them the avoid set named in that direction, which in the other, and
+    which not at all; and how far into the route the first one is."""
+    if result is None:
+        return {}
+    tokens = set(avoid[0].split(",")) if avoid else set()
+    hit, at = [], None
+    run = 0.0
+    for k, (e, length) in enumerate(zip(result.edges.index, result.edges["length_m"])):
+        e = int(e)
+        if e in closed:
+            fwd = h.ROUTER._driven_forward(e, result.edge_coords[k])
+            hit.append(("" if fwd else "-") + str(e))
+            at = run if at is None else at
+        run += float(length)
+    flip = lambda t: t[1:] if t.startswith("-") else "-" + t
+    return {"entered": " ".join(hit), "entered_first_m": at,
+            "entered_as_avoided": sum(t in tokens for t in hit),
+            "entered_reversed": sum(t not in tokens and flip(t) in tokens for t in hit),
+            "entered_unlisted": sum(t not in tokens and flip(t) not in tokens for t in hit)}
+
+
 def backtrack_m(result, approach_edges: list) -> float:
     """Metres the route drives back over the approach before leaving it."""
     seen = set(approach_edges)
@@ -108,6 +137,25 @@ def backtrack_m(result, approach_edges: list) -> float:
             break
         m += float(length)
     return m
+
+
+# The app's rule (ios/Sources/NavigationModel.swift, `noteTurnedAway`): a
+# stretch the car is on, or that starts within this far ahead, when the
+# wrong-way episode opens.
+TURNED_AWAY_AHEAD_M = 25_000
+
+
+def turned_away(plan_json, along_m):
+    """(avoid_edges, avoid_pack) for the stretches of the plan's scenic arm
+    the app marks when the driver turns round `along_m` metres along it, or
+    None when it marks none."""
+    marked = [s for s in plan_json["scenic"]["properties"].get("seasonal", [])
+              if s["from_m"] - TURNED_AWAY_AHEAD_M <= along_m <= s["to_m"]]
+    if not marked:
+        return None
+    tokens = list(dict.fromkeys(("" if f else "-") + str(e) for s in marked[::-1]
+                                for e, f in zip(s["edges"], s["forward"])))
+    return ",".join(tokens), marked[0]["pack"]
 
 
 def run_case(h, W, case, day, rows_out, replay=True):
@@ -121,6 +169,7 @@ def run_case(h, W, case, day, rows_out, replay=True):
     if st != 200 or not res:
         return {**base, "status": f"plan {st} {(js or {}).get('code', '')}"}
     plan = scenic(res)
+    plan_json = js
     edges = [int(x) for x in plan.edges.index]
     closed = set(case["closed_edges"])
     hit = [k for k, e in enumerate(edges) if e in closed]
@@ -173,6 +222,10 @@ def run_case(h, W, case, day, rows_out, replay=True):
     points = sorted(set([x for x in ALONG_KM if x < out_km - 0.5]
                         + ([row["backtrack_km"] + 0.2] if row["backtrack_km"] + 0.2 < out_km - 0.5 else [])))
     first_clear, at_gate, sent_back, at_junction = None, None, 0, None
+    # P5 as built: the stretches the app marks when the driver turns round
+    # 30 m short of the closed road, sent with every reroute below.
+    avoid = turned_away(plan_json, approach_km * 1000 - ALONG_KM[0] * 1000)
+    row["p5_marked_edges"] = 0 if avoid is None else len(avoid[0].split(","))
     for along in points:
         # `walk_back` measures from the end of its line: hand it the way out
         # reversed, and it walks forward from the gate, facing on.
@@ -184,6 +237,16 @@ def run_case(h, W, case, day, rows_out, replay=True):
                          "declined_uturn": declined, "sends_back": back_in,
                          "minutes": r.minutes if r is not None else None,
                          "km": r.km if r is not None else None})
+        if REAL_P5:
+            r5, st5, js5, declined5 = ask(h, pos, b, course, avoid=avoid)
+            rows_out.append({**base, "policy": "P5 built", "along_km": round(actual / 1000, 3),
+                             "status": st5, "code": (js5 or {}).get("code", "") if st5 != 200 else "",
+                             "declined_uturn": declined5,
+                             "sends_back": r5 is not None and enters(r5, closed),
+                             "minutes": r5.minutes if r5 is not None else None,
+                             "km": r5.km if r5 is not None else None,
+                             "marked": avoid is not None,
+                             **entered(h, r5, closed, avoid)})
         if at_gate is None:
             at_gate = back_in
         if at_junction is None and along >= row["backtrack_km"]:
@@ -288,7 +351,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cases", default="named")
     ap.add_argument("--only", default="")
+    ap.add_argument("--real-p5", action="store_true",
+                    help="also ask each P0 reroute with the app's avoid_edges")
     args = ap.parse_args()
+    global REAL_P5
+    REAL_P5 = args.real_p5
     sys.path.insert(0, str(HERE))
     import harness as h
     import roads as R

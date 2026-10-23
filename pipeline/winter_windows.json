@@ -244,7 +244,7 @@
    ],
    "source": "https://wsdot.wa.gov/travel/roads-bridges/mountain-pass-closure-and-opening-dates",
    "accessed": "2026-10-18",
-   "basis": "WSDOT's table, 2016-2025: earliest closing Nov 3 (2022), latest opening May 16 (2017). 2026's full reopening on Jun 19 was storm-damage repair, not snow. The east end is the Silver Star Gate, which OSM also tags `access:conditional=no @ winter`",
+   "basis": "WSDOT's table, 2016-2025: earliest closing Nov 3 (2022), latest opening May 16 (2017). 2026's full reopening on Jun 19 was storm-damage repair, not snow. The east end is the Silver Star Gate, which OSM also tags `access:conditional=no @ winter`. The last waypoint carries the path 30 m past the Silver Star Gate, onto the one edge of Highway 20 an NPS `USFS SEASONAL=Yes` segment marks, so this window replaces the unknown season (Oct 1 - Jun 30) there (docs/seasonal-road-policy.md, fix 1)",
    "waypoints": [
     [
      -121.06111,
@@ -260,6 +260,10 @@
     ],
     [
      -120.58907,
+     48.59871
+    ],
+    [
+     -120.58885,
      48.59871
     ]
    ]
@@ -332,11 +336,19 @@
    ],
    "source": "https://mt-washington.com/hours-dates-of-operation",
    "accessed": "2026-10-18",
-   "basis": "2026 drive-yourself calendar: weekends only Apr 25 - May 22, daily May 23 - Nov 1, and Oct 19 - Nov 1 marked late season to a lower cutoff. Read at the longer ends: closed Oct 19 to May 22, since a weekday or a summit drive is closed in both. OSM's seasonal=no_snow keeps it closed Nov 1 - Apr 30 besides",
+   "basis": "2026 drive-yourself calendar: weekends only Apr 25 - May 22, daily May 23 - Nov 1, and Oct 19 - Nov 1 marked late season to a lower cutoff. Read at the longer ends: closed Oct 19 to May 22, since a weekday or a summit drive is closed in both. OSM's seasonal=no_snow keeps it closed Nov 1 - Apr 30 besides. The second and third waypoints sit one on each half of the one-way pair near the base, so the path covers both directions (docs/seasonal-road-policy.md, \"The default gives way\")",
    "waypoints": [
     [
      -71.2259,
      44.28925
+    ],
+    [
+     -71.22842,
+     44.28946
+    ],
+    [
+     -71.22842,
+     44.28955
     ],
     [
      -71.26095,
@@ -353,6 +365,102 @@
     [
      -71.30242,
      44.26978
+    ]
+   ]
+  },
+  {
+   "id": "crater_lake_west",
+   "road": "Crater Lake: the North Entrance Road and West Rim Drive, from the park's north boundary to Rim Village",
+   "state": "OR",
+   "window": [
+    10,
+    14,
+    6,
+    29
+   ],
+   "source": "https://www.nps.gov/crla/planyourvisit/hours.htm",
+   "accessed": "2026-10-21",
+   "basis": "the park's opening and closing dates for the North Entrance and West Rim Drive, as tools/seasonal_risk/q2_published_dates.csv records them. Last ten seasons with an opening, 2014-2023: latest Jun 30 (2023), so closed through Jun 29. Last ten with a closing, 2012-2021: earliest Oct 14 (2016). Split from the park's one window, which held this half to Jul 31 (docs/seasonal-road-policy.md, fix 2)",
+   "waypoints": [
+    [
+     -122.11709,
+     43.08884
+    ],
+    [
+     -122.11808,
+     43.07773
+    ],
+    [
+     -122.11793,
+     43.0777
+    ],
+    [
+     -122.12739,
+     43.01479
+    ],
+    [
+     -122.18012,
+     42.94046
+    ]
+   ]
+  },
+  {
+   "id": "crater_lake_east",
+   "road": "Crater Lake: East Rim Drive, from the park headquarters junction clockwise round the east rim to North Junction",
+   "state": "OR",
+   "window": [
+    10,
+    13,
+    7,
+    20
+   ],
+   "source": "https://www.nps.gov/crla/planyourvisit/hours.htm",
+   "accessed": "2026-10-21",
+   "basis": "the park's opening and closing dates for East Rim Drive, as tools/seasonal_risk/q2_published_dates.csv records them. Last ten seasons with an opening, 2013-2022: latest Jul 21 (2017), so closed through Jul 20. Closings: the ten latest seasonal ones, 2011-2012 and 2014-2021, earliest Oct 13 (2017). 2013's Oct 1 is left out: it is the first day of the federal government shutdown, when every national park closed, not a closing for the season (with it the window would open Oct 1). docs/seasonal-road-policy.md, fix 2",
+   "waypoints": [
+    [
+     -122.12393,
+     42.88065
+    ],
+    [
+     -122.08251,
+     42.88391
+    ],
+    [
+     -122.04656,
+     42.95602
+    ],
+    [
+     -122.12169,
+     42.98043
+    ]
+   ]
+  },
+  {
+   "id": "going_to_the_sun",
+   "road": "Going-to-the-Sun Road over Logan Pass, Avalanche Creek to Rising Sun",
+   "state": "MT",
+   "window": [
+    9,
+    25,
+    7,
+    12
+   ],
+   "source": "https://www.nps.gov/glac/learn/news/logan-pass-opening-and-closing-dates.htm",
+   "accessed": "2026-10-22",
+   "basis": "NPS's Logan Pass record, last ten seasons 2013-2022 (2023 is blank). Latest opening Jul 13 (2020 and 2022), so closed through Jul 12; 2020's was delayed by the pandemic, and 2022's, by avalanches, sets the same date. Closings: the ones NPS footnotes as something other than the season are left out, as not seasonal: 2014 (Sep 22), 2015 (Oct 5) and 2022 (Oct 16), road rehabilitation; 2017 (Sep 3), the Sprague Fire and road construction; 2013 (Sep 23), the government shutdown. The earliest of the rest (2016 and 2018-2021) is Sep 25 (2019). Replaces OSM's `Oct-Jun` with the record on the edges it covers, since its window holds that one (docs/seasonal-road-policy.md, fix 3)",
+   "waypoints": [
+    [
+     -113.8167,
+     48.69093
+    ],
+    [
+     -113.77646,
+     48.74988
+    ],
+    [
+     -113.52816,
+     48.68867
     ]
    ]
   }

@@ -59,7 +59,8 @@ A way is closed for the season when, for a car:
   - `<key>:conditional = yes @ <dates>` closes it outside them, which is how
     Mt Greylock's summit roads are tagged (`_open_only_windows`);
   - `no @ winter` or `no @ snow`, `winter_service=no`, and `seasonal` in
-    SEASONAL close it in WINTER, Nov 1 - Apr 30.
+    SEASONAL close it in WINTER: Nov 1 - Apr 30, with the spring margin
+    WINTER_SPRING_MARGIN_DAYS, so Nov 1 - Jun 14.
 Everything else closes nothing here; see `conditional_windows` for which
 conditions those are and why. A gate closes for the season by the same car
 conditionals, on the node (`gate_windows`).
@@ -105,9 +106,18 @@ from common import (CLOSED_TO_CARS, CLOSURE_WINDOW, CRS_METERS, DRIVABLE,
 # exactly like a closure and containing "no".
 CAR_KEYS = ("access", "vehicle", "motor_vehicle", "motorcar")
 
-# The closed window for a tag that says winter without saying when, as
-# (start month, start day, end month, end day), both ends included.
-WINTER = (11, 1, 4, 30)
+# The winter a tag means when it says winter without saying when, as (start
+# month, start day, end month, end day), both ends included.
+WINTER_TAGGED = (11, 1, 4, 30)
+
+# How many days longer than WINTER_TAGGED an undated winter tag keeps its road
+# closed in spring. On the high passes that carry one, Nov 1 - Apr 30 said
+# "open" while the road was still shut in 83% of springs, a median 24 days
+# early (docs/seasonal-road-risk-verdict.md, Q2), so its spring end moves to
+# Jun 14. Autumn is unchanged. A margin by source, written here, where the
+# row is, and never in the router: the windows are the closure version every
+# cache keys on (docs/seasonal-road-policy.md).
+WINTER_SPRING_MARGIN_DAYS = 45
 
 # `seasonal=` values meaning the road is only there outside winter. `winter`
 # says the reverse and `no` says nothing, so neither is here.
@@ -124,6 +134,53 @@ _MONTHS = ("jan", "feb", "mar", "apr", "may", "jun",
 # 29 for February so that a window ending in it keeps a leap day.
 _LAST_DAY = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 _YEAR_DAYS = [(m, d) for m in range(1, 13) for d in range(1, _LAST_DAY[m - 1] + 1)]
+# A whole year, the window a margin can widen one to.
+_ALL_YEAR = (1, 1, 12, 31)
+
+
+def widen(windows, before: int = 0, after: int = 0):
+    """`windows` each closed `before` days earlier and `after` days later,
+    and merged where they then meet. A margin wide enough to close every day
+    closes the whole year.
+
+    Days are counted on `_YEAR_DAYS`, a year with Feb 29 in it, as
+    `_complement` counts them.
+    """
+    n = len(_YEAR_DAYS)
+    at = {md: i for i, md in enumerate(_YEAR_DAYS)}
+    closed = np.zeros(n, bool)
+    for w in windows:
+        start, end = at[tuple(w[:2])], at[tuple(w[2:])]
+        span = (end - start) % n + 1
+        if tuple(w) == _ALL_YEAR or span + before + after >= n:
+            return [_ALL_YEAR]
+        closed[np.arange(start - before, start + span + after) % n] = True
+    if closed.all():
+        return [_ALL_YEAR]
+    return _runs(list(closed))
+
+
+def _runs(closed):
+    """The closed runs of a mask over `_YEAR_DAYS`, which has an open day, as
+    windows. Walked from an open day, so no run is split by the year end."""
+    first = closed.index(False)
+    runs, run = [], None
+    for i in list(range(first, len(_YEAR_DAYS))) + list(range(first)):
+        if closed[i]:
+            run = [i, i] if run is None else [run[0], i]
+        elif run is not None:
+            runs.append(run)
+            run = None
+    if run is not None:
+        runs.append(run)
+    return [(*_YEAR_DAYS[a], *_YEAR_DAYS[b]) for a, b in runs]
+
+
+# The window an undated winter tag closes its road in: WINTER_TAGGED with the
+# spring margin, Nov 1 - Jun 14. Read only where a tag says winter without
+# dates: `no @ winter` or `no @ snow` on a way or a gate (`_rule_windows`),
+# `winter_service=no` and `seasonal` (`way_windows`).
+WINTER = widen([WINTER_TAGGED], after=WINTER_SPRING_MARGIN_DAYS)[0]
 
 _MONTH = r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?"
 # "Nov", "Nov 1", "Nov-Apr", "Nov 1-Apr 30", "December - May", "Nov 1-15".
@@ -275,18 +332,7 @@ def _complement(windows):
     closed = [not any(in_window(w, md) for w in windows) for md in _YEAR_DAYS]
     if not any(closed) or all(closed):
         return []
-    # Walked from an open day, so no closed run is split by the year end.
-    first = closed.index(False)
-    runs, run = [], None
-    for i in list(range(first, len(_YEAR_DAYS))) + list(range(first)):
-        if closed[i]:
-            run = [i, i] if run is None else [run[0], i]
-        elif run is not None:
-            runs.append(run)
-            run = None
-    if run is not None:
-        runs.append(run)
-    return [(*_YEAR_DAYS[a], *_YEAR_DAYS[b]) for a, b in runs]
+    return _runs(closed)
 
 
 def conditional_windows(value: str):
@@ -812,6 +858,79 @@ def join_gates(ways, gates, edges: gpd.GeoDataFrame):
     return _seasonal_table(rows), left
 
 
+# The prefixes `tag` carries on the agencies' rows (winter_closures.federal_rows):
+# a table window, an unknown season, and the agencies' own dates.
+_TABLE_TAGS = ("table ", "nps park")
+_UNKNOWN_TAGS = ("nps seasonal, no dates", "mvum seasonal, no readable")
+_AGENCY_TAGS = ("mvum", "nps description")
+_DATED_IN_TAG = re.compile(rf"@\s*\(?[^)]*\b{_MONTH}", re.IGNORECASE)
+
+
+def row_source(tag: str, window) -> str:
+    """Which source wrote a seasonal row, by its `tag` and window: "table",
+    "unknown", "agency_dated", or OSM's "osm_default" (the undated winter,
+    WINTER) or "osm_dated" (a conditional with its own dates). The same
+    classes as tools/seasonal_risk/windows.py."""
+    tag = tag or ""
+    if tag.startswith(_TABLE_TAGS):
+        return "table"
+    if tag.startswith(_UNKNOWN_TAGS):
+        return "unknown"
+    if tag.startswith(_AGENCY_TAGS):
+        return "agency_dated"
+    if tuple(int(x) for x in window) == WINTER and not _DATED_IN_TAG.search(tag):
+        return "osm_default"
+    return "osm_dated"
+
+
+# The day a dated window has to close for it to be a statement about winter,
+# and so to replace the undated default beside it (`seasonal_rows`).
+WINTER_EVIDENCE_DAY = (1, 15)
+
+
+def seasonal_rows(*parts) -> pd.DataFrame:
+    """The seasonal table from its parts (way, gate and agency rows), with
+    the undated default giving way to a dated window on its own edge.
+
+    On an edge with a dated winter, an OSM-dated conditional, a table row or
+    an agency's own dates whose window covers WINTER_EVIDENCE_DAY (Jan 15),
+    the edge's `osm_default` rows are dropped: the specific beats the
+    general, as a table road replaces its park's window on
+    its own edges (docs/winter-closures-national.md, decision 4). Before
+    WINTER's spring margin the default ended Apr 30, before every dated
+    window, so it never decided; with the margin it would, and the dated and
+    table windows take no margin (docs/seasonal-road-policy.md, "The default
+    gives way"). A dated window for another season, MVUM's `07/26-04/30`
+    (open all winter, shut May to July) or `no @ (Apr 1-Oct 31)`, says
+    nothing about winter, so beside one the default stands: dropping it would
+    open the road all winter, the unsafe side. Where an edge has only
+    guesses, the default and UNKNOWN_SEASON, every row stands. A gate between two edges ("through")
+    gives way as a whole when either of its edges has a dated window: the
+    Ross Dam gate at the North Cascades Highway's west end, `no @ winter`
+    between the table's last edge and the next, would otherwise hold the
+    crossing to Jun 14 against the table's May 15. Its rows only ever go
+    together, since the router reads a gate as the two edges it joins.
+
+    Returns (table, the rows that gave way).
+    """
+    table = _seasonal_table(pd.concat([p for p in parts if len(p)], ignore_index=True)
+                            if any(len(p) for p in parts) else parts[0])
+    if not len(table):
+        return table, table
+    source = np.array([row_source(t, w) for t, w in
+                       zip(table["tag"], table[list(CLOSURE_WINDOW)].to_numpy())])
+    edge_rule = (table["rule"] == "edge").to_numpy()
+    winter = np.array([in_window(tuple(int(x) for x in w), WINTER_EVIDENCE_DAY)
+                       for w in table[list(CLOSURE_WINDOW)].to_numpy()])
+    dated = np.isin(source, ("osm_dated", "table", "agency_dated")) & edge_rule & winter
+    on_dated = table["edge"].isin(table.loc[dated, "edge"]).to_numpy()
+    default = source == "osm_default"
+    gate = (table["rule"] == "through").to_numpy() & default
+    gates = table.loc[gate & on_dated, "node_id"].unique()
+    drop = (default & edge_rule & on_dated) | (gate & table["node_id"].isin(gates).to_numpy())
+    return table[~drop].reset_index(drop=True), table[drop].reset_index(drop=True)
+
+
 def _seasonal_table(rows) -> pd.DataFrame:
     """Seasonal rows as the table, sorted, with each row once."""
     table = rows if isinstance(rows, pd.DataFrame) else pd.DataFrame(
@@ -1028,6 +1147,13 @@ def join_federal(edges: gpd.GeoDataFrame, federal_dir=None):
         for key, (km, why) in sorted(report[kind].items()):
             print(f"  {key:28s} {km:7.1f} km" if why is None
                   else f"  {key:28s} not placed: {why}")
+    # Closes nothing: unknown seasons a step off a table road, for a person
+    # to judge (winter_closures.unknown_beside).
+    beside = report.get("unknown_beside_table", [])
+    print(f"unknown seasons beside a table road: {len(beside)}")
+    for hit in beside:
+        print(f"  {hit['road']:28s} edge {hit['edge']} {hit['name'] or '(no name)'} "
+              f"{hit['km'] * 1000:.0f} m: {hit['tag']}")
     return (_seasonal_table(pd.DataFrame(rows, columns=SEASONAL_COLUMNS)),
             (report["no_car"], frames["mvum_roads"]))
 
@@ -1099,8 +1225,11 @@ def main(pbf_path: str, processed_dir: str, out_dir: str = None,
 
     by_way = join(closed, edges)
     by_gate, gates_left = join_gates(found.ways, found.gates, edges)
-    table = _seasonal_table(pd.concat([by_way, by_gate, by_agency], ignore_index=True))
+    table, dropped = seasonal_rows(by_way, by_gate, by_agency)
     table.to_parquet(out / "seasonal_closures.parquet", index=False)
+    print(f"undated winter giving way to a dated window on its edge: {len(dropped):,} rows, "
+          f"{dropped['edge'].nunique():,} edges, "
+          f"{dropped.drop_duplicates('edge')['length_m'].sum() / 1000:.1f} km")
 
     unique = by_way.drop_duplicates("edge")
     km = unique["length_m"].sum() / 1000.0

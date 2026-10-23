@@ -225,6 +225,7 @@ enum Fixture {
                         beautifulKm: Double? = nil,
                         turnaroundM: Double? = nil,
                         switchPoints: SwitchPoints? = nil,
+                        seasonal: [SeasonalStretch]? = nil,
                         sceneryKm: [String: Double] = ["water": 3.0, "coast": 0.0,
                                                        "forest/park": 2.0]) -> [String: Any] {
         var properties: [String: Any] = [
@@ -265,6 +266,12 @@ enum Fixture {
         if let switchPoints {
             properties["switch"] = ["leave": json(switchPoints.leave),
                                     "rejoin": json(switchPoints.rejoin)]
+        }
+        if let seasonal {
+            properties["seasonal"] = seasonal.map {
+                ["edges": $0.edges, "forward": $0.forward, "from_m": $0.from_m,
+                 "to_m": $0.to_m, "pack": $0.pack] as [String: Any]
+            }
         }
         return [
             "type": "Feature",
@@ -321,7 +328,8 @@ enum Fixture {
                     ($0.coordinate, $0.instruction, $0.name)
                 },
                 turnaroundM: feature.properties.turnaround_m,
-                switchPoints: feature.properties.switch)
+                switchPoints: feature.properties.switch,
+                seasonal: feature.properties.seasonal)
         }
         let data = try! JSONSerialization.data(
             withJSONObject: ["fastest": encode(fastest), "scenic": encode(scenic)])

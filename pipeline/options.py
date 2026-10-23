@@ -506,7 +506,7 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
 
 def spliced_route(router, s, t, leave=None, rejoin=None, weights=None,
                   avoid_unpaved=1.0, on=None, heading=None, origin=None,
-                  keep_ahead=False):
+                  keep_ahead=False, avoid=None):
     """The route from `s` that drives the scenic stretch between two switch
     points: fastest to `leave`, pref 1 to `rejoin`, fastest to `t`.
 
@@ -518,10 +518,13 @@ def spliced_route(router, s, t, leave=None, rejoin=None, weights=None,
 
     `keep_ahead` is `Router.route`'s: for a driver who has declined a U-turn,
     the route that goes on ahead unless that costs more than
-    TURN_BACK_CAP_MIN. docs/reroute-uturn.md.
+    TURN_BACK_CAP_MIN. docs/reroute-uturn.md. `avoid` is `Router.route`'s:
+    directed slots closed for this request (docs/seasonal-road-policy.md).
     """
     w0 = router.metric(0.0, weights, avoid_unpaved, on)
     w1 = router.metric(1.0, weights, avoid_unpaved, on)
+    if avoid is not None and len(avoid):
+        w0, w1 = w0.blocking(avoid), w1.blocking(avoid)
     scores = w1.scores
     leave_slots = None if leave is None else switch_slots(router, *leave)
     rejoin_slots = None if rejoin is None else switch_slots(router, *rejoin)

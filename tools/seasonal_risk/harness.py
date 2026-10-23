@@ -120,13 +120,17 @@ def _capture_led(lead, weights, *results):
 server._led = _capture_led
 
 
-def route(a, b, pref=0.5, heading=None, declined_uturn=False):
-    """(status, json, [fastest RouteResult, scenic RouteResult] or [])."""
+def route(a, b, pref=0.5, heading=None, declined_uturn=False, avoid=None):
+    """(status, json, [fastest RouteResult, scenic RouteResult] or []).
+    `avoid` is (avoid_edges, avoid_pack) as the app sends them: P5 for real
+    (docs/seasonal-road-policy.md)."""
     form = {"from": f"{a[0]},{a[1]}", "to": f"{b[0]},{b[1]}", "pref": str(pref)}
     if heading is not None:
         form["heading"] = f"{heading:.1f}"
     if declined_uturn:
         form["declined_uturn"] = "1"
+    if avoid is not None:
+        form["avoid_edges"], form["avoid_pack"] = avoid
     _CAPTURED.clear()
     r = CLIENT.post("/api/route", data=form)
     return r.status_code, r.get_json(), list(_CAPTURED)

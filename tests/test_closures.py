@@ -22,7 +22,8 @@ import pytest
 import shapely
 from pyproj import Transformer
 
-from closures import WINTER, conditional_windows, gate_windows, too_rough, way_windows
+from closures import (WINTER, WINTER_TAGGED, conditional_windows, gate_windows, too_rough,
+                      way_windows, widen)
 from common import CRS_METERS, in_window
 from conftest import DATA, ROOT, ROUTER_DATA
 from looper import LoopPlanner
@@ -80,7 +81,9 @@ class TestWhatCountsAsClosed:
                                        "no @ snow", "no @ (snow)"])
     def test_winter_or_snow_closes_the_default_window(self, value):
         assert conditional_windows(value) == ([WINTER], [])
-        assert WINTER == (11, 1, 4, 30)
+        # Nov 1 - Apr 30 as tagged, with the spring margin: to Jun 14
+        # (docs/seasonal-road-policy.md).
+        assert WINTER == (11, 1, 6, 14)
 
     @pytest.mark.parametrize("value", [
         "no @ (22:00-06:00)",             # the brief's own example
@@ -130,8 +133,8 @@ class TestWhatCountsAsClosed:
         # comma adds a daylight rule for every day of the year; the mapper
         # meant a season with daylight hours.
         ("yes @ (May 20-Oct 29, sunrise-sunset)", [(10, 30, 5, 19)]),
-        ("yes @ (May-Oct)", [WINTER]),
-        ("yes @ (May-Oct Sa,Su 10:00-16:00)", [WINTER]),
+        ("yes @ (May-Oct)", [WINTER_TAGGED]),
+        ("yes @ (May-Oct Sa,Su 10:00-16:00)", [WINTER_TAGGED]),
         ("yes @ (Jun 1-Sep 30; Dec 15-Jan 15)", [(1, 16, 5, 31), (10, 1, 12, 14)]),
     ])
     def test_open_only_in_season_closes_the_rest_of_the_year(self, value, windows):
@@ -179,8 +182,8 @@ class TestWhatCountsAsClosed:
             WINTER: ["winter_service=no"]}
         vt108 = way_windows({"motor_vehicle:conditional": "no @ (Nov-Apr)",
                              "winter_service": "no"})
-        assert vt108 == {WINTER: ["motor_vehicle:conditional=no @ (Nov-Apr)",
-                                  "winter_service=no"]}
+        assert vt108 == {WINTER_TAGGED: ["motor_vehicle:conditional=no @ (Nov-Apr)"],
+                         WINTER: ["winter_service=no"]}
 
 
 class TestDatesWrittenOtherWays:
@@ -195,7 +198,7 @@ class TestDatesWrittenOtherWays:
         ("no@(Dec 1 - Mai 1)", [(12, 1, 5, 1)]),              # German month
         ("no @ (8 Dec - 1 May)", [(12, 8, 5, 1)]),            # WA, day first
         ("no @ (15 Dec-30 Apr)", [(12, 15, 4, 30)]),          # Natural Turnpike's gate, VT
-        ("no @ (Nov 1st-Apr 30th)", [WINTER]),
+        ("no @ (Nov 1st-Apr 30th)", [WINTER_TAGGED]),
         ("no @ (Oct 22nd - May 3rd)", [(10, 22, 5, 3)]),
     ])
     def test_each_spelling_closes_its_own_dates(self, value, windows):
@@ -231,7 +234,7 @@ class TestGatesClosedForTheSeason:
     through (docs/safety-quick-fixes.md, "Gates")."""
 
     @pytest.mark.parametrize("tags,windows", [
-        ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Apr)"}, [WINTER]),
+        ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Apr)"}, [WINTER_TAGGED]),
         ({"barrier": "gate", "motor_vehicle:conditional": "no @ winter"}, [WINTER]),
         ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Mar)"},
          [(11, 1, 3, 31)]),
@@ -482,7 +485,7 @@ class TestFordsOnMajorRoads:
         gate = {"ford": "yes", "barrier": "gate",
                 "motor_vehicle:conditional": "no @ (Nov-Apr)"}
         assert gate_windows(gate, primary) == {
-            WINTER: ["barrier=gate, motor_vehicle:conditional=no @ (Nov-Apr)"]}
+            WINTER_TAGGED: ["barrier=gate, motor_vehicle:conditional=no @ (Nov-Apr)"]}
         assert gate_windows(gate, {"highway": "residential"}) == {}
 
     def test_the_scan_opens_only_the_paved_major_fords(self, tmp_path):
@@ -721,7 +724,8 @@ class TestTheCalendar:
     @pytest.mark.parametrize("day,closed", [
         (date(2026, 10, 31), False), (date(2026, 11, 1), True),
         (date(2028, 2, 29), True), (date(2027, 4, 30), True),
-        (date(2027, 5, 1), False),
+        (date(2027, 5, 1), True), (date(2027, 6, 14), True),
+        (date(2027, 6, 15), False),
     ])
     def test_the_default_winter_window(self, day, closed):
         assert _closed_on(WINTER, day) is closed
@@ -859,8 +863,11 @@ class TestTheTable:
             return set(map(tuple, rows[["start_month", "start_day",
                                         "end_month", "end_day"]].to_numpy()))
         assert (10, 15, 5, 15) in windows("Lincoln Gap Road")
-        assert WINTER in windows("Vermont Route 108 South")
-        assert WINTER in windows("Mount Washington Auto Road")
+        # VT-108's own dates, and the Auto Road's undated winter, before or
+        # after the spring margin: a processed-ne built before it still
+        # holds Apr 30 (docs/seasonal-road-policy.md).
+        assert WINTER_TAGGED in windows("Vermont Route 108 South")
+        assert windows("Mount Washington Auto Road") & {WINTER, WINTER_TAGGED}
         assert (11, 1, 5, 31) in windows("Hurricane Mountain Road")
         # Evans Notch carries a route number and no name.
         assert (table["ref"] == "ME 113").any()
@@ -991,7 +998,7 @@ class TestGates:
         new_river = table[table["node_id"] == NEW_RIVER_GATE]
         assert sorted(new_river["rule"]) == ["through", "through"]
         assert {tuple(w) for w in new_river[["start_month", "start_day", "end_month",
-                                             "end_day"]].to_numpy()} == {WINTER}
+                                             "end_day"]].to_numpy()} == {WINTER_TAGGED}
         turnpike = table[table["node_id"] == NATURAL_TURNPIKE_GATE]
         assert list(turnpike["rule"]) == ["edge"]
         assert tuple(turnpike[["start_month", "start_day", "end_month",
@@ -1534,7 +1541,7 @@ class TestTheTableRoads:
             by_edge.setdefault(r["edge"], set()).add(
                 (r["start_month"], r["start_day"], r["end_month"], r["end_day"]))
         assert by_edge[0] == {(10, 1, 7, 10)}           # the road's, not the park's
-        assert by_edge[1] == {(11, 1, 5, 1)}            # dated, untouched
+        assert by_edge[1] == {(10, 25, 5, 8)}           # dated, with its 7 days
 
     def test_rows_are_in_the_seasonal_format(self):
         from closures import SEASONAL_COLUMNS
@@ -1741,3 +1748,249 @@ class TestNewEnglandWinter:
         closed, total = _km_closed(ne_winter, "Park Loop", "park_loop", JANUARY)
         assert closed > 0.5 * total
         assert _km_closed(ne_winter, "Park Loop", "park_loop", JULY)[0] == 0
+
+
+# ------------------------------------------------- margins, by window source
+
+class TestMarginsBySource:
+    """Each window source's margin, written with its rows and never in the
+    router (docs/seasonal-road-policy.md; docs/seasonal-road-risk-verdict.md,
+    "Recommended policy"): OSM's undated winter +45 days in spring, unknown
+    seasons and the agencies' own dates 7 days at each end, and nothing on
+    the table or on OSM's own dates."""
+
+    def test_widen_moves_each_end(self):
+        assert widen([(10, 1, 6, 30)], 7, 7) == [(9, 24, 7, 7)]
+        assert widen([(11, 1, 4, 30)], 0, 45) == [(11, 1, 6, 14)]
+        assert widen([(12, 20, 1, 10)], 3, 3) == [(12, 17, 1, 13)]
+
+    def test_widen_merges_windows_that_meet(self):
+        assert widen([(12, 1, 5, 15), (5, 20, 5, 25)], 7, 7) == [(11, 24, 6, 1)]
+
+    def test_widen_past_the_year_closes_all_of_it(self):
+        assert widen([(10, 1, 6, 30)], 60, 60) == [(1, 1, 12, 31)]
+        assert widen([(1, 1, 12, 31)], 7, 7) == [(1, 1, 12, 31)]
+
+    def test_no_margin_is_the_window(self):
+        assert widen([(10, 15, 5, 15)]) == [(10, 15, 5, 15)]
+
+    def test_an_undated_winter_closes_to_june_14(self):
+        """45 days, so Apr 30 -> Jun 14; the autumn end stays Nov 1."""
+        from closures import WINTER_SPRING_MARGIN_DAYS
+        assert WINTER_SPRING_MARGIN_DAYS == 45
+        assert WINTER == widen([WINTER_TAGGED], 0, 45)[0] == (11, 1, 6, 14)
+        for tags in ({"winter_service": "no"}, {"seasonal": "summer"},
+                     {"motor_vehicle:conditional": "no @ winter"},
+                     {"access:conditional": "no @ (snow)"}):
+            assert list(way_windows(tags)) == [(11, 1, 6, 14)], tags
+        gate = {"barrier": "gate", "motor_vehicle:conditional": "no @ winter"}
+        assert list(gate_windows(gate)) == [(11, 1, 6, 14)]
+
+    @pytest.mark.parametrize("tags,window", [
+        ({"motor_vehicle:conditional": "no @ (Nov-Apr)"}, (11, 1, 4, 30)),
+        ({"motor_vehicle:conditional": "no @ (Oct 15-May 15)"}, (10, 15, 5, 15)),
+        ({"motor_vehicle:conditional": "yes @ (May 20-Oct 29, sunrise-sunset)"},
+         (10, 30, 5, 19)),
+        ({"barrier": "gate", "motor_vehicle:conditional": "no @ (Nov-Apr)"},
+         (11, 1, 4, 30)),
+    ])
+    def test_osm_dates_take_no_margin(self, tags, window):
+        """Even dated exactly as the undated winter is, Nov-Apr stays Apr 30."""
+        found = gate_windows(tags) if "barrier" in tags else way_windows(tags)
+        assert list(found) == [window]
+
+    def _rows(self, mvum=None, nps=None, table=None):
+        from winter_closures import federal_rows
+        rows, report = federal_rows(_graph(), mvum, nps, table)
+        return {(r["start_month"], r["start_day"], r["end_month"], r["end_day"])
+                for r in rows}, report
+
+    def test_mvum_dates_close_7_days_longer_each_end(self):
+        """Open Apr 1 - Nov 30, so closed Dec 1 - Mar 31, written Nov 24 - Apr 7."""
+        from winter_closures import AGENCY_MARGIN_DAYS
+        assert AGENCY_MARGIN_DAYS == (7, 7)
+        mvum = _frame([_SOUTH], passengervehicle=["open"],
+                      passengervehicle_datesopen=["04/01-11/30"], forestname=["GMUG"], id=["1"])
+        assert self._rows(mvum)[0] == {(11, 24, 4, 7)}
+
+    def test_an_mvum_unknown_season_closes_7_days_longer_each_end(self):
+        from winter_closures import UNKNOWN_MARGIN_DAYS, UNKNOWN_SEASON
+        assert UNKNOWN_SEASON == (10, 1, 6, 30) and UNKNOWN_MARGIN_DAYS == (7, 7)
+        mvum = _frame([_SOUTH], seasonal=["seasonal"], passengervehicle=["open"],
+                      passengervehicle_datesopen=[""], forestname=["GMUG"], id=["1"])
+        assert self._rows(mvum)[0] == {(9, 24, 7, 7)}
+
+    def test_nps_dates_and_unknowns_take_7_days_and_a_park_none(self, windows_table):
+        from winter_closures import load_table
+        table = load_table()
+        yose = next(p["window"] for p in table["parks"] if p["unit"] == "YOSE")
+        nps = _frame([_SOUTH, _NORTH, _ACROSS], UNITCODE=["GRTE", "MORA", "YOSE"],
+                     SEASONAL=["Yes", "Yes", "Yes"],
+                     SEASDESC=["Seasonal Closure Nov1 to May1.", None, "Winter"])
+        found, _ = self._rows(None, nps, table)
+        assert found == {(10, 25, 5, 8),        # GRTE's description, Nov 1 - May 1
+                         (9, 24, 7, 7),         # MORA: no park window, unknown
+                         tuple(yose)}           # YOSE's park window, as written
+
+    def test_a_table_road_takes_no_margin(self):
+        from winter_closures import load_table
+        table = load_table()
+        table["roads"] = [{"id": "test_road", "window": (10, 1, 7, 10),
+                           "source": "https://example.org", "accessed": "2026-10-18",
+                           "basis": "test", "waypoints": [(-107.0, 38.5), (-107.0, 38.5045)]}]
+        nps = _frame([_SOUTH], UNITCODE=["MORA"], SEASONAL=["Yes"], SEASDESC=[None])
+        found, _ = self._rows(None, nps, table)
+        assert found == {(10, 1, 7, 10)}        # and it replaced the unknown season
+
+    def test_an_unknown_season_beside_a_table_road_is_reported(self):
+        """Fix 1's report line: closes nothing, names the edge."""
+        from winter_closures import load_table
+        table = load_table()
+        table["roads"] = [{"id": "test_road", "window": (10, 1, 7, 10),
+                           "source": "https://example.org", "accessed": "2026-10-18",
+                           "basis": "test", "waypoints": [(-107.0, 38.5), (-107.0, 38.5045)]}]
+        nps = _frame([_NORTH], UNITCODE=["MORA"], SEASONAL=["Yes"], SEASDESC=[None])
+        found, report = self._rows(None, nps, table)
+        hits = report["unknown_beside_table"]
+        assert {h["edge"] for h in hits} == {1}
+        assert {h["road"] for h in hits} == {"test_road"}
+        # Both still close as they did: the road's window, the unknown beside it.
+        assert found == {(10, 1, 7, 10), (9, 24, 7, 7)}
+
+
+class TestTheThreeFixedWindows:
+    """docs/seasonal-road-policy.md, fixes 1-3: North Cascades' stray edge,
+    Crater Lake's two rims, and Going-to-the-Sun from the Logan Pass record."""
+
+    def _road(self, windows_table, road_id):
+        return next(r for r in windows_table["roads"] if r["id"] == road_id)
+
+    def test_north_cascades_reaches_the_edge_past_the_silver_star_gate(self, windows_table):
+        nc = self._road(windows_table, "north_cascades")
+        assert nc["window"] == (11, 3, 5, 15)
+        assert nc["waypoints"][-1] == [-120.58885, 48.59871]
+
+    def test_crater_lake_has_two_rims(self, windows_table):
+        west = self._road(windows_table, "crater_lake_west")
+        east = self._road(windows_table, "crater_lake_east")
+        assert west["window"] == (10, 14, 6, 29)
+        assert east["window"] == (10, 13, 7, 20)
+        park = windows_table["_parks"]["CRLA"]["window"]
+        assert park == (10, 15, 7, 31)          # the rest of the park keeps it
+
+    def test_going_to_the_sun_holds_osms_guess(self, windows_table):
+        """The table's window contains OSM's `Oct-Jun`, so on the edges it
+        covers the measurement is what closes the road."""
+        gtsr = self._road(windows_table, "going_to_the_sun")
+        assert gtsr["window"] == (9, 25, 7, 12)
+        osm = conditional_windows("no @ Oct-Jun")[0][0]
+        for md in [(m, d) for m in range(1, 13) for d in (1, 15, 28)]:
+            if in_window(osm, md):
+                assert in_window(gtsr["window"], md), md
+        for year in ("2013", "2014", "2015", "2017", "2022"):
+            assert year in gtsr["basis"]
+
+
+class TestTheDefaultGivesWay:
+    """On an edge with a dated window, the undated winter's rows are dropped:
+    with its spring margin it would otherwise outlast the dated and table
+    windows, which take none (docs/seasonal-road-policy.md, "The default
+    gives way"; decision 4 of docs/winter-closures-national.md is the same
+    precedence)."""
+
+    def _row(self, edge, window, tag, rule="edge", node_id=-1):
+        return {"edge": edge, "u": edge, "v": edge + 1, "way_id": 7, "name": "", "ref": "",
+                "tag": tag, **dict(zip(("start_month", "start_day", "end_month", "end_day"),
+                                       window)),
+                "length_m": 100.0, "rule": rule, "node_id": node_id, "at_m": np.nan}
+
+    def _windows(self, table, edge):
+        rows = table[table["edge"] == edge]
+        return set(map(tuple, rows[["start_month", "start_day", "end_month",
+                                    "end_day"]].to_numpy()))
+
+    def _table(self, *rows):
+        from closures import SEASONAL_COLUMNS, seasonal_rows
+        table, self.dropped = seasonal_rows(pd.DataFrame(list(rows), columns=SEASONAL_COLUMNS))
+        return table
+
+    def test_lincoln_gap_opens_on_its_own_dates(self):
+        """`no @ (Oct 15-May 15)` and `winter_service=no` on one way: open
+        May 16, not Jun 15."""
+        t = self._table(self._row(0, (10, 15, 5, 15),
+                                  "motor_vehicle:conditional=no @ (Oct 15-May 15)"),
+                        self._row(0, WINTER, "winter_service=no"))
+        assert self._windows(t, 0) == {(10, 15, 5, 15)}
+        assert len(self.dropped) == 1
+
+    def test_the_auto_road_opens_on_its_table_date(self):
+        """`seasonal=no_snow` and the table's Oct 19 - May 22: open May 23."""
+        t = self._table(self._row(0, WINTER, "seasonal=no_snow"),
+                        self._row(0, (10, 19, 5, 22), "table mt_washington_auto_road: "
+                                  "https://mt-washington.com"))
+        assert self._windows(t, 0) == {(10, 19, 5, 22)}
+
+    @pytest.mark.parametrize("tag", ["mvum passengervehicle_datesopen=05/01-10/31 (GMUG, MVUM id 1)",
+                                     "nps description: GLAC SEASONAL=Yes, Closed Dec 15 - Mar 31",
+                                     "nps park CRLA: CRLA SEASONAL=Yes"])
+    def test_any_agency_date_or_park_window_is_dated(self, tag):
+        t = self._table(self._row(0, WINTER, "winter_service=no"),
+                        self._row(0, (12, 8, 4, 7), tag))
+        assert self._windows(t, 0) == {(12, 8, 4, 7)}
+
+    @pytest.mark.parametrize("window,tag", [
+        ((5, 1, 7, 25), "mvum passengervehicle_datesopen=07/26-04/30 (Carson National Forest, MVUM id 80)"),
+        ((4, 1, 10, 31), "access:conditional=no @ (Apr 1-Oct 31)"),
+    ])
+    def test_a_dated_window_for_another_season_leaves_the_winter(self, window, tag):
+        """Open all winter by its own dates, so they say nothing about it:
+        the undated winter beside it stands, or the road opens all winter."""
+        t = self._table(self._row(0, window, tag), self._row(0, WINTER, "seasonal=yes"))
+        assert self._windows(t, 0) == {window, WINTER}
+        assert len(self.dropped) == 0
+
+    def test_the_evidence_day_is_jan_15(self):
+        from closures import WINTER_EVIDENCE_DAY
+        assert WINTER_EVIDENCE_DAY == (1, 15)
+        # Closed Jan 16 - Mar 31: misses the day, so the default stands.
+        t = self._table(self._row(0, (1, 16, 3, 31), "motor_vehicle:conditional=no @ (Jan 16-Mar 31)"),
+                        self._row(0, WINTER, "winter_service=no"))
+        assert self._windows(t, 0) == {(1, 16, 3, 31), WINTER}
+
+    def test_guesses_alone_all_stand(self):
+        """The default beside an unknown season, or alone: nothing is dated,
+        so nothing gives way."""
+        t = self._table(self._row(0, WINTER, "seasonal=yes"),
+                        self._row(0, (9, 24, 7, 7), "nps seasonal, no dates: USFS SEASONAL=Yes"),
+                        self._row(1, WINTER, "winter_service=no"))
+        assert self._windows(t, 0) == {WINTER, (9, 24, 7, 7)}
+        assert self._windows(t, 1) == {WINTER}
+
+    def test_only_its_own_edge(self):
+        t = self._table(self._row(0, (10, 15, 5, 15), "motor_vehicle:conditional=no @ (Oct 15-May 15)"),
+                        self._row(1, WINTER, "winter_service=no"))
+        assert self._windows(t, 1) == {WINTER}
+
+    def _gate(self, a, b, node=99):
+        tag = "barrier=lift_gate, access:conditional=no @ winter"
+        return [self._row(a, WINTER, tag, rule="through", node_id=node),
+                self._row(b, WINTER, tag, rule="through", node_id=node)]
+
+    def test_a_gate_beside_a_dated_edge_gives_way_whole(self):
+        """The Ross Dam gate: between the North Cascades table's last edge
+        and the next, both of its rows go, or it would hold the crossing to
+        Jun 14 against the table's May 15."""
+        t = self._table(self._row(0, (11, 3, 5, 15), "table north_cascades: https://wsdot.wa.gov"),
+                        *self._gate(0, 1))
+        assert (t["rule"] == "through").sum() == 0
+        assert len(self.dropped) == 2
+
+    def test_a_gate_between_guesses_stands(self):
+        t = self._table(self._row(0, WINTER, "seasonal=yes"), *self._gate(0, 1))
+        assert (t["rule"] == "through").sum() == 2
+
+    def test_a_dated_window_that_equals_the_default_is_dated(self):
+        from closures import row_source
+        assert row_source("motor_vehicle:conditional=no @ (Nov 1-Jun 14)", WINTER) == "osm_dated"
+        assert row_source("motor_vehicle:conditional=no @ winter", WINTER) == "osm_default"
+        assert row_source("barrier=gate, motor_vehicle:conditional=no @ snow", WINTER) == "osm_default"
