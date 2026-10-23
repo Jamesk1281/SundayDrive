@@ -43,8 +43,12 @@ Q2_ROADS = {
     "tioga": ("tioga", None), "gtsr": ("gtsr", None), "lassen": ("lassen", None),
     "trail_ridge": ("trail_ridge", None),
     "old_fall_river": (None, lambda t: t["name"] == "Old Fall River Road"),
-    "crater_lake_west": ("crater_lake", lambda t: t["name"].isin(["Rim Drive", "West Rim Drive", "North Entrance Road"])),
-    "crater_lake_east": ("crater_lake", lambda t: t["name"] == "East Rim Drive"),
+    # By the rims' own table rows where they exist (docs/seasonal-road-policy.md,
+    # fix 2): in the graph "Rim Drive" is part of the East rim's path.
+    "crater_lake_west": ("crater_lake", lambda t: t["tag"].str.startswith("table crater_lake_west")
+                         | t["name"].isin(["West Rim Drive", "North Entrance Road"])),
+    "crater_lake_east": ("crater_lake", lambda t: t["tag"].str.startswith("table crater_lake_east")
+                         | (t["name"] == "East Rim Drive")),
     "chinook": ("chinook", None), "north_cascades": ("north_cascades", None),
     "independence": ("independence", None), "vt108": ("vt108", None),
     "lincoln_gap": ("lincoln_gap", None), "greylock": ("greylock", None),
