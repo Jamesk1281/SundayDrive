@@ -1,12 +1,14 @@
 # Sunday Drive
 
 Scenic-route navigation: pick a destination, get a route that's beautiful
-instead of fast. Every road in the six New England states is scored for beauty
-from **open geodata only** ([no Google or Apple data](docs/data-sources.md)),
-a Dijkstra router trades
+instead of fast. Every road in the 48 contiguous states and Washington, DC is
+scored for beauty, on one scale, from **open geodata only**
+([no Google or Apple data](docs/data-sources.md)), a Dijkstra router trades
 travel time for scenery on a single preference knob, and a native iOS app
-(SwiftUI + MapKit) rides on the routing API. 236,000 km of road on a 998k-edge
-graph, with live turn-by-turn navigation on a real phone.
+(SwiftUI + MapKit) rides on the routing API. 7.8 million km of road on a
+25.8M-edge graph (`docs/national-build.md`), with live turn-by-turn navigation
+on a real phone. The test drives that checked the score were all in New
+England (below).
 
 ![heatmap](docs/scenic_heatmap.png)
 
