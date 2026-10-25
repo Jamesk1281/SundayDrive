@@ -146,7 +146,12 @@ Results on this branch, 2026-10-25:
 **20261025**, in `trips.json`), `measure.py` sends them one at a time,
 `analyze.py` writes `results/analysis.txt` from the three JSONL files in
 `results/`. Run 2026-10-25 on this Mac, one national server at a time on
-`data/pack-us` + `data/processed-us`, each stopped by its PID:
+`data/pack-us` + `data/processed-us`, each stopped by its PID. **The
+measurement waited for the slot.** The pre-deploy audit's national server
+(PID 1996, port 55641) was running when the code was ready, so the runner
+waited for it to exit before starting its own, and sent it no requests. The
+code and tests were committed first (6dc157a). The three phases then ran from
+01:29 to 01:32, with nothing else on the Mac computing routes:
 
 | file | code | `SUNDAYDRIVE_ROUTE_OPTIONS` | modes |
 | --- | --- | --- | --- |
