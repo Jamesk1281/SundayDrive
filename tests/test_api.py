@@ -150,8 +150,11 @@ def test_a_scenic_route_scoring_below_the_fastest_one_is_not_offered(client):
     import app as server_app
 
     class Arm:
+        # Equal beautiful km throughout: that half of the guard has its own
+        # tests in tests/test_low_scenery_fallback.py.
         def __init__(self, score):
             self.mean_score = score
+            self.beautiful_km = 3.0
 
     fastest = Arm(5.794)
     assert server_app._no_worse_than_fastest(fastest, Arm(5.210)) is fastest

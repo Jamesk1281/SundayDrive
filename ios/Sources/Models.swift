@@ -273,6 +273,15 @@ struct RouteProps: Decodable {
     /// `NavigationModel` reroute the plan by legs instead of throwing it away
     /// at the first missed turn. docs/route-options.md.
     var `switch`: SwitchPoints? = nil
+    /// True on the scenic arm when the server handed back the fastest route
+    /// because no scenic route gained the menu's half mile of beautiful road
+    /// on this trip; nil otherwise, including at pref 0 and when every option
+    /// is merely over the default's time budget. `RouteComparison.summary`
+    /// then says there is no beautiful road worth the detour, rather than
+    /// "Same as the fastest route at this setting", which suggests another
+    /// setting would find one. Optional for the same reason as
+    /// `beautiful_km`. docs/low-scenery-fallback.md.
+    var no_gain: Bool? = nil
 
     /// The scenery features in display order, dropping any the route barely
     /// touches, so the breakdown only shows what's relevant.

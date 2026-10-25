@@ -227,7 +227,8 @@ struct PrefDial: View {
             let c = RouteComparison(fastest: response.fastest.properties,
                                     scenic: response.scenic.properties)
             if c.isSameDrive {
-                Text("Same as the fastest route")
+                Text(c.noGain ? "No beautiful road worth the detour"
+                              : "Same as the fastest route")
                     .font(.figure(24))
                     .foregroundStyle(Color.ink2)
             } else if let gain = c.headlineGain {

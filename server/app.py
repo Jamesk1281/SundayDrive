@@ -60,6 +60,13 @@ other plan or loop is computing; otherwise the reply is today's, with no
 them at pref 1, fastest roads either side. They are how the app fetches an
 option in full and how it reroutes one mid-drive.
 
+`options=1` also marks the request as a plan, which is the one place a scenic
+route has to be worth its detour: whether or not the menu ran, a plan's scenic
+arm gains at least options.MENU_FIRST_MIN_KM of beautiful road over the
+fastest, or is the fastest. `"no_gain": true` on the scenic Feature's
+properties says the scenic arm is the fastest route for that reason, and is
+absent otherwise (`_worth_the_detour`, docs/low-scenery-fallback.md).
+
 `avoid_edges` closes, for this request only, the seasonal stretches a driver
 has turned away from: edge rows as each Feature's `seasonal` stretches list
 them, a leading minus for one driven v -> u, with `avoid_pack` the fingerprint
@@ -578,7 +585,8 @@ def _bound(route, weights, avoid_unpaved, day):
 
 
 def _no_worse_than_fastest(fastest, scenic):
-    """The scenic route, or the fastest one when "scenic" came back scoring lower.
+    """The scenic route, or the fastest one when "scenic" came back scoring
+    lower or with fewer beautiful km.
 
     The detour cost is `km * (1 - score/10)` (`Router._weights`) — proportional
     to *length* — so at any pref above 0 the router is also, quietly, a
@@ -598,8 +606,54 @@ def _no_worse_than_fastest(fastest, scenic):
     proportional to minutes rather than km would remove the cause, and would
     also invalidate the BETA/PREF_CURVE calibration those two constants share —
     a sweep, not a bug fix. See docs/route-distribution-study.md.
+
+    The mean alone missed the beautiful km, the number the cards print. It is
+    length-weighted, so a shorter route can raise it while dropping most of
+    the good road: near 40.58,-119.30 in Nevada the scenic arm cost 32% more
+    time and went from 10 beautiful km to 1 (docs/low-scenery-fallback.md).
     """
-    return fastest if scenic.mean_score < fastest.mean_score else scenic
+    worse = (scenic.mean_score < fastest.mean_score
+             or scenic.beautiful_km < fastest.beautiful_km)
+    return fastest if worse else scenic
+
+
+def _worth_the_detour(fastest, scenic, planning):
+    """The scenic arm to send, and whether it is the fastest route because
+    nothing gained the menu's minimum: `(route, no_gain)`.
+
+    Every path falls back on `_no_worse_than_fastest`. A plan also falls back
+    when the scenic route gains less than `MENU_FIRST_MIN_KM` (half a mile) of
+    beautiful road, the minimum the menu already asks of its first option.
+    Without it the busy fallback, which serves every plan that overlaps
+    another request, measured +54% time for 0.0 -> 0.1 km on Wichita ->
+    Salina.
+
+    `planning` is never true for a moving car. Near the end of a scenic drive
+    the gain left is naturally under half a mile, and the minimum would switch
+    the driver onto the fast roads for the last stretch. So it is the app's own
+    plan marker, `options=1`, and not merely "no heading": a reroute taken
+    below 2 m/s, or on a fix with no course, carries no heading
+    (`NavigationModel.usableHeading`). docs/low-scenery-fallback.md.
+
+    `no_gain` is false at pref 0, where scenic is the fastest because the
+    driver asked for it, and when the fallback was for a lower mean on a
+    route that did gain the minimum.
+    """
+    if scenic is fastest:
+        return fastest, False
+    short = (scenic.beautiful_km - fastest.beautiful_km
+             < route_options.MENU_FIRST_MIN_KM)
+    if _no_worse_than_fastest(fastest, scenic) is fastest or (planning and short):
+        return fastest, short
+    return scenic, False
+
+
+def _scenic_feature(result, no_gain, feature=None):
+    """`_feature` for the scenic arm, carrying `no_gain` when it is true."""
+    out = _feature(result, feature)
+    if no_gain:
+        out["properties"]["no_gain"] = True
+    return out
 
 
 def _request_params():
@@ -640,11 +694,14 @@ def api_route():
         avoid = _parse_avoid(args)
         return _route(a, b, pref, avoid_unpaved, heading, declined_uturn,
                       weights, via, leave, rejoin,
-                      want_options and ROUTE_OPTIONS and alone, avoid)
+                      want_options and ROUTE_OPTIONS and alone, avoid,
+                      plan=want_options)
 
 
 def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
-           leave, rejoin, with_options, avoid=None):
+           leave, rejoin, with_options, avoid=None, plan=False):
+    """`plan` is the request's `options=1`, whether or not the menu runs: the
+    app's mark of a plan, which reroutes never carry (`_worth_the_detour`)."""
     day = _today()
 
     # A moving car (a heading or a declined U-turn) is somewhere a parked one
@@ -767,9 +824,10 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
             return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         if fastest is None or scenic is None:
             return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
-        scenic = _no_worse_than_fastest(fastest, scenic)
+        scenic, no_gain = _worth_the_detour(fastest, scenic, planning=False)
         fastest, scenic = _led(lead, weights, fastest, scenic)
-        return jsonify(fastest=_feature(fastest), scenic=_feature(scenic))
+        return jsonify(fastest=_feature(fastest),
+                       scenic=_scenic_feature(scenic, no_gain))
 
     # The menu of in-between routes, for a plan. Never for a reroute, which
     # carries a heading or a declined U-turn or switch points, and never when
@@ -780,8 +838,18 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         plan = route_options.plan(ROUTER, s, t, weights, avoid_unpaved,
                                   on=day, abort=_not_alone)
         if plan is not None:
+            # No gain when nothing on the frontier reached the menu's minimum,
+            # and never when the default is the fastest only because every
+            # option is over the 25% budget: those are still on the dial
+            # (docs/low-scenery-fallback.md, "The contract"). Each path counts
+            # its own beautiful km; the menu's are its hop stats.
+            best = max((g for _, g in plan.frontier), default=0.0)
+            no_gain = (plan.scenic is plan.fastest
+                       and best < route_options.MENU_FIRST_MIN_KM)
             return jsonify(fastest=_feature(plan.fastest),
-                           scenic=_feature(plan.scenic, route_options.feature(plan.scenic)),
+                           scenic=_scenic_feature(
+                               plan.scenic, no_gain,
+                               route_options.feature(plan.scenic)),
                            options=plan.options_json())
 
     # One option of a menu, in full: fetched when the driver settles on it,
@@ -808,10 +876,12 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
                                keep_ahead=declined_uturn, avoid=avoid,
                                bound=_bound(scenic, weights, avoid_unpaved, day))
         if fastest is not None and scenic is not None:
-            scenic = _no_worse_than_fastest(fastest, scenic)
+            # The driver chose this option, or is driving it: the guard only.
+            scenic, no_gain = _worth_the_detour(fastest, scenic, planning=False)
             fastest, scenic = _led(lead, weights, fastest, scenic)
             return jsonify(fastest=_feature(fastest),
-                           scenic=_feature(scenic, route_options.feature(scenic)))
+                           scenic=_scenic_feature(
+                               scenic, no_gain, route_options.feature(scenic)))
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
             return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
@@ -841,9 +911,13 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
         if ROUTER.route(s, t, 0.0, weights, avoid_unpaved=avoid_unpaved) is not None:
             return _error(404, SEASON_CLOSED, CLOSED_FOR_SEASON)
         return _error(404, NO_ROUTE_NEARBY, NO_ROUTE)
-    scenic = _no_worse_than_fastest(fastest, scenic)
+    # The busy fallback for a plan, and every plain reroute. `moving` is
+    # belt and braces: the app never sends `options=1` with a heading.
+    scenic, no_gain = _worth_the_detour(fastest, scenic,
+                                        planning=plan and not moving)
     fastest, scenic = _led(lead, weights, fastest, scenic)
-    return jsonify(fastest=_feature(fastest), scenic=_feature(scenic))
+    return jsonify(fastest=_feature(fastest),
+                   scenic=_scenic_feature(scenic, no_gain))
 
 
 def _feature(result, feature=None):

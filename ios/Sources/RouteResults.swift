@@ -107,6 +107,10 @@ struct RouteComparison {
     /// backend predates `beautiful_km`. See `RouteProps.beautiful_km`.
     let fastestBeautifulMiles: Int?
     let scenicBeautifulMiles: Int?
+    /// The server's word that the scenic arm is the fastest route because no
+    /// scenic route on this trip gained enough beautiful road to be worth it.
+    /// See `RouteProps.no_gain`.
+    let noGain: Bool
 
     init(fastest: RouteProps, scenic: RouteProps) {
         fastestMinutes = Int(fastest.minutes.rounded())
@@ -115,6 +119,7 @@ struct RouteComparison {
         scenicScore = scenic.mean_score
         fastestBeautifulMiles = fastest.beautiful_km?.wholeMilesFromKm
         scenicBeautifulMiles = scenic.beautiful_km?.wholeMilesFromKm
+        noGain = scenic.no_gain ?? false
     }
 
     /// What the scenic route costs, in the minutes the cards are showing.
@@ -238,9 +243,16 @@ struct RouteComparison {
     /// `beautiful_km`, which is the same reasoning as `_no_worse_than_fastest`
     /// above: an app in the store talks to whichever backend is deployed,
     /// including an older one.
+    ///
+    /// The same drive has two sentences. When the server says nothing on this
+    /// trip gained half a mile of beautiful road (`noGain`), "at this setting"
+    /// would send the driver hunting along the slider for a setting that does
+    /// not exist, so it says there is none (docs/low-scenery-fallback.md).
     var summary: String {
         if isSameDrive {
-            return "**Same as the fastest route** at this setting."
+            return noGain
+                ? "**No beautiful road** worth the detour on this trip."
+                : "**Same as the fastest route** at this setting."
         }
         guard let miles = beautifulMiles else { return scoreSummary }
 

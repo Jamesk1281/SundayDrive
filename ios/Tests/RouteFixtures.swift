@@ -226,6 +226,7 @@ enum Fixture {
                         turnaroundM: Double? = nil,
                         switchPoints: SwitchPoints? = nil,
                         seasonal: [SeasonalStretch]? = nil,
+                        noGain: Bool? = nil,
                         sceneryKm: [String: Double] = ["water": 3.0, "coast": 0.0,
                                                        "forest/park": 2.0]) -> [String: Any] {
         var properties: [String: Any] = [
@@ -267,6 +268,7 @@ enum Fixture {
             properties["switch"] = ["leave": json(switchPoints.leave),
                                     "rejoin": json(switchPoints.rejoin)]
         }
+        if let noGain { properties["no_gain"] = noGain }
         if let seasonal {
             properties["seasonal"] = seasonal.map {
                 ["edges": $0.edges, "forward": $0.forward, "from_m": $0.from_m,
