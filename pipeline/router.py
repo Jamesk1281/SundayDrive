@@ -472,6 +472,18 @@ TURN_BACK_CAP_MIN = 15.0
 # hundred metres from a closed one.
 SNAP_OPEN_SLACK_M = 50.0
 SNAP_OPEN_MAX_M = 20000.0
+# The furthest a request's point may be from any road and still be on the
+# network: server/app.py refuses one further off as OUTSIDE_COVERAGE. Handed
+# to the snap as its `limit`, so the nearest-road search stops at it rather
+# than widening across the continent first, which took 94-618 s from 400 km
+# offshore on the national graph (docs/snap-cap.md).
+SNAP_MAX_M = 5000.0
+
+
+class OutOfReach(ValueError):
+    """A snap given a `limit` found no road within it. Raised, never returned
+    as a node: every caller of `snap` takes an int back, and only the ones
+    that pass a limit can be handed this (docs/snap-cap.md)."""
 # The furthest a reroute may start from the car, when the snap had to leave the
 # road under it (`Router.snap_start`): a route beginning out of sight, on some
 # other road, is one the driver cannot follow. server/app.py refuses it with
@@ -868,10 +880,21 @@ class LineIndex:
         ys = np.linspace(ymin, ymax, 5)
         gx, gy = np.meshgrid(xs, ys)
         lon, lat = _FROM_M.transform(gx.ravel(), gy.ravel())
-        pad_lon = self.MARGIN * (lon.max() - lon.min()) + 1e-5
         pad_lat = self.MARGIN * (lat.max() - lat.min()) + 1e-5
-        return self.grid.box(lon.min() - pad_lon, lat.min() - pad_lat,
-                             lon.max() + pad_lon, lat.max() + pad_lat)
+        if lon.max() - lon.min() > 180.0 and (np.abs(lon) > 90.0).all():
+            # A box across the antimeridian is two boxes at the map's edges,
+            # not one band round the earth, which measured every road at its
+            # latitude: 1.8 s a request from 34.05,-180 (docs/snap-cap.md).
+            west, east = lon[lon < 0], lon[lon > 0]
+            parts = [(-180.0, west.max()), (east.min(), 180.0)]
+        else:
+            parts = [(lon.min(), lon.max())]
+        found = []
+        for lo, hi in parts:
+            pad_lon = self.MARGIN * (hi - lo) + 1e-5
+            found.append(self.grid.box(lo - pad_lon, lat.min() - pad_lat,
+                                       hi + pad_lon, lat.max() + pad_lat))
+        return found[0] if len(found) == 1 else np.unique(np.concatenate(found))
 
     def query(self, geometry):
         """Lines whose box in metres meets `geometry`'s box, ascending."""
@@ -884,13 +907,27 @@ class LineIndex:
                  & (b[:, 1] <= ymax) & (b[:, 3] >= ymin))
         return found[meets]
 
-    def nearest(self, point):
-        """The line nearest `point`, the lowest index on a tie.
+    def nearest(self, point, limit=None):
+        """The line nearest `point`, the lowest index on a tie; or None, when
+        `limit` is given and no line lies within that many metres.
 
         Searched in widening squares: once the nearest line found is no
         further than the square's half-width, nothing outside it can be
         nearer, because a line that close has its box inside the square.
+
+        `limit` only stops the widening. A line within it is inside the
+        square once the half-width reaches it, so it is accepted by the same
+        test as without one, and the answer is the same line. The line
+        returned can still lie beyond `limit` (one inside the first square
+        is accepted whatever the limit), so callers keep their own distance
+        check. Without a limit, a point far from every road widened to a
+        continent's worth of lines before anyone asked whether it was near
+        the network (docs/snap-cap.md).
         """
+        if limit is not None and not (math.isfinite(point.x)
+                                      and math.isfinite(point.y)):
+            # Off the projection, as the south pole is: no square to search.
+            return None
         reach, best = 250.0, None
         while True:
             found = self._candidates(point.x - reach, point.y - reach,
@@ -901,9 +938,15 @@ class LineIndex:
                 best = int(found[k])
                 if d[k] <= reach:
                     return best
+                if limit is not None and reach >= limit:
+                    return None
                 reach = max(reach * 4.0, float(d[k]))
             else:
+                if limit is not None and reach >= limit:
+                    return None
                 reach *= 4.0
+            if limit is not None:
+                reach = min(reach, limit)
             if reach > 2e7:
                 # Further than any two points of the contiguous US: an empty
                 # index, which only a graph with no roads has.
@@ -1719,7 +1762,7 @@ class Router:
         b = int(np.searchsorted(comp, component, side="right"))
         return list(zip(self._access_entry_lat[a:b], self._access_entry_lon[a:b]))
 
-    def access_point(self, lat: float, lon: float):
+    def access_point(self, lat: float, lon: float, limit: float | None = None):
         """Where a driver actually enters the place at `lat, lon`, or None.
 
         None means the point is beside a public road already and needs no help:
@@ -1741,14 +1784,23 @@ class Router:
         times in 160 seconds when they carried on. Snapping *nearest* is the
         bug: what a driver needs is not the closest road but the road they can
         get in from.
+
+        `limit` bounds both searches, as `snap`'s does: None with no road
+        within it, and a service way beyond it is never nearer than a road
+        within it, so the answer is otherwise the same (docs/snap-cap.md).
         """
         if self._access_tree is None:
             return None
         x, y = _TO_M.transform(lon, lat)
         point = shapely.Point(x, y)
-        way = int(self._access_tree.nearest(point))
+        edge = self._edge_tree.nearest(point, limit)
+        if edge is None:
+            return None
+        way = self._access_tree.nearest(point, limit)
+        if way is None:
+            return None
+        way, edge = int(way), int(edge)
         to_access = self._access_geom_m[way].distance(point)
-        edge = int(self._edge_tree.nearest(point))
         if to_access >= self._edge_geom_m[edge].distance(point):
             return None
         entries = self._access_entries(int(self._access_component[way]))
@@ -1761,7 +1813,8 @@ class Router:
         best = int(np.argmin((np.asarray(ex) - x) ** 2 + (np.asarray(ey) - y) ** 2))
         return entries[best]
 
-    def snap_destination(self, lat: float, lon: float) -> tuple[int, float]:
+    def snap_destination(self, lat: float, lon: float,
+                         limit: float | None = None) -> tuple[int, float]:
         """Snap somewhere a driver is trying to *get to*, via its entrance.
 
         Separate from `snap` rather than a flag on it, because the two answer
@@ -1780,11 +1833,23 @@ class Router:
         nearest node on the road to it that one can: the near side of the
         gate, never beyond it, and never "no route" (docs/closed-roads.md,
         Trap 2). The rest of what roads closed to cars change is `snap`'s.
+
+        `limit` as `snap`'s, over all three searches a destination makes.
         """
-        node, off, _, _ = self._snap(lat, lon)
-        entry = self.access_point(lat, lon)
+        node, off, _, _ = self._snap(lat, lon, limit=limit)
+        entry = self.access_point(lat, lon, limit)
         if entry is not None:
-            node, _, _, _ = self._snap(*entry)
+            reach = limit
+            if limit is not None:
+                # The entrance is a mapped node, not the pin, and its road can
+                # lie further than `limit` from it: 5-9 km for island car parks
+                # in New England. No further than the pin is from it plus the
+                # pin's own reach, which holds the road the pin found, so the
+                # same road is found (docs/snap-cap.md).
+                ex, ey = _TO_M.transform(entry[1], entry[0])
+                px, py = _TO_M.transform(lon, lat)
+                reach = limit + math.hypot(ex - px, ey - py) + 1.0
+            node, _, _, _ = self._snap(*entry, limit=reach)
         return self._way_in.get(node, node), off
 
     @staticmethod
@@ -2795,7 +2860,7 @@ class Router:
         return w
 
     def snap(self, lat: float, lon: float, heading: float | None = None,
-             moving: bool = False) -> tuple[int, float]:
+             moving: bool = False, limit: float | None = None) -> tuple[int, float]:
         """Routable node for a lat/lon: (node index, meters to the road).
 
         Finds the nearest road *segment* first, then takes one of that segment's
@@ -2855,12 +2920,18 @@ class Router:
             it starts from the end ahead, past the barrier.
         A car at rest keeps every rule above, and so does a moving car short of
         a barrier whose own side is open, such as Crane Road's gate.
+
+        `limit` (metres; the server passes SNAP_MAX_M) raises OutOfReach when
+        no road lies within it, which a point offshore or in the desert finds
+        out in a few squares instead of a continental search. Within it the
+        snap is the same as without (docs/snap-cap.md).
         """
-        node, off, _ = self.snap_start(lat, lon, heading, moving)
+        node, off, _ = self.snap_start(lat, lon, heading, moving, limit)
         return node, off
 
     def snap_start(self, lat: float, lon: float, heading: float | None = None,
-                   moving: bool = False) -> tuple[int, float, float]:
+                   moving: bool = False,
+                   limit: float | None = None) -> tuple[int, float, float]:
         """`snap`, and how far the car is from where its route will begin:
         (node index, metres to the road, metres to the start).
 
@@ -2873,11 +2944,11 @@ class Router:
         starts at. A reroute whose start is further than START_MAX_M is
         refused (server/app.py, START_TOO_FAR).
         """
-        node, off, gap, _ = self.snap_lead(lat, lon, heading, moving)
+        node, off, gap, _ = self.snap_lead(lat, lon, heading, moving, limit)
         return node, off, gap
 
     def snap_lead(self, lat: float, lon: float, heading: float | None = None,
-                  moving: bool = False):
+                  moving: bool = False, limit: float | None = None):
         """`snap_start`, and the lead-in: (node, metres to the road, metres to
         the start, `Lead` or None).
 
@@ -2890,7 +2961,7 @@ class Router:
         when the snap left the car's road, or the car stands at the junction.
         """
         x, y = _TO_M.transform(lon, lat)
-        node, off, moved, e = self._snap(lat, lon, heading, moving)
+        node, off, moved, e = self._snap(lat, lon, heading, moving, limit)
         out = self._way_out.get(node, node)
         if not moved and out == node:
             return out, off, off, self._lead(e, shapely.Point(x, y), out)
@@ -3046,17 +3117,21 @@ class Router:
         return led
 
     def _snap(self, lat: float, lon: float, heading: float | None = None,
-              moving: bool = False):
+              moving: bool = False, limit: float | None = None):
         """`snap` before the way round a closure: the node on the road the
         point is on, on its own side of any barrier, the metres to that
-        road, and whether it is a road other than the one under the point."""
+        road, and whether it is a road other than the one under the point.
+        OutOfReach when `limit` is given and no road lies within it."""
         x, y = _TO_M.transform(lon, lat)
         point = shapely.Point(x, y)
         aiming = heading if heading is not None and 0.0 <= heading < 360.0 else None
         if aiming is not None:
             # From true north to the grid the roads are measured on.
             aiming = _grid_heading(lat, lon, aiming)
-        e = int(self._edge_tree.nearest(point))
+        e = self._edge_tree.nearest(point, limit)
+        if e is None:
+            raise OutOfReach(f"no road within {limit:.0f} m of {lat},{lon}")
+        e = int(e)
         on_closed = moved = False
         if self._shut_at(e, point):
             under = self._road_under(point, e, aiming) if moving else None

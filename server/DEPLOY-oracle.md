@@ -756,6 +756,38 @@ The deploy script prints the keyword the box needs after each deploy
 deploy switches region.** Otherwise the monitor alerts on a correct box. The
 keyword is not the commit, which changes with every deploy.
 
+**A second monitor that plans a route.** `/api/health` answers from a
+variable, so it stays green while routing is stalled: on 2026-10-23 it
+answered in 0.02 s while an ordinary route took 177 s. `/api/health/route`
+plans Concord, MA to Lexington, MA (both graphs cover it) and answers 200 with
+`"status": "route_ok"`. It answers 503 with `"status": "route_failed"` and a
+`reason` when the plan fails, raises, or takes over 5 s. It plans at most once
+a minute and never two at once, so the monitor and any scraper can't use it to
+load the box (docs/snap-cap.md, "The health route"). Set it up beside the
+first one:
+
+1. In UptimeRobot, **Add New Monitor**. Type **Keyword**.
+2. Friendly name `Sunday Drive routing`. URL
+   `https://api.jameskouvlis.com/api/health/route`.
+3. Keyword **`route_ok`**, alert when the keyword **does not exist**. Leave
+   case sensitivity off. No failure body contains `route_ok`.
+4. Interval **5 minutes**. Timeout **30 seconds**. A timeout counts as down,
+   and that is what a stall looks like to the check that started the plan,
+   which waits for it. Checks after it, while that plan still runs, get the
+   503 at once.
+5. Alert contacts: the same address as the node-count monitor.
+6. Save, wait one interval, and check it reads **Up**. By hand:
+
+```bash
+curl -s https://api.jameskouvlis.com/api/health/route
+```
+
+   You should see `"status":"route_ok"` and a `seconds` well under 1. A
+   repeat within the minute shows the same answer with a larger `age_s`.
+
+This keyword never changes with region or deploy. The node-count keyword
+above does.
+
 ---
 
 ## Part 13 — Measure it, and write the numbers down
