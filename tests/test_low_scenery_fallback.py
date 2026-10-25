@@ -230,6 +230,16 @@ class TestTheMenu:
         assert body["scenic"]["properties"]["no_gain"] is True
         assert "no_gain" not in body["fastest"]["properties"]
 
+    def test_a_point_under_the_minimum_is_not_offered(self, server, alone, monkeypatch):
+        """The menu's hole: with the budget left alone, a frontier under the
+        minimum used to keep its most scenic point and default to it."""
+        monkeypatch.setattr(server.route_options, "MENU_FIRST_MIN_KM", 1e6)
+        body = alone.post("/api/route", data={**REAL_GAIN, "options": "1"}).get_json()
+        assert len(body["options"]["menu"]) == 1
+        assert body["options"]["default"] == 0
+        assert _same(body)
+        assert body["scenic"]["properties"]["no_gain"] is True
+
     def test_a_trip_with_no_scenic_alternative_is_no_gain(self, alone):
         """A short hop whose scenic base is no slower than the fastest:
         `t_max <= 0` or an empty front, the menu's own no-gain cases."""

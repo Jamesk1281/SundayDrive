@@ -126,6 +126,18 @@ class TestTheMenu:
         assert all(b > a for a, b in zip(extras, extras[1:])), extras
         assert all(b > a for a, b in zip(gains, gains[1:])), gains
 
+    def test_no_option_gains_under_the_minimum(self, R, O, worcester, monkeypatch):
+        """A frontier whose best point is under the half mile, made so by
+        raising the minimum just past it: the menu is the fastest alone, not
+        the fastest plus that point (docs/low-scenery-fallback.md)."""
+        s, t, plan = worcester
+        best = max(g for _, g in plan.frontier)
+        monkeypatch.setattr(O, "MENU_FIRST_MIN_KM", best + 0.1)
+        thin = O.plan(R, s, t, {}, 1.0, on=ON)
+        assert len(thin.menu) == 1
+        assert thin.default == 0
+        assert thin.scenic is thin.fastest
+
     @pytest.mark.parametrize("trip", ["waitsfield", "worcester"])
     def test_the_route_shown_first_is_the_owners_rule(self, trip, request, O):
         """The most scenic option costing at most 25% of the fastest time."""

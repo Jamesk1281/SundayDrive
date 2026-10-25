@@ -27,25 +27,30 @@ weights, a form POST):
 | extra minutes p50 / p90, all trips | 15.9 / 65.1 | 3.4 / 65.1 |
 | **offered at > 25% extra time (the menu's budget)** | 49 (37%) | **41 (31%)** |
 
-- **The menu path is unchanged** except for the reason. `no_gain` is on 27 of
-  its 134 plans, and absent on the 10 whose default is the fastest only
-  because every option gaining 0.5 mi or more is over budget (Trap 3).
+- **On the menu path, the branch changed only the reason.** `no_gain` was on
+  27 of its 134 plans, and absent on the 10 whose default is the fastest only
+  because every option gaining 0.5 mi or more is over budget (Trap 3). The
+  menu's own floor, below, then raised that to 40.
 - **For the owner: a time budget on the fallback.** After the change, 41 of
   the 72 scenic routes the fallback still offers cost more than 25% extra
   time. The median is +52 min (+49%) for 22 km of beautiful road. On the same
   41 trips the menu's default costs a median +21 min for 7.3 km. That gap is
   the case for a budget, and it is not decided here.
-- **For the owner: the menu has a hole the brief did not know about.** The
-  brief says the menu's first option must gain at least 0.5 mi. It doesn't
-  always: when no frontier point reaches the minimum, the menu still keeps
-  its most scenic point (`pipeline/options.py:461-462`, "the most scenic
-  frontier point always stays"), and defaults to it when it is within budget.
-  That happened on **13 of 134 plans (10%)**: two-entry menus whose default
-  gains 0.1-0.7 km, for up to +22 min (r112: 106 -> 128 min for 0.2 km). No
-  `no_gain` is sent there, because the scenic arm is not the fastest. This
-  is the app's *normal* path. Closing it is one line, dropping that point
-  when it is under `MENU_FIRST_MIN_KM`, and it changes the menu, so it is
-  left for the owner.
+- **The menu had a hole the brief did not know about, closed after the
+  merge.** The brief says the menu's first option must gain at least
+  0.5 mi. It didn't always: when no frontier point reached the minimum, the
+  menu still kept its most scenic point ("the most scenic frontier point
+  always stays"), and defaulted to it when it was within budget. That
+  happened on **13 of 134 plans (10%)**: two-entry menus whose default
+  gained 0.1-0.7 km, for up to +22 min (r112: 106 -> 128 min for 0.2 km),
+  with no `no_gain`, because the scenic arm was not the fastest. This is the
+  app's *normal* path. On 2026-10-25 the owner chose to close it. The menu
+  now keeps its most scenic point only once some point reached the minimum,
+  so a menu where nothing did is the fastest alone, with `no_gain`
+  (`pipeline/options.py`, the `chosen` loop). Re-measured on the same 134
+  trips (`results/after-menu-floor.jsonl`), exactly those 13 changed. Each
+  is now the fastest with `no_gain`, which puts `no_gain` on 40 menu plans.
+  The other 121 menus are identical, option for option.
 - **The 0.5 mi minimum stays.** The review's metric still catches 9 fallback
   plans and 17 menu plans: routes gaining 0.5 mi to 2 km for over 10% extra
   time. Raising the minimum to 2 km would move those. That is the owner's
@@ -166,6 +171,7 @@ code and tests were committed first (6dc157a). The three phases then ran from
 | `before.jsonl` | `ea87a2a` | 1 | `menu` (options=1), `plain` (none) |
 | `after.jsonl` | this branch | 1 | `menu`, `plain` |
 | `after-busy.jsonl` | this branch | unset | `menu`: options=1 sent, the menu not run |
+| `after-menu-floor.jsonl` | `usa` after the merge, with the menu's floor | 1 | `menu` only; run later on 2026-10-25 by the master session, port 55651, server stopped by PID |
 
 - **The busy fallback is measured directly.** It is `options=1` on a server
   whose menu doesn't run, which is what an overlapping plan gets. With the
@@ -258,8 +264,6 @@ than 25% extra time:
 
 ## Follow-ups, not done here
 
-- **The menu's sub-minimum default** (13 of 134 plans, above). An owner
-  decision; the fix is in `pipeline/options.py`'s `chosen` loop.
 - **A time budget on the fallback** (41 of 134). An owner decision.
 - **`server/DEPLOY-oracle.md` Part 8's unit has no
   `SUNDAYDRIVE_ROUTE_OPTIONS=1`.** The box has it (`docs/route-options.md`),

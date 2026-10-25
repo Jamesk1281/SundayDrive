@@ -53,7 +53,9 @@ lost to splicing (table below). None of them is built.
 6. The frontier is thinned to a **menu**. The first option must add at least
    half a mile of beautiful road. Each later one must add `max(1 mi, 5% of the
    whole gain)` over the last option kept. The most scenic frontier point is
-   always kept, and the fastest route is option 0.
+   kept once any point reached the half mile; when none did, the menu is the
+   fastest route alone (docs/low-scenery-fallback.md). The fastest route is
+   option 0.
 7. The **default** is the most scenic option costing at most 25% of the
    fastest time (the owner's rule). The fastest route and the default go out
    in full detail. Every option goes out as figures, its two switch points,

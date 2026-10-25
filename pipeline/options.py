@@ -448,7 +448,10 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
 
     # The menu: the first option adds half a mile, each after it at least
     # max(1 mi, 5% of the whole gain) over the last one kept; the most scenic
-    # frontier point always stays.
+    # frontier point stays once anything reached the half mile. When nothing
+    # did, the menu is the fastest alone, the server says no gain, and no
+    # option buys a few hundred metres for twenty minutes (13 of 134 national
+    # plans kept one; docs/low-scenery-fallback.md).
     whole = float(gain[front[-1]])
     step_km = max(MENU_STEP_MIN_KM, MENU_STEP_SHARE * whole)
     chosen = []
@@ -456,7 +459,7 @@ def plan(router, s, t, weights=None, avoid_unpaved=1.0, on=None,
         if (gain[k] >= MENU_FIRST_MIN_KM if not chosen
                 else gain[k] - gain[chosen[-1]] >= step_km):
             chosen.append(int(k))
-    if not chosen or chosen[-1] != front[-1]:
+    if chosen and chosen[-1] != front[-1]:
         chosen.append(int(front[-1]))
 
     built = {}
