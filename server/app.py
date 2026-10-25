@@ -16,6 +16,8 @@ Loads the routing graph once at startup and serves:
                               -> {"max_km": <float>, "max_mi": <int>}
   GET  /api/health            -> {"status", "nodes", "routing_slots",
                                   "region", "commit", "pack"}
+  GET  /api/health/route      -> {"status": "route_ok"|"route_failed",
+                                  "seconds", "age_s", ...} (503 on failure)
 
 Every error is JSON: {"error": <a sentence>, "code": <string>, ...numbers}.
 The codes are listed at ERROR CODES below, and docs/review-fixes-router.md
@@ -89,6 +91,7 @@ import math
 import os
 import sys
 import threading
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -102,8 +105,8 @@ sys.path.insert(0, str(ROOT / "pipeline"))
 from looper import (BEAUTIFUL_SCORE, MAX_TARGET_KM, MIN_TARGET_KM, SECTORS,
                     LoopPlanner)  # noqa: E402
 from router import (BEAUTY_TYPES, MAX_AVOID_UNPAVED,  # noqa: E402
-                    MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, START_MAX_M, Router,
-                    region_today)
+                    MAX_TRIP_KM, REROUTE_MAX_TRIP_KM, SNAP_MAX_M, START_MAX_M,
+                    OutOfReach, Router, region_today)
 from router import _sources as _router_sources  # noqa: E402
 import options as route_options  # noqa: E402
 
@@ -207,10 +210,12 @@ CLOSED_FOR_SEASON = "The only way there is closed for the season."
 NO_ROUTE = ("Sunday Drive couldn't find a drivable route between those points. "
             "One of them may be on a road cut off from the rest.")
 
-# Reject a request whose endpoint lies farther than this from any road — it's
-# outside the covered region (see REGION), and the "nearest" road would be in an
-# arbitrary border town, yielding a nonsense route.
-SNAP_MAX_M = 5000.0
+# A request whose endpoint lies farther than router.SNAP_MAX_M from any road
+# is refused: it's outside the covered region (see REGION), and the "nearest"
+# road would be in an arbitrary border town, yielding a nonsense route. Every
+# snap below passes it as `limit`, so a point far from any road is refused in
+# a few squares of search rather than after a continental one, which one
+# offshore request took up to 618 s to finish (docs/snap-cap.md).
 
 # Where the prebuilt graph lives. An env var (not a CLI arg) so it works
 # identically whether run directly (python server/app.py) or via the waitress
@@ -648,7 +653,11 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     moving = heading is not None or declined_uturn
     # Heading applies to the start only: it says which way the driver is
     # travelling, and a destination isn't travelling anywhere.
-    s, s_off, s_gap, lead = ROUTER.snap_lead(*a, heading=heading, moving=moving)
+    try:
+        s, s_off, s_gap, lead = ROUTER.snap_lead(*a, heading=heading,
+                                                 moving=moving, limit=SNAP_MAX_M)
+    except OutOfReach:
+        return _outside("that point")
     # A moving car's route begins where the car is, not at the junction it
     # was snapped to, which on a long edge is kilometres on and read as "off
     # route" in the app (`Router.lead_into`, docs/review-fixes-router.md,
@@ -665,7 +674,10 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     # The destination goes through the access layer: a pin on a building inside
     # a car park has to become the road you can get in from, not the nearest
     # road as the crow flies, which is routinely the wrong side of the building.
-    t, t_off = ROUTER.snap_destination(*b)
+    try:
+        t, t_off = ROUTER.snap_destination(*b, limit=SNAP_MAX_M)
+    except OutOfReach:
+        return _outside("that point")
     if max(s_off, t_off) > SNAP_MAX_M:
         return _outside("that point")
     # A reroute that would begin out of sight, on a road the car is not on,
@@ -708,7 +720,10 @@ def _route(a, b, pref, avoid_unpaved, heading, declined_uturn, weights, via,
     if via is not None:
         # A waypoint is a point on a road, so it snaps like a start and not like
         # a destination — there is no building to find the car park entrance for.
-        w, w_off = ROUTER.snap(*via)
+        try:
+            w, w_off = ROUTER.snap(*via, limit=SNAP_MAX_M)
+        except OutOfReach:
+            return _outside("that waypoint")
         if w_off > SNAP_MAX_M:
             return _outside("that waypoint")
         # Each leg capped as a trip is. Uncapped, Boston via Los Angeles to
@@ -887,7 +902,10 @@ def api_loop():
     # a drive, not already on one — so no heading, and `snap` takes the nearer
     # end of the road they are on. No `snap_destination` either: there is no
     # destination pin to pull out of a car park.
-    start, offset = ROUTER.snap(*start_ll)
+    try:
+        start, offset = ROUTER.snap(*start_ll, limit=SNAP_MAX_M)
+    except OutOfReach:
+        return _outside("that point")
     if offset > SNAP_MAX_M:
         return _outside("that point")
 
@@ -920,7 +938,10 @@ def api_loop_limit():
         start_ll = _required_ll(request.form, "from")
     except BadInput as bad:
         return _error(400, BAD_INPUT, bad.sentence)
-    start, offset = ROUTER.snap(*start_ll)
+    try:
+        start, offset = ROUTER.snap(*start_ll, limit=SNAP_MAX_M)
+    except OutOfReach:
+        return _outside("that point")
     if offset > SNAP_MAX_M:
         return _outside("that point")
     max_km = LOOPER.max_km(start)
@@ -1035,6 +1056,101 @@ def health():
                    region=REGION, commit=COMMIT, pack=PACK_FINGERPRINT)
 
 
+# The health check that plans a route: /api/health answers from a variable,
+# so it stayed green for the whole of a stall that kept drivers waiting
+# 177 s (docs/snap-cap.md, "The health route"). Two Massachusetts town
+# centres, about 10 km apart, which both the New England and the national
+# graph cover.
+HEALTH_ROUTE = ((42.4604, -71.3489), (42.4473, -71.2290))   # Concord -> Lexington
+HEALTH_ROUTE_NAME = "Concord, MA to Lexington, MA"
+# A plan slower than this is a failure. Planned alone it takes well under a
+# second; the app gives up at 20 s.
+HEALTH_ROUTE_SLOW_S = 5.0
+# Anyone can call it, so it plans at most once a minute, and never twice at
+# once: every other caller is answered from the last plan.
+HEALTH_ROUTE_TTL_S = 60.0
+HEALTH_ROUTE_LOCK = threading.Lock()
+# (monotonic time planned, body, status); and when a plan under way began.
+_health_route = None
+_health_route_began = None
+
+
+def _plan_health_route():
+    """Plan HEALTH_ROUTE as `/api/route` would at the app's defaults: both
+    arms, scenic bounding fastest. (body, status)."""
+    began = time.perf_counter()
+    day = _today()
+    weights = {name: 1.0 for name, *_ in BEAUTY_TYPES}
+    try:
+        s, _ = ROUTER.snap(*HEALTH_ROUTE[0], limit=SNAP_MAX_M)
+        t, _ = ROUTER.snap_destination(*HEALTH_ROUTE[1], limit=SNAP_MAX_M)
+        scenic = ROUTER.route(s, t, 0.5, weights, on=day)
+        fastest = ROUTER.route(s, t, 0.0, weights, on=day,
+                               bound=_bound(scenic, weights, 1.0, day))
+        failure = None if fastest is not None and scenic is not None else "no route"
+    except Exception as exc:     # the check reports a bug rather than raising one
+        app.logger.exception("health route")
+        failure, fastest = f"error: {type(exc).__name__}", None
+    seconds = round(time.perf_counter() - began, 3)
+    if failure is None and seconds > HEALTH_ROUTE_SLOW_S:
+        failure = f"slow: over {HEALTH_ROUTE_SLOW_S:.0f} s"
+    body = dict(route=HEALTH_ROUTE_NAME, seconds=seconds,
+                limit_s=HEALTH_ROUTE_SLOW_S)
+    if failure is None:
+        return dict(body, status="route_ok", km=round(fastest.km, 1)), 200
+    return dict(body, status="route_failed", reason=failure), 503
+
+
+@app.get("/api/health/route")
+def health_route():
+    """Whether the server can plan a route now: 200 with status "route_ok",
+    or 503 with "route_failed" and a reason, when planning failed or took
+    over HEALTH_ROUTE_SLOW_S. The keyword monitor in server/DEPLOY-oracle.md
+    asserts "route_ok", which no failure body contains.
+
+    At most one plan a minute (HEALTH_ROUTE_TTL_S), one at a time, under its
+    own lock and never the loop or rejoin lock. A caller that finds a plan
+    under way is answered from the last one; with none yet, it waits for the
+    plan under way, but never past HEALTH_ROUTE_SLOW_S since it began, and a
+    plan still running then is reported as failed. `age_s` is how old the
+    answer is. docs/snap-cap.md, "The health route".
+    """
+    global _health_route, _health_route_began
+    now = time.monotonic()
+    last = _health_route
+    if (last is None or now - last[0] >= HEALTH_ROUTE_TTL_S) \
+            and HEALTH_ROUTE_LOCK.acquire(blocking=False):
+        try:
+            last = _health_route
+            if last is None or time.monotonic() - last[0] >= HEALTH_ROUTE_TTL_S:
+                _health_route_began = time.monotonic()
+                body, status = _plan_health_route()
+                last = _health_route = (time.monotonic(), body, status)
+        finally:
+            _health_route_began = None
+            HEALTH_ROUTE_LOCK.release()
+    elif last is None:
+        began = _health_route_began
+        wait = (HEALTH_ROUTE_SLOW_S if began is None
+                else HEALTH_ROUTE_SLOW_S - (now - began))
+        if HEALTH_ROUTE_LOCK.acquire(timeout=max(0.0, wait)):
+            HEALTH_ROUTE_LOCK.release()
+        last = _health_route
+    began = _health_route_began
+    if began is not None and time.monotonic() - began > HEALTH_ROUTE_SLOW_S:
+        # A plan under way that has already run too long: the stall itself.
+        return jsonify(route=HEALTH_ROUTE_NAME, status="route_failed",
+                       reason=f"slow: a plan has run "
+                              f"{time.monotonic() - began:.0f} s",
+                       limit_s=HEALTH_ROUTE_SLOW_S, age_s=0), 503
+    if last is None:
+        return jsonify(route=HEALTH_ROUTE_NAME, status="route_failed",
+                       reason="no plan finished yet",
+                       limit_s=HEALTH_ROUTE_SLOW_S, age_s=0), 503
+    planned, body, status = last
+    return jsonify(dict(body, age_s=round(time.monotonic() - planned, 1))), status
+
+
 @app.errorhandler(HTTPException)
 def _http_error(exc):
     """Flask's own refusals, as JSON with a code rather than an HTML page the
@@ -1081,6 +1197,7 @@ def index():
                           "[&avoid_unpaved=0..2]"),
             "/api/loop/limit": "POST from=LAT,LON -> max_km, max_mi",
             "/api/health": "liveness check",
+            "/api/health/route": "plans a fixed route, cached for a minute",
         },
         # How the two routing endpoints take those parameters. The app posts
         # them, so a driver's coordinates stay out of every URL.
