@@ -91,6 +91,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/national-copy-brief.md` | `git show 42e4808:docs/national-copy-brief.md` | on `usa`: [national-copy.md](national-copy.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
 | `docs/snap-cap-brief.md` | `git show c9100ae:docs/snap-cap-brief.md` | on `usa`: [snap-cap.md](snap-cap.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
 | `docs/low-scenery-fallback-brief.md` | `git show b72a8be:docs/low-scenery-fallback-brief.md` | on `usa`: [low-scenery-fallback.md](low-scenery-fallback.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
+| `docs/pre-deploy-audit-brief.md` | `git show fe50b9f:docs/pre-deploy-audit-brief.md` | on `usa`: [pre-deploy-audit.md](pre-deploy-audit.md) |
 
 ## Briefs kept out of history
 
