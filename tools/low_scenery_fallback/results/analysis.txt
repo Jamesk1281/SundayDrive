@@ -1,0 +1,129 @@
+
+### before, menu (options=1, alone): 134 trips answered
+- scenic arm is the fastest: 37 (28%); with no_gain: 0 (0%)
+- offered, gaining < 0.5 mi: 16 (12%)
+- offered, > 10% extra time for < 2 km gained: 17 (13%)
+- offered, fewer beautiful km than the fastest: 0 (0%)
+- offered, > 25% extra time: 0 (0%)
+- extra minutes p50 / p90 / max, all trips: 10.6 / 30.5 / 54.9
+- extra minutes p50 / p90 / max, where offered: 16.1 / 32.7 / 54.9
+- extra share p50 / p90 / max, where offered: 16.5 / 23.1 / 25.0 %
+- beautiful km gained p50 / p90 / max, where offered: 4.8 / 40.2 / 105.8
+- menus: 134 of 134
+  - default is the fastest: 37; of those, over budget with an option gaining >= 0.5 mi on the dial: 10
+  - default is an option gaining < 0.5 mi (the menu keeps its most scenic frontier point whatever it adds): 16
+  - Trap 4, menu hop-stat km against RouteResult.beautiful_km: fastest max |diff| 0.00 km, default 0.00 km
+
+### before, plain (the busy fallback, and reroutes): 134 trips answered
+- scenic arm is the fastest: 8 (6%); with no_gain: 0 (0%)
+- offered, gaining < 0.5 mi: 55 (41%)
+- offered, > 10% extra time for < 2 km gained: 29 (22%)
+- offered, fewer beautiful km than the fastest: 4 (3%)
+- offered, > 25% extra time: 49 (37%)
+- extra minutes p50 / p90 / max, all trips: 15.9 / 65.1 / 163.5
+- extra minutes p50 / p90 / max, where offered: 17.7 / 65.5 / 163.5
+- extra share p50 / p90 / max, where offered: 15.5 / 63.6 / 127.2 %
+- beautiful km gained p50 / p90 / max, where offered: 1.7 / 47.6 / 139.7
+
+### after, menu (options=1, alone): 134 trips answered
+- scenic arm is the fastest: 37 (28%); with no_gain: 27 (20%)
+- offered, gaining < 0.5 mi: 16 (12%)
+- offered, > 10% extra time for < 2 km gained: 17 (13%)
+- offered, fewer beautiful km than the fastest: 0 (0%)
+- offered, > 25% extra time: 0 (0%)
+- extra minutes p50 / p90 / max, all trips: 10.6 / 30.5 / 54.9
+- extra minutes p50 / p90 / max, where offered: 16.1 / 32.7 / 54.9
+- extra share p50 / p90 / max, where offered: 16.5 / 23.1 / 25.0 %
+- beautiful km gained p50 / p90 / max, where offered: 4.8 / 40.2 / 105.8
+- menus: 134 of 134
+  - default is the fastest: 37; of those, over budget with an option gaining >= 0.5 mi on the dial: 10
+  - default is an option gaining < 0.5 mi (the menu keeps its most scenic frontier point whatever it adds): 16
+  - Trap 4, menu hop-stat km against RouteResult.beautiful_km: fastest max |diff| 0.00 km, default 0.00 km
+
+### after, busy fallback (options=1, menu not run): 134 trips answered
+- scenic arm is the fastest: 62 (46%); with no_gain: 62 (46%)
+- offered, gaining < 0.5 mi: 1 (1%)
+- offered, > 10% extra time for < 2 km gained: 9 (7%)
+- offered, fewer beautiful km than the fastest: 0 (0%)
+- offered, > 25% extra time: 41 (31%)
+- extra minutes p50 / p90 / max, all trips: 3.4 / 65.1 / 163.5
+- extra minutes p50 / p90 / max, where offered: 35.2 / 80.5 / 163.5
+- extra share p50 / p90 / max, where offered: 29.8 / 87.9 / 127.2 %
+- beautiful km gained p50 / p90 / max, where offered: 9.5 / 80.1 / 139.7
+
+### after, plain without options (reroutes, older builds): 134 trips answered
+- scenic arm is the fastest: 13 (10%); with no_gain: 6 (4%)
+- offered, gaining < 0.5 mi: 50 (37%)
+- offered, > 10% extra time for < 2 km gained: 27 (20%)
+- offered, fewer beautiful km than the fastest: 0 (0%)
+- offered, > 25% extra time: 49 (37%)
+- extra minutes p50 / p90 / max, all trips: 15.3 / 65.1 / 163.5
+- extra minutes p50 / p90 / max, where offered: 18.4 / 65.8 / 163.5
+- extra share p50 / p90 / max, where offered: 17.1 / 64.0 / 127.2 %
+- beautiful km gained p50 / p90 / max, where offered: 1.9 / 48.1 / 139.7
+
+### trips the change moved
+- r000: fastest 90 min 0.8 km; before plain 109 min 0.6 km; after fallback fastest no_gain; after plain fastest; menu default before/after 2/2
+- r002: fastest 82 min 0.1 km; before plain 79 min 0.0 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- r003: fastest 96 min 2.6 km; before plain 110 min 0.0 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- r005: fastest 126 min 0.0 km; before plain 132 min 0.0 km; after fallback fastest no_gain; after plain 132 min 0.0 km; menu default before/after 0/0 no_gain
+- r007: fastest 114 min 0.0 km; before plain 115 min 0.0 km; after fallback fastest no_gain; after plain 115 min 0.0 km; menu default before/after 0/0
+- r009: fastest 157 min 0.1 km; before plain 159 min 0.5 km; after fallback fastest no_gain; after plain 159 min 0.5 km; menu default before/after 1/1
+- r013: fastest 58 min 0.0 km; before plain 64 min 0.0 km; after fallback fastest no_gain; after plain 64 min 0.0 km; menu default before/after 1/1
+- r015: fastest 51 min 0.9 km; before plain 53 min 0.9 km; after fallback fastest no_gain; after plain 53 min 0.9 km; menu default before/after 2/2
+- r016: fastest 82 min 1.0 km; before plain 91 min 1.7 km; after fallback fastest no_gain; after plain 91 min 1.7 km; menu default before/after 1/1
+- r029: fastest 175 min 0.0 km; before plain 212 min 0.0 km; after fallback fastest no_gain; after plain 212 min 0.0 km; menu default before/after 0/0 no_gain
+- r031: fastest 188 min 0.0 km; before plain 204 min 0.3 km; after fallback fastest no_gain; after plain 204 min 0.3 km; menu default before/after 1/1
+- r032: fastest 128 min 1.8 km; before plain 154 min 2.1 km; after fallback fastest no_gain; after plain 154 min 2.1 km; menu default before/after 3/3
+- r035: fastest 54 min 0.0 km; before plain 74 min 0.0 km; after fallback fastest no_gain; after plain 74 min 0.0 km; menu default before/after 0/0 no_gain
+- r037: fastest 157 min 0.3 km; before plain 181 min 0.8 km; after fallback fastest no_gain; after plain 181 min 0.8 km; menu default before/after 3/3
+- r038: fastest 94 min 0.0 km; before plain 120 min 0.0 km; after fallback fastest no_gain; after plain 120 min 0.0 km; menu default before/after 0/0 no_gain
+- r040: fastest 131 min 0.0 km; before plain 135 min 0.0 km; after fallback fastest no_gain; after plain 135 min 0.0 km; menu default before/after 0/0 no_gain
+- r042: fastest 299 min 0.0 km; before plain 299 min 0.0 km; after fallback fastest no_gain; after plain 299 min 0.0 km; menu default before/after 0/0 no_gain
+- r047: fastest 126 min 0.8 km; before plain 137 min 0.8 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- r048: fastest 151 min 20.4 km; before plain 155 min 20.4 km; after fallback fastest no_gain; after plain 155 min 20.4 km; menu default before/after 0/0 no_gain
+- r049: fastest 117 min 0.0 km; before plain 128 min 0.0 km; after fallback fastest no_gain; after plain 128 min 0.0 km; menu default before/after 0/0 no_gain
+- r052: fastest 66 min 0.0 km; before plain 68 min 0.1 km; after fallback fastest no_gain; after plain 68 min 0.1 km; menu default before/after 1/1
+- r053: fastest 116 min 1.8 km; before plain 116 min 1.8 km; after fallback fastest no_gain; after plain 116 min 1.8 km; menu default before/after 1/1
+- r055: fastest 103 min 0.0 km; before plain 100 min 0.0 km; after fallback fastest no_gain; after plain 100 min 0.0 km; menu default before/after 0/0 no_gain
+- r056: fastest 41 min 0.0 km; before plain 67 min 0.1 km; after fallback fastest no_gain; after plain 67 min 0.1 km; menu default before/after 1/1
+- r057: fastest 104 min 0.0 km; before plain 104 min 0.0 km; after fallback fastest no_gain; after plain 104 min 0.0 km; menu default before/after 1/1
+- r058: fastest 113 min 0.2 km; before plain 123 min 0.2 km; after fallback fastest no_gain; after plain 123 min 0.2 km; menu default before/after 1/1
+- r060: fastest 113 min 0.0 km; before plain 124 min 0.6 km; after fallback fastest no_gain; after plain 124 min 0.6 km; menu default before/after 1/1
+- r062: fastest 117 min 0.0 km; before plain 138 min 0.0 km; after fallback fastest no_gain; after plain 138 min 0.0 km; menu default before/after 1/1
+- r065: fastest 154 min 0.0 km; before plain 152 min 0.3 km; after fallback fastest no_gain; after plain 152 min 0.3 km; menu default before/after 2/2
+- r067: fastest 92 min 0.0 km; before plain 113 min 0.0 km; after fallback fastest no_gain; after plain 113 min 0.0 km; menu default before/after 2/2
+- r068: fastest 62 min 0.0 km; before plain 79 min 0.0 km; after fallback fastest no_gain; after plain 79 min 0.0 km; menu default before/after 1/1
+- r070: fastest 100 min 0.4 km; before plain 103 min 0.7 km; after fallback fastest no_gain; after plain 103 min 0.7 km; menu default before/after 2/2
+- r076: fastest 63 min 0.0 km; before plain 67 min 0.0 km; after fallback fastest no_gain; after plain 67 min 0.0 km; menu default before/after 0/0 no_gain
+- r078: fastest 156 min 0.0 km; before plain 166 min 0.0 km; after fallback fastest no_gain; after plain 166 min 0.0 km; menu default before/after 0/0 no_gain
+- r082: fastest 141 min 0.0 km; before plain 141 min 0.0 km; after fallback fastest no_gain; after plain 141 min 0.0 km; menu default before/after 0/0 no_gain
+- r085: fastest 124 min 0.0 km; before plain 127 min 0.0 km; after fallback fastest no_gain; after plain 127 min 0.0 km; menu default before/after 0/0
+- r088: fastest 53 min 0.0 km; before plain 56 min 0.0 km; after fallback fastest no_gain; after plain 56 min 0.0 km; menu default before/after 0/0
+- r092: fastest 90 min 2.1 km; before plain 90 min 2.1 km; after fallback fastest no_gain; after plain 90 min 2.1 km; menu default before/after 1/1
+- r093: fastest 109 min 0.0 km; before plain 112 min 0.0 km; after fallback fastest no_gain; after plain 112 min 0.0 km; menu default before/after 1/1
+- r095: fastest 131 min 22.4 km; before plain 131 min 22.4 km; after fallback fastest no_gain; after plain 131 min 22.4 km; menu default before/after 0/0 no_gain
+- r097: fastest 133 min 0.0 km; before plain 179 min 0.0 km; after fallback fastest no_gain; after plain 179 min 0.0 km; menu default before/after 1/1
+- r098: fastest 131 min 0.0 km; before plain 134 min 0.0 km; after fallback fastest no_gain; after plain 134 min 0.0 km; menu default before/after 0/0 no_gain
+- r100: fastest 126 min 0.0 km; before plain 162 min 0.6 km; after fallback fastest no_gain; after plain 162 min 0.6 km; menu default before/after 1/1
+- r102: fastest 78 min 0.0 km; before plain 85 min 0.0 km; after fallback fastest no_gain; after plain 85 min 0.0 km; menu default before/after 0/0 no_gain
+- r112: fastest 106 min 0.0 km; before plain 146 min 0.2 km; after fallback fastest no_gain; after plain 146 min 0.2 km; menu default before/after 1/1
+- r113: fastest 86 min 0.0 km; before plain 86 min 0.0 km; after fallback fastest no_gain; after plain 86 min 0.0 km; menu default before/after 1/1
+- r114: fastest 104 min 0.1 km; before plain 110 min 0.3 km; after fallback fastest no_gain; after plain 110 min 0.3 km; menu default before/after 0/0
+- r116: fastest 136 min 0.0 km; before plain 145 min 0.0 km; after fallback fastest no_gain; after plain 145 min 0.0 km; menu default before/after 1/1
+- r118: fastest 183 min 0.6 km; before plain 192 min 0.0 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- r119: fastest 165 min 0.0 km; before plain 166 min 0.0 km; after fallback fastest no_gain; after plain 166 min 0.0 km; menu default before/after 0/0 no_gain
+- Wichita -> Salina: fastest 69 min 0.0 km; before plain 77 min 0.0 km; after fallback fastest no_gain; after plain 77 min 0.0 km; menu default before/after 1/1
+- New Orleans -> Baton Rouge: fastest 69 min 0.0 km; before plain 110 min 0.0 km; after fallback fastest no_gain; after plain 110 min 0.0 km; menu default before/after 1/1
+- Chicago -> Milwaukee: fastest 81 min 0.0 km; before plain 99 min 0.0 km; after fallback fastest no_gain; after plain 99 min 0.0 km; menu default before/after 2/2
+- Atlanta -> Chattanooga: fastest 94 min 0.0 km; before plain 179 min 9.7 km; after fallback 179 min 9.7 km; after plain 179 min 9.7 km; menu default before/after 3/3
+- Denver -> Estes Park: fastest 82 min 17.2 km; before plain 92 min 17.8 km; after fallback fastest no_gain; after plain 92 min 17.8 km; menu default before/after 0/0
+- NV-0: fastest 183 min 2.1 km; before plain 183 min 2.1 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- NV-1: fastest 114 min 58.0 km; before plain 114 min 58.0 km; after fallback fastest no_gain; after plain fastest; menu default before/after 0/0 no_gain
+- NV-2: fastest 200 min 50.9 km; before plain 205 min 60.3 km; after fallback 205 min 60.3 km; after plain 205 min 60.3 km; menu default before/after 2/2
+- WA-0: fastest 258 min 149.8 km; before plain 259 min 152.9 km; after fallback 259 min 152.9 km; after plain 259 min 152.9 km; menu default before/after 4/4
+- WA-1: fastest 121 min 39.6 km; before plain 125 min 103.4 km; after fallback 125 min 103.4 km; after plain 125 min 103.4 km; menu default before/after 5/5
+- WA-2: fastest 171 min 39.6 km; before plain 236 min 137.6 km; after fallback 236 min 137.6 km; after plain 236 min 137.6 km; menu default before/after 7/7
+- ID-0: fastest 189 min 8.2 km; before plain 193 min 12.6 km; after fallback 193 min 12.6 km; after plain 193 min 12.6 km; menu default before/after 0/0 no_gain
+- ID-1: fastest 110 min 0.0 km; before plain 110 min 1.5 km; after fallback 110 min 1.5 km; after plain 110 min 1.5 km; menu default before/after 1/1
+- ID-2: fastest 150 min 1.5 km; before plain 192 min 8.9 km; after fallback 192 min 8.9 km; after plain 192 min 8.9 km; menu default before/after 3/3

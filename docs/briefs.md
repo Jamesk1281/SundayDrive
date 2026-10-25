@@ -90,6 +90,7 @@ at `a2ddddc`. Read each at the commit named.
 | `docs/review-fixes-brief.md` | `git show 042a470:docs/review-fixes-brief.md` | four units, on `usa`: [review-fixes-router.md](review-fixes-router.md), [review-fixes-data.md](review-fixes-data.md), [review-fixes-app.md](review-fixes-app.md), [review-fixes-deploy.md](review-fixes-deploy.md). The 2026-10-20 outside review it quotes stayed out of the repo by the owner's decision |
 | `docs/national-copy-brief.md` | `git show 42e4808:docs/national-copy-brief.md` | on `usa`: [national-copy.md](national-copy.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
 | `docs/snap-cap-brief.md` | `git show c9100ae:docs/snap-cap-brief.md` | on `usa`: [snap-cap.md](snap-cap.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
+| `docs/low-scenery-fallback-brief.md` | `git show b72a8be:docs/low-scenery-fallback-brief.md` | on `usa`: [low-scenery-fallback.md](low-scenery-fallback.md). The 2026-10-23 outside review it quotes stayed out of the repo by the owner's decision |
 
 ## Briefs kept out of history
 

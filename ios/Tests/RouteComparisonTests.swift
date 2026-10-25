@@ -24,16 +24,19 @@ final class RouteComparisonTests: XCTestCase {
                             fastestScore: Double = 4.4,
                             scenicScore: Double = 6.1,
                             fastestBeautifulKm: Double? = nil,
-                            scenicBeautifulKm: Double? = nil) -> RouteComparison {
-        let leg = { (minutes: Double, score: Double, beautifulKm: Double?) -> RouteProps in
+                            scenicBeautifulKm: Double? = nil,
+                            noGain: Bool? = nil) -> RouteComparison {
+        let leg = { (minutes: Double, score: Double, beautifulKm: Double?,
+                     noGain: Bool?) -> RouteProps in
             Fixture.decode(Fixture.feature(
                 coordinates: [[-71.0, 42.0], [-71.0, 42.1]],
                 km: 10, minutes: minutes,
                 steps: [(Fixture.origin, "Head north", nil)],
-                meanScore: score, beautifulKm: beautifulKm)).properties
+                meanScore: score, beautifulKm: beautifulKm,
+                noGain: noGain)).properties
         }
-        return RouteComparison(fastest: leg(fastest, fastestScore, fastestBeautifulKm),
-                               scenic: leg(scenic, scenicScore, scenicBeautifulKm))
+        return RouteComparison(fastest: leg(fastest, fastestScore, fastestBeautifulKm, nil),
+                               scenic: leg(scenic, scenicScore, scenicBeautifulKm, noGain))
     }
 
     /// Kilometres that read as `miles` on screen, so a case can be written in
@@ -413,5 +416,70 @@ final class RouteComparisonTests: XCTestCase {
         XCTAssertNil(c.headlineGain)
         XCTAssertEqual(String(c.attributedSummary.characters),
                        "Scenic adds 48 min and raises scenery 4.4 → 6.1")
+    }
+
+    // MARK: - No beautiful road worth the detour
+
+    // The server sends `no_gain` on the scenic arm when it handed back the
+    // fastest route because nothing on the trip gained half a mile of
+    // beautiful road (docs/low-scenery-fallback.md).
+
+    func test_no_gain_says_there_is_no_beautiful_road_worth_the_detour() {
+        let c = comparison(fastest: 69.0, scenic: 69.0,
+                           fastestScore: 4.4, scenicScore: 4.4,
+                           fastestBeautifulKm: 0.0, scenicBeautifulKm: 0.0,
+                           noGain: true)
+
+        XCTAssertTrue(c.isSameDrive)
+        XCTAssertTrue(c.noGain)
+        XCTAssertNil(c.headlineGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "No beautiful road worth the detour on this trip.")
+    }
+
+    func test_without_the_field_the_same_drive_reads_as_before() {
+        // An older backend, pref 0, or a menu whose options are all merely
+        // over the time budget: the server sends no `no_gain`.
+        let c = comparison(fastest: 69.0, scenic: 69.0,
+                           fastestScore: 4.4, scenicScore: 4.4,
+                           fastestBeautifulKm: 0.0, scenicBeautifulKm: 0.0)
+
+        XCTAssertFalse(c.noGain)
+        XCTAssertEqual(String(c.attributedSummary.characters),
+                       "Same as the fastest route at this setting.")
+    }
+
+    func test_the_field_only_speaks_for_the_same_drive() {
+        // The server never sends it on a different route; if one ever did,
+        // the sentence describes the two cards and not the flag.
+        let c = comparison(fastest: 30.0, scenic: 41.0,
+                           fastestBeautifulKm: km(miles: 2.0),
+                           scenicBeautifulKm: km(miles: 9.0),
+                           noGain: true)
+
+        XCTAssertFalse(c.isSameDrive)
+        XCTAssertEqual(c.headlineGain, 7)
+        XCTAssertFalse(c.summary.contains("worth the detour"), c.summary)
+    }
+
+    func test_the_field_decodes_and_unknown_fields_do_not_break_a_route() {
+        // An older build has no `no_gain` property at all, and synthesised
+        // `Decodable` skips keys it does not know: shown here with a key this
+        // build does not know either.
+        var feature = Fixture.feature(coordinates: [[-71.0, 42.0], [-71.0, 42.1]],
+                                      km: 10, minutes: 12,
+                                      steps: [(Fixture.origin, "Head north", nil)],
+                                      noGain: true)
+        var properties = feature["properties"] as! [String: Any]
+        properties["a_field_from_a_newer_server"] = true
+        feature["properties"] = properties
+        let decoded: RouteFeature = Fixture.decode(feature)
+        XCTAssertEqual(decoded.properties.no_gain, true)
+
+        let plain: RouteFeature = Fixture.decode(
+            Fixture.feature(coordinates: [[-71.0, 42.0], [-71.0, 42.1]],
+                            km: 10, minutes: 12,
+                            steps: [(Fixture.origin, "Head north", nil)]))
+        XCTAssertNil(plain.properties.no_gain)
     }
 }
